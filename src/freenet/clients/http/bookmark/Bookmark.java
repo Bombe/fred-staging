@@ -46,11 +46,11 @@ public abstract class Bookmark {
 	 * Sets the name of this bookmark. If the given name is {@code null} or empty,
 	 * a default bookmark name is used.
 	 *
-	 * @param s
+	 * @param name
 	 * 		The new name of this bookmark
 	 */
-	protected void setName(String s) {
-		name = (s.length() > 0 ? s : NodeL10n.getBase().getString("Bookmark.noName"));
+	protected void setName(String name) {
+		this.name = (name.length() > 0 ? name : NodeL10n.getBase().getString("Bookmark.noName"));
 	}
 
 	//
