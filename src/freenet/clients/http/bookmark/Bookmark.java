@@ -50,7 +50,7 @@ public abstract class Bookmark {
 	 * 		The new name of this bookmark
 	 */
 	protected void setName(String name) {
-		this.name = (name.length() > 0 ? name : NodeL10n.getBase().getString("Bookmark.noName"));
+		this.name = ((name == null) || (name.length() > 0)) ? name : NodeL10n.getBase().getString("Bookmark.noName");
 	}
 
 	//
