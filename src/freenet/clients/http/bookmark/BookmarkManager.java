@@ -41,7 +41,28 @@ public class BookmarkManager implements RequestClient {
 		Logger.registerClass(BookmarkManager.class);
 	}
 
+	/** The default bookmarks, read from the classpath. */
 	public static final SimpleFieldSet DEFAULT_BOOKMARKS;
+
+	static {
+		String name = "freenet/clients/http/staticfiles/defaultbookmarks.dat";
+		SimpleFieldSet defaultBookmarks = null;
+		InputStream in = null;
+		try {
+			ClassLoader loader = BookmarkManager.class.getClassLoader();
+
+			// Returns null on lookup failures:
+			in = loader.getResourceAsStream(name);
+			if (in != null) {
+				defaultBookmarks = SimpleFieldSet.readFrom(in, false, false);
+			}
+		} catch (Exception e) {
+			Logger.error(BookmarkManager.class, "Error while loading the default bookmark file from " + name + " :" + e.getMessage(), e);
+		} finally {
+			Closer.close(in);
+			DEFAULT_BOOKMARKS = defaultBookmarks;
+		}
+	}
 
 	public static final BookmarkCategory MAIN_CATEGORY = new BookmarkCategory("/");
 
@@ -66,26 +87,6 @@ public class BookmarkManager implements RequestClient {
 	private boolean isSavingBookmarks = false;
 
 	private boolean isSavingBookmarksLazy = false;
-
-	static {
-		String name = "freenet/clients/http/staticfiles/defaultbookmarks.dat";
-		SimpleFieldSet defaultBookmarks = null;
-		InputStream in = null;
-		try {
-			ClassLoader loader = BookmarkManager.class.getClassLoader();
-
-			// Returns null on lookup failures:
-			in = loader.getResourceAsStream(name);
-			if (in != null) {
-				defaultBookmarks = SimpleFieldSet.readFrom(in, false, false);
-			}
-		} catch (Exception e) {
-			Logger.error(BookmarkManager.class, "Error while loading the default bookmark file from " + name + " :" + e.getMessage(), e);
-		} finally {
-			Closer.close(in);
-			DEFAULT_BOOKMARKS = defaultBookmarks;
-		}
-	}
 
 	public BookmarkManager(NodeClientCore n, boolean publicGateway) {
 		putPaths("/", MAIN_CATEGORY);
