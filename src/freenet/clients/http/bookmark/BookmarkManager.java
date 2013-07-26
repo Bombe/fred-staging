@@ -177,8 +177,7 @@ public class BookmarkManager implements RequestClient {
 		}
 		BookmarkCategory parent = getCategoryByPath(parentPath);
 		parent.addBookmark(bookmark);
-		putPaths(parentPath + bookmark.getName() + ((bookmark instanceof BookmarkCategory) ? "/" : ""),
-						bookmark);
+		putPaths(parentPath + bookmark.getName() + ((bookmark instanceof BookmarkCategory) ? "/" : ""), bookmark);
 
 		if (bookmark instanceof BookmarkItem) {
 			subscribeToUSK((BookmarkItem) bookmark);
@@ -240,8 +239,7 @@ public class BookmarkManager implements RequestClient {
 		if (bookmark instanceof BookmarkCategory) {
 			BookmarkCategory cat = (BookmarkCategory) bookmark;
 			for (int i = 0; i < cat.size(); i++) {
-				removeBookmark(path + cat.get(i).getName() + ((cat.get(i) instanceof BookmarkCategory) ? "/"
-																	  : ""));
+				removeBookmark(path + cat.get(i).getName() + ((cat.get(i) instanceof BookmarkCategory) ? "/" : ""));
 			}
 		} else {
 			if (((BookmarkItem) bookmark).getKeyType().equals("USK")) {
