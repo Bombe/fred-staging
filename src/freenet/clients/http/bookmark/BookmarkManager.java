@@ -43,7 +43,7 @@ public class BookmarkManager implements RequestClient {
 	public static final BookmarkCategory DEFAULT_CATEGORY = new BookmarkCategory("\\");
 
 	/** Name for bookmarks in simple field set serialization. */
-	public static final String BOOKMARK_NAME = "Bookmark";
+	private static final String BOOKMARK_NAME = "Bookmark";
 
 	/** Name for bookmark categories in simple field set serialization. */
 	private static final String BOOKMARK_CATEGORY_NAME = "BookmarkCategory";
