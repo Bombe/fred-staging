@@ -70,6 +70,10 @@ public class BookmarkItem extends Bookmark {
 		this.alert = new BookmarkUpdatedUserAlert();
 	}
 
+	//
+	// ACCESSORS
+	//
+
 	public String getDescription() {
 		if (desc == null) {
 			return "";
@@ -110,6 +114,10 @@ public class BookmarkItem extends Bookmark {
 		return hasAnActivelink;
 	}
 
+	//
+	// ACTIONS
+	//
+
 	public synchronized void update(FreenetURI uri, boolean hasAnActivelink, String description, String shortDescription) {
 		this.key = uri;
 		this.desc = description;
@@ -133,6 +141,10 @@ public class BookmarkItem extends Bookmark {
 		return true;
 	}
 
+	//
+	// BOOKMARK METHODS
+	//
+
 	@Override
 	public SimpleFieldSet getSimpleFieldSet() {
 		SimpleFieldSet sfs = new SimpleFieldSet(true);
@@ -143,6 +155,10 @@ public class BookmarkItem extends Bookmark {
 		sfs.putSingle("URI", key.toString());
 		return sfs;
 	}
+
+	//
+	// OBJECT METHODS
+	//
 
 	@Override
 	public String toString() {
@@ -198,6 +214,10 @@ public class BookmarkItem extends Bookmark {
 		}
 	}
 
+	//
+	// PRIVATE METHODS
+	//
+
 	private String l10n(String key) {
 		return NodeL10n.getBase().getString("BookmarkItem." + key);
 	}
@@ -209,6 +229,10 @@ public class BookmarkItem extends Bookmark {
 	private String l10n(String key, String[] patterns, String[] values) {
 		return NodeL10n.getBase().getString("BookmarkItem." + key, patterns, values);
 	}
+
+	//
+	// PRIVATE ACTIONS
+	//
 
 	private synchronized void enableBookmark() {
 		if (updated) {
@@ -229,6 +253,10 @@ public class BookmarkItem extends Bookmark {
 		public BookmarkUpdatedUserAlert() {
 			super(true, null, null, null, null, UserAlert.MINOR, false, null, true, null);
 		}
+
+		//
+		// ABSTRACTUSERALERT METHODS
+		//
 
 		@Override
 		public String getTitle() {
