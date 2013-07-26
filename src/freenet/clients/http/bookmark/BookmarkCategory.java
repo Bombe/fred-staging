@@ -31,17 +31,17 @@ public class BookmarkCategory extends Bookmark {
 	/**
 	 * Creates a new bookmark category.
 	 *
-	 * @param sfs
+	 * @param simpleFieldSet
 	 * 		The simple field set to create a bookmark category from
 	 * @throws FSParseException
 	 * 		if the simple field set can not be parsed
 	 */
-	public BookmarkCategory(SimpleFieldSet sfs) throws FSParseException {
-		String aName = sfs.get("Name");
-		if (aName == null) {
+	public BookmarkCategory(SimpleFieldSet simpleFieldSet) throws FSParseException {
+		String name = simpleFieldSet.get("Name");
+		if (name == null) {
 			throw new FSParseException("No Name!");
 		}
-		setName(aName);
+		setName(name);
 	}
 
 	//
@@ -58,14 +58,14 @@ public class BookmarkCategory extends Bookmark {
 	}
 
 	/**
-	 * Returns the <i>i</i>th bookmark in this category.
+	 * Returns the <i>index</i>th bookmark in this category.
 	 *
-	 * @param i
+	 * @param index
 	 * 		The index of the bookmark
 	 * @return The bookmark at the given index
 	 */
-	public synchronized Bookmark get(int i) {
-		return bookmarks.get(i);
+	public synchronized Bookmark get(int index) {
+		return bookmarks.get(index);
 	}
 
 	/**
@@ -75,9 +75,9 @@ public class BookmarkCategory extends Bookmark {
 	 */
 	public synchronized List<BookmarkItem> getItems() {
 		List<BookmarkItem> items = new ArrayList<BookmarkItem>();
-		for (Bookmark b : bookmarks) {
-			if (b instanceof BookmarkItem) {
-				items.add((BookmarkItem) b);
+		for (Bookmark bookmark : bookmarks) {
+			if (bookmark instanceof BookmarkItem) {
+				items.add((BookmarkItem) bookmark);
 			}
 		}
 		return items;
@@ -90,8 +90,8 @@ public class BookmarkCategory extends Bookmark {
 	 */
 	public synchronized List<BookmarkItem> getAllItems() {
 		List<BookmarkItem> items = getItems();
-		for (BookmarkCategory cat : getSubCategories()) {
-			items.addAll(cat.getAllItems());
+		for (BookmarkCategory category : getSubCategories()) {
+			items.addAll(category.getAllItems());
 		}
 		return items;
 	}
@@ -103,9 +103,9 @@ public class BookmarkCategory extends Bookmark {
 	 */
 	public synchronized List<BookmarkCategory> getSubCategories() {
 		List<BookmarkCategory> categories = new ArrayList<BookmarkCategory>();
-		for (Bookmark b : bookmarks) {
-			if (b instanceof BookmarkCategory) {
-				categories.add((BookmarkCategory) b);
+		for (Bookmark bookmark : bookmarks) {
+			if (bookmark instanceof BookmarkCategory) {
+				categories.add((BookmarkCategory) bookmark);
 			}
 		}
 		return categories;
@@ -118,63 +118,63 @@ public class BookmarkCategory extends Bookmark {
 	/**
 	 * Adds the given bookmark to this category.
 	 *
-	 * @param b
+	 * @param bookmark
 	 * 		The bookmark to add
 	 * @return The existing bookmark if it already existed, or the added bookmark
 	 *         if it was added
 	 */
-	protected synchronized Bookmark addBookmark(Bookmark b) {
-		if (b == null) {
+	protected synchronized Bookmark addBookmark(Bookmark bookmark) {
+		if (bookmark == null) {
 			return null;
 		}
 		// Overwrite any existing bookmark
-		int x = bookmarks.indexOf(b);
+		int x = bookmarks.indexOf(bookmark);
 		if (x >= 0) {
 			return bookmarks.get(x);
 		}
-		bookmarks.add(b);
-		return b;
+		bookmarks.add(bookmark);
+		return bookmark;
 	}
 
 	/**
 	 * Removes the given bookmark from this category.
 	 *
-	 * @param b
+	 * @param bookmark
 	 */
-	protected synchronized void removeBookmark(Bookmark b) {
-		bookmarks.remove(b);
+	protected synchronized void removeBookmark(Bookmark bookmark) {
+		bookmarks.remove(bookmark);
 	}
 
 	/**
 	 * Moves the given bookmark up in this category.
 	 *
-	 * @param b
+	 * @param bookmark
 	 * 		The bookmark to move up
 	 */
-	protected synchronized void moveBookmarkUp(Bookmark b) {
-		int index = bookmarks.indexOf(b);
+	protected synchronized void moveBookmarkUp(Bookmark bookmark) {
+		int index = bookmarks.indexOf(bookmark);
 		if (index == -1) {
 			return;
 		}
 
-		Bookmark bk = bookmarks.remove(index);
-		bookmarks.add((--index < 0) ? 0 : index, bk);
+		Bookmark removedBookmark = bookmarks.remove(index);
+		bookmarks.add((--index < 0) ? 0 : index, removedBookmark);
 	}
 
 	/**
 	 * Moves the given bookmark down in this category
 	 *
-	 * @param b
+	 * @param bookmark
 	 * 		The bookmark to move down
 	 */
-	protected synchronized void moveBookmarkDown(Bookmark b) {
-		int index = bookmarks.indexOf(b);
+	protected synchronized void moveBookmarkDown(Bookmark bookmark) {
+		int index = bookmarks.indexOf(bookmark);
 		if (index == -1) {
 			return;
 		}
 
-		Bookmark bk = bookmarks.remove(index);
-		bookmarks.add((++index > size()) ? size() : index, bk);
+		Bookmark removedBookmark = bookmarks.remove(index);
+		bookmarks.add((++index > size()) ? size() : index, removedBookmark);
 	}
 
 	//
@@ -183,10 +183,10 @@ public class BookmarkCategory extends Bookmark {
 
 	@Override
 	public synchronized SimpleFieldSet getSimpleFieldSet() {
-		SimpleFieldSet sfs = new SimpleFieldSet(true);
-		sfs.putSingle("Name", getName());
-		sfs.put("Content", BookmarkManager.toSimpleFieldSet(this));
-		return sfs;
+		SimpleFieldSet simpleFieldSet = new SimpleFieldSet(true);
+		simpleFieldSet.putSingle("Name", getName());
+		simpleFieldSet.put("Content", BookmarkManager.toSimpleFieldSet(this));
+		return simpleFieldSet;
 	}
 
 }
