@@ -1153,11 +1153,6 @@ public final class SimpleToadletServer implements ToadletContainer, Runnable, Li
 		return bookmarkManager;
 	}
 
-	public FreenetURI[] getBookmarkURIs() {
-		if(bookmarkManager == null) return new FreenetURI[0];
-		return bookmarkManager.getBookmarkURIs();
-	}
-
 	@Override
 	public boolean enablePersistentConnections() {
 		return enablePersistentConnections;

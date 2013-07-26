@@ -1828,10 +1828,6 @@ public class NodeClientCore implements Persistable, DBJobRunner, OOMHook, Execut
 		sched.dequeueOfferedKey(key);
 	}
 
-	public FreenetURI[] getBookmarkURIs() {
-		return toadletContainer.getBookmarkURIs();
-	}
-
 	public long countTransientQueuedRequests() {
 		return requestStarters.countTransientQueuedRequests();
 	}

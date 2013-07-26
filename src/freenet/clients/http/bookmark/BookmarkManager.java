@@ -161,16 +161,6 @@ public class BookmarkManager implements RequestClient {
 		return null;
 	}
 
-	public FreenetURI[] getBookmarkURIs() {
-		List<BookmarkItem> items = MAIN_CATEGORY.getAllItems();
-		FreenetURI[] uris = new FreenetURI[items.size()];
-		for (int i = 0; i < items.size(); i++) {
-			uris[i] = items.get(i).getURI();
-		}
-
-		return uris;
-	}
-
 	//
 	// ACTIONS
 	//
