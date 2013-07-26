@@ -22,6 +22,8 @@ public abstract class Bookmark {
 		name = (s.length() > 0 ? s : NodeL10n.getBase().getString("Bookmark.noName"));
 	}
 
+	public abstract SimpleFieldSet getSimpleFieldSet();
+
 	@Override
 	public boolean equals(Object o) {
 		if (o == this) {
@@ -42,7 +44,5 @@ public abstract class Bookmark {
 	public int hashCode() {
 		return name.hashCode();
 	}
-
-	public abstract SimpleFieldSet getSimpleFieldSet();
 
 }
