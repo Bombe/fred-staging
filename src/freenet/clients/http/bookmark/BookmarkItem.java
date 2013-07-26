@@ -120,7 +120,7 @@ public class BookmarkItem extends Bookmark {
 		this.shortDescription = shortDescription;
 		this.hasAnActivelink = hasAnActivelink;
 		if (!key.isUSK()) {
-			disableBookmark();
+			hideUserAlert();
 		}
 	}
 
@@ -133,7 +133,7 @@ public class BookmarkItem extends Bookmark {
 			return false;
 		}
 		key = key.setSuggestedEdition(edition);
-		enableBookmark();
+		showUserAlert();
 		return true;
 	}
 
@@ -230,7 +230,7 @@ public class BookmarkItem extends Bookmark {
 	// PRIVATE ACTIONS
 	//
 
-	private synchronized void enableBookmark() {
+	private synchronized void showUserAlert() {
 		if (userAlertShowing) {
 			return;
 		}
@@ -239,7 +239,7 @@ public class BookmarkItem extends Bookmark {
 		userAlertManager.register(bookmarkUpdatedUserAlert);
 	}
 
-	private synchronized void disableBookmark() {
+	private synchronized void hideUserAlert() {
 		userAlertShowing = false;
 		userAlertManager.unregister(bookmarkUpdatedUserAlert);
 	}
@@ -300,12 +300,12 @@ public class BookmarkItem extends Bookmark {
 			if (validity) {
 				return;
 			}
-			disableBookmark();
+			hideUserAlert();
 		}
 
 		@Override
 		public void onDismiss() {
-			disableBookmark();
+			hideUserAlert();
 		}
 
 	}
