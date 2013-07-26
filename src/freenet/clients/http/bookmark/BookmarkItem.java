@@ -27,11 +27,11 @@ public class BookmarkItem extends Bookmark {
 		Logger.registerClass(BookmarkItem.class);
 	}
 
-	private final BookmarkUpdatedUserAlert alert;
+	private final BookmarkUpdatedUserAlert bookmarkUpdatedUserAlert;
 
-	private final UserAlertManager alerts;
+	private final UserAlertManager userAlertManager;
 
-	protected String desc;
+	protected String description;
 
 	protected String shortDescription;
 
@@ -41,33 +41,33 @@ public class BookmarkItem extends Bookmark {
 
 	private boolean hasAnActivelink = false;
 
-	public BookmarkItem(FreenetURI k, String n, String d, String s, boolean hasAnActivelink, UserAlertManager uam)
+	public BookmarkItem(FreenetURI key, String name, String description, String shortDescription, boolean hasAnActivelink, UserAlertManager userAlertManager)
 			throws MalformedURLException {
 
-		this.key = k;
-		setName(n);
-		this.desc = d;
-		this.shortDescription = s;
+		this.key = key;
+		setName(name);
+		this.description = description;
+		this.shortDescription = shortDescription;
 		this.hasAnActivelink = hasAnActivelink;
-		this.alerts = uam;
-		alert = new BookmarkUpdatedUserAlert();
-		assert (key != null);
+		this.userAlertManager = userAlertManager;
+		bookmarkUpdatedUserAlert = new BookmarkUpdatedUserAlert();
+		assert (this.key != null);
 	}
 
-	public BookmarkItem(SimpleFieldSet sfs, UserAlertManager uam) throws FSParseException, MalformedURLException {
-		setName(sfs.get("Name"));
-		this.desc = sfs.get("Description");
-		if (desc == null) {
-			desc = "";
+	public BookmarkItem(SimpleFieldSet simpleFieldSet, UserAlertManager userAlertManager) throws FSParseException, MalformedURLException {
+		setName(simpleFieldSet.get("Name"));
+		this.description = simpleFieldSet.get("Description");
+		if (description == null) {
+			description = "";
 		}
-		this.shortDescription = sfs.get("ShortDescription");
+		this.shortDescription = simpleFieldSet.get("ShortDescription");
 		if (shortDescription == null) {
 			shortDescription = "";
 		}
-		this.hasAnActivelink = sfs.getBoolean("hasAnActivelink");
-		this.key = new FreenetURI(sfs.get("URI"));
-		this.alerts = uam;
-		this.alert = new BookmarkUpdatedUserAlert();
+		this.hasAnActivelink = simpleFieldSet.getBoolean("hasAnActivelink");
+		this.key = new FreenetURI(simpleFieldSet.get("URI"));
+		this.userAlertManager = userAlertManager;
+		this.bookmarkUpdatedUserAlert = new BookmarkUpdatedUserAlert();
 	}
 
 	//
@@ -75,13 +75,13 @@ public class BookmarkItem extends Bookmark {
 	//
 
 	public String getDescription() {
-		if (desc == null) {
+		if (description == null) {
 			return "";
 		}
-		if (desc.toLowerCase().startsWith("l10n:")) {
-			return NodeL10n.getBase().getString("Bookmarks.Defaults.Description." + desc.substring("l10n:".length()));
+		if (description.toLowerCase().startsWith("l10n:")) {
+			return NodeL10n.getBase().getString("Bookmarks.Defaults.Description." + description.substring("l10n:".length()));
 		}
-		return desc;
+		return description;
 	}
 
 	public String getShortDescription() {
@@ -120,7 +120,7 @@ public class BookmarkItem extends Bookmark {
 
 	public synchronized void update(FreenetURI uri, boolean hasAnActivelink, String description, String shortDescription) {
 		this.key = uri;
-		this.desc = description;
+		this.description = description;
 		this.shortDescription = shortDescription;
 		this.hasAnActivelink = hasAnActivelink;
 		if (!key.isUSK()) {
@@ -129,14 +129,14 @@ public class BookmarkItem extends Bookmark {
 	}
 
 	/** @return True if we updated the edition */
-	public synchronized boolean setEdition(long ed, NodeClientCore node) {
-		if (key.getSuggestedEdition() >= ed) {
+	public synchronized boolean setEdition(long edition, NodeClientCore nodeClientCore) {
+		if (key.getSuggestedEdition() >= edition) {
 			if (logMINOR) {
-				Logger.minor(this, "Edition " + ed + " is too old, not updating " + key);
+				Logger.minor(this, "Edition " + edition + " is too old, not updating " + key);
 			}
 			return false;
 		}
-		key = key.setSuggestedEdition(ed);
+		key = key.setSuggestedEdition(edition);
 		enableBookmark();
 		return true;
 	}
@@ -147,13 +147,13 @@ public class BookmarkItem extends Bookmark {
 
 	@Override
 	public SimpleFieldSet getSimpleFieldSet() {
-		SimpleFieldSet sfs = new SimpleFieldSet(true);
-		sfs.putSingle("Name", getName());
-		sfs.putSingle("Description", desc);
-		sfs.putSingle("ShortDescription", shortDescription);
-		sfs.put("hasAnActivelink", hasAnActivelink);
-		sfs.putSingle("URI", key.toString());
-		return sfs;
+		SimpleFieldSet simpleFieldSet = new SimpleFieldSet(true);
+		simpleFieldSet.putSingle("Name", getName());
+		simpleFieldSet.putSingle("Description", description);
+		simpleFieldSet.putSingle("ShortDescription", shortDescription);
+		simpleFieldSet.put("hasAnActivelink", hasAnActivelink);
+		simpleFieldSet.putSingle("URI", key.toString());
+		return simpleFieldSet;
 	}
 
 	//
@@ -162,7 +162,7 @@ public class BookmarkItem extends Bookmark {
 
 	@Override
 	public String toString() {
-		return getName() + "###" + (this.desc != null ? this.desc : "") + "###" + this.hasAnActivelink + "###" + this.key.toString();
+		return getName() + "###" + (this.description != null ? this.description : "") + "###" + this.hasAnActivelink + "###" + this.key.toString();
 	}
 
 	@Override
@@ -170,42 +170,42 @@ public class BookmarkItem extends Bookmark {
 		int hash = super.hashCode();
 		hash = 31 * hash + this.key.setSuggestedEdition(0).hashCode();
 		hash = 31 * hash + (this.hasAnActivelink ? 1 : 0);
-		hash = 31 * hash + (this.desc != null ? this.desc.hashCode() : 0);
+		hash = 31 * hash + (this.description != null ? this.description.hashCode() : 0);
 		return hash;
 	}
 
 	@Override
-	public boolean equals(Object o) {
-		if (o == this) {
+	public boolean equals(Object object) {
+		if (object == this) {
 			return true;
 		}
-		if (o instanceof BookmarkItem) {
-			BookmarkItem b = (BookmarkItem) o;
-			if (!super.equals(o)) {
+		if (object instanceof BookmarkItem) {
+			BookmarkItem bookmarkItem = (BookmarkItem) object;
+			if (!super.equals(object)) {
 				return false;
 			}
-			if (!b.key.equals(key)) {
-				if ("USK".equals(b.key.getKeyType())) {
-					if (!b.key.setSuggestedEdition(key.getSuggestedEdition()).equals(key)) {
+			if (!bookmarkItem.key.equals(key)) {
+				if ("USK".equals(bookmarkItem.key.getKeyType())) {
+					if (!bookmarkItem.key.setSuggestedEdition(key.getSuggestedEdition()).equals(key)) {
 						return false;
 					}
 				} else {
 					return false;
 				}
 			}
-			if (b.alerts != alerts) {
+			if (bookmarkItem.userAlertManager != userAlertManager) {
 				return false;
 			} // Belongs to a different node???
-			if (b.hasAnActivelink != hasAnActivelink) {
+			if (bookmarkItem.hasAnActivelink != hasAnActivelink) {
 				return false;
 			}
-			if (b.desc.equals(desc)) {
+			if (bookmarkItem.description.equals(description)) {
 				return true;
 			}
-			if (b.desc == null || desc == null) {
+			if (bookmarkItem.description == null || description == null) {
 				return false;
 			}
-			if (!b.desc.equals(desc)) {
+			if (!bookmarkItem.description.equals(description)) {
 				return false;
 			}
 			return true;
@@ -240,12 +240,12 @@ public class BookmarkItem extends Bookmark {
 		}
 		assert (key.isUSK());
 		updated = true;
-		alerts.register(alert);
+		userAlertManager.register(bookmarkUpdatedUserAlert);
 	}
 
 	private synchronized void disableBookmark() {
 		updated = false;
-		alerts.unregister(alert);
+		userAlertManager.unregister(bookmarkUpdatedUserAlert);
 	}
 
 	private class BookmarkUpdatedUserAlert extends AbstractUserAlert {
@@ -276,10 +276,10 @@ public class BookmarkItem extends Bookmark {
 
 		@Override
 		public HTMLNode getHTMLText() {
-			HTMLNode n = new HTMLNode("div");
-			NodeL10n.getBase().addL10nSubstitution(n, "BookmarkItem.bookmarkUpdatedWithLink", new String[] { "link", "name", "edition" },
+			HTMLNode htmlNode = new HTMLNode("div");
+			NodeL10n.getBase().addL10nSubstitution(htmlNode, "BookmarkItem.bookmarkUpdatedWithLink", new String[] { "link", "name", "edition" },
 														  new HTMLNode[] { HTMLNode.link("/" + key), HTMLNode.text(getName()), HTMLNode.text(key.getSuggestedEdition()) });
-			return n;
+			return htmlNode;
 		}
 
 		@Override
