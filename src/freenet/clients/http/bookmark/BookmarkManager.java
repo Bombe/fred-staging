@@ -64,13 +64,13 @@ public class BookmarkManager implements RequestClient {
 		}
 	}
 
-	static final short PRIORITY = RequestStarter.BULK_SPLITFILE_PRIORITY_CLASS;
-
-	static final short PRIORITY_PROGRESS = RequestStarter.UPDATE_PRIORITY_CLASS;
-
 	public static final BookmarkCategory MAIN_CATEGORY = new BookmarkCategory("/");
 
 	public static final BookmarkCategory DEFAULT_CATEGORY = new BookmarkCategory("\\");
+
+	private static final short PRIORITY = RequestStarter.BULK_SPLITFILE_PRIORITY_CLASS;
+
+	private static final short PRIORITY_PROGRESS = RequestStarter.UPDATE_PRIORITY_CLASS;
 
 	/** Name for bookmarks in simple field set serialization. */
 	private static final String BOOKMARK_NAME = "Bookmark";
@@ -328,11 +328,11 @@ public class BookmarkManager implements RequestClient {
 		return sfs;
 	}
 
-	public String l10n(String key) {
+	private static String l10n(String key) {
 		return NodeL10n.getBase().getString("BookmarkManager." + key);
 	}
 
-	public Bookmark getBookmarkByPath(String path) {
+	private Bookmark getBookmarkByPath(String path) {
 		synchronized (bookmarks) {
 			return bookmarks.get(path);
 		}
@@ -384,7 +384,7 @@ public class BookmarkManager implements RequestClient {
 		bookmarks.remove(path);
 	}
 
-	public void storeBookmarksLazy() {
+	private void storeBookmarksLazy() {
 		synchronized (bookmarks) {
 			if (isSavingBookmarksLazy) {
 				return;
@@ -463,7 +463,7 @@ public class BookmarkManager implements RequestClient {
 		}
 	}
 
-	public SimpleFieldSet toSimpleFieldSet() {
+	private SimpleFieldSet toSimpleFieldSet() {
 		SimpleFieldSet sfs = new SimpleFieldSet(true);
 
 		sfs.put("Version", 1);
