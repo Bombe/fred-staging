@@ -27,8 +27,6 @@ public class BookmarkItem extends Bookmark {
 		Logger.registerClass(BookmarkItem.class);
 	}
 
-	public static final String NAME = "Bookmark";
-
 	private FreenetURI key;
 
 	private boolean updated;

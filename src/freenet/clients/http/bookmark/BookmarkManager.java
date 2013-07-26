@@ -42,6 +42,9 @@ public class BookmarkManager implements RequestClient {
 
 	public static final BookmarkCategory DEFAULT_CATEGORY = new BookmarkCategory("\\");
 
+	/** Name for bookmarks in simple field set serialization. */
+	public static final String BOOKMARK_NAME = "Bookmark";
+
 	/** Name for bookmark categories in simple field set serialization. */
 	private static final String BOOKMARK_CATEGORY_NAME = "BookmarkCategory";
 
@@ -446,11 +449,11 @@ public class BookmarkManager implements RequestClient {
 			}
 
 			try {
-				int nbBookmarks = sfs.getInt(BookmarkItem.NAME);
+				int nbBookmarks = sfs.getInt(BOOKMARK_NAME);
 				int nbCategories = sfs.getInt(BOOKMARK_CATEGORY_NAME);
 
 				for (int i = 0; i < nbBookmarks; i++) {
-					SimpleFieldSet subset = sfs.getSubset(BookmarkItem.NAME + i);
+					SimpleFieldSet subset = sfs.getSubset(BOOKMARK_NAME + i);
 					try {
 						BookmarkItem item = new BookmarkItem(subset, node.alerts);
 						String name = (isRoot ? "" : prefix + category.getName()) + '/' + item.getName();
@@ -504,9 +507,9 @@ public class BookmarkManager implements RequestClient {
 
 		List<BookmarkItem> bi = cat.getItems();
 		for (int i = 0; i < bi.size(); i++) {
-			sfs.put(BookmarkItem.NAME + i, bi.get(i).getSimpleFieldSet());
+			sfs.put(BOOKMARK_NAME + i, bi.get(i).getSimpleFieldSet());
 		}
-		sfs.put(BookmarkItem.NAME, bi.size());
+		sfs.put(BOOKMARK_NAME, bi.size());
 
 		return sfs;
 	}
