@@ -214,15 +214,15 @@ public class BookmarkItem extends Bookmark {
 	// PRIVATE METHODS
 	//
 
-	private String l10n(String key) {
+	private static String l10n(String key) {
 		return NodeL10n.getBase().getString("BookmarkItem." + key);
 	}
 
-	private String l10n(String key, String pattern, String value) {
+	private static String l10n(String key, String pattern, String value) {
 		return NodeL10n.getBase().getString("BookmarkItem." + key, new String[] { pattern }, new String[] { value });
 	}
 
-	private String l10n(String key, String[] patterns, String[] values) {
+	private static String l10n(String key, String[] patterns, String[] values) {
 		return NodeL10n.getBase().getString("BookmarkItem." + key, patterns, values);
 	}
 
