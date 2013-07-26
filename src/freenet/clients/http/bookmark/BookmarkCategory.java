@@ -97,38 +97,6 @@ public class BookmarkCategory extends Bookmark {
 		return categories;
 	}
 
-	public synchronized List<BookmarkCategory> getAllSubCategories() {
-		List<BookmarkCategory> categories = getSubCategories();
-		for (BookmarkCategory cat : getSubCategories()) {
-			categories.addAll(cat.getAllSubCategories());
-		}
-		return categories;
-	}
-
-	public String[] toStrings() {
-		return toStrings("").toArray(new String[0]);
-	}
-
-	// Internal use only
-
-	private List<String> toStrings(String prefix) {
-		List<String> strings = new ArrayList<String>();
-		List<BookmarkItem> items = getItems();
-		List<BookmarkCategory> subCategories = getSubCategories();
-		prefix += getName() + "/";
-
-		for (int i = 0; i < items.size(); i++) {
-			strings.add(prefix + items.get(i).toString());
-		}
-
-		for (int i = 0; i < subCategories.size(); i++) {
-			strings.addAll(subCategories.get(i).toStrings(prefix));
-		}
-
-		return strings;
-
-	}
-
 	@Override
 	public synchronized SimpleFieldSet getSimpleFieldSet() {
 		SimpleFieldSet sfs = new SimpleFieldSet(true);

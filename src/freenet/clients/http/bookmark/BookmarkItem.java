@@ -6,7 +6,6 @@ package freenet.clients.http.bookmark;
 
 import java.net.MalformedURLException;
 
-import freenet.client.async.ClientGetter;
 import freenet.keys.FreenetURI;
 import freenet.keys.USK;
 import freenet.l10n.NodeL10n;
@@ -15,7 +14,6 @@ import freenet.node.NodeClientCore;
 import freenet.node.useralerts.AbstractUserAlert;
 import freenet.node.useralerts.UserAlert;
 import freenet.node.useralerts.UserAlertManager;
-import freenet.support.Fields;
 import freenet.support.HTMLNode;
 import freenet.support.Logger;
 import freenet.support.SimpleFieldSet;
@@ -48,17 +46,6 @@ public class BookmarkItem extends Bookmark {
 		this.hasAnActivelink = hasAnActivelink;
 		this.alerts = uam;
 		alert = new BookmarkUpdatedUserAlert();
-		assert (key != null);
-	}
-
-	public BookmarkItem(String line, UserAlertManager uam) throws MalformedURLException {
-		String[] result = line.split("###");
-		setName(result[0]);
-		this.desc = result[1];
-		this.hasAnActivelink = Fields.stringToBool(result[2], false);
-		this.key = new FreenetURI(result[3]);
-		this.alerts = uam;
-		this.alert = new BookmarkUpdatedUserAlert();
 		assert (key != null);
 	}
 
