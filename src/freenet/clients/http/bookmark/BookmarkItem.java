@@ -27,12 +27,6 @@ public class BookmarkItem extends Bookmark {
 		Logger.registerClass(BookmarkItem.class);
 	}
 
-	private FreenetURI key;
-
-	private boolean updated;
-
-	private boolean hasAnActivelink = false;
-
 	private final BookmarkUpdatedUserAlert alert;
 
 	private final UserAlertManager alerts;
@@ -40,6 +34,12 @@ public class BookmarkItem extends Bookmark {
 	protected String desc;
 
 	protected String shortDescription;
+
+	private FreenetURI key;
+
+	private boolean updated;
+
+	private boolean hasAnActivelink = false;
 
 	public BookmarkItem(FreenetURI k, String n, String d, String s, boolean hasAnActivelink, UserAlertManager uam)
 			throws MalformedURLException {
@@ -70,99 +70,44 @@ public class BookmarkItem extends Bookmark {
 		this.alert = new BookmarkUpdatedUserAlert();
 	}
 
-	private class BookmarkUpdatedUserAlert extends AbstractUserAlert {
-
-		public BookmarkUpdatedUserAlert() {
-			super(true, null, null, null, null, UserAlert.MINOR, false, null, true, null);
+	public String getDescription() {
+		if (desc == null) {
+			return "";
 		}
-
-		@Override
-		public String getTitle() {
-			return l10n("bookmarkUpdatedTitle", "name", getName());
+		if (desc.toLowerCase().startsWith("l10n:")) {
+			return NodeL10n.getBase().getString("Bookmarks.Defaults.Description." + desc.substring("l10n:".length()));
 		}
-
-		@Override
-		public String getText() {
-			return l10n("bookmarkUpdated", new String[] { "name", "edition" },
-							   new String[] { getName(), Long.toString(key.getSuggestedEdition()) });
-		}
-
-		@Override
-		public HTMLNode getHTMLText() {
-			HTMLNode n = new HTMLNode("div");
-			NodeL10n.getBase().addL10nSubstitution(n, "BookmarkItem.bookmarkUpdatedWithLink", new String[] { "link", "name", "edition" },
-														  new HTMLNode[] { HTMLNode.link("/" + key), HTMLNode.text(getName()), HTMLNode.text(key.getSuggestedEdition()) });
-			return n;
-		}
-
-		@Override
-		public boolean isValid() {
-			synchronized (BookmarkItem.this) {
-				return updated;
-			}
-		}
-
-		@Override
-		public void isValid(boolean validity) {
-			if (validity) {
-				return;
-			}
-			disableBookmark();
-		}
-
-		@Override
-		public String dismissButtonText() {
-			return l10n("deleteBookmarkUpdateNotification");
-		}
-
-		@Override
-		public void onDismiss() {
-			disableBookmark();
-		}
-
-		@Override
-		public String getShortText() {
-			return l10n("bookmarkUpdatedShort", "name", getName());
-		}
-
-		@Override
-		public boolean isEventNotification() {
-			return true;
-		}
+		return desc;
 	}
 
-	private synchronized void disableBookmark() {
-		updated = false;
-		alerts.unregister(alert);
-	}
-
-	private String l10n(String key) {
-		return NodeL10n.getBase().getString("BookmarkItem." + key);
-	}
-
-	private String l10n(String key, String pattern, String value) {
-		return NodeL10n.getBase().getString("BookmarkItem." + key, new String[] { pattern }, new String[] { value });
-	}
-
-	private String l10n(String key, String[] patterns, String[] values) {
-		return NodeL10n.getBase().getString("BookmarkItem." + key, patterns, values);
-	}
-
-	private synchronized void enableBookmark() {
-		if (updated) {
-			return;
+	public String getShortDescription() {
+		if (shortDescription == null) {
+			return "";
 		}
-		assert (key.isUSK());
-		updated = true;
-		alerts.register(alert);
+		if (shortDescription.toLowerCase().startsWith("l10n:")) {
+			return NodeL10n.getBase().getString("Bookmarks.Defaults.ShortDescription." + shortDescription.substring("l10n:".length()));
+		}
+		return shortDescription;
+	}
+
+	public synchronized FreenetURI getURI() {
+		return key;
 	}
 
 	public String getKey() {
 		return key.toString();
 	}
 
-	public synchronized FreenetURI getURI() {
-		return key;
+	public synchronized String getKeyType() {
+		return key.getKeyType();
+	}
+
+	public USK getUSK() throws MalformedURLException {
+		return USK.create(key);
+	}
+
+	public boolean hasAnActivelink() {
+		return hasAnActivelink;
 	}
 
 	public synchronized void update(FreenetURI uri, boolean hasAnActivelink, String description, String shortDescription) {
@@ -173,15 +118,6 @@ public class BookmarkItem extends Bookmark {
 		if (!key.isUSK()) {
 			disableBookmark();
 		}
-	}
-
-	public synchronized String getKeyType() {
-		return key.getKeyType();
-	}
-
-	@Override
-	public String toString() {
-		return getName() + "###" + (this.desc != null ? this.desc : "") + "###" + this.hasAnActivelink + "###" + this.key.toString();
 	}
 
 	/** @return True if we updated the edition */
@@ -197,8 +133,20 @@ public class BookmarkItem extends Bookmark {
 		return true;
 	}
 
-	public USK getUSK() throws MalformedURLException {
-		return USK.create(key);
+	@Override
+	public SimpleFieldSet getSimpleFieldSet() {
+		SimpleFieldSet sfs = new SimpleFieldSet(true);
+		sfs.putSingle("Name", getName());
+		sfs.putSingle("Description", desc);
+		sfs.putSingle("ShortDescription", shortDescription);
+		sfs.put("hasAnActivelink", hasAnActivelink);
+		sfs.putSingle("URI", key.toString());
+		return sfs;
+	}
+
+	@Override
+	public String toString() {
+		return getName() + "###" + (this.desc != null ? this.desc : "") + "###" + this.hasAnActivelink + "###" + this.key.toString();
 	}
 
 	@Override
@@ -250,39 +198,92 @@ public class BookmarkItem extends Bookmark {
 		}
 	}
 
-	public boolean hasAnActivelink() {
-		return hasAnActivelink;
+	private String l10n(String key) {
+		return NodeL10n.getBase().getString("BookmarkItem." + key);
 	}
 
-	public String getDescription() {
-		if (desc == null) {
-			return "";
-		}
-		if (desc.toLowerCase().startsWith("l10n:")) {
-			return NodeL10n.getBase().getString("Bookmarks.Defaults.Description." + desc.substring("l10n:".length()));
-		}
-		return desc;
+	private String l10n(String key, String pattern, String value) {
+		return NodeL10n.getBase().getString("BookmarkItem." + key, new String[] { pattern }, new String[] { value });
 	}
 
-	public String getShortDescription() {
-		if (shortDescription == null) {
-			return "";
-		}
-		if (shortDescription.toLowerCase().startsWith("l10n:")) {
-			return NodeL10n.getBase().getString("Bookmarks.Defaults.ShortDescription." + shortDescription.substring("l10n:".length()));
-		}
-		return shortDescription;
+	private String l10n(String key, String[] patterns, String[] values) {
+		return NodeL10n.getBase().getString("BookmarkItem." + key, patterns, values);
 	}
 
-	@Override
-	public SimpleFieldSet getSimpleFieldSet() {
-		SimpleFieldSet sfs = new SimpleFieldSet(true);
-		sfs.putSingle("Name", getName());
-		sfs.putSingle("Description", desc);
-		sfs.putSingle("ShortDescription", shortDescription);
-		sfs.put("hasAnActivelink", hasAnActivelink);
-		sfs.putSingle("URI", key.toString());
-		return sfs;
+	private synchronized void enableBookmark() {
+		if (updated) {
+			return;
+		}
+		assert (key.isUSK());
+		updated = true;
+		alerts.register(alert);
+	}
+
+	private synchronized void disableBookmark() {
+		updated = false;
+		alerts.unregister(alert);
+	}
+
+	private class BookmarkUpdatedUserAlert extends AbstractUserAlert {
+
+		public BookmarkUpdatedUserAlert() {
+			super(true, null, null, null, null, UserAlert.MINOR, false, null, true, null);
+		}
+
+		@Override
+		public String getTitle() {
+			return l10n("bookmarkUpdatedTitle", "name", getName());
+		}
+
+		@Override
+		public String getText() {
+			return l10n("bookmarkUpdated", new String[] { "name", "edition" },
+							   new String[] { getName(), Long.toString(key.getSuggestedEdition()) });
+		}
+
+		@Override
+		public String getShortText() {
+			return l10n("bookmarkUpdatedShort", "name", getName());
+		}
+
+		@Override
+		public HTMLNode getHTMLText() {
+			HTMLNode n = new HTMLNode("div");
+			NodeL10n.getBase().addL10nSubstitution(n, "BookmarkItem.bookmarkUpdatedWithLink", new String[] { "link", "name", "edition" },
+														  new HTMLNode[] { HTMLNode.link("/" + key), HTMLNode.text(getName()), HTMLNode.text(key.getSuggestedEdition()) });
+			return n;
+		}
+
+		@Override
+		public String dismissButtonText() {
+			return l10n("deleteBookmarkUpdateNotification");
+		}
+
+		@Override
+		public boolean isValid() {
+			synchronized (BookmarkItem.this) {
+				return updated;
+			}
+		}
+
+		@Override
+		public boolean isEventNotification() {
+			return true;
+		}
+
+		@Override
+		public void isValid(boolean validity) {
+			if (validity) {
+				return;
+			}
+			disableBookmark();
+		}
+
+		@Override
+		public void onDismiss() {
+			disableBookmark();
+		}
+
 	}
 
 }
