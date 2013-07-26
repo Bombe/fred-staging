@@ -41,9 +41,7 @@ public class BookmarkItem extends Bookmark {
 
 	private boolean hasAnActivelink = false;
 
-	public BookmarkItem(FreenetURI key, String name, String description, String shortDescription, boolean hasAnActivelink, UserAlertManager userAlertManager)
-			throws MalformedURLException {
-
+	public BookmarkItem(FreenetURI key, String name, String description, String shortDescription, boolean hasAnActivelink, UserAlertManager userAlertManager) {
 		this.key = key;
 		setName(name);
 		this.description = description;
