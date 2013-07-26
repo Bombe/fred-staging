@@ -33,6 +33,12 @@ import freenet.support.io.Closer;
 import freenet.support.io.FileUtil;
 import com.db4o.ObjectContainer;
 
+/**
+ * Manages bookmarks.
+ *
+ * @author <a href="mailto:bombe@pterodactylus.net">David ‘Bombe’ Roden</a>
+ *         (after refactoring)
+ */
 public class BookmarkManager implements RequestClient {
 
 	/** Whether we should log at MINOR. */
@@ -65,12 +71,16 @@ public class BookmarkManager implements RequestClient {
 		}
 	}
 
+	/** The main category. */
 	public static final BookmarkCategory MAIN_CATEGORY = new BookmarkCategory("/");
 
+	/** The category for public gateway vistors without full access. */
 	public static final BookmarkCategory DEFAULT_CATEGORY = new BookmarkCategory("\\");
 
+	/** The priority to start bookmark update requests at. */
 	private static final short PRIORITY = RequestStarter.BULK_SPLITFILE_PRIORITY_CLASS;
 
+	/** The priority to for requests after progress has been made. */
 	private static final short PRIORITY_PROGRESS = RequestStarter.UPDATE_PRIORITY_CLASS;
 
 	/** Name for bookmarks in simple field set serialization. */
@@ -79,20 +89,36 @@ public class BookmarkManager implements RequestClient {
 	/** Name for bookmark categories in simple field set serialization. */
 	private static final String BOOKMARK_CATEGORY_NAME = "BookmarkCategory";
 
+	/** The node client core. */
 	private final NodeClientCore nodeClientCore;
 
+	/** The callbacks for updated USKs. */
 	private final USKUpdatedCallback uskUpdatedCallback = new USKUpdatedCallback();
 
+	/** The bookmarks. */
 	private final Map<String, Bookmark> bookmarks = new HashMap<String, Bookmark>();
 
+	/** The file from which the bookmarks are read. */
 	private final File bookmarksFile;
 
+	/** The backup file for the bookmarks. */
 	private final File backupBookmarksFile;
 
+	/** Whether we are currently saving the bookmarks. */
 	private boolean savingBookmarks = false;
 
+	/** Whether we are currently waiting to save to save the bookmarks. */
 	private boolean savingBookmarksLazy = false;
 
+	/**
+	 * Creates a new bookmark manager.
+	 *
+	 * @param nodeClientCore
+	 * 		The node client core
+	 * @param publicGateway
+	 * 		{@code true} if the node is running as a public gateway, {@code false}
+	 * 		otherwise
+	 */
 	public BookmarkManager(NodeClientCore nodeClientCore, boolean publicGateway) {
 		putPaths("/", MAIN_CATEGORY);
 		this.nodeClientCore = nodeClientCore;
@@ -136,6 +162,14 @@ public class BookmarkManager implements RequestClient {
 	// ACCESSORS
 	//
 
+	/**
+	 * Returns the parent path of the given path. A path always ends with a slash.
+	 * The parent of the root path is again the root path.
+	 *
+	 * @param path
+	 * 		The path to get the parent for
+	 * @return The parent path of the given path
+	 */
 	public String parentPath(String path) {
 		if (path.equals("/")) {
 			return "/";
@@ -144,6 +178,14 @@ public class BookmarkManager implements RequestClient {
 		return path.substring(0, path.substring(0, path.length() - 1).lastIndexOf("/")) + "/";
 	}
 
+	/**
+	 * Returns the category for the given path.
+	 *
+	 * @param path
+	 * 		The path to get the category for
+	 * @return The category for the given path, or {@code null} if the path does
+	 *         not specify a category
+	 */
 	public BookmarkCategory getCategoryByPath(String path) {
 		Bookmark category = getBookmarkByPath(path);
 		if (category instanceof BookmarkCategory) {
@@ -153,6 +195,14 @@ public class BookmarkManager implements RequestClient {
 		return null;
 	}
 
+	/**
+	 * Returns the bookmark for the given path.
+	 *
+	 * @param path
+	 * 		The path to get the bookmark for
+	 * @return The bookmark for the given path, or {@code null} if the path does
+	 *         not specify a bookmark
+	 */
 	public BookmarkItem getItemByPath(String path) {
 		if (getBookmarkByPath(path) instanceof BookmarkItem) {
 			return (BookmarkItem) getBookmarkByPath(path);
@@ -165,12 +215,21 @@ public class BookmarkManager implements RequestClient {
 	// ACTIONS
 	//
 
+	/** Re-adds the default bookmarks as a new category in the root path. */
 	public void reAddDefaultBookmarks() {
 		BookmarkCategory bookmarkCategory = new BookmarkCategory(l10n("defaultBookmarks") + " - " + new Date());
 		addBookmark("/", bookmarkCategory);
 		_innerReadBookmarks("/", bookmarkCategory, DEFAULT_BOOKMARKS);
 	}
 
+	/**
+	 * Adds the given bookmark to the given parent path.
+	 *
+	 * @param parentPath
+	 * 		The parent path to add the bookmark to
+	 * @param bookmark
+	 * 		The bookmark to add
+	 */
 	public void addBookmark(String parentPath, Bookmark bookmark) {
 		if (logMINOR) {
 			Logger.minor(this, "Adding bookmark " + bookmark + " to " + parentPath);
@@ -184,6 +243,14 @@ public class BookmarkManager implements RequestClient {
 		}
 	}
 
+	/**
+	 * Renames the bookmark at the given path to the given new name.
+	 *
+	 * @param path
+	 * 		The path to rename
+	 * @param newName
+	 * 		The new name of the bookmark
+	 */
 	public void renameBookmark(String path, String newName) {
 		Bookmark bookmark = getBookmarkByPath(path);
 		String oldName = bookmark.getName();
@@ -204,6 +271,14 @@ public class BookmarkManager implements RequestClient {
 		storeBookmarks();
 	}
 
+	/**
+	 * Moves the bookmark at the given path to the given new path.
+	 *
+	 * @param bookmarkPath
+	 * 		The path of the bookmark to move
+	 * @param newParentPath
+	 * 		The new path of the bookmark
+	 */
 	public void moveBookmark(String bookmarkPath, String newParentPath) {
 		Bookmark bookmark = getBookmarkByPath(bookmarkPath);
 		addBookmark(newParentPath, bookmark);
@@ -212,6 +287,15 @@ public class BookmarkManager implements RequestClient {
 		removePaths(bookmarkPath);
 	}
 
+	/**
+	 * Moves the bookmark up within its parent path.
+	 *
+	 * @param path
+	 * 		The path of the bookmark to move up
+	 * @param store
+	 * 		{@code true} to store the bookmarks afterwards, {@code false} to not store
+	 * 		the bookmarks afterwards
+	 */
 	public void moveBookmarkUp(String path, boolean store) {
 		BookmarkCategory parent = getCategoryByPath(parentPath(path));
 		parent.moveBookmarkUp(getBookmarkByPath(path));
@@ -221,6 +305,15 @@ public class BookmarkManager implements RequestClient {
 		}
 	}
 
+	/**
+	 * Moves the bookmark down within its parent path.
+	 *
+	 * @param path
+	 * 		The path of the bookmark to move down
+	 * @param store
+	 * 		{@code true} to store the bookmarks afterwards, {@code false} to not store
+	 * 		the bookmarks afterwards
+	 */
 	public void moveBookmarkDown(String path, boolean store) {
 		BookmarkCategory parent = getCategoryByPath(parentPath(path));
 		parent.moveBookmarkDown(getBookmarkByPath(path));
@@ -230,6 +323,12 @@ public class BookmarkManager implements RequestClient {
 		}
 	}
 
+	/**
+	 * Removes the bookmark at the given path.
+	 *
+	 * @param path
+	 * 		The path of the bookmark to remove
+	 */
 	public void removeBookmark(String path) {
 		Bookmark bookmark = getBookmarkByPath(path);
 		if (bookmark == null) {
@@ -259,6 +358,11 @@ public class BookmarkManager implements RequestClient {
 		}
 	}
 
+	/**
+	 * Stores the bookmarks. Storing the bookmarks works by first writing the
+	 * bookmarks to the backup file and renaming the backup file to the real
+	 * filename once finished
+	 */
 	public void storeBookmarks() {
 		Logger.normal(this, "Attempting to save bookmarks to " + bookmarksFile.toString());
 		SimpleFieldSet simpleFieldSet = null;
@@ -311,6 +415,13 @@ public class BookmarkManager implements RequestClient {
 	// STATIC METHODS
 	//
 
+	/**
+	 * Creates a simple field set from the given bookmark category.
+	 *
+	 * @param bookmarkCategory
+	 * 		The bookmark category to serialize
+	 * @return The simple field set containing the bookmark category
+	 */
 	public static SimpleFieldSet toSimpleFieldSet(BookmarkCategory bookmarkCategory) {
 		SimpleFieldSet simpleFieldSet = new SimpleFieldSet(true);
 		List<BookmarkCategory> subCategories = bookmarkCategory.getSubCategories();
@@ -334,16 +445,41 @@ public class BookmarkManager implements RequestClient {
 	// PRIVATE METHODS
 	//
 
+	/**
+	 * Returns the translation for the given key, prepended by “BookmarkManager.”
+	 *
+	 * @param key
+	 * 		The key to retrieve the translation for
+	 * @return The translated value
+	 */
 	private static String l10n(String key) {
 		return NodeL10n.getBase().getString("BookmarkManager." + key);
 	}
 
+	/**
+	 * Returns the bookmark at the given path.
+	 *
+	 * @param path
+	 * 		The path of the bookmark
+	 * @return The bookmark, or {@code null} if a bookmark could not be found at
+	 *         the given path
+	 */
 	private Bookmark getBookmarkByPath(String path) {
 		synchronized (bookmarks) {
 			return bookmarks.get(path);
 		}
 	}
 
+	/**
+	 * Checks if the given USK is contained in any bookmark but the given one.
+	 *
+	 * @param usk
+	 * 		The USK to check for
+	 * @param ignore
+	 * 		The bookmark to ignore
+	 * @return {@code true} if any other bookmark than the given one contains the
+	 *         given USK, {@code false} otherwise
+	 */
 	private boolean wantUSK(USK usk, BookmarkItem ignore) {
 		List<BookmarkItem> items = MAIN_CATEGORY.getAllItems();
 		for (BookmarkItem item : items) {
@@ -367,6 +503,15 @@ public class BookmarkManager implements RequestClient {
 		return false;
 	}
 
+	/**
+	 * Recursively adds the given bookmark and all its contained bookmarks and
+	 * categories under the given path.
+	 *
+	 * @param path
+	 * 		The path to add the bookmark at
+	 * @param bookmark
+	 * 		The bookmark to add
+	 */
 	private void putPaths(String path, Bookmark bookmark) {
 		synchronized (bookmarks) {
 			bookmarks.put(path, bookmark);
@@ -380,6 +525,12 @@ public class BookmarkManager implements RequestClient {
 
 	}
 
+	/**
+	 * Removes the given path and paths beneath it from the bookmarks.
+	 *
+	 * @param path
+	 * 		The path to remove
+	 */
 	private void removePaths(String path) {
 		if (getBookmarkByPath(path) instanceof BookmarkCategory) {
 			BookmarkCategory cat = getCategoryByPath(path);
@@ -390,6 +541,7 @@ public class BookmarkManager implements RequestClient {
 		bookmarks.remove(path);
 	}
 
+	/** Stores the bookmarks lazily, i.e. a job is queued to store the bookmarks. */
 	private void storeBookmarksLazy() {
 		synchronized (bookmarks) {
 			if (savingBookmarksLazy) {
@@ -411,10 +563,25 @@ public class BookmarkManager implements RequestClient {
 		}
 	}
 
+	/**
+	 * Reads the bookmarks from the given fieldset into the given category.
+	 *
+	 * @param category
+	 * 		The category to read the bookmarks into
+	 * @param simpleFieldSet
+	 * 		The simple field set to parse the bookmarks from
+	 */
 	private void readBookmarks(BookmarkCategory category, SimpleFieldSet simpleFieldSet) {
 		_innerReadBookmarks("", category, simpleFieldSet);
 	}
 
+	/**
+	 * Subscribes to the USK of the given bookmark if the key of the bookmark is a
+	 * USK.
+	 *
+	 * @param bookmarkItem
+	 * 		The bookmark to which to subscribe to
+	 */
 	private void subscribeToUSK(BookmarkItem bookmarkItem) {
 		if ("USK".equals(bookmarkItem.getKeyType())) {
 			try {
@@ -425,6 +592,17 @@ public class BookmarkManager implements RequestClient {
 		}
 	}
 
+	/**
+	 * Reads the bookmarks from the given simple field set and stores them in the
+	 * given category and under names that have the given prefix prepended.
+	 *
+	 * @param prefix
+	 * 		The prefix for the path names
+	 * @param category
+	 * 		The category to load the bookmarks into
+	 * @param simpleFieldSet
+	 * 		The simple field set from which to parse the bookmarks
+	 */
 	private synchronized void _innerReadBookmarks(String prefix, BookmarkCategory category, SimpleFieldSet simpleFieldSet) {
 		boolean hasBeenParsedWithoutAnyProblem = true;
 		boolean isRoot = ("".equals(prefix) && MAIN_CATEGORY.equals(category));
@@ -469,6 +647,11 @@ public class BookmarkManager implements RequestClient {
 		}
 	}
 
+	/**
+	 * Creates a simple field set containing all bookmarks.
+	 *
+	 * @return A simple field set containing all bookmarks
+	 */
 	private SimpleFieldSet toSimpleFieldSet() {
 		SimpleFieldSet simpleFieldSet = new SimpleFieldSet(true);
 
@@ -480,6 +663,12 @@ public class BookmarkManager implements RequestClient {
 		return simpleFieldSet;
 	}
 
+	/**
+	 * Callback for the subscribed bookmarks.
+	 *
+	 * @author <a href="mailto:bombe@pterodactylus.net">David ‘Bombe’ Roden</a>
+	 *         (after refactoring)
+	 */
 	private class USKUpdatedCallback implements USKCallback {
 
 		//
