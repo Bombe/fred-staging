@@ -131,6 +131,9 @@ public class BookmarkManager implements RequestClient {
 		}
 	}
 
+	//
+	// ACCESSORS
+	//
 
 	public String parentPath(String path) {
 		if (path.equals("/")) {
@@ -166,6 +169,10 @@ public class BookmarkManager implements RequestClient {
 
 		return uris;
 	}
+
+	//
+	// ACTIONS
+	//
 
 	public void reAddDefaultBookmarks() {
 		BookmarkCategory bc = new BookmarkCategory(l10n("defaultBookmarks") + " - " + new Date());
@@ -294,6 +301,10 @@ public class BookmarkManager implements RequestClient {
 		}
 	}
 
+	//
+	// REQUESTCLIENT METHODS
+	//
+
 	@Override
 	public boolean persistent() {
 		return false;
@@ -308,6 +319,10 @@ public class BookmarkManager implements RequestClient {
 	public boolean realTimeFlag() {
 		return false;
 	}
+
+	//
+	// STATIC METHODS
+	//
 
 	public static SimpleFieldSet toSimpleFieldSet(BookmarkCategory cat) {
 		SimpleFieldSet sfs = new SimpleFieldSet(true);
@@ -327,6 +342,10 @@ public class BookmarkManager implements RequestClient {
 
 		return sfs;
 	}
+
+	//
+	// PRIVATE METHODS
+	//
 
 	private static String l10n(String key) {
 		return NodeL10n.getBase().getString("BookmarkManager." + key);
@@ -476,6 +495,9 @@ public class BookmarkManager implements RequestClient {
 
 	private class USKUpdatedCallback implements USKCallback {
 
+		//
+		// USKCALLBACK METHODS
+		//
 
 		@Override
 		public void onFoundEdition(long edition, USK key, ObjectContainer container, ClientContext context, boolean wasMetadata, short codec, byte[] data, boolean newKnownGood, boolean newSlotToo) {
