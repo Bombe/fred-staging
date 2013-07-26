@@ -26,15 +26,20 @@ import freenet.node.FSParseException;
 import freenet.node.NodeClientCore;
 import freenet.node.RequestClient;
 import freenet.node.RequestStarter;
-import freenet.support.LogThresholdCallback;
 import freenet.support.Logger;
-import freenet.support.Logger.LogLevel;
 import freenet.support.SimpleFieldSet;
 import freenet.support.io.Closer;
 import freenet.support.io.FileUtil;
 import com.db4o.ObjectContainer;
 
 public class BookmarkManager implements RequestClient {
+
+	/** Whether we should log at MINOR. */
+	private static volatile boolean logMINOR;
+
+	static {
+		Logger.registerClass(BookmarkManager.class);
+	}
 
 	public static final SimpleFieldSet DEFAULT_BOOKMARKS;
 
@@ -80,17 +85,6 @@ public class BookmarkManager implements RequestClient {
 			Closer.close(in);
 			DEFAULT_BOOKMARKS = defaultBookmarks;
 		}
-	}
-
-	private static volatile boolean logMINOR;
-
-	static {
-		Logger.registerLogThresholdCallback(new LogThresholdCallback() {
-			@Override
-			public void shouldUpdate() {
-				logMINOR = Logger.shouldLog(LogLevel.MINOR, this);
-			}
-		});
 	}
 
 	public BookmarkManager(NodeClientCore n, boolean publicGateway) {
