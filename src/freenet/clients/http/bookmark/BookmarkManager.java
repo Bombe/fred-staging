@@ -64,6 +64,10 @@ public class BookmarkManager implements RequestClient {
 		}
 	}
 
+	static final short PRIORITY = RequestStarter.BULK_SPLITFILE_PRIORITY_CLASS;
+
+	static final short PRIORITY_PROGRESS = RequestStarter.UPDATE_PRIORITY_CLASS;
+
 	public static final BookmarkCategory MAIN_CATEGORY = new BookmarkCategory("/");
 
 	public static final BookmarkCategory DEFAULT_CATEGORY = new BookmarkCategory("\\");
@@ -127,66 +131,6 @@ public class BookmarkManager implements RequestClient {
 		}
 	}
 
-	public void reAddDefaultBookmarks() {
-		BookmarkCategory bc = new BookmarkCategory(l10n("defaultBookmarks") + " - " + new Date());
-		addBookmark("/", bc);
-		_innerReadBookmarks("/", bc, DEFAULT_BOOKMARKS);
-	}
-
-	private class USKUpdatedCallback implements USKCallback {
-
-		@Override
-		public void onFoundEdition(long edition, USK key, ObjectContainer container, ClientContext context, boolean wasMetadata, short codec, byte[] data, boolean newKnownGood, boolean newSlotToo) {
-			if (!newKnownGood) {
-				FreenetURI uri = key.copy(edition).getURI();
-				node.makeClient(PRIORITY_PROGRESS, false, false).prefetch(uri, MINUTES.toMillis(60), FProxyToadlet.MAX_LENGTH_WITH_PROGRESS, null, PRIORITY_PROGRESS);
-				return;
-			}
-			List<BookmarkItem> items = MAIN_CATEGORY.getAllItems();
-			boolean matched = false;
-			boolean updated = false;
-			for (int i = 0; i < items.size(); i++) {
-				if (!"USK".equals(items.get(i).getKeyType())) {
-					continue;
-				}
-
-				try {
-					FreenetURI furi = new FreenetURI(items.get(i).getKey());
-					USK usk = USK.create(furi);
-
-					if (usk.equals(key, false)) {
-						if (logMINOR) {
-							Logger.minor(this, "Updating bookmark for " + furi + " to edition " + edition);
-						}
-						matched = true;
-						BookmarkItem item = items.get(i);
-						updated |= item.setEdition(edition, node);
-						// We may have bookmarked the same site twice, so continue the search.
-					}
-				} catch (MalformedURLException mue) {
-				}
-			}
-			if (updated) {
-				storeBookmarksLazy();
-			} else if (!matched) {
-				Logger.error(this, "No match for bookmark " + key + " edition " + edition);
-			}
-		}
-
-		@Override
-		public short getPollingPriorityNormal() {
-			return PRIORITY;
-		}
-
-		@Override
-		public short getPollingPriorityProgress() {
-			return PRIORITY_PROGRESS;
-		}
-	}
-
-	public String l10n(String key) {
-		return NodeL10n.getBase().getString("BookmarkManager." + key);
-	}
 
 	public String parentPath(String path) {
 		if (path.equals("/")) {
@@ -194,12 +138,6 @@ public class BookmarkManager implements RequestClient {
 		}
 
 		return path.substring(0, path.substring(0, path.length() - 1).lastIndexOf("/")) + "/";
-	}
-
-	public Bookmark getBookmarkByPath(String path) {
-		synchronized (bookmarks) {
-			return bookmarks.get(path);
-		}
 	}
 
 	public BookmarkCategory getCategoryByPath(String path) {
@@ -217,6 +155,22 @@ public class BookmarkManager implements RequestClient {
 		}
 
 		return null;
+	}
+
+	public FreenetURI[] getBookmarkURIs() {
+		List<BookmarkItem> items = MAIN_CATEGORY.getAllItems();
+		FreenetURI[] uris = new FreenetURI[items.size()];
+		for (int i = 0; i < items.size(); i++) {
+			uris[i] = items.get(i).getURI();
+		}
+
+		return uris;
+	}
+
+	public void reAddDefaultBookmarks() {
+		BookmarkCategory bc = new BookmarkCategory(l10n("defaultBookmarks") + " - " + new Date());
+		addBookmark("/", bc);
+		_innerReadBookmarks("/", bc, DEFAULT_BOOKMARKS);
 	}
 
 	public void addBookmark(String parentPath, Bookmark bookmark) {
@@ -261,6 +215,24 @@ public class BookmarkManager implements RequestClient {
 		removePaths(bookmarkPath);
 	}
 
+	public void moveBookmarkUp(String path, boolean store) {
+		BookmarkCategory parent = getCategoryByPath(parentPath(path));
+		parent.moveBookmarkUp(getBookmarkByPath(path));
+
+		if (store) {
+			storeBookmarks();
+		}
+	}
+
+	public void moveBookmarkDown(String path, boolean store) {
+		BookmarkCategory parent = getCategoryByPath(parentPath(path));
+		parent.moveBookmarkDown(getBookmarkByPath(path));
+
+		if (store) {
+			storeBookmarks();
+		}
+	}
+
 	public void removeBookmark(String path) {
 		Bookmark bookmark = getBookmarkByPath(path);
 		if (bookmark == null) {
@@ -288,101 +260,6 @@ public class BookmarkManager implements RequestClient {
 		getCategoryByPath(parentPath(path)).removeBookmark(bookmark);
 		synchronized (bookmarks) {
 			bookmarks.remove(path);
-		}
-	}
-
-	private boolean wantUSK(USK u, BookmarkItem ignore) {
-		List<BookmarkItem> items = MAIN_CATEGORY.getAllItems();
-		for (BookmarkItem item : items) {
-			if (item == ignore) {
-				continue;
-			}
-			if (!"USK".equals(item.getKeyType())) {
-				continue;
-			}
-
-			try {
-				FreenetURI furi = new FreenetURI(item.getKey());
-				USK usk = USK.create(furi);
-
-				if (usk.equals(u, false)) {
-					return true;
-				}
-			} catch (MalformedURLException mue) {
-			}
-		}
-		return false;
-	}
-
-	public void moveBookmarkUp(String path, boolean store) {
-		BookmarkCategory parent = getCategoryByPath(parentPath(path));
-		parent.moveBookmarkUp(getBookmarkByPath(path));
-
-		if (store) {
-			storeBookmarks();
-		}
-	}
-
-	public void moveBookmarkDown(String path, boolean store) {
-		BookmarkCategory parent = getCategoryByPath(parentPath(path));
-		parent.moveBookmarkDown(getBookmarkByPath(path));
-
-		if (store) {
-			storeBookmarks();
-		}
-	}
-
-	private void putPaths(String path, Bookmark b) {
-		synchronized (bookmarks) {
-			bookmarks.put(path, b);
-		}
-		if (b instanceof BookmarkCategory) {
-			for (int i = 0; i < ((BookmarkCategory) b).size(); i++) {
-				Bookmark child = ((BookmarkCategory) b).get(i);
-				putPaths(path + child.getName() + (child instanceof BookmarkItem ? "" : "/"), child);
-			}
-		}
-
-	}
-
-	private void removePaths(String path) {
-		if (getBookmarkByPath(path) instanceof BookmarkCategory) {
-			BookmarkCategory cat = getCategoryByPath(path);
-			for (int i = 0; i < cat.size(); i++) {
-				removePaths(path + cat.get(i).getName() + (cat.get(i) instanceof BookmarkCategory ? "/" : ""));
-			}
-		}
-		bookmarks.remove(path);
-	}
-
-	public FreenetURI[] getBookmarkURIs() {
-		List<BookmarkItem> items = MAIN_CATEGORY.getAllItems();
-		FreenetURI[] uris = new FreenetURI[items.size()];
-		for (int i = 0; i < items.size(); i++) {
-			uris[i] = items.get(i).getURI();
-		}
-
-		return uris;
-	}
-
-	public void storeBookmarksLazy() {
-		synchronized (bookmarks) {
-			if (isSavingBookmarksLazy) {
-				return;
-			}
-			isSavingBookmarksLazy = true;
-			node.node.ticker.queueTimedJob(new Runnable() {
-
-				@Override
-				public void run() {
-					try {
-						storeBookmarks();
-					} finally {
-						isSavingBookmarksLazy = false;
-					}
-				}
-
-			}, MINUTES.toMillis(5));
 		}
 	}
 
@@ -417,13 +294,120 @@ public class BookmarkManager implements RequestClient {
 		}
 	}
 
+	@Override
+	public boolean persistent() {
+		return false;
+	}
+
+	@Override
+	public void removeFrom(ObjectContainer container) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public boolean realTimeFlag() {
+		return false;
+	}
+
+	public static SimpleFieldSet toSimpleFieldSet(BookmarkCategory cat) {
+		SimpleFieldSet sfs = new SimpleFieldSet(true);
+		List<BookmarkCategory> bc = cat.getSubCategories();
+
+		for (int i = 0; i < bc.size(); i++) {
+			BookmarkCategory currentCat = bc.get(i);
+			sfs.put(BOOKMARK_CATEGORY_NAME + i, currentCat.getSimpleFieldSet());
+		}
+		sfs.put(BOOKMARK_CATEGORY_NAME, bc.size());
+
+		List<BookmarkItem> bi = cat.getItems();
+		for (int i = 0; i < bi.size(); i++) {
+			sfs.put(BOOKMARK_NAME + i, bi.get(i).getSimpleFieldSet());
+		}
+		sfs.put(BOOKMARK_NAME, bi.size());
+
+		return sfs;
+	}
+
+	public String l10n(String key) {
+		return NodeL10n.getBase().getString("BookmarkManager." + key);
+	}
+
+	public Bookmark getBookmarkByPath(String path) {
+		synchronized (bookmarks) {
+			return bookmarks.get(path);
+		}
+	}
+
+	private boolean wantUSK(USK u, BookmarkItem ignore) {
+		List<BookmarkItem> items = MAIN_CATEGORY.getAllItems();
+		for (BookmarkItem item : items) {
+			if (item == ignore) {
+				continue;
+			}
+			if (!"USK".equals(item.getKeyType())) {
+				continue;
+			}
+
+			try {
+				FreenetURI furi = new FreenetURI(item.getKey());
+				USK usk = USK.create(furi);
+
+				if (usk.equals(u, false)) {
+					return true;
+				}
+			} catch (MalformedURLException mue) {
+			}
+		}
+		return false;
+	}
+
+	private void putPaths(String path, Bookmark b) {
+		synchronized (bookmarks) {
+			bookmarks.put(path, b);
+		}
+		if (b instanceof BookmarkCategory) {
+			for (int i = 0; i < ((BookmarkCategory) b).size(); i++) {
+				Bookmark child = ((BookmarkCategory) b).get(i);
+				putPaths(path + child.getName() + (child instanceof BookmarkItem ? "" : "/"), child);
+			}
+		}
+
+	}
+
+	private void removePaths(String path) {
+		if (getBookmarkByPath(path) instanceof BookmarkCategory) {
+			BookmarkCategory cat = getCategoryByPath(path);
+			for (int i = 0; i < cat.size(); i++) {
+				removePaths(path + cat.get(i).getName() + (cat.get(i) instanceof BookmarkCategory ? "/" : ""));
+			}
+		}
+		bookmarks.remove(path);
+	}
+
+	public void storeBookmarksLazy() {
+		synchronized (bookmarks) {
+			if (isSavingBookmarksLazy) {
+				return;
+			}
+			isSavingBookmarksLazy = true;
+			node.node.ticker.queueTimedJob(new Runnable() {
+
+				@Override
+				public void run() {
+					try {
+						storeBookmarks();
+					} finally {
+						isSavingBookmarksLazy = false;
+					}
+				}
+
+			}, MINUTES.toMillis(5));
+		}
+	}
+
 	private void readBookmarks(BookmarkCategory category, SimpleFieldSet sfs) {
 		_innerReadBookmarks("", category, sfs);
 	}
-
-	static final short PRIORITY = RequestStarter.BULK_SPLITFILE_PRIORITY_CLASS;
-
-	static final short PRIORITY_PROGRESS = RequestStarter.UPDATE_PRIORITY_CLASS;
 
 	private void subscribeToUSK(BookmarkItem item) {
 		if ("USK".equals(item.getKeyType())) {
@@ -490,38 +474,57 @@ public class BookmarkManager implements RequestClient {
 		return sfs;
 	}
 
-	public static SimpleFieldSet toSimpleFieldSet(BookmarkCategory cat) {
-		SimpleFieldSet sfs = new SimpleFieldSet(true);
-		List<BookmarkCategory> bc = cat.getSubCategories();
+	private class USKUpdatedCallback implements USKCallback {
 
-		for (int i = 0; i < bc.size(); i++) {
-			BookmarkCategory currentCat = bc.get(i);
-			sfs.put(BOOKMARK_CATEGORY_NAME + i, currentCat.getSimpleFieldSet());
+
+		@Override
+		public void onFoundEdition(long edition, USK key, ObjectContainer container, ClientContext context, boolean wasMetadata, short codec, byte[] data, boolean newKnownGood, boolean newSlotToo) {
+			if (!newKnownGood) {
+				FreenetURI uri = key.copy(edition).getURI();
+				node.makeClient(PRIORITY_PROGRESS, false, false).prefetch(uri, MINUTES.toMillis(60), FProxyToadlet.MAX_LENGTH_WITH_PROGRESS, null, PRIORITY_PROGRESS);
+				return;
+			}
+			List<BookmarkItem> items = MAIN_CATEGORY.getAllItems();
+			boolean matched = false;
+			boolean updated = false;
+			for (int i = 0; i < items.size(); i++) {
+				if (!"USK".equals(items.get(i).getKeyType())) {
+					continue;
+				}
+
+				try {
+					FreenetURI furi = new FreenetURI(items.get(i).getKey());
+					USK usk = USK.create(furi);
+
+					if (usk.equals(key, false)) {
+						if (logMINOR) {
+							Logger.minor(this, "Updating bookmark for " + furi + " to edition " + edition);
+						}
+						matched = true;
+						BookmarkItem item = items.get(i);
+						updated |= item.setEdition(edition, node);
+						// We may have bookmarked the same site twice, so continue the search.
+					}
+				} catch (MalformedURLException mue) {
+				}
+			}
+			if (updated) {
+				storeBookmarksLazy();
+			} else if (!matched) {
+				Logger.error(this, "No match for bookmark " + key + " edition " + edition);
+			}
 		}
-		sfs.put(BOOKMARK_CATEGORY_NAME, bc.size());
 
-		List<BookmarkItem> bi = cat.getItems();
-		for (int i = 0; i < bi.size(); i++) {
-			sfs.put(BOOKMARK_NAME + i, bi.get(i).getSimpleFieldSet());
+		@Override
+		public short getPollingPriorityNormal() {
+			return PRIORITY;
 		}
-		sfs.put(BOOKMARK_NAME, bi.size());
 
-		return sfs;
-	}
+		@Override
+		public short getPollingPriorityProgress() {
+			return PRIORITY_PROGRESS;
+		}
 
-	@Override
-	public boolean persistent() {
-		return false;
-	}
-
-	@Override
-	public void removeFrom(ObjectContainer container) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public boolean realTimeFlag() {
-		return false;
 	}
 
 }
