@@ -27,7 +27,7 @@ public class BookmarkItem extends Bookmark {
 		Logger.registerClass(BookmarkItem.class);
 	}
 
-	private final BookmarkUpdatedUserAlert bookmarkUpdatedUserAlert;
+	private final BookmarkUpdatedUserAlert bookmarkUpdatedUserAlert = new BookmarkUpdatedUserAlert();
 
 	private final UserAlertManager userAlertManager;
 
@@ -50,7 +50,6 @@ public class BookmarkItem extends Bookmark {
 		this.shortDescription = shortDescription;
 		this.hasAnActivelink = hasAnActivelink;
 		this.userAlertManager = userAlertManager;
-		bookmarkUpdatedUserAlert = new BookmarkUpdatedUserAlert();
 		assert (this.key != null);
 	}
 
@@ -67,7 +66,6 @@ public class BookmarkItem extends Bookmark {
 		this.hasAnActivelink = simpleFieldSet.getBoolean("hasAnActivelink");
 		this.key = new FreenetURI(simpleFieldSet.get("URI"));
 		this.userAlertManager = userAlertManager;
-		this.bookmarkUpdatedUserAlert = new BookmarkUpdatedUserAlert();
 	}
 
 	//
