@@ -15,6 +15,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import freenet.client.async.ClientContext;
 import freenet.client.async.USKCallback;
@@ -82,7 +83,7 @@ public class BookmarkManager implements RequestClient {
 
 	private final USKUpdatedCallback uskUpdatedCallback = new USKUpdatedCallback();
 
-	private final HashMap<String, Bookmark> bookmarks = new HashMap<String, Bookmark>();
+	private final Map<String, Bookmark> bookmarks = new HashMap<String, Bookmark>();
 
 	private final File bookmarksFile;
 
