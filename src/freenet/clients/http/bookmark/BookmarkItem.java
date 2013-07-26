@@ -20,6 +20,13 @@ import freenet.support.SimpleFieldSet;
 
 public class BookmarkItem extends Bookmark {
 
+	/** Whether we are logging at MINOR. */
+	private static volatile boolean logMINOR;
+
+	static {
+		Logger.registerClass(BookmarkItem.class);
+	}
+
 	public static final String NAME = "Bookmark";
 
 	private FreenetURI key;
@@ -63,12 +70,6 @@ public class BookmarkItem extends Bookmark {
 		this.key = new FreenetURI(sfs.get("URI"));
 		this.alerts = uam;
 		this.alert = new BookmarkUpdatedUserAlert();
-	}
-
-	private static volatile boolean logMINOR;
-
-	static {
-		Logger.registerClass(ClientGetter.class);
 	}
 
 	private class BookmarkUpdatedUserAlert extends AbstractUserAlert {
