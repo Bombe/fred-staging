@@ -140,6 +140,7 @@ public class BookmarkCategory extends Bookmark {
 	 * Removes the given bookmark from this category.
 	 *
 	 * @param bookmark
+	 * 		The bookmark to remove
 	 */
 	protected synchronized void removeBookmark(Bookmark bookmark) {
 		bookmarks.remove(bookmark);
