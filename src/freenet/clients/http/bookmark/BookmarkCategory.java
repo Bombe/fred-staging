@@ -8,8 +8,6 @@ import freenet.support.SimpleFieldSet;
 
 public class BookmarkCategory extends Bookmark {
 
-	public static final String NAME = "BookmarkCategory";
-
 	private final List<Bookmark> bookmarks = new ArrayList<Bookmark>();
 
 	public BookmarkCategory(String name) {
