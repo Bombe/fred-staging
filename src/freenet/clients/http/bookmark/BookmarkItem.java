@@ -42,33 +42,28 @@ public class BookmarkItem extends Bookmark {
 			throws MalformedURLException {
 
 		this.key = k;
-		this.name = n;
+		setName(n);
 		this.desc = d;
 		this.shortDescription = s;
 		this.hasAnActivelink = hasAnActivelink;
 		this.alerts = uam;
 		alert = new BookmarkUpdatedUserAlert();
-		assert (name != null);
 		assert (key != null);
 	}
 
 	public BookmarkItem(String line, UserAlertManager uam) throws MalformedURLException {
 		String[] result = line.split("###");
-		this.name = result[0];
+		setName(result[0]);
 		this.desc = result[1];
 		this.hasAnActivelink = Fields.stringToBool(result[2], false);
 		this.key = new FreenetURI(result[3]);
 		this.alerts = uam;
 		this.alert = new BookmarkUpdatedUserAlert();
-		assert (name != null);
 		assert (key != null);
 	}
 
 	public BookmarkItem(SimpleFieldSet sfs, UserAlertManager uam) throws FSParseException, MalformedURLException {
-		this.name = sfs.get("Name");
-		if (name == null) {
-			name = "";
-		}
+		setName(sfs.get("Name"));
 		this.desc = sfs.get("Description");
 		if (desc == null) {
 			desc = "";
@@ -97,20 +92,20 @@ public class BookmarkItem extends Bookmark {
 
 		@Override
 		public String getTitle() {
-			return l10n("bookmarkUpdatedTitle", "name", name);
+			return l10n("bookmarkUpdatedTitle", "name", getName());
 		}
 
 		@Override
 		public String getText() {
 			return l10n("bookmarkUpdated", new String[] { "name", "edition" },
-							   new String[] { name, Long.toString(key.getSuggestedEdition()) });
+							   new String[] { getName(), Long.toString(key.getSuggestedEdition()) });
 		}
 
 		@Override
 		public HTMLNode getHTMLText() {
 			HTMLNode n = new HTMLNode("div");
 			NodeL10n.getBase().addL10nSubstitution(n, "BookmarkItem.bookmarkUpdatedWithLink", new String[] { "link", "name", "edition" },
-														  new HTMLNode[] { HTMLNode.link("/" + key), HTMLNode.text(name), HTMLNode.text(key.getSuggestedEdition()) });
+														  new HTMLNode[] { HTMLNode.link("/" + key), HTMLNode.text(getName()), HTMLNode.text(key.getSuggestedEdition()) });
 			return n;
 		}
 
@@ -141,7 +136,7 @@ public class BookmarkItem extends Bookmark {
 
 		@Override
 		public String getShortText() {
-			return l10n("bookmarkUpdatedShort", "name", name);
+			return l10n("bookmarkUpdatedShort", "name", getName());
 		}
 
 		@Override
@@ -199,13 +194,8 @@ public class BookmarkItem extends Bookmark {
 	}
 
 	@Override
-	public String getName() {
-		return ("".equals(name) ? l10n("unnamedBookmark") : name);
-	}
-
-	@Override
 	public String toString() {
-		return this.name + "###" + (this.desc != null ? this.desc : "") + "###" + this.hasAnActivelink + "###" + this.key.toString();
+		return getName() + "###" + (this.desc != null ? this.desc : "") + "###" + this.hasAnActivelink + "###" + this.key.toString();
 	}
 
 	/** @return True if we updated the edition */
@@ -301,7 +291,7 @@ public class BookmarkItem extends Bookmark {
 	@Override
 	public SimpleFieldSet getSimpleFieldSet() {
 		SimpleFieldSet sfs = new SimpleFieldSet(true);
-		sfs.putSingle("Name", name);
+		sfs.putSingle("Name", getName());
 		sfs.putSingle("Description", desc);
 		sfs.putSingle("ShortDescription", shortDescription);
 		sfs.put("hasAnActivelink", hasAnActivelink);

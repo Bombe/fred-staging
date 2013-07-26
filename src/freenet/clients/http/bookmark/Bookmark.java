@@ -5,9 +5,9 @@ import freenet.support.SimpleFieldSet;
 
 public abstract class Bookmark {
 
-	protected String name;
+	private String name;
 
-	public String getName() {
+	public final String getName() {
 		return name;
 	}
 

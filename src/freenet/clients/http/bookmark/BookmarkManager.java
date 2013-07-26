@@ -439,7 +439,7 @@ public class BookmarkManager implements RequestClient {
 		boolean isRoot = ("".equals(prefix) && MAIN_CATEGORY.equals(category));
 		synchronized (bookmarks) {
 			if (!isRoot) {
-				putPaths(prefix + category.name + '/', category);
+				putPaths(prefix + category.getName() + '/', category);
 			}
 
 			try {
@@ -450,7 +450,7 @@ public class BookmarkManager implements RequestClient {
 					SimpleFieldSet subset = sfs.getSubset(BookmarkItem.NAME + i);
 					try {
 						BookmarkItem item = new BookmarkItem(subset, node.alerts);
-						String name = (isRoot ? "" : prefix + category.name) + '/' + item.name;
+						String name = (isRoot ? "" : prefix + category.getName()) + '/' + item.getName();
 						putPaths(name, item);
 						category.addBookmark(item);
 						subscribeToUSK(item);
@@ -463,7 +463,7 @@ public class BookmarkManager implements RequestClient {
 					SimpleFieldSet subset = sfs.getSubset(BookmarkCategory.NAME + i);
 					BookmarkCategory currentCategory = new BookmarkCategory(subset);
 					category.addBookmark(currentCategory);
-					String name = (isRoot ? "/" : (prefix + category.name + '/'));
+					String name = (isRoot ? "/" : (prefix + category.getName() + '/'));
 					_innerReadBookmarks(name, currentCategory, subset.getSubset("Content"));
 				}
 
