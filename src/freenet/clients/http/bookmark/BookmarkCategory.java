@@ -24,49 +24,12 @@ public class BookmarkCategory extends Bookmark {
 		setName(aName);
 	}
 
-	protected synchronized Bookmark addBookmark(Bookmark b) {
-		if (b == null) {
-			return null;
-		}
-		// Overwrite any existing bookmark
-		int x = bookmarks.indexOf(b);
-		if (x >= 0) {
-			return bookmarks.get(x);
-		}
-		bookmarks.add(b);
-		return b;
-	}
-
-	protected synchronized void removeBookmark(Bookmark b) {
-		bookmarks.remove(b);
+	public synchronized int size() {
+		return bookmarks.size();
 	}
 
 	public synchronized Bookmark get(int i) {
 		return bookmarks.get(i);
-	}
-
-	protected synchronized void moveBookmarkUp(Bookmark b) {
-		int index = bookmarks.indexOf(b);
-		if (index == -1) {
-			return;
-		}
-
-		Bookmark bk = bookmarks.remove(index);
-		bookmarks.add((--index < 0) ? 0 : index, bk);
-	}
-
-	protected synchronized void moveBookmarkDown(Bookmark b) {
-		int index = bookmarks.indexOf(b);
-		if (index == -1) {
-			return;
-		}
-
-		Bookmark bk = bookmarks.remove(index);
-		bookmarks.add((++index > size()) ? size() : index, bk);
-	}
-
-	public synchronized int size() {
-		return bookmarks.size();
 	}
 
 	public synchronized List<BookmarkItem> getItems() {
@@ -96,6 +59,44 @@ public class BookmarkCategory extends Bookmark {
 		}
 		return categories;
 	}
+
+	protected synchronized Bookmark addBookmark(Bookmark b) {
+		if (b == null) {
+			return null;
+		}
+		// Overwrite any existing bookmark
+		int x = bookmarks.indexOf(b);
+		if (x >= 0) {
+			return bookmarks.get(x);
+		}
+		bookmarks.add(b);
+		return b;
+	}
+
+	protected synchronized void removeBookmark(Bookmark b) {
+		bookmarks.remove(b);
+	}
+
+	protected synchronized void moveBookmarkUp(Bookmark b) {
+		int index = bookmarks.indexOf(b);
+		if (index == -1) {
+			return;
+		}
+
+		Bookmark bk = bookmarks.remove(index);
+		bookmarks.add((--index < 0) ? 0 : index, bk);
+	}
+
+	protected synchronized void moveBookmarkDown(Bookmark b) {
+		int index = bookmarks.indexOf(b);
+		if (index == -1) {
+			return;
+		}
+
+		Bookmark bk = bookmarks.remove(index);
+		bookmarks.add((++index > size()) ? size() : index, bk);
+	}
+
 
 	@Override
 	public synchronized SimpleFieldSet getSimpleFieldSet() {
