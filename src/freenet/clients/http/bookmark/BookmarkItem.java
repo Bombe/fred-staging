@@ -27,20 +27,44 @@ public class BookmarkItem extends Bookmark {
 		Logger.registerClass(BookmarkItem.class);
 	}
 
+	/** The user alert for an userAlertShowing bookmark. */
 	private final BookmarkUpdatedUserAlert bookmarkUpdatedUserAlert = new BookmarkUpdatedUserAlert();
 
+	/** The user alert manager. */
 	private final UserAlertManager userAlertManager;
 
+	/** The description of the bookmark. */
 	protected String description;
 
+	/** The short description of the bookmark. */
 	protected String shortDescription;
 
+	/** The key of the bookmark. */
 	private FreenetURI key;
 
+	/** Whether the bookmark has been updated and the alert is showing. */
 	private boolean userAlertShowing;
 
+	/** Whether the bookmark has an activelink image. */
 	private boolean hasAnActivelink = false;
 
+	/**
+	 * Creates a new bookmark item.
+	 *
+	 * @param key
+	 * 		The key of the bookmark
+	 * @param name
+	 * 		The name of the bookmark
+	 * @param description
+	 * 		The description of the bookmark
+	 * @param shortDescription
+	 * 		The short description of the bookmark
+	 * @param hasAnActivelink
+	 * 		{@code true} if the bookmark has an activelink image, {@code false}
+	 * 		otherwise
+	 * @param userAlertManager
+	 * 		The user alert manager
+	 */
 	public BookmarkItem(FreenetURI key, String name, String description, String shortDescription, boolean hasAnActivelink, UserAlertManager userAlertManager) {
 		this.key = key;
 		setName(name);
@@ -51,6 +75,18 @@ public class BookmarkItem extends Bookmark {
 		assert (this.key != null);
 	}
 
+	/**
+	 * Creates a new bookmark item from the given simple field set.
+	 *
+	 * @param simpleFieldSet
+	 * 		The simple field set to parse the bookmark item from
+	 * @param userAlertManager
+	 * 		The user alert manager
+	 * @throws FSParseException
+	 * 		if the field set can not be parsed
+	 * @throws MalformedURLException
+	 * 		if the bookmark key is malformed
+	 */
 	public BookmarkItem(SimpleFieldSet simpleFieldSet, UserAlertManager userAlertManager) throws FSParseException, MalformedURLException {
 		setName(simpleFieldSet.get("Name"));
 		this.description = simpleFieldSet.get("Description");
@@ -70,6 +106,12 @@ public class BookmarkItem extends Bookmark {
 	// ACCESSORS
 	//
 
+	/**
+	 * Returns the description of this bookmark item. If the description starts
+	 * with “l10n:” it is taken from the translation.
+	 *
+	 * @return The description of this bookmark item
+	 */
 	public String getDescription() {
 		if (description == null) {
 			return "";
@@ -80,6 +122,12 @@ public class BookmarkItem extends Bookmark {
 		return description;
 	}
 
+	/**
+	 * Returns the short description of this bookmark item. If the short
+	 * description starts with “l10n:” it is taken from the translation.
+	 *
+	 * @return The short description of this bookmark item
+	 */
 	public String getShortDescription() {
 		if (shortDescription == null) {
 			return "";
@@ -90,22 +138,50 @@ public class BookmarkItem extends Bookmark {
 		return shortDescription;
 	}
 
+	/**
+	 * Returns the key of this bookmark item.
+	 *
+	 * @return The key of this bookmark item
+	 */
 	public synchronized FreenetURI getURI() {
 		return key;
 	}
 
+	/**
+	 * Returns the key of this bookmark item.
+	 *
+	 * @return The key of this bookmark item
+	 */
 	public String getKey() {
 		return key.toString();
 	}
 
+	/**
+	 * Returns the key type of this bookmark item’s key.
+	 *
+	 * @return The key type of this bookmark item’s key
+	 */
 	public synchronized String getKeyType() {
 		return key.getKeyType();
 	}
 
+	/**
+	 * Returns the key of this bookmark item as a USK.
+	 *
+	 * @return The key of this bookmark item as a USK
+	 * @throws MalformedURLException
+	 * 		if the key can not be converted to a USK
+	 */
 	public USK getUSK() throws MalformedURLException {
 		return USK.create(key);
 	}
 
+	/**
+	 * Returns whether this bookmark item has an activelink image.
+	 *
+	 * @return {@code true} if this bookmark item has an activelink image, {@code
+	 *         false} otherwise
+	 */
 	public boolean hasAnActivelink() {
 		return hasAnActivelink;
 	}
@@ -114,6 +190,19 @@ public class BookmarkItem extends Bookmark {
 	// ACTIONS
 	//
 
+	/**
+	 * Updates this bookmark item.
+	 *
+	 * @param uri
+	 * 		The new URI of this bookmark item
+	 * @param hasAnActivelink
+	 * 		{@code true} if this bookmark item has an activelink image, {@code false}
+	 * 		otherwise
+	 * @param description
+	 * 		The new description of this bookmark item
+	 * @param shortDescription
+	 * 		The new short description of this bookmark item
+	 */
 	public synchronized void update(FreenetURI uri, boolean hasAnActivelink, String description, String shortDescription) {
 		this.key = uri;
 		this.description = description;
@@ -124,7 +213,18 @@ public class BookmarkItem extends Bookmark {
 		}
 	}
 
-	/** @return True if we updated the edition */
+	/**
+	 * Notifies this bookmark item that an edition was found. If the found edition
+	 * is newer than the current known edition of this bookmark item, the user
+	 * alert is shown.
+	 *
+	 * @param edition
+	 * 		The edition that was found
+	 * @param nodeClientCore
+	 * 		The node client core
+	 * @return {@code true} if we updated the edition, {@code false} if the given
+	 *         edition was not newer than the current edition
+	 */
 	public synchronized boolean setEdition(long edition, NodeClientCore nodeClientCore) {
 		if (key.getSuggestedEdition() >= edition) {
 			if (logMINOR) {
@@ -214,14 +314,45 @@ public class BookmarkItem extends Bookmark {
 	// PRIVATE METHODS
 	//
 
+	/**
+	 * Returns the translation for the given key, prepended by “BookmarkItem.”
+	 *
+	 * @param key
+	 * 		The key to retrieve the translation for
+	 * @return The translation
+	 */
 	private static String l10n(String key) {
 		return NodeL10n.getBase().getString("BookmarkItem." + key);
 	}
 
+	/**
+	 * Returns the translation for the given key, prepended by “BookmarkItem.” with
+	 * the given pattern replaced by the given value.
+	 *
+	 * @param key
+	 * 		The key to retrieve the translation for
+	 * @param pattern
+	 * 		The pattern to replace
+	 * @param value
+	 * 		The value to replace the pattern with
+	 * @return The translation
+	 */
 	private static String l10n(String key, String pattern, String value) {
 		return NodeL10n.getBase().getString("BookmarkItem." + key, new String[] { pattern }, new String[] { value });
 	}
 
+	/**
+	 * Returns the translation for the given key, prepended by “BookmarkItem.” with
+	 * the given patterns replaced by the given values.
+	 *
+	 * @param key
+	 * 		The key to retrieve the translation for
+	 * @param patterns
+	 * 		The patterns to replace
+	 * @param values
+	 * 		The values to replace the patterns with
+	 * @return The translation
+	 */
 	private static String l10n(String key, String[] patterns, String[] values) {
 		return NodeL10n.getBase().getString("BookmarkItem." + key, patterns, values);
 	}
@@ -230,6 +361,7 @@ public class BookmarkItem extends Bookmark {
 	// PRIVATE ACTIONS
 	//
 
+	/** Shows the user alert if it isn’t already showing. */
 	private synchronized void showUserAlert() {
 		if (userAlertShowing) {
 			return;
@@ -239,13 +371,21 @@ public class BookmarkItem extends Bookmark {
 		userAlertManager.register(bookmarkUpdatedUserAlert);
 	}
 
+	/** Hides the user alert. */
 	private synchronized void hideUserAlert() {
 		userAlertShowing = false;
 		userAlertManager.unregister(bookmarkUpdatedUserAlert);
 	}
 
+	/**
+	 * The user alert for an updated bookmark.
+	 *
+	 * @author <a href="mailto:bombe@pterodactylus.net">David ‘Bombe’ Roden</a>
+	 *         (after refactoring)
+	 */
 	private class BookmarkUpdatedUserAlert extends AbstractUserAlert {
 
+		/** Creates a new bookmark updated user alert. */
 		public BookmarkUpdatedUserAlert() {
 			super(true, null, null, null, null, UserAlert.MINOR, false, null, true, null);
 		}
