@@ -37,7 +37,7 @@ public class BookmarkItem extends Bookmark {
 
 	private FreenetURI key;
 
-	private boolean updated;
+	private boolean userAlertShowing;
 
 	private boolean hasAnActivelink = false;
 
@@ -233,16 +233,16 @@ public class BookmarkItem extends Bookmark {
 	//
 
 	private synchronized void enableBookmark() {
-		if (updated) {
+		if (userAlertShowing) {
 			return;
 		}
 		assert (key.isUSK());
-		updated = true;
+		userAlertShowing = true;
 		userAlertManager.register(bookmarkUpdatedUserAlert);
 	}
 
 	private synchronized void disableBookmark() {
-		updated = false;
+		userAlertShowing = false;
 		userAlertManager.unregister(bookmarkUpdatedUserAlert);
 	}
 
@@ -288,7 +288,7 @@ public class BookmarkItem extends Bookmark {
 		@Override
 		public boolean isValid() {
 			synchronized (BookmarkItem.this) {
-				return updated;
+				return userAlertShowing;
 			}
 		}
 
