@@ -24,6 +24,10 @@ public class BookmarkCategory extends Bookmark {
 		setName(aName);
 	}
 
+	//
+	// ACCESSORS
+	//
+
 	public synchronized int size() {
 		return bookmarks.size();
 	}
@@ -59,6 +63,10 @@ public class BookmarkCategory extends Bookmark {
 		}
 		return categories;
 	}
+
+	//
+	// ACTIONS
+	//
 
 	protected synchronized Bookmark addBookmark(Bookmark b) {
 		if (b == null) {
@@ -97,6 +105,9 @@ public class BookmarkCategory extends Bookmark {
 		bookmarks.add((++index > size()) ? size() : index, bk);
 	}
 
+	//
+	// BOOKMARK METHODS
+	//
 
 	@Override
 	public synchronized SimpleFieldSet getSimpleFieldSet() {
@@ -105,6 +116,5 @@ public class BookmarkCategory extends Bookmark {
 		sfs.put("Content", BookmarkManager.toSimpleFieldSet(this));
 		return sfs;
 	}
-	// Don't override equals(), two categories are equal if they have the same name and description.
 
 }
