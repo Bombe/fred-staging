@@ -298,6 +298,34 @@ public class BookmarkManagerTest extends TestCase {
 		assertTrue("new position", positionOfBookmarkCategory(bookmarkManager, newParentCategory.getPath(), category.getBookmark()) > -1);
 	}
 
+	/**
+	 * Tests renaming a bookmark and verifies it by searching for a bookmark with
+	 * the new name in the same parent category.
+	 *
+	 * @throws IOException
+	 * 		if an I/O error occurs
+	 */
+	public void testRenameBookmark() throws IOException {
+		BookmarkManager bookmarkManager = createBookmarkManager();
+		BookmarkContainer bookmark = findBookmark(bookmarkManager, Position.ANY);
+		bookmarkManager.renameBookmark(bookmark.getPath(), "New Name");
+		assertTrue("new name", positionOfBookmark(bookmarkManager, parentPath(bookmark.getPath()), "New Name") > -1);
+	}
+
+	/**
+	 * Tests renaming a bookmark category and verifies it by searching for a
+	 * bookmark category with the new name in the same parent category.
+	 *
+	 * @throws IOException
+	 * 		if an I/O error occurs
+	 */
+	public void testRenameBookmarkCategory() throws IOException {
+		BookmarkManager bookmarkManager = createBookmarkManager();
+		BookmarkContainer category = findBookmarkCategory(bookmarkManager, Position.ANY);
+		bookmarkManager.renameBookmark(category.getPath(), "New Category");
+		assertTrue("new name", positionOfBookmarkCategory(bookmarkManager, parentPath(category.getPath()), "New Category") > -1);
+	}
+
 	//
 	// PRIVATE METHODS
 	//
