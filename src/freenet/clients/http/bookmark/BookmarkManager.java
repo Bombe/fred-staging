@@ -19,6 +19,7 @@ import java.util.Map;
 
 import freenet.client.async.ClientContext;
 import freenet.client.async.USKCallback;
+import freenet.client.async.USKManager;
 import freenet.clients.http.FProxyToadlet;
 import freenet.keys.FreenetURI;
 import freenet.keys.USK;
@@ -92,6 +93,9 @@ public class BookmarkManager implements RequestClient {
 	/** The node client core. */
 	private final NodeClientCore nodeClientCore;
 
+	/** The USK manager. */
+	private final USKManager uskManager;
+
 	/** The callbacks for updated USKs. */
 	private final USKUpdatedCallback uskUpdatedCallback = new USKUpdatedCallback();
 
@@ -119,9 +123,10 @@ public class BookmarkManager implements RequestClient {
 	 * 		{@code true} if the node is running as a public gateway, {@code false}
 	 * 		otherwise
 	 */
-	public BookmarkManager(NodeClientCore nodeClientCore, File bookmarksFile, File backupBookmarksFile, boolean publicGateway) {
+	public BookmarkManager(NodeClientCore nodeClientCore, USKManager uskManager, File bookmarksFile, File backupBookmarksFile, boolean publicGateway) {
 		putPaths("/", MAIN_CATEGORY);
 		this.nodeClientCore = nodeClientCore;
+		this.uskManager = uskManager;
 		this.bookmarksFile = bookmarksFile;
 		this.backupBookmarksFile = backupBookmarksFile;
 
@@ -345,7 +350,7 @@ public class BookmarkManager implements RequestClient {
 				try {
 					USK u = ((BookmarkItem) bookmark).getUSK();
 					if (!wantUSK(u, (BookmarkItem) bookmark)) {
-						this.nodeClientCore.uskManager.unsubscribe(u, this.uskUpdatedCallback);
+						uskManager.unsubscribe(u, this.uskUpdatedCallback);
 					}
 				} catch (MalformedURLException mue) {
 				}
@@ -586,7 +591,7 @@ public class BookmarkManager implements RequestClient {
 		if ("USK".equals(bookmarkItem.getKeyType())) {
 			try {
 				USK usk = bookmarkItem.getUSK();
-				this.nodeClientCore.uskManager.subscribe(usk, this.uskUpdatedCallback, true, this);
+				uskManager.subscribe(usk, this.uskUpdatedCallback, true, this);
 			} catch (MalformedURLException mue) {
 			}
 		}

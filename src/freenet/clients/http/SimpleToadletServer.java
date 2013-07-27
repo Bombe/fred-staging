@@ -430,7 +430,7 @@ public final class SimpleToadletServer implements ToadletContainer, Runnable, Li
 		pushDataManager=new PushDataManager(getTicker());
 		intervalPushManager=new IntervalPusherManager(getTicker(), pushDataManager);
 		ProgramDirectory programDirectory = core.node.userDir();
-		bookmarkManager = new BookmarkManager(core, programDirectory.file("bookmarks.dat"), programDirectory.file("bookmarks.dat.bak"), publicGatewayMode());
+		bookmarkManager = new BookmarkManager(core, core.uskManager, programDirectory.file("bookmarks.dat"), programDirectory.file("bookmarks.dat.bak"), publicGatewayMode());
 		try {
 			FProxyToadlet.maybeCreateFProxyEtc(core, node, node.config, this);
 		} catch (IOException e) {
