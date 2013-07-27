@@ -264,6 +264,40 @@ public class BookmarkManagerTest extends TestCase {
 		assertEquals("new position", currentPosition, positionOfBookmarkCategory(bookmarkManager, category));
 	}
 
+	/**
+	 * Moves a bookmark to another parent category and verifies that the move
+	 * succeeded by checking the position of the bookmark in both the old and the
+	 * new parent categories.
+	 *
+	 * @throws IOException
+	 * 		if an I/O error occurs
+	 */
+	public void testMoveBookmarkToOtherParent() throws IOException {
+		BookmarkManager bookmarkManager = createBookmarkManager();
+		BookmarkContainer bookmark = findBookmark(bookmarkManager, Position.ANY);
+		BookmarkContainer newParentCategory = findBookmarkCategory(bookmarkManager, Position.ANY, bookmarkManager.getCategoryByPath(parentPath(bookmark.getPath())));
+		bookmarkManager.moveBookmark(bookmark.getPath(), newParentCategory.getPath());
+		assertEquals("old position", -1, positionOfBookmark(bookmarkManager, bookmark));
+		assertTrue("new position", positionOfBookmark(bookmarkManager, newParentCategory.getPath(), bookmark.getBookmark()) > -1);
+	}
+
+	/**
+	 * Moves a bookmark category to another parent category and verifies that the
+	 * move succeeded by checking the position of the bookmark category in both the
+	 * old and the new parent categories.
+	 *
+	 * @throws IOException
+	 * 		if an I/O error occurs
+	 */
+	public void testMoveBookmarkCategoryToOtherParent() throws IOException {
+		BookmarkManager bookmarkManager = createBookmarkManager();
+		BookmarkContainer category = findBookmarkCategory(bookmarkManager, Position.ANY);
+		BookmarkContainer newParentCategory = findBookmarkCategory(bookmarkManager, Position.ANY, bookmarkManager.getCategoryByPath(parentPath(category.getPath())));
+		bookmarkManager.moveBookmark(category.getPath(), newParentCategory.getPath());
+		assertEquals("old position", -1, positionOfBookmarkCategory(bookmarkManager, category));
+		assertTrue("new position", positionOfBookmarkCategory(bookmarkManager, newParentCategory.getPath(), category.getBookmark()) > -1);
+	}
+
 	//
 	// PRIVATE METHODS
 	//
