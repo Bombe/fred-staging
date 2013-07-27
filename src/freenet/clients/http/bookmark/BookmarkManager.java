@@ -187,22 +187,6 @@ public class BookmarkManager implements RequestClient {
 	}
 
 	/**
-	 * Returns the parent path of the given path. A path always ends with a slash.
-	 * The parent of the root path is again the root path.
-	 *
-	 * @param path
-	 * 		The path to get the parent for
-	 * @return The parent path of the given path
-	 */
-	public String parentPath(String path) {
-		if (path.equals("/")) {
-			return "/";
-		}
-
-		return path.substring(0, path.substring(0, path.length() - 1).lastIndexOf("/")) + "/";
-	}
-
-	/**
 	 * Returns the category for the given path.
 	 *
 	 * @param path
@@ -414,6 +398,26 @@ public class BookmarkManager implements RequestClient {
 				savingBookmarks = false;
 			}
 		}
+	}
+
+	//
+	// STATIC METHODS
+	//
+
+	/**
+	 * Returns the parent path of the given path. A path always ends with a slash.
+	 * The parent of the root path is again the root path.
+	 *
+	 * @param path
+	 * 		The path to get the parent for
+	 * @return The parent path of the given path
+	 */
+	public static String parentPath(String path) {
+		if (path.equals("/")) {
+			return "/";
+		}
+
+		return path.substring(0, path.substring(0, path.length() - 1).lastIndexOf("/")) + "/";
 	}
 
 	//
