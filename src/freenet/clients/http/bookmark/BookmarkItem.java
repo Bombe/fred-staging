@@ -10,7 +10,6 @@ import freenet.keys.FreenetURI;
 import freenet.keys.USK;
 import freenet.l10n.NodeL10n;
 import freenet.node.FSParseException;
-import freenet.node.NodeClientCore;
 import freenet.node.useralerts.AbstractUserAlert;
 import freenet.node.useralerts.UserAlert;
 import freenet.node.useralerts.UserAlertManager;
@@ -220,12 +219,10 @@ public class BookmarkItem extends Bookmark {
 	 *
 	 * @param edition
 	 * 		The edition that was found
-	 * @param nodeClientCore
-	 * 		The node client core
 	 * @return {@code true} if we updated the edition, {@code false} if the given
 	 *         edition was not newer than the current edition
 	 */
-	public synchronized boolean setEdition(long edition, NodeClientCore nodeClientCore) {
+	public synchronized boolean setEdition(long edition) {
 		if (key.getSuggestedEdition() >= edition) {
 			if (logMINOR) {
 				Logger.minor(this, "Edition " + edition + " is too old, not updating " + key);
