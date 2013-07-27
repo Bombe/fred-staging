@@ -325,9 +325,34 @@ public class BookmarkManagerTest extends TestCase {
 	 * @return A bookmark container, or {@code null} if no bookmark could be found
 	 */
 	private BookmarkContainer findBookmark(BookmarkManager bookmarkManager, Position position) {
+		return findBookmark(bookmarkManager, position, null);
+	}
+
+	/**
+	 * Chooses a random bookmark other than the given bookmark from all the
+	 * bookmarks of the given bookmark manager that satisfy the given position.
+	 *
+	 * @param bookmarkManager
+	 * 		The bookmark manager to get a bookmark from
+	 * @param position
+	 * 		The position of the bookmark
+	 * @param ignore
+	 * 		The bookmark to ignore (may be {@code null})
+	 * @return A bookmark container, or {@code null} if no bookmark could be found
+	 */
+
+	private BookmarkContainer findBookmark(BookmarkManager bookmarkManager, Position position, Bookmark ignore) {
 		List<BookmarkContainer> items = findBookmark(bookmarkManager.getCategoryByPath("/"), "/", position);
 		if (!items.isEmpty()) {
-			return items.get((int) (Math.random() * items.size()));
+			if ((items.size() == 1) && (items.get(0).equals(ignore))) {
+				return null;
+			}
+			while (true) {
+				BookmarkContainer item = items.get((int) (Math.random() * items.size()));
+				if (!item.getBookmark().equals(ignore)) {
+					return item;
+				}
+			}
 		}
 		return null;
 	}
@@ -380,9 +405,35 @@ public class BookmarkManagerTest extends TestCase {
 	 *         be found
 	 */
 	private BookmarkContainer findBookmarkCategory(BookmarkManager bookmarkManager, Position position) {
+		return findBookmarkCategory(bookmarkManager, position, null);
+	}
+
+	/**
+	 * Chooses a random bookmark category other than the given bookmark category
+	 * from all the bookmark categories of the given bookmark manager that satisfy
+	 * the given position.
+	 *
+	 * @param bookmarkManager
+	 * 		The bookmark manager to get a bookmark category from
+	 * @param position
+	 * 		The position of the bookmark category
+	 * @param ignore
+	 * 		The bookmark category to ignore (may be {@code null})
+	 * @return A bookmark container, or {@code null} if no bookmark category could
+	 *         be found
+	 */
+	private BookmarkContainer findBookmarkCategory(BookmarkManager bookmarkManager, Position position, Bookmark ignore) {
 		List<BookmarkContainer> categories = findBookmarkCategory(bookmarkManager.getCategoryByPath("/"), "/", position);
 		if (!categories.isEmpty()) {
-			return categories.get((int) (Math.random() * categories.size()));
+			if ((categories.size() == 1) && (categories.get(0).equals(ignore))) {
+				return null;
+			}
+			while (true) {
+				BookmarkContainer category = categories.get((int) (Math.random() * categories.size()));
+				if (!category.getBookmark().equals(ignore)) {
+					return category;
+				}
+			}
 		}
 		return null;
 	}
