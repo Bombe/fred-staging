@@ -154,12 +154,12 @@ public class BookmarkCategory extends Bookmark {
 	 */
 	protected synchronized void moveBookmarkUp(Bookmark bookmark) {
 		int index = bookmarks.indexOf(bookmark);
-		if (index == -1) {
+		if (index < 1) {
 			return;
 		}
 
 		Bookmark removedBookmark = bookmarks.remove(index);
-		bookmarks.add((--index < 0) ? 0 : index, removedBookmark);
+		bookmarks.add(index - 1, removedBookmark);
 	}
 
 	/**
@@ -170,12 +170,12 @@ public class BookmarkCategory extends Bookmark {
 	 */
 	protected synchronized void moveBookmarkDown(Bookmark bookmark) {
 		int index = bookmarks.indexOf(bookmark);
-		if (index == -1) {
+		if ((index == -1) || (index > bookmarks.size() - 2)) {
 			return;
 		}
 
 		Bookmark removedBookmark = bookmarks.remove(index);
-		bookmarks.add((++index > size()) ? size() : index, removedBookmark);
+		bookmarks.add(index + 1, removedBookmark);
 	}
 
 	//
