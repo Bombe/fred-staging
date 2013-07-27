@@ -72,12 +72,6 @@ public class BookmarkManager implements RequestClient {
 		}
 	}
 
-	/** The main category. */
-	public static final BookmarkCategory MAIN_CATEGORY = new BookmarkCategory("/");
-
-	/** The category for public gateway vistors without full access. */
-	public static final BookmarkCategory DEFAULT_CATEGORY = new BookmarkCategory("\\");
-
 	/** The priority to start bookmark update requests at. */
 	private static final short PRIORITY = RequestStarter.BULK_SPLITFILE_PRIORITY_CLASS;
 
@@ -98,6 +92,12 @@ public class BookmarkManager implements RequestClient {
 
 	/** The callbacks for updated USKs. */
 	private final USKUpdatedCallback uskUpdatedCallback = new USKUpdatedCallback();
+
+	/** The root category. */
+	private final BookmarkCategory rootCategory = new BookmarkCategory("/");
+
+	/** The default category for public gateway visitors without full access. */
+	private final BookmarkCategory defaultCategory = new BookmarkCategory("\\");
 
 	/** The bookmarks. */
 	private final Map<String, Bookmark> bookmarks = new HashMap<String, Bookmark>();
@@ -124,7 +124,7 @@ public class BookmarkManager implements RequestClient {
 	 * 		otherwise
 	 */
 	public BookmarkManager(NodeClientCore nodeClientCore, USKManager uskManager, File bookmarksFile, File backupBookmarksFile, boolean publicGateway) {
-		putPaths("/", MAIN_CATEGORY);
+		putPaths("/", rootCategory);
 		this.nodeClientCore = nodeClientCore;
 		this.uskManager = uskManager;
 		this.bookmarksFile = bookmarksFile;
@@ -137,7 +137,7 @@ public class BookmarkManager implements RequestClient {
 			}
 			Logger.normal(this, "Attempting to read the bookmark file from " + bookmarksFile.toString());
 			SimpleFieldSet simpleFieldSet = SimpleFieldSet.readFrom(bookmarksFile, false, true);
-			readBookmarks(MAIN_CATEGORY, simpleFieldSet);
+			readBookmarks(rootCategory, simpleFieldSet);
 		} catch (MalformedURLException mue1) {
 		} catch (IOException ioe1) {
 			Logger.error(this, "Error reading the bookmark file (" + bookmarksFile.toString() + "):" + ioe1.getMessage(), ioe1);
@@ -146,11 +146,11 @@ public class BookmarkManager implements RequestClient {
 				if (backupBookmarksFile.exists() && backupBookmarksFile.canRead() && backupBookmarksFile.length() > 0) {
 					Logger.normal(this, "Attempting to read the backup bookmark file from " + backupBookmarksFile.toString());
 					SimpleFieldSet simpleFieldSet = SimpleFieldSet.readFrom(backupBookmarksFile, false, true);
-					readBookmarks(MAIN_CATEGORY, simpleFieldSet);
+					readBookmarks(rootCategory, simpleFieldSet);
 				} else {
 					Logger.normal(this, "We couldn't find the backup either! - " + FileUtil.getCanonicalFile(backupBookmarksFile));
 					// restore the default bookmark set
-					readBookmarks(MAIN_CATEGORY, DEFAULT_BOOKMARKS);
+					readBookmarks(rootCategory, DEFAULT_BOOKMARKS);
 				}
 			} catch (IOException ioe2) {
 				Logger.error(this, "Error reading the backup bookmark file !" + ioe2.getMessage(), ioe2);
@@ -158,14 +158,33 @@ public class BookmarkManager implements RequestClient {
 		}
 		//populate defaults for hosts without full access permissions if we're in gateway mode.
 		if (publicGateway) {
-			putPaths("\\", DEFAULT_CATEGORY);
-			readBookmarks(DEFAULT_CATEGORY, DEFAULT_BOOKMARKS);
+			putPaths("\\", defaultCategory);
+			readBookmarks(defaultCategory, DEFAULT_BOOKMARKS);
 		}
 	}
 
 	//
 	// ACCESSORS
 	//
+
+	/**
+	 * Returns the root category of bookmarks.
+	 *
+	 * @return The bookmarks’ root category
+	 */
+	public BookmarkCategory getRootCategory() {
+		return rootCategory;
+	}
+
+	/**
+	 * Returns the root category for the default bookmarks. This category is used
+	 * for visitors without full access on a public gateway.
+	 *
+	 * @return The default bookmarks’ root category
+	 */
+	public BookmarkCategory getDefaultCategory() {
+		return defaultCategory;
+	}
 
 	/**
 	 * Returns the parent path of the given path. A path always ends with a slash.
@@ -486,7 +505,7 @@ public class BookmarkManager implements RequestClient {
 	 *         given USK, {@code false} otherwise
 	 */
 	private boolean wantUSK(USK usk, BookmarkItem ignore) {
-		List<BookmarkItem> items = MAIN_CATEGORY.getAllItems();
+		List<BookmarkItem> items = rootCategory.getAllItems();
 		for (BookmarkItem item : items) {
 			if (item == ignore) {
 				continue;
@@ -610,7 +629,7 @@ public class BookmarkManager implements RequestClient {
 	 */
 	private synchronized void _innerReadBookmarks(String prefix, BookmarkCategory category, SimpleFieldSet simpleFieldSet) {
 		boolean hasBeenParsedWithoutAnyProblem = true;
-		boolean isRoot = ("".equals(prefix) && MAIN_CATEGORY.equals(category));
+		boolean isRoot = ("".equals(prefix) && rootCategory.equals(category));
 		synchronized (bookmarks) {
 			if (!isRoot) {
 				putPaths(prefix + category.getName() + '/', category);
@@ -662,7 +681,7 @@ public class BookmarkManager implements RequestClient {
 
 		simpleFieldSet.put("Version", 1);
 		synchronized (bookmarks) {
-			simpleFieldSet.putAllOverwrite(BookmarkManager.toSimpleFieldSet(MAIN_CATEGORY));
+			simpleFieldSet.putAllOverwrite(BookmarkManager.toSimpleFieldSet(rootCategory));
 		}
 
 		return simpleFieldSet;
@@ -687,7 +706,7 @@ public class BookmarkManager implements RequestClient {
 				nodeClientCore.makeClient(PRIORITY_PROGRESS, false, false).prefetch(uri, MINUTES.toMillis(60), FProxyToadlet.MAX_LENGTH_WITH_PROGRESS, null, PRIORITY_PROGRESS);
 				return;
 			}
-			List<BookmarkItem> items = MAIN_CATEGORY.getAllItems();
+			List<BookmarkItem> items = rootCategory.getAllItems();
 			boolean matched = false;
 			boolean updated = false;
 			for (BookmarkItem bookmarkItem : items) {

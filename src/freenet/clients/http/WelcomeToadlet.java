@@ -18,7 +18,6 @@ import freenet.client.InsertException;
 import freenet.clients.http.PageMaker.RenderParameters;
 import freenet.clients.http.bookmark.BookmarkCategory;
 import freenet.clients.http.bookmark.BookmarkItem;
-import freenet.clients.http.bookmark.BookmarkManager;
 import freenet.keys.FreenetURI;
 import freenet.l10n.NodeL10n;
 import freenet.node.DarknetPeerNode;
@@ -406,10 +405,10 @@ public class WelcomeToadlet extends Toadlet {
         
         HTMLNode bookmarksList = bookmarkBoxContent.addChild("ul", "id", "bookmarks");
 		if (ctx.isAllowedFullAccess() || !ctx.getContainer().publicGatewayMode()) {
-			addCategoryToList(BookmarkManager.MAIN_CATEGORY, bookmarksList, (!container.enableActivelinks()) || (useragent != null && useragent.contains("khtml") && !useragent.contains("chrome")), ctx);
+			addCategoryToList(ctx.getBookmarkManager().getRootCategory(), bookmarksList, (!container.enableActivelinks()) || (useragent != null && useragent.contains("khtml") && !useragent.contains("chrome")), ctx);
 		}
 		else {
-			addCategoryToList(BookmarkManager.DEFAULT_CATEGORY, bookmarksList, (!container.enableActivelinks()) || (useragent != null && useragent.contains("khtml") && !useragent.contains("chrome")), ctx);
+			addCategoryToList(ctx.getBookmarkManager().getDefaultCategory(), bookmarksList, (!container.enableActivelinks()) || (useragent != null && useragent.contains("khtml") && !useragent.contains("chrome")), ctx);
 		}
 
 		// Search Box
