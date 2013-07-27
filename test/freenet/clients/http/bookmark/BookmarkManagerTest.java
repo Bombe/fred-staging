@@ -523,7 +523,7 @@ public class BookmarkManagerTest extends TestCase {
 	}
 
 	/**
-	 * Returns the position of the given bookmark in the category soecified by the
+	 * Returns the position of the given bookmark in the category specified by the
 	 * given path.
 	 *
 	 * @param bookmarkManager
@@ -554,7 +554,7 @@ public class BookmarkManagerTest extends TestCase {
 	}
 
 	/**
-	 * Returns the position of the given category in the category soecified by the
+	 * Returns the position of the given category in the category specified by the
 	 * given path.
 	 *
 	 * @param bookmarkManager
