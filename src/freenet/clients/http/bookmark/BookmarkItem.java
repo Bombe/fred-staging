@@ -272,42 +272,23 @@ public class BookmarkItem extends Bookmark {
 
 	@Override
 	public boolean equals(Object object) {
-		if (object == this) {
-			return true;
-		}
-		if (object instanceof BookmarkItem) {
-			BookmarkItem bookmarkItem = (BookmarkItem) object;
-			if (!super.equals(object)) {
-				return false;
-			}
-			if (!bookmarkItem.key.equals(key)) {
-				if ("USK".equals(bookmarkItem.key.getKeyType())) {
-					if (!bookmarkItem.key.setSuggestedEdition(key.getSuggestedEdition()).equals(key)) {
-						return false;
-					}
-				} else {
-					return false;
-				}
-			}
-			if (bookmarkItem.userAlertManager != userAlertManager) {
-				return false;
-			} // Belongs to a different node???
-			if (bookmarkItem.hasAnActivelink != hasAnActivelink) {
-				return false;
-			}
-			if (bookmarkItem.description.equals(description)) {
-				return true;
-			}
-			if (bookmarkItem.description == null || description == null) {
-				return false;
-			}
-			if (!bookmarkItem.description.equals(description)) {
-				return false;
-			}
-			return true;
-		} else {
+		if (!(object instanceof BookmarkItem)) {
 			return false;
 		}
+		BookmarkItem bookmarkItem = (BookmarkItem) object;
+		if (!super.equals(object)) {
+			return false;
+		}
+		if (!bookmarkItem.key.setSuggestedEdition(0).equals(key.setSuggestedEdition(0))) {
+			return false;
+		}
+		if (bookmarkItem.hasAnActivelink != hasAnActivelink) {
+			return false;
+		}
+		if (((description == null) && (bookmarkItem.description != null)) || ((description != null) && !description.equals(bookmarkItem.description))) {
+			return false;
+		}
+		return true;
 	}
 
 	//
