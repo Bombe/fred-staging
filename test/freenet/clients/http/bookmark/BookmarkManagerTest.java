@@ -540,6 +540,30 @@ public class BookmarkManagerTest extends TestCase {
 	}
 
 	/**
+	 * Returns the position of the bookmark with the given name in the category
+	 * specified by the given path.
+	 *
+	 * @param bookmarkManager
+	 * 		The bookmark manager
+	 * @param path
+	 * 		The path of the parent category
+	 * @param name
+	 * 		The name of the bookmark to find the position of
+	 * @return The position of the bookmark, or {@code -1} if the bookmark could
+	 *         not be found
+	 */
+	private int positionOfBookmark(BookmarkManager bookmarkManager, String path, String name) {
+		int index = 0;
+		for (Bookmark bookmark : bookmarkManager.getCategoryByPath(path).getItems()) {
+			if (bookmark.getName().equals(name)) {
+				return index;
+			}
+			index++;
+		}
+		return -1;
+	}
+
+	/**
 	 * Returns the position of the given category in its parent category.
 	 *
 	 * @param bookmarkManager
@@ -568,6 +592,30 @@ public class BookmarkManagerTest extends TestCase {
 	 */
 	private int positionOfBookmarkCategory(BookmarkManager bookmarkManager, String path, Bookmark category) {
 		return bookmarkManager.getCategoryByPath(path).getSubCategories().indexOf(category);
+	}
+
+	/**
+	 * Returns the position of a category with the given name in the category
+	 * specified by the given path.
+	 *
+	 * @param bookmarkManager
+	 * 		The bookmark manager
+	 * @param path
+	 * 		The path of the parent category
+	 * @param name
+	 * 		The name of the category to find the position of
+	 * @return The position of the category, or {@code -1} if the category could
+	 *         not be found
+	 */
+	private int positionOfBookmarkCategory(BookmarkManager bookmarkManager, String path, String name) {
+		int index = 0;
+		for (Bookmark bookmark : bookmarkManager.getCategoryByPath(path).getSubCategories()) {
+			if (bookmark.getName().equals(name)) {
+				return index;
+			}
+			index++;
+		}
+		return -1;
 	}
 
 	/**
