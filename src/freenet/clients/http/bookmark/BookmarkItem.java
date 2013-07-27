@@ -258,15 +258,15 @@ public class BookmarkItem extends Bookmark {
 
 	@Override
 	public String toString() {
-		return getName() + "###" + (this.description != null ? this.description : "") + "###" + this.hasAnActivelink + "###" + this.key.toString();
+		return getName() + "###" + (description != null ? description : "") + "###" + hasAnActivelink + "###" + key.toString();
 	}
 
 	@Override
 	public int hashCode() {
 		int hash = super.hashCode();
-		hash = 31 * hash + this.key.setSuggestedEdition(0).hashCode();
-		hash = 31 * hash + (this.hasAnActivelink ? 1 : 0);
-		hash = 31 * hash + (this.description != null ? this.description.hashCode() : 0);
+		hash = 31 * hash + key.setSuggestedEdition(0).hashCode();
+		hash = 31 * hash + (hasAnActivelink ? 1 : 0);
+		hash = 31 * hash + (description != null ? description.hashCode() : 0);
 		return hash;
 	}
 

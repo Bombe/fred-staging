@@ -353,7 +353,7 @@ public class BookmarkManager implements RequestClient {
 				try {
 					USK u = ((BookmarkItem) bookmark).getUSK();
 					if (!wantUSK(u, (BookmarkItem) bookmark)) {
-						uskManager.unsubscribe(u, this.uskUpdatedCallback);
+						uskManager.unsubscribe(u, uskUpdatedCallback);
 					}
 				} catch (MalformedURLException mue) {
 				}
@@ -614,7 +614,7 @@ public class BookmarkManager implements RequestClient {
 		if ("USK".equals(bookmarkItem.getKeyType())) {
 			try {
 				USK usk = bookmarkItem.getUSK();
-				uskManager.subscribe(usk, this.uskUpdatedCallback, true, this);
+				uskManager.subscribe(usk, uskUpdatedCallback, true, this);
 			} catch (MalformedURLException mue) {
 			}
 		}
