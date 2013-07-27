@@ -70,18 +70,14 @@ public abstract class Bookmark {
 
 	@Override
 	public boolean equals(Object object) {
-		if (object == this) {
-			return true;
-		}
-		if (object instanceof Bookmark) {
-			Bookmark bookmark = (Bookmark) object;
-			if (!bookmark.name.equals(name)) {
-				return false;
-			}
-			return true;
-		} else {
+		if (!(object instanceof Bookmark)) {
 			return false;
 		}
+		Bookmark bookmark = (Bookmark) object;
+		if (!bookmark.name.equals(name)) {
+			return false;
+		}
+		return true;
 	}
 
 	@Override
