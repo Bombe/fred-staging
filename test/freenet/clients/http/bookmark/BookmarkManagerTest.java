@@ -92,7 +92,7 @@ public class BookmarkManagerTest extends TestCase {
 	 * @throws IOException
 	 * 		if an I/O error occurs
 	 */
-	public void testAddingBookmark() throws IOException {
+	public void testAddBookmark() throws IOException {
 		BookmarkManager bookmarkManager = createBookmarkManager();
 		UserAlertManager userAlertManager = mock(UserAlertManager.class);
 		BookmarkContainer parentCategory = findBookmarkCategory(bookmarkManager, Position.ANY);
@@ -108,7 +108,7 @@ public class BookmarkManagerTest extends TestCase {
 	 * @throws IOException
 	 * 		if an I/O error occurs
 	 */
-	public void testAddingBookmarkCategory() throws IOException {
+	public void testAddBookmarkCategory() throws IOException {
 		BookmarkManager bookmarkManager = createBookmarkManager();
 		BookmarkContainer parentCategory = findBookmarkCategory(bookmarkManager, Position.ANY);
 		BookmarkCategory newCategory = new BookmarkCategory("Test Category");
@@ -123,7 +123,7 @@ public class BookmarkManagerTest extends TestCase {
 	 * @throws IOException
 	 * 		if an I/O error occurs
 	 */
-	public void testDeletingBookmarks() throws IOException {
+	public void testDeleteBookmarks() throws IOException {
 		BookmarkManager bookmarkManager = createBookmarkManager();
 		BookmarkContainer bookmarkContainer = findBookmark(bookmarkManager, Position.ANY);
 		bookmarkManager.removeBookmark(bookmarkContainer.getPath());
@@ -137,7 +137,7 @@ public class BookmarkManagerTest extends TestCase {
 	 * @throws IOException
 	 * 		if an I/O error occurs
 	 */
-	public void testDeletingBookmarkCategory() throws IOException {
+	public void testDeleteBookmarkCategory() throws IOException {
 		BookmarkManager bookmarkManager = createBookmarkManager();
 		BookmarkContainer categoryContainer = findBookmarkCategory(bookmarkManager, Position.ANY);
 		bookmarkManager.removeBookmark(categoryContainer.getPath());
