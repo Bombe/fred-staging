@@ -405,10 +405,10 @@ public class WelcomeToadlet extends Toadlet {
         
         HTMLNode bookmarksList = bookmarkBoxContent.addChild("ul", "id", "bookmarks");
 		if (ctx.isAllowedFullAccess() || !ctx.getContainer().publicGatewayMode()) {
-			addCategoryToList(ctx.getBookmarkManager().getRootCategory(), bookmarksList, (!container.enableActivelinks()) || (useragent != null && useragent.contains("khtml") && !useragent.contains("chrome")), ctx);
+			addCategoryToList(ctx.getBookmarkManager().getBookmarks(), bookmarksList, (!container.enableActivelinks()) || (useragent != null && useragent.contains("khtml") && !useragent.contains("chrome")), ctx);
 		}
 		else {
-			addCategoryToList(ctx.getBookmarkManager().getDefaultCategory(), bookmarksList, (!container.enableActivelinks()) || (useragent != null && useragent.contains("khtml") && !useragent.contains("chrome")), ctx);
+			addCategoryToList(ctx.getBookmarkManager().getDefaultBookmarks(), bookmarksList, (!container.enableActivelinks()) || (useragent != null && useragent.contains("khtml") && !useragent.contains("chrome")), ctx);
 		}
 
 		// Search Box

@@ -168,11 +168,11 @@ public class BookmarkManager implements RequestClient {
 	//
 
 	/**
-	 * Returns the root category of bookmarks.
+	 * Returns the bookmarks’ root category.
 	 *
 	 * @return The bookmarks’ root category
 	 */
-	public BookmarkCategory getRootCategory() {
+	public BookmarkCategory getBookmarks() {
 		return rootCategory;
 	}
 
@@ -182,7 +182,7 @@ public class BookmarkManager implements RequestClient {
 	 *
 	 * @return The default bookmarks’ root category
 	 */
-	public BookmarkCategory getDefaultCategory() {
+	public BookmarkCategory getDefaultBookmarks() {
 		return defaultCategory;
 	}
 
