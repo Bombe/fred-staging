@@ -36,6 +36,7 @@ import freenet.l10n.NodeL10n;
 import freenet.node.Node;
 import freenet.node.NodeClientCore;
 import freenet.node.PrioRunnable;
+import freenet.node.ProgramDirectory;
 import freenet.node.SecurityLevelListener;
 import freenet.node.SecurityLevels.NETWORK_THREAT_LEVEL;
 import freenet.node.SecurityLevels.PHYSICAL_THREAT_LEVEL;
@@ -428,7 +429,8 @@ public final class SimpleToadletServer implements ToadletContainer, Runnable, Li
 		
 		pushDataManager=new PushDataManager(getTicker());
 		intervalPushManager=new IntervalPusherManager(getTicker(), pushDataManager);
-		bookmarkManager = new BookmarkManager(core, publicGatewayMode());
+		ProgramDirectory programDirectory = core.node.userDir();
+		bookmarkManager = new BookmarkManager(core, programDirectory.file("bookmarks.dat"), programDirectory.file("bookmarks.dat.bak"), publicGatewayMode());
 		try {
 			FProxyToadlet.maybeCreateFProxyEtc(core, node, node.config, this);
 		} catch (IOException e) {

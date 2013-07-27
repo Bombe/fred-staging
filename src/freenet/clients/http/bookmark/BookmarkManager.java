@@ -119,11 +119,11 @@ public class BookmarkManager implements RequestClient {
 	 * 		{@code true} if the node is running as a public gateway, {@code false}
 	 * 		otherwise
 	 */
-	public BookmarkManager(NodeClientCore nodeClientCore, boolean publicGateway) {
+	public BookmarkManager(NodeClientCore nodeClientCore, File bookmarksFile, File backupBookmarksFile, boolean publicGateway) {
 		putPaths("/", MAIN_CATEGORY);
 		this.nodeClientCore = nodeClientCore;
-		this.bookmarksFile = nodeClientCore.node.userDir().file("bookmarks.dat");
-		this.backupBookmarksFile = nodeClientCore.node.userDir().file("bookmarks.dat.bak");
+		this.bookmarksFile = bookmarksFile;
+		this.backupBookmarksFile = backupBookmarksFile;
 
 		try {
 			// Read the backup file if necessary
