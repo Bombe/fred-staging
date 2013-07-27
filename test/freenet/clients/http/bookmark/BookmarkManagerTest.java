@@ -98,7 +98,7 @@ public class BookmarkManagerTest extends TestCase {
 		BookmarkContainer parentCategory = findBookmarkCategory(bookmarkManager, Position.ANY);
 		BookmarkItem newItem = new BookmarkItem(new FreenetURI("KSK@foo"), "foo", "foo", "foo (short)", true, userAlertManager);
 		bookmarkManager.addBookmark(parentCategory.getPath(), newItem);
-		assertTrue("new position", bookmarkManager.getCategoryByPath(parentCategory.getPath()).getItems().indexOf(newItem) > -1);
+		assertTrue("new position", positionOfBookmark(bookmarkManager, parentCategory.getPath(), newItem) > -1);
 	}
 
 	/**
@@ -113,7 +113,7 @@ public class BookmarkManagerTest extends TestCase {
 		BookmarkContainer parentCategory = findBookmarkCategory(bookmarkManager, Position.ANY);
 		BookmarkCategory newCategory = new BookmarkCategory("Test Category");
 		bookmarkManager.addBookmark(parentCategory.getPath(), newCategory);
-		assertTrue("new position", bookmarkManager.getCategoryByPath(parentCategory.getPath()).getSubCategories().indexOf(newCategory) > -1);
+		assertTrue("new position", positionOfBookmarkCategory(bookmarkManager, parentCategory.getPath(), newCategory) > -1);
 	}
 
 	/**
@@ -421,6 +421,40 @@ public class BookmarkManagerTest extends TestCase {
 			possibleChoices.addAll(findBookmarkCategory(subCategory, path + subCategory.getName() + "/", position));
 		}
 		return possibleChoices;
+	}
+
+	/**
+	 * Returns the position of the given bookmark in the category soecified by the
+	 * given path.
+	 *
+	 * @param bookmarkManager
+	 * 		The bookmark manager
+	 * @param path
+	 * 		The path of the parent category
+	 * @param bookmark
+	 * 		The bookmark whose position to check
+	 * @return The position of the bookmark, or {@code -1} if the bookmark could
+	 *         not be found
+	 */
+	private int positionOfBookmark(BookmarkManager bookmarkManager, String path, Bookmark bookmark) {
+		return bookmarkManager.getCategoryByPath(path).getItems().indexOf(bookmark);
+	}
+
+	/**
+	 * Returns the position of the given category in the category soecified by the
+	 * given path.
+	 *
+	 * @param bookmarkManager
+	 * 		The bookmark manager
+	 * @param path
+	 * 		The path of the parent category
+	 * @param category
+	 * 		The category whose position to check
+	 * @return The position of the category, or {@code -1} if the category could
+	 *         not be found
+	 */
+	private int positionOfBookmarkCategory(BookmarkManager bookmarkManager, String path, Bookmark category) {
+		return bookmarkManager.getCategoryByPath(path).getSubCategories().indexOf(category);
 	}
 
 	/**
