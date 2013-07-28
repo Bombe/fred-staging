@@ -9,7 +9,6 @@ import java.net.MalformedURLException;
 import freenet.keys.FreenetURI;
 import freenet.keys.USK;
 import freenet.l10n.NodeL10n;
-import freenet.node.FSParseException;
 import freenet.node.useralerts.AbstractUserAlert;
 import freenet.node.useralerts.UserAlert;
 import freenet.node.useralerts.UserAlertManager;
@@ -72,33 +71,6 @@ public class BookmarkItem extends Bookmark {
 		this.hasAnActivelink = hasAnActivelink;
 		this.userAlertManager = userAlertManager;
 		assert (this.key != null);
-	}
-
-	/**
-	 * Creates a new bookmark item from the given simple field set.
-	 *
-	 * @param simpleFieldSet
-	 * 		The simple field set to parse the bookmark item from
-	 * @param userAlertManager
-	 * 		The user alert manager
-	 * @throws FSParseException
-	 * 		if the field set can not be parsed
-	 * @throws MalformedURLException
-	 * 		if the bookmark key is malformed
-	 */
-	public BookmarkItem(SimpleFieldSet simpleFieldSet, UserAlertManager userAlertManager) throws FSParseException, MalformedURLException {
-		setName(simpleFieldSet.get("Name"));
-		this.description = simpleFieldSet.get("Description");
-		if (description == null) {
-			description = "";
-		}
-		this.shortDescription = simpleFieldSet.get("ShortDescription");
-		if (shortDescription == null) {
-			shortDescription = "";
-		}
-		this.hasAnActivelink = simpleFieldSet.getBoolean("hasAnActivelink");
-		this.key = new FreenetURI(simpleFieldSet.get("URI"));
-		this.userAlertManager = userAlertManager;
 	}
 
 	//

@@ -646,9 +646,14 @@ public class BookmarkManager implements RequestClient {
 				for (int bookmarkIndex = 0; bookmarkIndex < bookmarkCount; bookmarkIndex++) {
 					SimpleFieldSet subset = simpleFieldSet.getSubset(BOOKMARK_NAME + bookmarkIndex);
 					try {
-						BookmarkItem bookmarkItem = new BookmarkItem(subset, nodeClientCore.alerts);
-						String name = (isRoot ? "" : prefix + category.getName()) + '/' + bookmarkItem.getName();
-						putPaths(name, bookmarkItem);
+						String name = subset.get("Name");
+						String description = subset.get("Description");
+						String shortDescription = subset.get("ShortDescription");
+						boolean hasAnActivelink = subset.getBoolean("hasAnActivelink");
+						FreenetURI key = new FreenetURI(subset.get("URI"));
+						String path = (isRoot ? "" : prefix + category.getName()) + '/' + name;
+						BookmarkItem bookmarkItem = new BookmarkItem(key, name, description, shortDescription, hasAnActivelink, nodeClientCore.alerts);
+						putPaths(path, bookmarkItem);
 						category.addBookmark(bookmarkItem);
 						subscribeToUSK(bookmarkItem);
 					} catch (MalformedURLException e) {
