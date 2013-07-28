@@ -23,6 +23,7 @@ import static org.mockito.Mockito.mock;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import freenet.client.async.USKManager;
@@ -35,9 +36,10 @@ import junit.framework.TestCase;
 /**
  * Tests for {@link BookmarkManager}.
  * <p/>
- * Most of the tests use {@link #findBookmark(BookmarkManager, Position)} and
- * {@link #findBookmarkCategory(BookmarkManager, Position)} to find a random
- * {@link BookmarkItem} or {@link BookmarkCategory} from the default bookmarks.
+ * Most of the tests use {@link #findBookmark(BookmarkManager, Position,
+ * Bookmark...)} and {@link #findBookmarkCategory(BookmarkManager, Position,
+ * Bookmark...)} to find a random {@link BookmarkItem} or {@link
+ * BookmarkCategory} from the default bookmarks.
  *
  * @author <a href="mailto:bombe@pterodactylus.net">David ‘Bombe’ Roden</a>
  */
@@ -377,20 +379,6 @@ public class BookmarkManagerTest extends TestCase {
 	}
 
 	/**
-	 * Chooses a random bookmark from all the bookmarks of the given bookmark
-	 * manager that satisfy the given position.
-	 *
-	 * @param bookmarkManager
-	 * 		The bookmark manager to get a bookmark from
-	 * @param position
-	 * 		The position of the bookmark
-	 * @return A bookmark container, or {@code null} if no bookmark could be found
-	 */
-	private BookmarkContainer findBookmark(BookmarkManager bookmarkManager, Position position) {
-		return findBookmark(bookmarkManager, position, null);
-	}
-
-	/**
 	 * Chooses a random bookmark other than the given bookmark from all the
 	 * bookmarks of the given bookmark manager that satisfy the given position.
 	 *
@@ -398,23 +386,25 @@ public class BookmarkManagerTest extends TestCase {
 	 * 		The bookmark manager to get a bookmark from
 	 * @param position
 	 * 		The position of the bookmark
-	 * @param ignore
-	 * 		The bookmark to ignore (may be {@code null})
+	 * @param ignores
+	 * 		The bookmarks to ignore
 	 * @return A bookmark container, or {@code null} if no bookmark could be found
 	 */
 
-	private BookmarkContainer findBookmark(BookmarkManager bookmarkManager, Position position, Bookmark ignore) {
+	private BookmarkContainer findBookmark(BookmarkManager bookmarkManager, Position position, Bookmark... ignores) {
 		List<BookmarkContainer> items = findBookmark(bookmarkManager.getCategoryByPath("/"), "/", position);
 		if (!items.isEmpty()) {
-			if ((items.size() == 1) && (items.get(0).equals(ignore))) {
-				return null;
-			}
-			while (true) {
-				BookmarkContainer item = items.get((int) (Math.random() * items.size()));
-				if (!item.getBookmark().equals(ignore)) {
-					return item;
+			List<BookmarkContainer> notIgnored = new ArrayList<BookmarkContainer>();
+			List<Bookmark> ignored = Arrays.asList(ignores);
+			for (BookmarkContainer bookmarkContainer : items) {
+				if (!ignored.contains(bookmarkContainer.getBookmark())) {
+					notIgnored.add(bookmarkContainer);
 				}
 			}
+			if (notIgnored.isEmpty()) {
+				return null;
+			}
+			return notIgnored.get((int) (Math.random() * notIgnored.size()));
 		}
 		return null;
 	}
@@ -456,21 +446,6 @@ public class BookmarkManagerTest extends TestCase {
 	}
 
 	/**
-	 * Chooses a random bookmark category from all the bookmark categories of the
-	 * given bookmark manager that satisfy the given position.
-	 *
-	 * @param bookmarkManager
-	 * 		The bookmark manager to get a bookmark category from
-	 * @param position
-	 * 		The position of the bookmark category
-	 * @return A bookmark container, or {@code null} if no bookmark category could
-	 *         be found
-	 */
-	private BookmarkContainer findBookmarkCategory(BookmarkManager bookmarkManager, Position position) {
-		return findBookmarkCategory(bookmarkManager, position, null);
-	}
-
-	/**
 	 * Chooses a random bookmark category other than the given bookmark category
 	 * from all the bookmark categories of the given bookmark manager that satisfy
 	 * the given position.
@@ -479,23 +454,25 @@ public class BookmarkManagerTest extends TestCase {
 	 * 		The bookmark manager to get a bookmark category from
 	 * @param position
 	 * 		The position of the bookmark category
-	 * @param ignore
-	 * 		The bookmark category to ignore (may be {@code null})
+	 * @param ignores
+	 * 		The bookmark categories to ignore
 	 * @return A bookmark container, or {@code null} if no bookmark category could
 	 *         be found
 	 */
-	private BookmarkContainer findBookmarkCategory(BookmarkManager bookmarkManager, Position position, Bookmark ignore) {
+	private BookmarkContainer findBookmarkCategory(BookmarkManager bookmarkManager, Position position, Bookmark... ignores) {
 		List<BookmarkContainer> categories = findBookmarkCategory(bookmarkManager.getCategoryByPath("/"), "/", position);
 		if (!categories.isEmpty()) {
-			if ((categories.size() == 1) && (categories.get(0).equals(ignore))) {
-				return null;
-			}
-			while (true) {
-				BookmarkContainer category = categories.get((int) (Math.random() * categories.size()));
-				if (!category.getBookmark().equals(ignore)) {
-					return category;
+			List<BookmarkContainer> notIgnored = new ArrayList<BookmarkContainer>();
+			List<Bookmark> ignored = Arrays.asList(ignores);
+			for (BookmarkContainer bookmarkContainer : categories) {
+				if (!ignored.contains(bookmarkContainer.getBookmark())) {
+					notIgnored.add(bookmarkContainer);
 				}
 			}
+			if (notIgnored.isEmpty()) {
+				return null;
+			}
+			return notIgnored.get((int) (Math.random() * notIgnored.size()));
 		}
 		return null;
 	}
