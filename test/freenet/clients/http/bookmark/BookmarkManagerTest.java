@@ -350,6 +350,46 @@ public class BookmarkManagerTest extends TestCase {
 		assertEquals("size after readding default bookmarks", oldSize, bookmarkManager.getBookmarks().getAllItems().size());
 	}
 
+	/**
+	 * Tests storing the bookmarks. This does not actually verify that the
+	 * bookmarks written to the file mean anything, it just checks that the
+	 * bookmarks file has length of more than 0 bytes.
+	 *
+	 * @throws IOException
+	 * 		if an I/O error occurs
+	 */
+	public void testStoringBookmarks() throws IOException {
+		File bookmarksFile = File.createTempFile("bookmarks-", ".dat");
+		bookmarksFile.deleteOnExit();
+		File backupBookmarksFile = File.createTempFile("bookmarks-", ".dat.bak");
+		backupBookmarksFile.deleteOnExit();
+		BookmarkManager bookmarkManager = createBookmarkManager(bookmarksFile, backupBookmarksFile, false);
+		bookmarkManager.storeBookmarks();
+		assertTrue("file length has changed", bookmarksFile.length() > 0);
+	}
+
+	/**
+	 * Tests loading the bookmarks. This is tested by adding a new bookmark, saving
+	 * the bookmarks, creating a second bookmark manager, and locating the newly
+	 * created bookmark there.
+	 *
+	 * @throws IOException
+	 * 		if an I/O error occurs
+	 */
+	public void testLoadingBookmarks() throws IOException {
+		File bookmarksFile = File.createTempFile("bookmarks-", ".dat");
+		bookmarksFile.deleteOnExit();
+		File backupBookmarksFile = File.createTempFile("bookmarks-", ".dat.bak");
+		backupBookmarksFile.deleteOnExit();
+		BookmarkManager firstBookmarkManager = createBookmarkManager(bookmarksFile, backupBookmarksFile, false);
+		firstBookmarkManager.addBookmark("/", new BookmarkCategory("Test Category"));
+		firstBookmarkManager.storeBookmarks();
+		assertTrue("file length has changed", bookmarksFile.length() > 0);
+
+		BookmarkManager secondBookmarkManager = createBookmarkManager(bookmarksFile, backupBookmarksFile, false);
+		assertTrue("test category exists", positionOfBookmarkCategory(secondBookmarkManager, "/", "Test Category") > -1);
+	}
+
 	//
 	// PRIVATE METHODS
 	//
