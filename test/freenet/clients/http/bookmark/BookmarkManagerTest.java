@@ -328,6 +328,28 @@ public class BookmarkManagerTest extends TestCase {
 		assertTrue("new name", positionOfBookmarkCategory(bookmarkManager, parentPath(category.getPath()), "New Category") > -1);
 	}
 
+	/**
+	 * Tests readd the default bookmark set by deleting all bookmarks and
+	 * categories and readding the default bookmarks, checking the number of all
+	 * bookmarks before deleting and after readding.
+	 *
+	 * @throws IOException
+	 * 		if an I/O error occurs
+	 */
+	public void testReaddDefaultBookmarks() throws IOException {
+		BookmarkManager bookmarkManager = createBookmarkManager();
+		int oldSize = bookmarkManager.getBookmarks().getAllItems().size();
+		for (BookmarkItem bookmarkItem : bookmarkManager.getBookmarks().getItems()) {
+			bookmarkManager.removeBookmark("/" + bookmarkItem.getName());
+		}
+		for (BookmarkCategory bookmarkCategory : bookmarkManager.getBookmarks().getSubCategories()) {
+			bookmarkManager.removeBookmark("/" + bookmarkCategory.getName() + "/");
+		}
+		assertEquals("bookmark manager empty", 0, bookmarkManager.getBookmarks().getAllItems().size());
+		bookmarkManager.reAddDefaultBookmarks();
+		assertEquals("size after readding default bookmarks", oldSize, bookmarkManager.getBookmarks().getAllItems().size());
+	}
+
 	//
 	// PRIVATE METHODS
 	//
