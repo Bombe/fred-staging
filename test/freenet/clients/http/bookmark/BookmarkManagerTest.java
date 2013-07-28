@@ -294,7 +294,7 @@ public class BookmarkManagerTest extends TestCase {
 	public void testMoveBookmarkCategoryToOtherParent() throws IOException {
 		BookmarkManager bookmarkManager = createBookmarkManager();
 		BookmarkContainer category = findBookmarkCategory(bookmarkManager, Position.ANY);
-		BookmarkContainer newParentCategory = findBookmarkCategory(bookmarkManager, Position.ANY, bookmarkManager.getCategoryByPath(parentPath(category.getPath())));
+		BookmarkContainer newParentCategory = findBookmarkCategory(bookmarkManager, Position.ANY, category.getBookmark(), bookmarkManager.getCategoryByPath(parentPath(category.getPath())));
 		bookmarkManager.moveBookmark(category.getPath(), newParentCategory.getPath());
 		assertEquals("old position", -1, positionOfBookmarkCategory(bookmarkManager, category));
 		assertTrue("new position", positionOfBookmarkCategory(bookmarkManager, newParentCategory.getPath(), category.getBookmark()) > -1);
