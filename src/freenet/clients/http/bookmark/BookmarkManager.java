@@ -346,7 +346,7 @@ public class BookmarkManager implements RequestClient {
 		if (bookmark instanceof BookmarkCategory) {
 			BookmarkCategory cat = (BookmarkCategory) bookmark;
 			while (cat.size() > 0) {
-				removeBookmark(path + cat.get(0).getName() + ((cat.get(0) instanceof BookmarkCategory) ? "/" : ""));
+				removeBookmark(cat.get(0).getPath());
 			}
 		} else {
 			if (((BookmarkItem) bookmark).getKeyType().equals("USK")) {
