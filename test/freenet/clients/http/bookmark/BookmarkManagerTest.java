@@ -376,7 +376,11 @@ public class BookmarkManagerTest extends TestCase {
 	 * 		if an I/O error occurs
 	 */
 	private BookmarkManager createBookmarkManager(boolean publicGateway) throws IOException {
-		return createBookmarkManager(File.createTempFile("bookmarks-", ".dat"), File.createTempFile("bookmarks-", ".dat.bak"), publicGateway);
+		File bookmarksFile = File.createTempFile("bookmarks-", ".dat");
+		bookmarksFile.deleteOnExit();
+		File backupBookmarksFile = File.createTempFile("bookmarks-", ".dat.bak");
+		backupBookmarksFile.deleteOnExit();
+		return createBookmarkManager(bookmarksFile, backupBookmarksFile, publicGateway);
 	}
 
 	/**
