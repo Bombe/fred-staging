@@ -101,6 +101,7 @@ public class BookmarkManagerTest extends TestCase {
 		BookmarkItem newItem = new BookmarkItem(new FreenetURI("KSK@foo"), "foo", "foo", "foo (short)", true, userAlertManager);
 		bookmarkManager.addBookmark(parentCategory.getPath(), newItem);
 		assertTrue("new position", positionOfBookmark(bookmarkManager, parentCategory.getPath(), newItem) > -1);
+		assertEquals("new path", parentCategory.getPath() + newItem.getName(), newItem.getPath());
 	}
 
 	/**
@@ -116,6 +117,7 @@ public class BookmarkManagerTest extends TestCase {
 		BookmarkCategory newCategory = new BookmarkCategory("Test Category");
 		bookmarkManager.addBookmark(parentCategory.getPath(), newCategory);
 		assertTrue("new position", positionOfBookmarkCategory(bookmarkManager, parentCategory.getPath(), newCategory) > -1);
+		assertEquals("new path", parentCategory.getPath() + newCategory.getName() + "/", newCategory.getPath());
 	}
 
 	/**
@@ -281,6 +283,7 @@ public class BookmarkManagerTest extends TestCase {
 		bookmarkManager.moveBookmark(bookmark.getPath(), newParentCategory.getPath());
 		assertEquals("old position", -1, positionOfBookmark(bookmarkManager, bookmark));
 		assertTrue("new position", positionOfBookmark(bookmarkManager, newParentCategory.getPath(), bookmark.getBookmark()) > -1);
+		assertEquals("new path", newParentCategory.getPath() + bookmark.getBookmark().getName(), bookmark.getBookmark().getPath());
 	}
 
 	/**
@@ -298,6 +301,7 @@ public class BookmarkManagerTest extends TestCase {
 		bookmarkManager.moveBookmark(category.getPath(), newParentCategory.getPath());
 		assertEquals("old position", -1, positionOfBookmarkCategory(bookmarkManager, category));
 		assertTrue("new position", positionOfBookmarkCategory(bookmarkManager, newParentCategory.getPath(), category.getBookmark()) > -1);
+		assertEquals("new path", newParentCategory.getPath() + category.getBookmark().getName() + "/", category.getBookmark().getPath());
 	}
 
 	/**
@@ -312,6 +316,7 @@ public class BookmarkManagerTest extends TestCase {
 		BookmarkContainer bookmark = findBookmark(bookmarkManager, Position.ANY);
 		bookmarkManager.renameBookmark(bookmark.getPath(), "New Name");
 		assertTrue("new name", positionOfBookmark(bookmarkManager, parentPath(bookmark.getPath()), "New Name") > -1);
+		assertEquals("new path", parentPath(bookmark.getPath()) + "New Name", bookmark.getBookmark().getPath());
 	}
 
 	/**
@@ -326,6 +331,7 @@ public class BookmarkManagerTest extends TestCase {
 		BookmarkContainer category = findBookmarkCategory(bookmarkManager, Position.ANY);
 		bookmarkManager.renameBookmark(category.getPath(), "New Category");
 		assertTrue("new name", positionOfBookmarkCategory(bookmarkManager, parentPath(category.getPath()), "New Category") > -1);
+		assertEquals("new path", parentPath(category.getPath()) + "New Category" + "/", category.getBookmark().getPath());
 	}
 
 	/**
