@@ -12,12 +12,25 @@ import freenet.support.SimpleFieldSet;
  */
 public abstract class Bookmark {
 
+	/** The path of the bookmark. */
+	private String path;
+
 	/** The name of the bookmark. */
 	private String name;
 
 	//
 	// ACCESSORS
 	//
+
+	/**
+	 * Returns the path of this bookmark. The path is always update by the {@link
+	 * BookmarkManager} it belongs to if it is moved or renamed.
+	 *
+	 * @return The path of this bookmark
+	 */
+	public final String getPath() {
+		return path;
+	}
 
 	/**
 	 * Returns the name of this bookmark.
@@ -40,6 +53,16 @@ public abstract class Bookmark {
 			return NodeL10n.getBase().getString("Bookmarks.Defaults.Name." + name.substring("l10n:".length()));
 		}
 		return name;
+	}
+
+	/**
+	 * Sets the path of this bookmark.
+	 *
+	 * @param path
+	 * 		The path of this bookmark
+	 */
+	protected void setPath(String path) {
+		this.path = path;
 	}
 
 	/**

@@ -544,6 +544,7 @@ public class BookmarkManager implements RequestClient {
 		synchronized (bookmarks) {
 			bookmarks.put(path, bookmark);
 		}
+		bookmark.setPath(path);
 		if (bookmark instanceof BookmarkCategory) {
 			for (int i = 0; i < ((BookmarkCategory) bookmark).size(); i++) {
 				Bookmark child = ((BookmarkCategory) bookmark).get(i);
