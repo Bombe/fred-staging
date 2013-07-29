@@ -17,12 +17,10 @@ import freenet.l10n.NodeL10n;
 import freenet.node.DarknetPeerNode;
 import freenet.node.NodeClientCore;
 import freenet.support.HTMLNode;
-import freenet.support.LogThresholdCallback;
 import freenet.support.Logger;
 import freenet.support.URLDecoder;
 import freenet.support.URLEncodedFormatException;
 import freenet.support.URLEncoder;
-import freenet.support.Logger.LogLevel;
 import freenet.support.api.HTTPRequest;
 
 /**
@@ -31,6 +29,13 @@ import freenet.support.api.HTTPRequest;
  * Accessible from http://.../bookmarkEditor/
  */
 public class BookmarkEditorToadlet extends Toadlet {
+
+	/** Whether we are logging at DEBUG. */
+	private static volatile boolean logDEBUG;
+
+	static {
+		Logger.registerClass(BookmarkEditorToadlet.class);
+	}
 
 	private static final int MAX_ACTION_LENGTH = 20;
 
@@ -48,17 +53,6 @@ public class BookmarkEditorToadlet extends Toadlet {
 	private final NodeClientCore core;
 
 	private String cutedPath;
-
-	private static volatile boolean logDEBUG;
-
-	static {
-		Logger.registerLogThresholdCallback(new LogThresholdCallback() {
-			@Override
-			public void shouldUpdate() {
-				logDEBUG = Logger.shouldLog(LogLevel.DEBUG, this);
-			}
-		});
-	}
 
 	BookmarkEditorToadlet(HighLevelSimpleClient client, NodeClientCore core) {
 		super(client);
