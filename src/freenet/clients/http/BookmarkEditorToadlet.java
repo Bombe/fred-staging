@@ -60,113 +60,112 @@ public class BookmarkEditorToadlet extends Toadlet {
 		this.cutedPath = null;
 	}
 
-	/** Get all bookmark as a tree of &lt;li&gt;...&lt;/li&gt;s */
-	private void addCategoryToList(BookmarkCategory cat, String path, HTMLNode list, BookmarkManager bookmarkManager) {
-		List<BookmarkItem> items = cat.getItems();
 
-		final String edit = NodeL10n.getBase().getString("BookmarkEditorToadlet.edit");
-		final String delete = NodeL10n.getBase().getString("BookmarkEditorToadlet.delete");
-		final String cut = NodeL10n.getBase().getString("BookmarkEditorToadlet.cut");
-		final String moveUp = NodeL10n.getBase().getString("BookmarkEditorToadlet.moveUp");
-		final String moveDown = NodeL10n.getBase().getString("BookmarkEditorToadlet.moveDown");
-		final String paste = NodeL10n.getBase().getString("BookmarkEditorToadlet.paste");
-		final String addBookmark = NodeL10n.getBase().getString("BookmarkEditorToadlet.addBookmark");
-		final String addCategory = NodeL10n.getBase().getString("BookmarkEditorToadlet.addCategory");
+	public void handleMethodPOST(URI uri, HTTPRequest req, ToadletContext ctx)
+			throws ToadletContextClosedException, IOException {
+		PageMaker pageMaker = ctx.getPageMaker();
+		BookmarkManager bookmarkManager = ctx.getBookmarkManager();
+		PageNode page = pageMaker.getPageNode(NodeL10n.getBase().getString("BookmarkEditorToadlet.title"), ctx);
+		HTMLNode pageNode = page.outer;
+		HTMLNode content = page.content;
 
-		boolean hasFriends = core.node.getDarknetConnections().length > 0;
+		if (req.isPartSet("AddDefaultBookmarks")) {
+			bookmarkManager.reAddDefaultBookmarks();
+			this.writeTemporaryRedirect(ctx, "Ok", "/");
+			return;
+		}
 
-		for (int i = 0; i < items.size(); i++) {
-			BookmarkItem item = items.get(i);
+		String bookmarkPath = req.getPartAsStringFailsafe("bookmark", MAX_BOOKMARK_PATH_LENGTH);
+		try {
 
-			String itemPath = URLEncoder.encode(path + item.getName(), false);
-			HTMLNode li = new HTMLNode("li", "class", "item", item.getVisibleName());
-			String explain = item.getShortDescription();
-			if (explain != null && explain.length() > 0) {
-				li.addChild("#", " (");
-				li.addChild("#", explain);
-				li.addChild("#", ")");
+			Bookmark bookmark;
+			if (bookmarkPath.endsWith("/"))
+				bookmark = bookmarkManager.getCategoryByPath(bookmarkPath);
+			else
+				bookmark = bookmarkManager.getItemByPath(bookmarkPath);
+			if (bookmark == null && !req.isPartSet("cancelCut")) {
+				pageMaker.getInfobox("infobox-error", NodeL10n.getBase().getString("BookmarkEditorToadlet.error"), content, "bookmark-error", false).
+																																							addChild("#", NodeL10n.getBase().getString("BookmarkEditorToadlet.bookmarkDoesNotExist", new String[] { "bookmark" }, new String[] { bookmarkPath }));
+				this.writeHTMLReply(ctx, 200, "OK", pageNode.generate());
+				return;
 			}
 
-			HTMLNode actions = new HTMLNode("span", "class", "actions");
-			actions.addChild("a", "href", "?action=edit&bookmark=" + itemPath).addChild("img", new String[] { "src", "alt", "title" }, new String[] { "/static/icon/edit.png", edit, edit });
+			String action = req.getPartAsStringFailsafe("action", MAX_ACTION_LENGTH);
 
-			actions.addChild("a", "href", "?action=del&bookmark=" + itemPath).addChild("img", new String[] { "src", "alt", "title" }, new String[] { "/static/icon/delete.png", delete, delete });
+			if (req.isPartSet("confirmdelete")) {
+				bookmarkManager.removeBookmark(bookmarkPath);
+				bookmarkManager.storeBookmarks();
+				pageMaker.getInfobox("infobox-success", NodeL10n.getBase().getString("BookmarkEditorToadlet.deleteSucceededTitle"), content, "bookmark-successful-delete", false).
+																																														 addChild("p", NodeL10n.getBase().getString("BookmarkEditorToadlet.deleteSucceeded"));
 
-			if (cutedPath == null)
-				actions.addChild("a", "href", "?action=cut&bookmark=" + itemPath).addChild("img", new String[] { "src", "alt", "title" }, new String[] { "/static/icon/cut.png", cut, cut });
+			} else if (req.isPartSet("cancelCut"))
+				cutedPath = null;
+			else if ("edit".equals(action) || "addItem".equals(action) || "addCat".equals(action)) {
 
-			if (i != 0)
-				actions.addChild("a", "href", "?action=up&bookmark=" + itemPath).addChild("img", new String[] { "src", "alt", "title" }, new String[] { "/static/icon/go-up.png", moveUp, moveUp });
+				String name = "unnamed";
+				if (req.isPartSet("name"))
+					name = req.getPartAsStringFailsafe("name", MAX_NAME_LENGTH);
 
-			if (i != items.size() - 1)
-				actions.addChild("a", "href", "?action=down&bookmark=" + itemPath).addChild("img", new String[] { "src", "alt", "title" }, new String[] { "/static/icon/go-down.png", moveDown, moveDown });
+				if ("edit".equals(action)) {
+					bookmarkManager.renameBookmark(bookmarkPath, name);
+					boolean hasAnActivelink = req.isPartSet("hasAnActivelink");
+					if (bookmark instanceof BookmarkItem) {
+						BookmarkItem item = (BookmarkItem) bookmark;
+						item.update(new FreenetURI(req.getPartAsStringFailsafe("key", MAX_KEY_LENGTH)), hasAnActivelink, req.getPartAsStringFailsafe("descB", MAX_KEY_LENGTH), req.getPartAsStringFailsafe("explain", MAX_EXPLANATION_LENGTH));
+						sendBookmarkFeeds(req, item, req.getPartAsStringFailsafe("publicDescB", MAX_KEY_LENGTH));
+					}
+					bookmarkManager.storeBookmarks();
 
-			if (hasFriends)
-				actions.addChild("a", "href", "?action=share&bookmark=" + itemPath, NodeL10n.getBase().getString("BookmarkEditorToadlet.share"));
+					pageMaker.getInfobox("infobox-success", NodeL10n.getBase().getString("BookmarkEditorToadlet.changesSavedTitle"), content, "bookmark-error", false).
+																																											  addChild("p", NodeL10n.getBase().getString("BookmarkEditorToadlet.changesSaved"));
 
-			li.addChild(actions);
-			list.addChild(li);
+				} else if ("addItem".equals(action) || "addCat".equals(action)) {
+
+					Bookmark newBookmark = null;
+					if ("addItem".equals(action)) {
+						FreenetURI key = new FreenetURI(req.getPartAsStringFailsafe("key", MAX_KEY_LENGTH));
+						/* TODO:
+						 * <nextgens> I suggest you implement a HTTPRequest.getBoolean(String name) using Fields.stringtobool
+						 * <nextgens> HTTPRequest.getBoolean(String name, boolean default) even
+						 *
+						 * - values as "on", "true", "yes" should be accepted.
+						 */
+						boolean hasAnActivelink = req.isPartSet("hasAnActivelink");
+						if (name.contains("/")) {
+							pageMaker.getInfobox("infobox-error", NodeL10n.getBase().getString("BookmarkEditorToadlet.invalidNameTitle"), content, "bookmark-error", false).
+																																												   addChild("#", NodeL10n.getBase().getString("BookmarkEditorToadlet.invalidName"));
+						} else
+							newBookmark = new BookmarkItem(key, name, req.getPartAsStringFailsafe("descB", MAX_KEY_LENGTH), req.getPartAsStringFailsafe("explain", MAX_EXPLANATION_LENGTH), hasAnActivelink, ctx.getAlertManager());
+					} else if (name.contains("/")) {
+						pageMaker.getInfobox("infobox-error", NodeL10n.getBase().getString("BookmarkEditorToadlet.invalidNameTitle"), content, "bookmark-error", false).
+																																											   addChild("#", NodeL10n.getBase().getString("BookmarkEditorToadlet.invalidName"));
+					} else
+						newBookmark = new BookmarkCategory(name);
+
+					if (newBookmark != null) {
+
+						bookmarkManager.addBookmark(bookmarkPath, newBookmark);
+						bookmarkManager.storeBookmarks();
+						if (newBookmark instanceof BookmarkItem)
+							sendBookmarkFeeds(req, (BookmarkItem) newBookmark, req.getPartAsStringFailsafe("publicDescB", MAX_KEY_LENGTH));
+
+						pageMaker.getInfobox("infobox-success", NodeL10n.getBase().getString("BookmarkEditorToadlet.addedNewBookmarkTitle"), content, "bookmark-add-new", false).
+																																														addChild("p", NodeL10n.getBase().getString("BookmarkEditorToadlet.addedNewBookmark"));
+					}
+				}
+			} else if ("share".equals(action))
+				sendBookmarkFeeds(req, (BookmarkItem) bookmark, req.getPartAsStringFailsafe("publicDescB", MAX_KEY_LENGTH));
+		} catch (MalformedURLException mue) {
+			pageMaker.getInfobox("infobox-error", NodeL10n.getBase().getString("BookmarkEditorToadlet.invalidKeyTitle"), content, "bookmark-error", false).
+																																								  addChild("#", NodeL10n.getBase().getString("BookmarkEditorToadlet.invalidKey"));
 		}
+		pageMaker.getInfobox("infobox-normal", NodeL10n.getBase().getString("BookmarkEditorToadlet.myBookmarksTitle"), content, "bookmarks", false).
+																																						   addChild(getBookmarksList(bookmarkManager));
 
-		List<BookmarkCategory> cats = cat.getSubCategories();
-		for (int i = 0; i < cats.size(); i++) {
-			String catPath = path + cats.get(i).getName() + '/';
-			String catPathEncoded = URLEncoder.encode(catPath, false);
+		HTMLNode addDefaultBookmarksForm = ctx.addFormChild(content, "", "AddDefaultBookmarks");
+		addDefaultBookmarksForm.addChild("input", new String[] { "type", "name", "value" }, new String[] { "submit", "AddDefaultBookmarks", NodeL10n.getBase().getString("BookmarkEditorToadlet.addDefaultBookmarks") });
 
-			HTMLNode subCat = list.addChild("li", "class", "cat", cats.get(i).getVisibleName());
-
-			HTMLNode actions = new HTMLNode("span", "class", "actions");
-
-			actions.addChild("a", "href", "?action=edit&bookmark=" + catPathEncoded).addChild("img", new String[] { "src", "alt", "title" }, new String[] { "/static/icon/edit.png", edit, edit });
-
-			actions.addChild("a", "href", "?action=del&bookmark=" + catPathEncoded).addChild("img", new String[] { "src", "alt", "title" }, new String[] { "/static/icon/delete.png", delete, delete });
-
-			actions.addChild("a", "href", "?action=addItem&bookmark=" + catPathEncoded).addChild("img", new String[] { "src", "alt", "title" }, new String[] { "/static/icon/bookmark-new.png", addBookmark, addBookmark });
-
-			actions.addChild("a", "href", "?action=addCat&bookmark=" + catPathEncoded).addChild("img", new String[] { "src", "alt", "title" }, new String[] { "/static/icon/folder-new.png", addCategory, addCategory });
-
-			if (cutedPath == null)
-				actions.addChild("a", "href", "?action=cut&bookmark=" + catPathEncoded).addChild("img", new String[] { "src", "alt", "title" }, new String[] { "/static/icon/cut.png", cut, cut });
-
-			if (i != 0)
-				actions.addChild("a", "href", "?action=up&bookmark=" + catPathEncoded).addChild("img", new String[] { "src", "alt", "title" }, new String[] { "/static/icon/go-up.png", moveUp, moveUp });
-
-			if (i != cats.size() - 1)
-				actions.addChild("a", "href", "?action=down&bookmark=" + catPathEncoded).addChild("img", new String[] { "src", "alt", "title" }, new String[] { "/static/icon/go-down.png", moveDown, moveDown });
-
-			if (cutedPath != null && !catPathEncoded.startsWith(cutedPath) && !catPathEncoded.equals(bookmarkManager.parentPath(cutedPath)))
-				actions.addChild("a", "href", "?action=paste&bookmark=" + catPathEncoded).addChild("img", new String[] { "src", "alt", "title" }, new String[] { "/static/icon/paste.png", paste, paste });
-
-			subCat.addChild(actions);
-			if (cats.get(i).size() != 0)
-				addCategoryToList(cats.get(i), catPath, list.addChild("li").addChild("ul"), bookmarkManager);
-		}
-	}
-
-	private void sendBookmarkFeeds(HTTPRequest req, BookmarkItem item, String publicDescription) {
-		for (DarknetPeerNode peer : core.node.getDarknetConnections())
-			if (req.isPartSet("node_" + peer.hashCode()))
-				peer.sendBookmarkFeed(item.getURI(), item.getName(), publicDescription, item.hasAnActivelink());
-	}
-
-	private HTMLNode getBookmarksList(BookmarkManager bookmarkManager) {
-		HTMLNode bookmarks = new HTMLNode("ul", "id", "bookmarks");
-
-		HTMLNode root = bookmarks.addChild("li", "class", "cat root", "/");
-		HTMLNode actions = new HTMLNode("span", "class", "actions");
-		String addBookmark = NodeL10n.getBase().getString("BookmarkEditorToadlet.addBookmark");
-		String addCategory = NodeL10n.getBase().getString("BookmarkEditorToadlet.addCategory");
-		String paste = NodeL10n.getBase().getString("BookmarkEditorToadlet.paste");
-		actions.addChild("a", "href", "?action=addItem&bookmark=/").addChild("img", new String[] { "src", "alt", "title" }, new String[] { "/static/icon/bookmark-new.png", addBookmark, addBookmark });
-		actions.addChild("a", "href", "?action=addCat&bookmark=/").addChild("img", new String[] { "src", "alt", "title" }, new String[] { "/static/icon/folder-new.png", addCategory, addCategory });
-
-		if (cutedPath != null && !"/".equals(bookmarkManager.parentPath(cutedPath)))
-			actions.addChild("a", "href", "?action=paste&bookmark=/").addChild("img", new String[] { "src", "alt", "title" }, new String[] { "/static/icon/paste.png", paste, paste });
-
-		root.addChild(actions);
-		addCategoryToList(bookmarkManager.getBookmarks(), "/", root.addChild("ul"), bookmarkManager);
-
-		return bookmarks;
+		this.writeHTMLReply(ctx, 200, "OK", pageNode.generate());
 	}
 
 	public void handleMethodGET(URI uri, HTTPRequest req, ToadletContext ctx)
@@ -319,115 +318,119 @@ public class BookmarkEditorToadlet extends Toadlet {
 		this.writeHTMLReply(ctx, 200, "OK", pageNode.generate());
 	}
 
-	public void handleMethodPOST(URI uri, HTTPRequest req, ToadletContext ctx)
-			throws ToadletContextClosedException, IOException {
-		PageMaker pageMaker = ctx.getPageMaker();
-		BookmarkManager bookmarkManager = ctx.getBookmarkManager();
-		PageNode page = pageMaker.getPageNode(NodeL10n.getBase().getString("BookmarkEditorToadlet.title"), ctx);
-		HTMLNode pageNode = page.outer;
-		HTMLNode content = page.content;
-
-		if (req.isPartSet("AddDefaultBookmarks")) {
-			bookmarkManager.reAddDefaultBookmarks();
-			this.writeTemporaryRedirect(ctx, "Ok", "/");
-			return;
-		}
-
-		String bookmarkPath = req.getPartAsStringFailsafe("bookmark", MAX_BOOKMARK_PATH_LENGTH);
-		try {
-
-			Bookmark bookmark;
-			if (bookmarkPath.endsWith("/"))
-				bookmark = bookmarkManager.getCategoryByPath(bookmarkPath);
-			else
-				bookmark = bookmarkManager.getItemByPath(bookmarkPath);
-			if (bookmark == null && !req.isPartSet("cancelCut")) {
-				pageMaker.getInfobox("infobox-error", NodeL10n.getBase().getString("BookmarkEditorToadlet.error"), content, "bookmark-error", false).
-																																							addChild("#", NodeL10n.getBase().getString("BookmarkEditorToadlet.bookmarkDoesNotExist", new String[] { "bookmark" }, new String[] { bookmarkPath }));
-				this.writeHTMLReply(ctx, 200, "OK", pageNode.generate());
-				return;
-			}
-
-			String action = req.getPartAsStringFailsafe("action", MAX_ACTION_LENGTH);
-
-			if (req.isPartSet("confirmdelete")) {
-				bookmarkManager.removeBookmark(bookmarkPath);
-				bookmarkManager.storeBookmarks();
-				pageMaker.getInfobox("infobox-success", NodeL10n.getBase().getString("BookmarkEditorToadlet.deleteSucceededTitle"), content, "bookmark-successful-delete", false).
-																																														 addChild("p", NodeL10n.getBase().getString("BookmarkEditorToadlet.deleteSucceeded"));
-
-			} else if (req.isPartSet("cancelCut"))
-				cutedPath = null;
-			else if ("edit".equals(action) || "addItem".equals(action) || "addCat".equals(action)) {
-
-				String name = "unnamed";
-				if (req.isPartSet("name"))
-					name = req.getPartAsStringFailsafe("name", MAX_NAME_LENGTH);
-
-				if ("edit".equals(action)) {
-					bookmarkManager.renameBookmark(bookmarkPath, name);
-					boolean hasAnActivelink = req.isPartSet("hasAnActivelink");
-					if (bookmark instanceof BookmarkItem) {
-						BookmarkItem item = (BookmarkItem) bookmark;
-						item.update(new FreenetURI(req.getPartAsStringFailsafe("key", MAX_KEY_LENGTH)), hasAnActivelink, req.getPartAsStringFailsafe("descB", MAX_KEY_LENGTH), req.getPartAsStringFailsafe("explain", MAX_EXPLANATION_LENGTH));
-						sendBookmarkFeeds(req, item, req.getPartAsStringFailsafe("publicDescB", MAX_KEY_LENGTH));
-					}
-					bookmarkManager.storeBookmarks();
-
-					pageMaker.getInfobox("infobox-success", NodeL10n.getBase().getString("BookmarkEditorToadlet.changesSavedTitle"), content, "bookmark-error", false).
-																																											  addChild("p", NodeL10n.getBase().getString("BookmarkEditorToadlet.changesSaved"));
-
-				} else if ("addItem".equals(action) || "addCat".equals(action)) {
-
-					Bookmark newBookmark = null;
-					if ("addItem".equals(action)) {
-						FreenetURI key = new FreenetURI(req.getPartAsStringFailsafe("key", MAX_KEY_LENGTH));
-						/* TODO:
-						 * <nextgens> I suggest you implement a HTTPRequest.getBoolean(String name) using Fields.stringtobool
-						 * <nextgens> HTTPRequest.getBoolean(String name, boolean default) even
-						 *
-						 * - values as "on", "true", "yes" should be accepted.
-						 */
-						boolean hasAnActivelink = req.isPartSet("hasAnActivelink");
-						if (name.contains("/")) {
-							pageMaker.getInfobox("infobox-error", NodeL10n.getBase().getString("BookmarkEditorToadlet.invalidNameTitle"), content, "bookmark-error", false).
-																																												   addChild("#", NodeL10n.getBase().getString("BookmarkEditorToadlet.invalidName"));
-						} else
-							newBookmark = new BookmarkItem(key, name, req.getPartAsStringFailsafe("descB", MAX_KEY_LENGTH), req.getPartAsStringFailsafe("explain", MAX_EXPLANATION_LENGTH), hasAnActivelink, ctx.getAlertManager());
-					} else if (name.contains("/")) {
-						pageMaker.getInfobox("infobox-error", NodeL10n.getBase().getString("BookmarkEditorToadlet.invalidNameTitle"), content, "bookmark-error", false).
-																																											   addChild("#", NodeL10n.getBase().getString("BookmarkEditorToadlet.invalidName"));
-					} else
-						newBookmark = new BookmarkCategory(name);
-
-					if (newBookmark != null) {
-
-						bookmarkManager.addBookmark(bookmarkPath, newBookmark);
-						bookmarkManager.storeBookmarks();
-						if (newBookmark instanceof BookmarkItem)
-							sendBookmarkFeeds(req, (BookmarkItem) newBookmark, req.getPartAsStringFailsafe("publicDescB", MAX_KEY_LENGTH));
-
-						pageMaker.getInfobox("infobox-success", NodeL10n.getBase().getString("BookmarkEditorToadlet.addedNewBookmarkTitle"), content, "bookmark-add-new", false).
-																																														addChild("p", NodeL10n.getBase().getString("BookmarkEditorToadlet.addedNewBookmark"));
-					}
-				}
-			} else if ("share".equals(action))
-				sendBookmarkFeeds(req, (BookmarkItem) bookmark, req.getPartAsStringFailsafe("publicDescB", MAX_KEY_LENGTH));
-		} catch (MalformedURLException mue) {
-			pageMaker.getInfobox("infobox-error", NodeL10n.getBase().getString("BookmarkEditorToadlet.invalidKeyTitle"), content, "bookmark-error", false).
-																																								  addChild("#", NodeL10n.getBase().getString("BookmarkEditorToadlet.invalidKey"));
-		}
-		pageMaker.getInfobox("infobox-normal", NodeL10n.getBase().getString("BookmarkEditorToadlet.myBookmarksTitle"), content, "bookmarks", false).
-																																						   addChild(getBookmarksList(bookmarkManager));
-
-		HTMLNode addDefaultBookmarksForm = ctx.addFormChild(content, "", "AddDefaultBookmarks");
-		addDefaultBookmarksForm.addChild("input", new String[] { "type", "name", "value" }, new String[] { "submit", "AddDefaultBookmarks", NodeL10n.getBase().getString("BookmarkEditorToadlet.addDefaultBookmarks") });
-
-		this.writeHTMLReply(ctx, 200, "OK", pageNode.generate());
-	}
-
 	@Override
 	public String path() {
 		return "/bookmarkEditor/";
 	}
+
+
+	/** Get all bookmark as a tree of &lt;li&gt;...&lt;/li&gt;s */
+	private void addCategoryToList(BookmarkCategory cat, String path, HTMLNode list, BookmarkManager bookmarkManager) {
+		List<BookmarkItem> items = cat.getItems();
+
+		final String edit = NodeL10n.getBase().getString("BookmarkEditorToadlet.edit");
+		final String delete = NodeL10n.getBase().getString("BookmarkEditorToadlet.delete");
+		final String cut = NodeL10n.getBase().getString("BookmarkEditorToadlet.cut");
+		final String moveUp = NodeL10n.getBase().getString("BookmarkEditorToadlet.moveUp");
+		final String moveDown = NodeL10n.getBase().getString("BookmarkEditorToadlet.moveDown");
+		final String paste = NodeL10n.getBase().getString("BookmarkEditorToadlet.paste");
+		final String addBookmark = NodeL10n.getBase().getString("BookmarkEditorToadlet.addBookmark");
+		final String addCategory = NodeL10n.getBase().getString("BookmarkEditorToadlet.addCategory");
+
+		boolean hasFriends = core.node.getDarknetConnections().length > 0;
+
+		for (int i = 0; i < items.size(); i++) {
+			BookmarkItem item = items.get(i);
+
+			String itemPath = URLEncoder.encode(path + item.getName(), false);
+			HTMLNode li = new HTMLNode("li", "class", "item", item.getVisibleName());
+			String explain = item.getShortDescription();
+			if (explain != null && explain.length() > 0) {
+				li.addChild("#", " (");
+				li.addChild("#", explain);
+				li.addChild("#", ")");
+			}
+
+			HTMLNode actions = new HTMLNode("span", "class", "actions");
+			actions.addChild("a", "href", "?action=edit&bookmark=" + itemPath).addChild("img", new String[] { "src", "alt", "title" }, new String[] { "/static/icon/edit.png", edit, edit });
+
+			actions.addChild("a", "href", "?action=del&bookmark=" + itemPath).addChild("img", new String[] { "src", "alt", "title" }, new String[] { "/static/icon/delete.png", delete, delete });
+
+			if (cutedPath == null)
+				actions.addChild("a", "href", "?action=cut&bookmark=" + itemPath).addChild("img", new String[] { "src", "alt", "title" }, new String[] { "/static/icon/cut.png", cut, cut });
+
+			if (i != 0)
+				actions.addChild("a", "href", "?action=up&bookmark=" + itemPath).addChild("img", new String[] { "src", "alt", "title" }, new String[] { "/static/icon/go-up.png", moveUp, moveUp });
+
+			if (i != items.size() - 1)
+				actions.addChild("a", "href", "?action=down&bookmark=" + itemPath).addChild("img", new String[] { "src", "alt", "title" }, new String[] { "/static/icon/go-down.png", moveDown, moveDown });
+
+			if (hasFriends)
+				actions.addChild("a", "href", "?action=share&bookmark=" + itemPath, NodeL10n.getBase().getString("BookmarkEditorToadlet.share"));
+
+			li.addChild(actions);
+			list.addChild(li);
+		}
+
+		List<BookmarkCategory> cats = cat.getSubCategories();
+		for (int i = 0; i < cats.size(); i++) {
+			String catPath = path + cats.get(i).getName() + '/';
+			String catPathEncoded = URLEncoder.encode(catPath, false);
+
+			HTMLNode subCat = list.addChild("li", "class", "cat", cats.get(i).getVisibleName());
+
+			HTMLNode actions = new HTMLNode("span", "class", "actions");
+
+			actions.addChild("a", "href", "?action=edit&bookmark=" + catPathEncoded).addChild("img", new String[] { "src", "alt", "title" }, new String[] { "/static/icon/edit.png", edit, edit });
+
+			actions.addChild("a", "href", "?action=del&bookmark=" + catPathEncoded).addChild("img", new String[] { "src", "alt", "title" }, new String[] { "/static/icon/delete.png", delete, delete });
+
+			actions.addChild("a", "href", "?action=addItem&bookmark=" + catPathEncoded).addChild("img", new String[] { "src", "alt", "title" }, new String[] { "/static/icon/bookmark-new.png", addBookmark, addBookmark });
+
+			actions.addChild("a", "href", "?action=addCat&bookmark=" + catPathEncoded).addChild("img", new String[] { "src", "alt", "title" }, new String[] { "/static/icon/folder-new.png", addCategory, addCategory });
+
+			if (cutedPath == null)
+				actions.addChild("a", "href", "?action=cut&bookmark=" + catPathEncoded).addChild("img", new String[] { "src", "alt", "title" }, new String[] { "/static/icon/cut.png", cut, cut });
+
+			if (i != 0)
+				actions.addChild("a", "href", "?action=up&bookmark=" + catPathEncoded).addChild("img", new String[] { "src", "alt", "title" }, new String[] { "/static/icon/go-up.png", moveUp, moveUp });
+
+			if (i != cats.size() - 1)
+				actions.addChild("a", "href", "?action=down&bookmark=" + catPathEncoded).addChild("img", new String[] { "src", "alt", "title" }, new String[] { "/static/icon/go-down.png", moveDown, moveDown });
+
+			if (cutedPath != null && !catPathEncoded.startsWith(cutedPath) && !catPathEncoded.equals(bookmarkManager.parentPath(cutedPath)))
+				actions.addChild("a", "href", "?action=paste&bookmark=" + catPathEncoded).addChild("img", new String[] { "src", "alt", "title" }, new String[] { "/static/icon/paste.png", paste, paste });
+
+			subCat.addChild(actions);
+			if (cats.get(i).size() != 0)
+				addCategoryToList(cats.get(i), catPath, list.addChild("li").addChild("ul"), bookmarkManager);
+		}
+	}
+
+	private void sendBookmarkFeeds(HTTPRequest req, BookmarkItem item, String publicDescription) {
+		for (DarknetPeerNode peer : core.node.getDarknetConnections())
+			if (req.isPartSet("node_" + peer.hashCode()))
+				peer.sendBookmarkFeed(item.getURI(), item.getName(), publicDescription, item.hasAnActivelink());
+	}
+
+	private HTMLNode getBookmarksList(BookmarkManager bookmarkManager) {
+		HTMLNode bookmarks = new HTMLNode("ul", "id", "bookmarks");
+
+		HTMLNode root = bookmarks.addChild("li", "class", "cat root", "/");
+		HTMLNode actions = new HTMLNode("span", "class", "actions");
+		String addBookmark = NodeL10n.getBase().getString("BookmarkEditorToadlet.addBookmark");
+		String addCategory = NodeL10n.getBase().getString("BookmarkEditorToadlet.addCategory");
+		String paste = NodeL10n.getBase().getString("BookmarkEditorToadlet.paste");
+		actions.addChild("a", "href", "?action=addItem&bookmark=/").addChild("img", new String[] { "src", "alt", "title" }, new String[] { "/static/icon/bookmark-new.png", addBookmark, addBookmark });
+		actions.addChild("a", "href", "?action=addCat&bookmark=/").addChild("img", new String[] { "src", "alt", "title" }, new String[] { "/static/icon/folder-new.png", addCategory, addCategory });
+
+		if (cutedPath != null && !"/".equals(bookmarkManager.parentPath(cutedPath)))
+			actions.addChild("a", "href", "?action=paste&bookmark=/").addChild("img", new String[] { "src", "alt", "title" }, new String[] { "/static/icon/paste.png", paste, paste });
+
+		root.addChild(actions);
+		addCategoryToList(bookmarkManager.getBookmarks(), "/", root.addChild("ul"), bookmarkManager);
+
+		return bookmarks;
+	}
+
 }
