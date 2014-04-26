@@ -3,6 +3,8 @@
  * http://www.gnu.org/ for further details of the GPL. */
 package freenet.clients.http;
 
+import static java.lang.String.format;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -160,12 +162,7 @@ public class QueueToadlet extends Toadlet implements RequestCompletionCallback, 
 			if (request.isPartSet("insert-local")) {
 				FreenetURI insertURI = getInsertUriForRequest(request, ctx);
 				if (insertURI == null) return;
-				MultiValueTable<String, String> responseHeaders = new MultiValueTable<String, String>();
-				responseHeaders.put("Location", LocalFileInsertToadlet.PATH+"?key="+insertURI.toASCIIString()+
-				        "&compress="+String.valueOf(request.getPartAsStringFailsafe("compress", 128).length() > 0)+
-				        "&compatibilityMode="+request.getPartAsStringFailsafe("compatibilityMode", 100)+
-				        "&overrideSplitfileKey="+request.getPartAsStringFailsafe("overrideSplitfileKey", 65));
-				ctx.sendReplyHeaders(302, "Found", responseHeaders, null, 0);
+				generateRedirectToInsertToadlet(request, ctx, insertURI);
 				return;
 			} else if (request.isPartSet("select-location")) {
 				try {
@@ -889,6 +886,19 @@ public class QueueToadlet extends Toadlet implements RequestCompletionCallback, 
 			request.freeParts();
 		}
 		this.handleMethodGET(uri, new HTTPRequestImpl(uri, "GET"), ctx);
+	}
+
+	private void generateRedirectToInsertToadlet(HTTPRequest request, ToadletContext toadletContext, FreenetURI insertURI) throws ToadletContextClosedException, IOException {
+		MultiValueTable<String, String> responseHeaders = new MultiValueTable<String, String>();
+		String insertToadletPath = format("%s?key=%s&compress=%s&compatibilityMode=%s&overrideSplitfileKey=%s",
+				LocalFileInsertToadlet.PATH,
+				insertURI.toASCIIString(),
+				request.getPartAsStringFailsafe("compress", 128).length() > 0,
+				request.getPartAsStringFailsafe("compatibilityMode", 100),
+				request.getPartAsStringFailsafe("overrideSplitfileKey", 65)
+		);
+		responseHeaders.put("Location", insertToadletPath);
+		toadletContext.sendReplyHeaders(302, "Found", responseHeaders, null, 0);
 	}
 
 	private FreenetURI getInsertUriForRequest(HTTPRequest request, ToadletContext toadletContext) throws ToadletContextClosedException, IOException {
