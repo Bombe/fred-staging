@@ -158,33 +158,8 @@ public class QueueToadlet extends Toadlet implements RequestCompletionCallback, 
 		try {
 			// Browse... button on upload page
 			if (request.isPartSet("insert-local")) {
-				
-				FreenetURI insertURI;
-				String keyType = request.getPartAsStringFailsafe("keytype", 10);
-				if ("CHK".equals(keyType)) {
-					insertURI = new FreenetURI("CHK@");
-					if(fiw != null)
-						fiw.reportCanonicalInsert();
-				} else if("SSK".equals(keyType)) {
-					insertURI = new FreenetURI("SSK@");
-					if(fiw != null)
-						fiw.reportRandomInsert();
-				} else if("specify".equals(keyType)) {
-					try {
-						String u = request.getPartAsStringFailsafe("key", MAX_KEY_LENGTH);
-						insertURI = new FreenetURI(u);
-						if(logMINOR)
-							Logger.minor(this, "Inserting key: "+insertURI+" ("+u+")");
-					} catch (MalformedURLException mue1) {
-						writeError(l10n("errorInvalidURI"),
-						           l10n("errorInvalidURIToU"), ctx, false, true);
-						return;
-					}
-				} else {
-					writeError(l10n("errorMustSpecifyKeyTypeTitle"),
-					           l10n("errorMustSpecifyKeyType"), ctx, false, true);
-					return;
-				}
+				FreenetURI insertURI = getInsertUriForRequest(request, ctx);
+				if (insertURI == null) return;
 				MultiValueTable<String, String> responseHeaders = new MultiValueTable<String, String>();
 				responseHeaders.put("Location", LocalFileInsertToadlet.PATH+"?key="+insertURI.toASCIIString()+
 				        "&compress="+String.valueOf(request.getPartAsStringFailsafe("compress", 128).length() > 0)+
@@ -529,12 +504,10 @@ public class QueueToadlet extends Toadlet implements RequestCompletionCallback, 
 				String keyType = request.getPartAsStringFailsafe("keytype", 10);
 				if ("CHK".equals(keyType)) {
 					insertURI = new FreenetURI("CHK@");
-					if(fiw != null)
-						fiw.reportCanonicalInsert();
+					reportCanonicalInsert();
 				} else if("SSK".equals(keyType)) {
 					insertURI = new FreenetURI("SSK@");
-					if(fiw != null)
-						fiw.reportRandomInsert();
+					reportRandomInsert();
 				} else if("specify".equals(keyType)) {
 					try {
 						String u = request.getPartAsStringFailsafe("key", MAX_KEY_LENGTH);
@@ -916,6 +889,42 @@ public class QueueToadlet extends Toadlet implements RequestCompletionCallback, 
 			request.freeParts();
 		}
 		this.handleMethodGET(uri, new HTTPRequestImpl(uri, "GET"), ctx);
+	}
+
+	private FreenetURI getInsertUriForRequest(HTTPRequest request, ToadletContext toadletContext) throws ToadletContextClosedException, IOException {
+		String keyType = request.getPartAsStringFailsafe("keytype", 10);
+		if ("CHK".equals(keyType)) {
+			reportCanonicalInsert();
+			return new FreenetURI("CHK@");
+		} else if ("SSK".equals(keyType)) {
+			reportRandomInsert();
+			return new FreenetURI("SSK@");
+		} else if ("specify".equals(keyType)) {
+			try {
+				String u = request.getPartAsStringFailsafe("key", MAX_KEY_LENGTH);
+				FreenetURI insertURI = new FreenetURI(u);
+				if (logMINOR)
+					Logger.minor(this, "Inserting key: " + insertURI + " (" + u + ")");
+				return insertURI;
+			} catch (MalformedURLException mue1) {
+				writeError(l10n("errorInvalidURI"), l10n("errorInvalidURIToU"), toadletContext, false, true);
+			}
+		} else {
+			writeError(l10n("errorMustSpecifyKeyTypeTitle"), l10n("errorMustSpecifyKeyType"), toadletContext, false, true);
+		}
+		return null;
+	}
+
+	private void reportRandomInsert() {
+		if (fiw != null) {
+			fiw.reportRandomInsert();
+		}
+	}
+
+	private void reportCanonicalInsert() {
+		if (fiw != null) {
+			fiw.reportCanonicalInsert();
+		}
 	}
 
 	private void handleChangePriority(HTTPRequest request, ToadletContext ctx, String suffix) throws ToadletContextClosedException, IOException {
