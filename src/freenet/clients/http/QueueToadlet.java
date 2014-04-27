@@ -234,71 +234,11 @@ public class QueueToadlet extends Toadlet implements RequestCompletionCallback, 
 				}
 				writePermanentRedirect(ctx, "Done", path());
 				return;
-			} else if(request.isPartSet("remove_finished_uploads_request") && (request.getPartAsStringFailsafe("remove_finished_uploads_request", 128).length() > 0)) {
-				String identifier = "";
-				try {
-					RequestStatus[] reqs;
-					reqs = fcp.getGlobalRequests();
-                                        for(RequestStatus r : reqs) {
-						if(r instanceof UploadFileRequestStatus) {
-							UploadFileRequestStatus upload = (UploadFileRequestStatus)r;
-							if(upload.hasSucceeded()) {
-								identifier = upload.getIdentifier();
-								fcp.removeGlobalRequestBlocking(identifier);
-							}
-						}
-					}
-					writePermanentRedirect(ctx, "Done", path());
-				} catch (MessageInvalidException e) {
-					this.sendErrorPage(ctx, 200,
-							l10n("failedToRemoveRequest"),
-							l10n("failedToRemove",
-							        new String[]{ "id", "message" },
-							        new String[]{ identifier, e.getMessage()}
-							));
-				} catch (DatabaseDisabledException e) {
-					sendPersistenceDisabledError(ctx);
-				}
+			} else if (request.isPartSet("remove_finished_uploads_request") && (request.getPartAsStringFailsafe("remove_finished_uploads_request", 128).length() > 0)) {
+				removeFinishedUploadRequests(ctx);
 				return;
-			} else if(request.isPartSet("remove_finished_downloads_request") && (request.getPartAsStringFailsafe("remove_finished_downloads_request", 128).length() > 0)) {
-				String identifier = "";
-				try {
-					RequestStatus[] reqs;
-					reqs = fcp.getGlobalRequests();
-					
-					boolean hasIdentifier = false;
-					for(String part : request.getParts()) {
-						if(!part.startsWith("identifier-")) continue;
-						hasIdentifier = true;
-						identifier = part.substring("identifier-".length());
-						if(identifier.length() > 50) continue;
-						identifier = request.getPartAsStringFailsafe(part, MAX_IDENTIFIER_LENGTH);
-						if(logMINOR) Logger.minor(this, "Removing "+identifier);
-						fcp.removeGlobalRequestBlocking(identifier);
-					}
-					
-					if(!hasIdentifier) { // delete all, because no identifier is given
-						for(RequestStatus r : reqs) {
-							if(r instanceof DownloadRequestStatus) {
-								DownloadRequestStatus download = (DownloadRequestStatus)r;
-								if(download.isPersistent() && download.hasSucceeded() && download.isTotalFinalized() && !download.toTempSpace()) {
-									identifier = download.getIdentifier();
-									fcp.removeGlobalRequestBlocking(identifier);
-								}
-							}
-						}
-					}
-					writePermanentRedirect(ctx, "Done", path());
-				} catch (MessageInvalidException e) {
-					this.sendErrorPage(ctx, 200,
-							l10n("failedToRemoveRequest"),
-							l10n("failedToRemove",
-							        new String[]{ "id", "message" },
-							        new String[]{ identifier, e.getMessage()}
-							));
-				} catch (DatabaseDisabledException e) {
-					sendPersistenceDisabledError(ctx);
-				}
+			} else if (request.isPartSet("remove_finished_downloads_request") && (request.getPartAsStringFailsafe("remove_finished_downloads_request", 128).length() > 0)) {
+				removeFinishedDownloadRequests(request, ctx);
 				return;
 			}
 			else if(request.isPartSet("restart_request") && (request.getPartAsStringFailsafe("restart_request", 128).length() > 0)) {
@@ -859,6 +799,73 @@ public class QueueToadlet extends Toadlet implements RequestCompletionCallback, 
 			request.freeParts();
 		}
 		this.handleMethodGET(uri, new HTTPRequestImpl(uri, "GET"), ctx);
+	}
+
+	private void removeFinishedDownloadRequests(HTTPRequest request, ToadletContext ctx) throws ToadletContextClosedException, IOException {
+		try {
+
+			boolean hasIdentifier = false;
+			for (String part : request.getParts()) {
+				if (!part.startsWith("identifier-")) {
+					continue;
+				}
+				hasIdentifier = true;
+				String identifier = part.substring("identifier-".length());
+				if (identifier.length() > 50) {
+					continue;
+				}
+				identifier = request.getPartAsStringFailsafe(part, MAX_IDENTIFIER_LENGTH);
+				if (logMINOR) {
+					Logger.minor(this, "Removing " + identifier);
+				}
+				if (!removeRequest(ctx, identifier)) {
+					return;
+				}
+			}
+
+			if (!hasIdentifier) { // delete all, because no identifier is given
+				for (RequestStatus r : fcp.getGlobalRequests()) {
+					if (r instanceof DownloadRequestStatus) {
+						DownloadRequestStatus download = (DownloadRequestStatus) r;
+						if (download.isPersistent() && download.hasSucceeded() && download.isTotalFinalized() && !download.toTempSpace()) {
+							if (!removeRequest(ctx, download.getIdentifier())) {
+								return;
+							}
+						}
+					}
+				}
+			}
+			writePermanentRedirect(ctx, "Done", path());
+		} catch (DatabaseDisabledException e) {
+			sendPersistenceDisabledError(ctx);
+		}
+	}
+
+	private void removeFinishedUploadRequests(ToadletContext ctx) throws ToadletContextClosedException, IOException {
+		try {
+			for (RequestStatus requestStatus : fcp.getGlobalRequests()) {
+				if (requestStatus instanceof UploadFileRequestStatus) {
+					if (requestStatus.hasSucceeded()) {
+						if (!removeRequest(ctx, requestStatus.getIdentifier())) {
+							return;
+						}
+					}
+				}
+			}
+			writePermanentRedirect(ctx, "Done", path());
+		} catch (DatabaseDisabledException e) {
+			sendPersistenceDisabledError(ctx);
+		}
+	}
+
+	private boolean removeRequest(ToadletContext ctx, String identifier) throws DatabaseDisabledException, ToadletContextClosedException, IOException {
+		try {
+			fcp.removeGlobalRequestBlocking(identifier);
+			return true;
+		} catch (MessageInvalidException e) {
+			sendErrorPage(ctx, 200, l10n("failedToRemoveRequest"), l10n("failedToRemove", new String[] { "id", "message" }, new String[] { identifier, e.getMessage() }));
+			return false;
+		}
 	}
 
 	private void reportRandomInsert() {
