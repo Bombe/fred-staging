@@ -247,7 +247,8 @@ public class QueueToadlet extends Toadlet implements RequestCompletionCallback, 
 								fcp.removeGlobalRequestBlocking(identifier);
 							}
 						}
-					}	
+					}
+					writePermanentRedirect(ctx, "Done", path());
 				} catch (MessageInvalidException e) {
 					this.sendErrorPage(ctx, 200,
 							l10n("failedToRemoveRequest"),
@@ -255,14 +256,10 @@ public class QueueToadlet extends Toadlet implements RequestCompletionCallback, 
 							        new String[]{ "id", "message" },
 							        new String[]{ identifier, e.getMessage()}
 							));
-					return;
 				} catch (DatabaseDisabledException e) {
 					sendPersistenceDisabledError(ctx);
-					return;
 				}
-				writePermanentRedirect(ctx, "Done", path());
 				return;
-				
 			} else if(request.isPartSet("remove_finished_downloads_request") && (request.getPartAsStringFailsafe("remove_finished_downloads_request", 128).length() > 0)) {
 				String identifier = "";
 				try {
@@ -291,6 +288,7 @@ public class QueueToadlet extends Toadlet implements RequestCompletionCallback, 
 							}
 						}
 					}
+					writePermanentRedirect(ctx, "Done", path());
 				} catch (MessageInvalidException e) {
 					this.sendErrorPage(ctx, 200,
 							l10n("failedToRemoveRequest"),
@@ -298,12 +296,9 @@ public class QueueToadlet extends Toadlet implements RequestCompletionCallback, 
 							        new String[]{ "id", "message" },
 							        new String[]{ identifier, e.getMessage()}
 							));
-					return;
 				} catch (DatabaseDisabledException e) {
 					sendPersistenceDisabledError(ctx);
-					return;
 				}
-				writePermanentRedirect(ctx, "Done", path());
 				return;
 			}
 			else if(request.isPartSet("restart_request") && (request.getPartAsStringFailsafe("restart_request", 128).length() > 0)) {
