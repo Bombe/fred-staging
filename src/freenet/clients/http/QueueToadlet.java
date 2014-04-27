@@ -24,10 +24,12 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.concurrent.CountDownLatch;
 
 import com.db4o.ObjectContainer;
@@ -159,19 +161,17 @@ public class QueueToadlet extends Toadlet implements RequestCompletionCallback, 
 				HTMLNode deleteNode = new HTMLNode("p");
 				HTMLNode deleteForm = ctx.addFormChild(deleteNode, path(), "queueDeleteForm");
 				HTMLNode infoList = deleteForm.addChild("ul");
-				
-				for(String part : request.getParts()) {
-					if(!part.startsWith("identifier-")) continue;
-					part = part.substring("identifier-".length());
-					if(part.length() > 50) continue; // It's just a number 
-					
-					String identifier = request.getPartAsStringFailsafe("identifier-"+part, MAX_IDENTIFIER_LENGTH);
-					if(identifier == null) continue;
-					String filename = request.getPartAsStringFailsafe("filename-"+part, MAX_FILENAME_LENGTH);
-					String keyString = request.getPartAsStringFailsafe("key-"+part, MAX_KEY_LENGTH);
-					String type = request.getPartAsStringFailsafe("type-"+part, MAX_TYPE_LENGTH);
-					String size = request.getPartAsStringFailsafe("size-"+part, 50);
-					if(filename != null) {
+
+				for (Part part : extractParts(request)) {
+					String identifier = part.getIdentifier();
+					if (identifier == null) {
+						continue;
+					}
+					String filename = part.getFilename();
+					String keyString = part.getKey();
+					String type = part.getType();
+					String size = part.getSize();
+					if (filename != null) {
 						HTMLNode line = infoList.addChild("li");
 						line.addChild("#", NodeL10n.getBase().getString("FProxyToadlet.filenameLabel")+" ");
 						if(keyString != null) {
@@ -212,12 +212,11 @@ public class QueueToadlet extends Toadlet implements RequestCompletionCallback, 
 				
 				String identifier = "";
 				try {
-					for(String part : request.getParts()) {
-						if(!part.startsWith("identifier-")) continue;
-						identifier = part.substring("identifier-".length());
-						if(identifier.length() > 50) continue;
-						identifier = request.getPartAsStringFailsafe(part, MAX_IDENTIFIER_LENGTH);
-						if(logMINOR) Logger.minor(this, "Removing "+identifier);
+					for (Part part : extractParts(request)) {
+						identifier = part.getIdentifier();
+						if (logMINOR) {
+							Logger.minor(this, "Removing " + identifier);
+						}
 						fcp.removeGlobalRequestBlocking(identifier);
 					}
 				} catch (MessageInvalidException e) {
@@ -246,12 +245,11 @@ public class QueueToadlet extends Toadlet implements RequestCompletionCallback, 
 				
 				
 				String identifier = "";
-				for(String part : request.getParts()) {
-					if(!part.startsWith("identifier-")) continue;
-					identifier = part.substring("identifier-".length());
-					if(identifier.length() > 50) continue;
-					identifier = request.getPartAsStringFailsafe(part, MAX_IDENTIFIER_LENGTH);
-					if(logMINOR) Logger.minor(this, "Restarting "+identifier);
+				for (Part part : extractParts(request)) {
+					identifier = part.getIdentifier();
+					if (logMINOR) {
+						Logger.minor(this, "Restarting " + identifier);
+					}
 					try {
 						fcp.restartBlocking(identifier, disableFilterData);
 					} catch (DatabaseDisabledException e) {
@@ -737,10 +735,11 @@ public class QueueToadlet extends Toadlet implements RequestCompletionCallback, 
 				HTMLNode form = ctx.addFormChild(infoboxContent, path(), "recommendForm2");
 				
 				int x = 0;
-				for(String part : request.getParts()) {
-					if(!part.startsWith("identifier-")) continue;
-					String key = request.getPartAsStringFailsafe("key-"+part.substring("identifier-".length()), MAX_KEY_LENGTH);
-					if(key == null || key.equals("")) continue;
+				for (Part part : extractParts(request)) {
+					String key = part.getKey();
+					if (key == null || key.equals("")) {
+						continue;
+					}
 					form.addChild("#", l10n("key") + ":");
 					form.addChild("br");
 					form.addChild("#", key);
@@ -774,9 +773,8 @@ public class QueueToadlet extends Toadlet implements RequestCompletionCallback, 
 			} else if(request.isPartSet("recommend_uri") && request.isPartSet("URI")) {
 				String description = request.getPartAsStringFailsafe("description", 32768);
 				ArrayList<FreenetURI> uris = new ArrayList<FreenetURI>();
-				for(String part : request.getParts()) {
-					if(!part.startsWith("key-")) continue;
-					String key = request.getPartAsStringFailsafe(part, MAX_KEY_LENGTH);
+				for (Part part : extractParts(request)) {
+					String key = part.getKey();
 					try {
 						FreenetURI furi = new FreenetURI(key);
 						uris.add(furi);
@@ -801,20 +799,110 @@ public class QueueToadlet extends Toadlet implements RequestCompletionCallback, 
 		this.handleMethodGET(uri, new HTTPRequestImpl(uri, "GET"), ctx);
 	}
 
+	private static class Part {
+
+		private final String identifier;
+		private final String key;
+		private final String filename;
+		private final String type;
+		private final String size;
+
+		public Part(String identifier, String key, String filename, String type, String size) {
+			this.identifier = identifier;
+			this.key = key;
+			this.filename = filename;
+			this.type = type;
+			this.size = size;
+		}
+
+		private String getIdentifier() {
+			return identifier;
+		}
+
+		private String getKey() {
+			return key;
+		}
+
+		private String getFilename() {
+			return filename;
+		}
+
+		private String getType() {
+			return type;
+		}
+
+		private String getSize() {
+			return size;
+		}
+
+	}
+
+	private Iterable<Part> extractParts(final HTTPRequest request) {
+		return new Iterable<Part>() {
+			@Override
+			public Iterator<Part> iterator() {
+				return new Iterator<Part>() {
+					private String[] partNames = request.getParts();
+					private int index = 0;
+					private boolean hasNextPart;
+					private Part nextPart;
+
+					private void findNextIdentifier() {
+						if (hasNextPart) {
+							return;
+						}
+						while (index < partNames.length) {
+							String currentPartName = partNames[index++];
+							if (!currentPartName.startsWith("identifier-")) {
+								continue;
+							}
+							currentPartName = currentPartName.substring("identifier-".length());
+							if (currentPartName.length() > 50) {
+								continue;
+							}
+							String identifier = request.getPartAsStringFailsafe("identifier-" + currentPartName, MAX_IDENTIFIER_LENGTH);
+							String key = request.getPartAsStringFailsafe("key-" + currentPartName, MAX_KEY_LENGTH);
+							String filename = request.getPartAsStringFailsafe("filename-" + currentPartName, MAX_FILENAME_LENGTH);
+							String type = request.getPartAsStringFailsafe("type-" + currentPartName, MAX_TYPE_LENGTH);
+							String size = request.getPartAsStringFailsafe("size-" + currentPartName, 50);
+							nextPart = new Part(identifier, key, filename, type, size);
+							hasNextPart = true;
+							break;
+						}
+					}
+
+					@Override
+					public boolean hasNext() {
+						findNextIdentifier();
+						return hasNextPart;
+					}
+
+					@Override
+					public Part next() {
+						findNextIdentifier();
+						if (!hasNextPart) {
+							throw new NoSuchElementException();
+						}
+						hasNextPart = false;
+						return nextPart;
+					}
+
+					@Override
+					public void remove() {
+						throw new UnsupportedOperationException();
+					}
+				};
+			}
+		};
+	}
+
 	private void removeFinishedDownloadRequests(HTTPRequest request, ToadletContext ctx) throws ToadletContextClosedException, IOException {
 		try {
 
 			boolean hasIdentifier = false;
-			for (String part : request.getParts()) {
-				if (!part.startsWith("identifier-")) {
-					continue;
-				}
+			for (Part part : extractParts(request)) {
+				String identifier = part.getIdentifier();
 				hasIdentifier = true;
-				String identifier = part.substring("identifier-".length());
-				if (identifier.length() > 50) {
-					continue;
-				}
-				identifier = request.getPartAsStringFailsafe(part, MAX_IDENTIFIER_LENGTH);
 				if (logMINOR) {
 					Logger.minor(this, "Removing " + identifier);
 				}
@@ -881,15 +969,10 @@ public class QueueToadlet extends Toadlet implements RequestCompletionCallback, 
 	}
 
 	private void handleChangePriority(HTTPRequest request, ToadletContext ctx, String suffix) throws ToadletContextClosedException, IOException {
-		short newPriority = Short.parseShort(request.getPartAsStringFailsafe("priority"+suffix, 32));
-		String identifier = "";
-		for(String part : request.getParts()) {
-			if(!part.startsWith("identifier-")) continue;
-			identifier = part.substring("identifier-".length());
-			if(identifier.length() > 50) continue;
-			identifier = request.getPartAsStringFailsafe(part, MAX_IDENTIFIER_LENGTH);
+		short newPriority = Short.parseShort(request.getPartAsStringFailsafe("priority" + suffix, 32));
+		for (Part part : extractParts(request)) {
 			try {
-				fcp.modifyGlobalRequestBlocking(identifier, null, newPriority);
+				fcp.modifyGlobalRequestBlocking(part.getIdentifier(), null, newPriority);
 			} catch (DatabaseDisabledException e) {
 				sendPersistenceDisabledError(ctx);
 				return;
