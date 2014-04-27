@@ -17,7 +17,6 @@ import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -150,13 +149,6 @@ public class QueueToadlet extends Toadlet implements RequestCompletionCallback, 
 
 	public void handleMethodPOST(URI uri, HTTPRequest request, final ToadletContext ctx) throws ToadletContextClosedException, IOException, RedirectException {
 		try {
-			if (request.isPartSet("select-location")) {
-				try {
-					throw new RedirectException(LocalDirectoryConfigToadlet.basePath()+"/downloads/");
-				} catch (URISyntaxException e) {
-					//Shouldn't happen, path is defined as such.
-				}
-			}
 
 			if(request.isPartSet("delete_request") && (request.getPartAsStringFailsafe("delete_request", 128).length() > 0)) {
 				// Confirm box

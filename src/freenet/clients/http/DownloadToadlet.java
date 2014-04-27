@@ -2,6 +2,7 @@ package freenet.clients.http;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 
 import freenet.client.HighLevelSimpleClient;
 import freenet.node.NodeClientCore;
@@ -23,6 +24,14 @@ public class DownloadToadlet extends QueueToadlet {
 		if (container.publicGatewayMode() && !toadletContext.isAllowedFullAccess()) {
 			sendUnauthorizedPage(toadletContext);
 			return;
+		}
+
+		if (request.isPartSet("select-location")) {
+			try {
+				throw new RedirectException(LocalDirectoryConfigToadlet.basePath() + "/downloads/");
+			} catch (URISyntaxException use1) {
+				/* The path should really not be invalid. */
+			}
 		}
 
 		super.handleMethodPOST(uri, request, toadletContext);
