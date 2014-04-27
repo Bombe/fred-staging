@@ -149,14 +149,8 @@ public class QueueToadlet extends Toadlet implements RequestCompletionCallback, 
 			// The user will know soon enough
 		}
 	}
-	
+
 	public void handleMethodPOST(URI uri, HTTPRequest request, final ToadletContext ctx) throws ToadletContextClosedException, IOException, RedirectException {
-
-		if(container.publicGatewayMode() && !ctx.isAllowedFullAccess()) {
-		    sendUnauthorizedPage(ctx);
-			return;
-		}
-
 		try {
 			// Browse... button on upload page
 			if (request.isPartSet("insert-local")) {
