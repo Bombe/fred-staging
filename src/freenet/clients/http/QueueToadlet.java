@@ -3,8 +3,6 @@
  * http://www.gnu.org/ for further details of the GPL. */
 package freenet.clients.http;
 
-import static java.lang.String.format;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -111,9 +109,9 @@ public class QueueToadlet extends Toadlet implements RequestCompletionCallback, 
 	}
 
 	private static final int MAX_IDENTIFIER_LENGTH = 1024*1024;
-	static final int MAX_FILENAME_LENGTH = 1024*1024;
+	protected static final int MAX_FILENAME_LENGTH = 1024*1024;
 	private static final int MAX_TYPE_LENGTH = 1024;
-	static final int MAX_KEY_LENGTH = 1024*1024;
+	protected static final int MAX_KEY_LENGTH = 1024*1024;
 
 	private NodeClientCore core;
 	final FCPServer fcp;
@@ -129,7 +127,7 @@ public class QueueToadlet extends Toadlet implements RequestCompletionCallback, 
 		});
 	}
 
-	void setFIW(FileInsertWizardToadlet fiw) {
+	protected void setFIW(FileInsertWizardToadlet fiw) {
 		this.fiw = fiw;
 	}
 
@@ -152,11 +150,7 @@ public class QueueToadlet extends Toadlet implements RequestCompletionCallback, 
 
 	public void handleMethodPOST(URI uri, HTTPRequest request, final ToadletContext ctx) throws ToadletContextClosedException, IOException, RedirectException {
 		try {
-			// Browse... button on upload page
-			if (request.isPartSet("insert-local")) {
-				redirectToInsertToadlet(request, ctx);
-				return;
-			} else if (request.isPartSet("select-location")) {
+			if (request.isPartSet("select-location")) {
 				try {
 					throw new RedirectException(LocalDirectoryConfigToadlet.basePath()+"/downloads/");
 				} catch (URISyntaxException e) {
@@ -880,50 +874,6 @@ public class QueueToadlet extends Toadlet implements RequestCompletionCallback, 
 		this.handleMethodGET(uri, new HTTPRequestImpl(uri, "GET"), ctx);
 	}
 
-	private void redirectToInsertToadlet(HTTPRequest request, ToadletContext toadletContext) throws ToadletContextClosedException, IOException {
-		FreenetURI insertURI = getInsertUriForRequest(request, toadletContext);
-		if (insertURI != null) {
-			generateRedirectToInsertToadlet(request, toadletContext, insertURI);
-		}
-	}
-
-	private void generateRedirectToInsertToadlet(HTTPRequest request, ToadletContext toadletContext, FreenetURI insertURI) throws ToadletContextClosedException, IOException {
-		MultiValueTable<String, String> responseHeaders = new MultiValueTable<String, String>();
-		String insertToadletPath = format("%s?key=%s&compress=%s&compatibilityMode=%s&overrideSplitfileKey=%s",
-				LocalFileInsertToadlet.PATH,
-				insertURI.toASCIIString(),
-				request.getPartAsStringFailsafe("compress", 128).length() > 0,
-				request.getPartAsStringFailsafe("compatibilityMode", 100),
-				request.getPartAsStringFailsafe("overrideSplitfileKey", 65)
-		);
-		responseHeaders.put("Location", insertToadletPath);
-		toadletContext.sendReplyHeaders(302, "Found", responseHeaders, null, 0);
-	}
-
-	private FreenetURI getInsertUriForRequest(HTTPRequest request, ToadletContext toadletContext) throws ToadletContextClosedException, IOException {
-		String keyType = request.getPartAsStringFailsafe("keytype", 10);
-		if ("CHK".equals(keyType)) {
-			reportCanonicalInsert();
-			return new FreenetURI("CHK@");
-		} else if ("SSK".equals(keyType)) {
-			reportRandomInsert();
-			return new FreenetURI("SSK@");
-		} else if ("specify".equals(keyType)) {
-			try {
-				String u = request.getPartAsStringFailsafe("key", MAX_KEY_LENGTH);
-				FreenetURI insertURI = new FreenetURI(u);
-				if (logMINOR)
-					Logger.minor(this, "Inserting key: " + insertURI + " (" + u + ")");
-				return insertURI;
-			} catch (MalformedURLException mue1) {
-				writeError(l10n("errorInvalidURI"), l10n("errorInvalidURIToU"), toadletContext, false, true);
-			}
-		} else {
-			writeError(l10n("errorMustSpecifyKeyTypeTitle"), l10n("errorMustSpecifyKeyType"), toadletContext, false, true);
-		}
-		return null;
-	}
-
 	private void reportRandomInsert() {
 		if (fiw != null) {
 			fiw.reportRandomInsert();
@@ -1039,11 +989,11 @@ public class QueueToadlet extends Toadlet implements RequestCompletionCallback, 
 					));
 	}
 
-	private void writeError(String header, String message, ToadletContext context) throws ToadletContextClosedException, IOException {
+	protected void writeError(String header, String message, ToadletContext context) throws ToadletContextClosedException, IOException {
 		writeError(header, message, context, true, false);
 	}
 
-	private void writeError(String header, String message, ToadletContext context, boolean returnToQueuePage, boolean returnToInsertPage) throws ToadletContextClosedException, IOException {
+	protected void writeError(String header, String message, ToadletContext context, boolean returnToQueuePage, boolean returnToInsertPage) throws ToadletContextClosedException, IOException {
 		PageMaker pageMaker = context.getPageMaker();
 		PageNode page = pageMaker.getPageNode(header, context);
 		HTMLNode pageNode = page.outer;
@@ -2441,15 +2391,15 @@ public class QueueToadlet extends Toadlet implements RequestCompletionCallback, 
 		}
 	}
 
-	static String l10n(String key) {
+	protected static String l10n(String key) {
 		return NodeL10n.getBase().getString("QueueToadlet."+key);
 	}
 
-	static String l10n(String key, String pattern, String value) {
+	protected static String l10n(String key, String pattern, String value) {
 		return NodeL10n.getBase().getString("QueueToadlet."+key, pattern, value);
 	}
 
-	static String l10n(String key, String[] pattern, String[] value) {
+	protected static String l10n(String key, String[] pattern, String[] value) {
 		return NodeL10n.getBase().getString("QueueToadlet."+key, pattern, value);
 	}
 
