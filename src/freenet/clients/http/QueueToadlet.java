@@ -136,7 +136,7 @@ public class QueueToadlet extends Toadlet implements RequestCompletionCallback, 
 	private boolean isReversed = false;
 	private final boolean uploads;
 
-	public QueueToadlet(NodeClientCore core, FCPServer fcp, HighLevelSimpleClient client, boolean uploads) {
+	protected QueueToadlet(NodeClientCore core, FCPServer fcp, HighLevelSimpleClient client, boolean uploads) {
 		super(client);
 		this.core = core;
 		this.fcp = fcp;

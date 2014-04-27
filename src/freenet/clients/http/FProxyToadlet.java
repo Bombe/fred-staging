@@ -1176,20 +1176,19 @@ public final class FProxyToadlet extends Toadlet implements RequestClient {
 		server.register(alerts, "FProxyToadlet.categoryStatus", "/alerts/", true, "FProxyToadlet.alertsTitle",
 		        "FProxyToadlet.alerts", true, null);
 
-		QueueToadlet downloadToadlet = new QueueToadlet(core, core.getFCPServer(), client, false);
+		FileInsertWizardToadlet fiw = new FileInsertWizardToadlet(client, core);
+		server.register(fiw, "FProxyToadlet.categoryQueue", FileInsertWizardToadlet.PATH, true,
+		        "FProxyToadlet.uploadFileWizardTitle", "FProxyToadlet.uploadFileWizard", false, fiw);
+
+		DownloadToadlet downloadToadlet = new DownloadToadlet(core, core.getFCPServer(), client);
 		server.register(downloadToadlet, "FProxyToadlet.categoryQueue", "/downloads/", true,
 		        "FProxyToadlet.downloadsTitle", "FProxyToadlet.downloads", false, downloadToadlet);
 		LocalDownloadDirectoryToadlet localDownloadDirectoryToadlet =
 		        new LocalDownloadDirectoryToadlet(core, client, "/downloads/");
 		server.register(localDownloadDirectoryToadlet, null, localDownloadDirectoryToadlet.path(), true, false);
-		QueueToadlet uploadToadlet = new QueueToadlet(core, core.getFCPServer(), client, true);
+		UploadToadlet uploadToadlet = new UploadToadlet(core, core.getFCPServer(), client, fiw);
 		server.register(uploadToadlet, "FProxyToadlet.categoryQueue", "/uploads/", true,
 		         "FProxyToadlet.uploadsTitle", "FProxyToadlet.uploads", false, uploadToadlet);
-
-		FileInsertWizardToadlet fiw = new FileInsertWizardToadlet(client, core);
-		server.register(fiw, "FProxyToadlet.categoryQueue", FileInsertWizardToadlet.PATH, true,
-		        "FProxyToadlet.uploadFileWizardTitle", "FProxyToadlet.uploadFileWizard", false, fiw);
-		uploadToadlet.setFIW(fiw);
 
 		LocalFileInsertToadlet localFileInsertToadlet = new LocalFileInsertToadlet(core, client);
 		server.register(localFileInsertToadlet, null, LocalFileInsertToadlet.PATH, true, false);
