@@ -160,9 +160,7 @@ public class QueueToadlet extends Toadlet implements RequestCompletionCallback, 
 		try {
 			// Browse... button on upload page
 			if (request.isPartSet("insert-local")) {
-				FreenetURI insertURI = getInsertUriForRequest(request, ctx);
-				if (insertURI == null) return;
-				generateRedirectToInsertToadlet(request, ctx, insertURI);
+				redirectToInsertToadlet(request, ctx);
 				return;
 			} else if (request.isPartSet("select-location")) {
 				try {
@@ -886,6 +884,13 @@ public class QueueToadlet extends Toadlet implements RequestCompletionCallback, 
 			request.freeParts();
 		}
 		this.handleMethodGET(uri, new HTTPRequestImpl(uri, "GET"), ctx);
+	}
+
+	private void redirectToInsertToadlet(HTTPRequest request, ToadletContext toadletContext) throws ToadletContextClosedException, IOException {
+		FreenetURI insertURI = getInsertUriForRequest(request, toadletContext);
+		if (insertURI != null) {
+			generateRedirectToInsertToadlet(request, toadletContext, insertURI);
+		}
 	}
 
 	private void generateRedirectToInsertToadlet(HTTPRequest request, ToadletContext toadletContext, FreenetURI insertURI) throws ToadletContextClosedException, IOException {
