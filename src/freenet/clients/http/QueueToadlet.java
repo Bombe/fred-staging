@@ -166,23 +166,7 @@ public class QueueToadlet extends Toadlet implements RequestCompletionCallback, 
 				return;
 			}
 			else if(request.isPartSet("restart_request") && (request.getPartAsStringFailsafe("restart_request", 128).length() > 0)) {
-				boolean disableFilterData = request.isPartSet("disableFilterData");
-				
-				
-				String identifier = "";
-				for (Part part : extractParts(request)) {
-					identifier = part.getIdentifier();
-					if (logMINOR) {
-						Logger.minor(this, "Restarting " + identifier);
-					}
-					try {
-						fcp.restartBlocking(identifier, disableFilterData);
-					} catch (DatabaseDisabledException e) {
-						sendPersistenceDisabledError(ctx);
-						return;
-					}
-				}
-				writePermanentRedirect(ctx, "Done", path());
+				restartRequests(request, ctx);
 				return;
 			} else if(request.isPartSet("panic") && (request.getPartAsStringFailsafe("panic", 128).length() > 0)) {
 				if(SimpleToadletServer.noConfirmPanic) {
@@ -722,6 +706,22 @@ public class QueueToadlet extends Toadlet implements RequestCompletionCallback, 
 			request.freeParts();
 		}
 		this.handleMethodGET(uri, new HTTPRequestImpl(uri, "GET"), ctx);
+	}
+
+	private void restartRequests(HTTPRequest request, ToadletContext ctx) throws ToadletContextClosedException, IOException {
+		boolean disableFilterData = request.isPartSet("disableFilterData");
+		try {
+			for (Part part : extractParts(request)) {
+				String identifier = part.getIdentifier();
+				if (logMINOR) {
+					Logger.minor(this, "Restarting " + identifier);
+				}
+				fcp.restartBlocking(identifier, disableFilterData);
+			}
+			writePermanentRedirect(ctx, "Done", path());
+		} catch (DatabaseDisabledException e) {
+			sendPersistenceDisabledError(ctx);
+		}
 	}
 
 	private void removeRequests(HTTPRequest request, ToadletContext ctx) throws ToadletContextClosedException, IOException {
