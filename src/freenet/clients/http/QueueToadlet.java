@@ -156,31 +156,7 @@ public class QueueToadlet extends Toadlet implements RequestCompletionCallback, 
 				sendConfirmRemovalOfTemporaryDownloadPage(request, ctx);
 				return;
 			} else if(request.isPartSet("remove_request") && (request.getPartAsStringFailsafe("remove_request", 128).length() > 0)) {
-				
-				// FIXME optimise into a single database job.
-				
-				String identifier = "";
-				try {
-					for (Part part : extractParts(request)) {
-						identifier = part.getIdentifier();
-						if (logMINOR) {
-							Logger.minor(this, "Removing " + identifier);
-						}
-						fcp.removeGlobalRequestBlocking(identifier);
-					}
-				} catch (MessageInvalidException e) {
-					this.sendErrorPage(ctx, 200,
-							l10n("failedToRemoveRequest"),
-							l10n("failedToRemove",
-							        new String[]{ "id", "message" },
-							        new String[]{ identifier, e.getMessage()}
-							));
-					return;
-				} catch (DatabaseDisabledException e) {
-					sendPersistenceDisabledError(ctx);
-					return;
-				}
-				writePermanentRedirect(ctx, "Done", path());
+				removeRequests(request, ctx);
 				return;
 			} else if (request.isPartSet("remove_finished_uploads_request") && (request.getPartAsStringFailsafe("remove_finished_uploads_request", 128).length() > 0)) {
 				removeFinishedUploadRequests(ctx);
@@ -746,6 +722,26 @@ public class QueueToadlet extends Toadlet implements RequestCompletionCallback, 
 			request.freeParts();
 		}
 		this.handleMethodGET(uri, new HTTPRequestImpl(uri, "GET"), ctx);
+	}
+
+	private void removeRequests(HTTPRequest request, ToadletContext ctx) throws ToadletContextClosedException, IOException {
+		// FIXME optimise into a single database job.
+
+		String identifier = "";
+		try {
+			for (Part part : extractParts(request)) {
+				identifier = part.getIdentifier();
+				if (logMINOR) {
+					Logger.minor(this, "Removing " + identifier);
+				}
+				if (!removeRequest(ctx, identifier)) {
+					return;
+				}
+			}
+			writePermanentRedirect(ctx, "Done", path());
+		} catch (DatabaseDisabledException e) {
+			sendPersistenceDisabledError(ctx);
+		}
 	}
 
 	private void sendConfirmRemovalOfTemporaryDownloadPage(HTTPRequest request, ToadletContext ctx) throws ToadletContextClosedException, IOException {
