@@ -153,58 +153,7 @@ public class QueueToadlet extends Toadlet implements RequestCompletionCallback, 
 		try {
 
 			if(request.isPartSet("delete_request") && (request.getPartAsStringFailsafe("delete_request", 128).length() > 0)) {
-				// Confirm box
-				PageNode page = ctx.getPageMaker().getPageNode(l10n("confirmDeleteTitle"), ctx);
-				HTMLNode inner = page.content;
-				HTMLNode content = ctx.getPageMaker().getInfobox("infobox-warning", l10n("confirmDeleteTitle"), inner, "confirm-delete-title", true);
-				
-				HTMLNode deleteNode = new HTMLNode("p");
-				HTMLNode deleteForm = ctx.addFormChild(deleteNode, path(), "queueDeleteForm");
-				HTMLNode infoList = deleteForm.addChild("ul");
-
-				for (Part part : extractParts(request)) {
-					String identifier = part.getIdentifier();
-					if (identifier == null) {
-						continue;
-					}
-					String filename = part.getFilename();
-					String keyString = part.getKey();
-					String type = part.getType();
-					String size = part.getSize();
-					if (filename != null) {
-						HTMLNode line = infoList.addChild("li");
-						line.addChild("#", NodeL10n.getBase().getString("FProxyToadlet.filenameLabel")+" ");
-						if(keyString != null) {
-							line.addChild("a", "href", "/"+keyString, filename);
-						} else {
-							line.addChild("#", filename);
-						}
-					}
-					if(type != null && !type.equals("")) {
-						HTMLNode line = infoList.addChild("li");
-						boolean finalized = request.isPartSet("finalizedType");
-						line.addChild("#", NodeL10n.getBase().getString("FProxyToadlet."+(finalized ? "mimeType" : "expectedMimeType"), new String[] { "mime" }, new String[] { type }));
-					}
-					if(size != null) {
-						HTMLNode line = infoList.addChild("li");
-						line.addChild("#", NodeL10n.getBase().getString("FProxyToadlet.sizeLabel") + " " + size);
-					}
-					infoList.addChild("#", l10n("deleteFileFromTemp"));
-					infoList.addChild("input", new String[] { "type", "name", "value", "checked" },
-					        new String[] { "checkbox", "identifier-"+part, identifier, "checked" });
-				}
-				
-				content.addChild("p", l10n("confirmDelete"));
-				content.addChild(deleteNode);
-
-				deleteForm.addChild("input",
-				        new String[] { "type", "name", "value" },
-				        new String[] { "submit", "remove_request", NodeL10n.getBase().getString("Toadlet.yes") });
-				deleteForm.addChild("input",
-				        new String[] { "type", "name", "value" },
-				        new String[] { "submit", "cancel", NodeL10n.getBase().getString("Toadlet.no") });
-
-				this.writeHTMLReply(ctx, 200, "OK", page.outer.generate());
+				sendConfirmRemovalOfTemporaryDownloadPage(request, ctx);
 				return;
 			} else if(request.isPartSet("remove_request") && (request.getPartAsStringFailsafe("remove_request", 128).length() > 0)) {
 				
@@ -797,6 +746,58 @@ public class QueueToadlet extends Toadlet implements RequestCompletionCallback, 
 			request.freeParts();
 		}
 		this.handleMethodGET(uri, new HTTPRequestImpl(uri, "GET"), ctx);
+	}
+
+	private void sendConfirmRemovalOfTemporaryDownloadPage(HTTPRequest request, ToadletContext ctx) throws ToadletContextClosedException, IOException {
+		// Confirm box
+		PageNode page = ctx.getPageMaker().getPageNode(l10n("confirmDeleteTitle"), ctx);
+		HTMLNode inner = page.content;
+		HTMLNode content = ctx.getPageMaker().getInfobox("infobox-warning", l10n("confirmDeleteTitle"), inner, "confirm-delete-title", true);
+
+		HTMLNode deleteNode = new HTMLNode("p");
+		HTMLNode deleteForm = ctx.addFormChild(deleteNode, path(), "queueDeleteForm");
+		HTMLNode infoList = deleteForm.addChild("ul");
+
+		for (Part part : extractParts(request)) {
+			String identifier = part.getIdentifier();
+			String filename = part.getFilename();
+			String keyString = part.getKey();
+			String type = part.getType();
+			String size = part.getSize();
+			if (filename != null) {
+				HTMLNode line = infoList.addChild("li");
+				line.addChild("#", NodeL10n.getBase().getString("FProxyToadlet.filenameLabel") + " ");
+				if (keyString != null) {
+					line.addChild("a", "href", "/" + keyString, filename);
+				} else {
+					line.addChild("#", filename);
+				}
+			}
+			if (type != null && !type.equals("")) {
+				HTMLNode line = infoList.addChild("li");
+				boolean finalized = request.isPartSet("finalizedType");
+				line.addChild("#", NodeL10n.getBase().getString("FProxyToadlet." + (finalized ? "mimeType" : "expectedMimeType"), new String[] { "mime" }, new String[] { type }));
+			}
+			if (size != null) {
+				HTMLNode line = infoList.addChild("li");
+				line.addChild("#", NodeL10n.getBase().getString("FProxyToadlet.sizeLabel") + " " + size);
+			}
+			infoList.addChild("#", l10n("deleteFileFromTemp"));
+			infoList.addChild("input", new String[] { "type", "name", "value", "checked" },
+					new String[] { "checkbox", "identifier-" + part, identifier, "checked" });
+		}
+
+		content.addChild("p", l10n("confirmDelete"));
+		content.addChild(deleteNode);
+
+		deleteForm.addChild("input",
+				new String[] { "type", "name", "value" },
+				new String[] { "submit", "remove_request", NodeL10n.getBase().getString("Toadlet.yes") });
+		deleteForm.addChild("input",
+				new String[] { "type", "name", "value" },
+				new String[] { "submit", "cancel", NodeL10n.getBase().getString("Toadlet.no") });
+
+		writeHTMLReply(ctx, 200, "OK", page.outer.generate());
 	}
 
 	private static class Part {
