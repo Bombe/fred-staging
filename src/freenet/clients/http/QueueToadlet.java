@@ -169,21 +169,14 @@ public class QueueToadlet extends Toadlet implements RequestCompletionCallback, 
 				restartRequests(request, ctx);
 				return;
 			} else if(request.isPartSet("panic") && (request.getPartAsStringFailsafe("panic", 128).length() > 0)) {
-				if(SimpleToadletServer.noConfirmPanic) {
-					core.node.killMasterKeysFile();
-					core.node.panic();
-					sendPanicingPage(ctx);
-					core.node.finishPanic();
-					return;
+				if (SimpleToadletServer.noConfirmPanic) {
+					panic(ctx);
 				} else {
 					sendConfirmPanicPage(ctx);
-					return;
 				}
+				return;
 			} else if(request.isPartSet("confirmpanic") && (request.getPartAsStringFailsafe("confirmpanic", 128).length() > 0)) {
-				core.node.killMasterKeysFile();
-				core.node.panic();
-				sendPanicingPage(ctx);
-				core.node.finishPanic();
+				panic(ctx);
 				return;
 			} else if(request.isPartSet("download")) {
 				// Queue a download
@@ -706,6 +699,13 @@ public class QueueToadlet extends Toadlet implements RequestCompletionCallback, 
 			request.freeParts();
 		}
 		this.handleMethodGET(uri, new HTTPRequestImpl(uri, "GET"), ctx);
+	}
+
+	private void panic(ToadletContext ctx) throws IOException, ToadletContextClosedException {
+		core.node.killMasterKeysFile();
+		core.node.panic();
+		sendPanicingPage(ctx);
+		core.node.finishPanic();
 	}
 
 	private void restartRequests(HTTPRequest request, ToadletContext ctx) throws ToadletContextClosedException, IOException {
