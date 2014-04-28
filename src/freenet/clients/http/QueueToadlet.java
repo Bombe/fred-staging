@@ -182,84 +182,7 @@ public class QueueToadlet extends Toadlet implements RequestCompletionCallback, 
 				queueDownload(request, ctx);
 				return;
 			} else if(request.isPartSet("bulkDownloads")) {
-				String bulkDownloadsAsString = request.getPartAsStringFailsafe("bulkDownloads", 262144);
-				String[] keys = bulkDownloadsAsString.split("\n");
-				if(("".equals(bulkDownloadsAsString)) || (keys.length < 1)) {
-					writePermanentRedirect(ctx, "Done", path());
-					return;
-				}
-				LinkedList<String> success = new LinkedList<String>(), failure = new LinkedList<String>();
-				boolean filterData = request.isPartSet("filterData");
-				String target = request.getPartAsStringFailsafe("target", 128);
-				if(target == null) target = "direct";
-				String downloadPath;
-				File downloadsDir = null;
-				if (request.isPartSet("path") && !core.isDownloadDisabled()) {
-					downloadPath = request.getPartAsStringFailsafe("path", MAX_FILENAME_LENGTH);
-					try {
-						downloadsDir = getDownloadsDir(downloadPath);
-					} catch (NotAllowedException e) {
-						downloadDisallowedPage(e, downloadPath, ctx);
-						return;
-					}
-				} else target = "direct";
-
-				for(int i=0; i<keys.length; i++) {
-					String currentKey = keys[i];
-
-					// trim leading/trailing space
-					currentKey = currentKey.trim();
-					if (currentKey.length() == 0)
-						continue;
-
-					try {
-						FreenetURI fetchURI = new FreenetURI(currentKey);
-						fcp.makePersistentGlobalRequestBlocking(fetchURI, filterData, null,
-						        "forever", target, false, downloadsDir);
-						success.add(fetchURI.toString(true, false));
-					} catch (Exception e) {
-						failure.add(currentKey);
-						Logger.error(this,
-						        "An error occured while attempting to download key("+i+") : "+
-						        currentKey+ " : "+e.getMessage());
-					}
-				}
-
-				boolean displayFailureBox = failure.size() > 0;
-				boolean displaySuccessBox = success.size() > 0;
-
-				PageNode page = ctx.getPageMaker().getPageNode(l10n("downloadFiles"), ctx);
-				HTMLNode pageNode = page.outer;
-				HTMLNode contentNode = page.content;
-
-				HTMLNode alertContent = ctx.getPageMaker().getInfobox(
-				        (displayFailureBox ? "infobox-warning" : "infobox-info"),
-				        l10n("downloadFiles"), contentNode, "grouped-downloads", true);
-				if(displaySuccessBox) {
-					HTMLNode successDiv = alertContent.addChild("ul");
-					successDiv.addChild("#", l10n("enqueuedSuccessfully", "number",
-					        String.valueOf(success.size())));
-					for(String s: success) {
-						HTMLNode line = successDiv.addChild("li");
-						line.addChild("#", s);
-					}
-					successDiv.addChild("br");
-				}
-				if(displayFailureBox) {
-					HTMLNode failureDiv = alertContent.addChild("ul");
-					if(displayFailureBox) {
-						failureDiv.addChild("#", l10n("enqueuedFailure", "number",
-						        String.valueOf(failure.size())));
-						for(String f: failure) {
-							HTMLNode line = failureDiv.addChild("li");
-							line.addChild("#", f);
-						}
-					}
-					failureDiv.addChild("br");
-				}
-				alertContent.addChild("a", "href", path(),
-				        NodeL10n.getBase().getString("Toadlet.returnToQueuepage"));
-				writeHTMLReply(ctx, 200, "OK", pageNode.generate());
+				queueBulkDownloads(request, ctx);
 				return;
 			} else if (request.isPartSet("change_priority_top")) {
 				handleChangePriority(request, ctx, "_top");
@@ -658,6 +581,84 @@ public class QueueToadlet extends Toadlet implements RequestCompletionCallback, 
 			request.freeParts();
 		}
 		this.handleMethodGET(uri, new HTTPRequestImpl(uri, "GET"), ctx);
+	}
+
+	private void queueBulkDownloads(HTTPRequest request, ToadletContext ctx) throws ToadletContextClosedException, IOException {
+		String target = request.getPartAsStringFailsafe("target", 128);
+		if (target == null) {
+			target = "direct";
+		}
+		File downloadsDir = null;
+		if (request.isPartSet("path") && !core.isDownloadDisabled()) {
+			String downloadPath = request.getPartAsStringFailsafe("path", MAX_FILENAME_LENGTH);
+			try {
+				downloadsDir = getDownloadsDir(downloadPath);
+			} catch (NotAllowedException e) {
+				downloadDisallowedPage(e, downloadPath, ctx);
+				return;
+			}
+		} else {
+			target = "direct";
+		}
+
+		String bulkDownloadsAsString = request.getPartAsStringFailsafe("bulkDownloads", 262144);
+		String[] keys = bulkDownloadsAsString.split("\n");
+		if (("".equals(bulkDownloadsAsString)) || (keys.length < 1)) {
+			writePermanentRedirect(ctx, "Done", path());
+			return;
+		}
+
+		List<String> queuedRequests = new ArrayList<String>();
+		List<String> failedRequests = new ArrayList<String>();
+		boolean filterData = request.isPartSet("filterData");
+
+		for (String key : keys) {
+			String currentKey = key;
+			if (currentKey.length() == 0) {
+				continue;
+			}
+
+			try {
+				FreenetURI fetchURI = new FreenetURI(currentKey);
+				fcp.makePersistentGlobalRequestBlocking(fetchURI, filterData, null, "forever", target, false, downloadsDir);
+				queuedRequests.add(fetchURI.toString(true, false));
+			} catch (Exception e) {
+				failedRequests.add(currentKey);
+				Logger.error(this, "An error occured while attempting to download key: " + currentKey + " : " + e.getMessage());
+			}
+		}
+
+		writeQueueingResults(ctx, queuedRequests, failedRequests);
+	}
+
+	private void writeQueueingResults(ToadletContext ctx, List<String> queuedRequests, List<String> failedRequests) throws ToadletContextClosedException, IOException {
+		PageNode page = ctx.getPageMaker().getPageNode(l10n("downloadFiles"), ctx);
+		HTMLNode pageNode = page.outer;
+		HTMLNode contentNode = page.content;
+
+		HTMLNode alertContent = ctx.getPageMaker().getInfobox(
+				(!failedRequests.isEmpty() ? "infobox-warning" : "infobox-info"),
+				l10n("downloadFiles"), contentNode, "grouped-downloads", true);
+		if (!queuedRequests.isEmpty()) {
+			HTMLNode successDiv = alertContent.addChild("ul");
+			successDiv.addChild("#", l10n("enqueuedSuccessfully", "number", String.valueOf(queuedRequests.size())));
+			for (String successfulRequest : queuedRequests) {
+				HTMLNode line = successDiv.addChild("li");
+				line.addChild("#", successfulRequest);
+			}
+			successDiv.addChild("br");
+		}
+		if (!failedRequests.isEmpty()) {
+			HTMLNode failureDiv = alertContent.addChild("ul");
+			failureDiv.addChild("#", l10n("enqueuedFailure", "number", String.valueOf(failedRequests.size())));
+			for (String failedRequest : failedRequests) {
+				HTMLNode line = failureDiv.addChild("li");
+				line.addChild("#", failedRequest);
+			}
+			failureDiv.addChild("br");
+		}
+		alertContent.addChild("a", "href", path(), NodeL10n.getBase().getString("Toadlet.returnToQueuepage"));
+		writeHTMLReply(ctx, 200, "OK", pageNode.generate());
 	}
 
 	private void queueDownload(HTTPRequest request, ToadletContext ctx) throws ToadletContextClosedException, IOException {
