@@ -179,48 +179,7 @@ public class QueueToadlet extends Toadlet implements RequestCompletionCallback, 
 				panic(ctx);
 				return;
 			} else if(request.isPartSet("download")) {
-				// Queue a download
-				if(!request.isPartSet("key")) {
-					writeError(l10n("errorNoKey"), l10n("errorNoKeyToD"), ctx);
-					return;
-				}
-				String expectedMIMEType = null;
-				if(request.isPartSet("type")) {
-					expectedMIMEType = request.getPartAsStringFailsafe("type", MAX_TYPE_LENGTH);
-				}
-				FreenetURI fetchURI;
-				try {
-					fetchURI = new FreenetURI(request.getPartAsStringFailsafe("key", MAX_KEY_LENGTH));
-				} catch (MalformedURLException e) {
-					writeError(l10n("errorInvalidURI"), l10n("errorInvalidURIToD"), ctx);
-					return;
-				}
-				String persistence = request.getPartAsStringFailsafe("persistence", 32);
-				String returnType = request.getPartAsStringFailsafe("return-type", 32);
-				boolean filterData = request.isPartSet("filterData");
-				String downloadPath;
-				File downloadsDir = null;
-				//Download to disk disabled and initialized.
-				if (request.isPartSet("path") && !core.isDownloadDisabled()) {
-					downloadPath = request.getPartAsStringFailsafe("path", MAX_FILENAME_LENGTH);
-					try {
-						downloadsDir = getDownloadsDir(downloadPath);
-					} catch (NotAllowedException e) {
-						downloadDisallowedPage(e, downloadPath, ctx);
-						return;
-					}
-				//Downloading to disk not initialized and/or disabled.
-				} else returnType = "direct";
-				try {
-					fcp.makePersistentGlobalRequestBlocking(fetchURI, filterData, expectedMIMEType, persistence, returnType, false, downloadsDir);
-				} catch (NotAllowedException e) {
-					this.writeError(l10n("QueueToadlet.errorDToDisk"), l10n("QueueToadlet.errorDToDiskConfig"), ctx);
-					return;
-				} catch (DatabaseDisabledException e) {
-					sendPersistenceDisabledError(ctx);
-					return;
-				}
-				writePermanentRedirect(ctx, "Done", path());
+				queueDownload(request, ctx);
 				return;
 			} else if(request.isPartSet("bulkDownloads")) {
 				String bulkDownloadsAsString = request.getPartAsStringFailsafe("bulkDownloads", 262144);
@@ -699,6 +658,49 @@ public class QueueToadlet extends Toadlet implements RequestCompletionCallback, 
 			request.freeParts();
 		}
 		this.handleMethodGET(uri, new HTTPRequestImpl(uri, "GET"), ctx);
+	}
+
+	private void queueDownload(HTTPRequest request, ToadletContext ctx) throws ToadletContextClosedException, IOException {
+		if (!request.isPartSet("key")) {
+			writeError(l10n("errorNoKey"), l10n("errorNoKeyToD"), ctx);
+			return;
+		}
+		String expectedMIMEType = null;
+		if (request.isPartSet("type")) {
+			expectedMIMEType = request.getPartAsStringFailsafe("type", MAX_TYPE_LENGTH);
+		}
+		FreenetURI fetchURI;
+		try {
+			fetchURI = new FreenetURI(request.getPartAsStringFailsafe("key", MAX_KEY_LENGTH));
+		} catch (MalformedURLException e) {
+			writeError(l10n("errorInvalidURI"), l10n("errorInvalidURIToD"), ctx);
+			return;
+		}
+		String persistence = request.getPartAsStringFailsafe("persistence", 32);
+		String returnType = request.getPartAsStringFailsafe("return-type", 32);
+		boolean filterData = request.isPartSet("filterData");
+		File downloadsDir = null;
+		//Download to disk disabled and initialized.
+		if (request.isPartSet("path") && !core.isDownloadDisabled()) {
+			String downloadPath = request.getPartAsStringFailsafe("path", MAX_FILENAME_LENGTH);
+			try {
+				downloadsDir = getDownloadsDir(downloadPath);
+			} catch (NotAllowedException e) {
+				downloadDisallowedPage(e, downloadPath, ctx);
+				return;
+			}
+			//Downloading to disk not initialized and/or disabled.
+		} else {
+			returnType = "direct";
+		}
+		try {
+			fcp.makePersistentGlobalRequestBlocking(fetchURI, filterData, expectedMIMEType, persistence, returnType, false, downloadsDir);
+			writePermanentRedirect(ctx, "Done", path());
+		} catch (NotAllowedException e) {
+			writeError(l10n("QueueToadlet.errorDToDisk"), l10n("QueueToadlet.errorDToDiskConfig"), ctx);
+		} catch (DatabaseDisabledException e) {
+			sendPersistenceDisabledError(ctx);
+		}
 	}
 
 	private void panic(ToadletContext ctx) throws IOException, ToadletContextClosedException {
