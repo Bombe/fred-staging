@@ -130,6 +130,13 @@ task copyResourcesToClasses2 {
             into sourceSets.main.output.classesDir
             include 'dependencies.properties'
         }
+        if (new File("geoip2/GeoLite2-Country.mmdb").exists()) {
+            copy {
+                from "geoip2/"
+                include "GeoLite2-Country.mmdb"
+                into sourceSets.main.output.classesDir
+            }
+        }
     }
 }
 processResources.dependsOn copyResourcesToClasses2
