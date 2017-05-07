@@ -15,6 +15,9 @@ Country database, a reduced database file containing only a couple of addresses
  my %types = (
      country => 'map',
      iso_code => 'utf8_string',
+     names => 'map',
+     en => 'utf8_string',
+     de => 'utf8_string',
  );
  
  my $tree = MaxMind::DB::Writer::Tree->new(
@@ -26,12 +29,11 @@ Country database, a reduced database file containing only a couple of addresses
      map_key_type_callback => sub { $types{ $_[0] } },
  );
  
- $tree->insert_network('1.2.3.4/32', { country => { iso_code => 'X0' }});
- $tree->insert_network('2.3.4.0/24', { country => { iso_code => 'X1' }});
- $tree->insert_network('1:2:3:4:5:6:7:8/64', { country => { iso_code => 'X2' }});
- $tree->insert_network('2:3:4:5:6:7:8:9/32', { country => { iso_code => 'X3' }});
+ $tree->insert_network('1.2.3.4/32', { country => { iso_code => 'X0', names => { en => 'X Zero', de => 'X Null' }}});
+ $tree->insert_network('2.3.4.0/24', { country => { iso_code => 'X1', names => { en => 'X One', de => 'X Eins' } }});
+ $tree->insert_network('1:2:3:4:5:6:7:8/64', { country => { iso_code => 'X2', names => { en => 'X Two', de => 'X Zwei' } }});
+ $tree->insert_network('2:3:4:5:6:7:8:9/32', { country => { iso_code => 'X3', names => { en => 'X Three', de => 'X Drei' } }});
  
  open my $fh, '>:raw', 'freenet-test-db.mmdb';
  $tree->write_tree($fh);
  ```
- 
