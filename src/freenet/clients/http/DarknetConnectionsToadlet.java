@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 
 import freenet.client.HighLevelSimpleClient;
+import freenet.clients.http.geoip2.CountryLookup;
 import freenet.l10n.NodeL10n;
 import freenet.node.DarknetPeerNode;
 import freenet.node.DarknetPeerNode.FRIEND_TRUST;
@@ -24,8 +25,8 @@ import freenet.support.io.FileUtil;
 
 public class DarknetConnectionsToadlet extends ConnectionsToadlet {
 	
-	DarknetConnectionsToadlet(Node n, NodeClientCore core, HighLevelSimpleClient client) {
-		super(n, core, client);
+	DarknetConnectionsToadlet(Node n, NodeClientCore core, HighLevelSimpleClient client, CountryLookup countryLookup) {
+		super(n, core, client, countryLookup);
 	}
 
 	private static String l10n(String string) {

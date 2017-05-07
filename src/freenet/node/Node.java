@@ -21,6 +21,7 @@ import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
@@ -44,6 +45,9 @@ import freenet.clients.fcp.FCPMessage;
 import freenet.clients.fcp.FeedMessage;
 import freenet.clients.http.SecurityLevelsToadlet;
 import freenet.clients.http.SimpleToadletServer;
+import freenet.clients.http.geoip2.Country;
+import freenet.clients.http.geoip2.CountryLookup;
+import freenet.clients.http.geoip2.GeoIP2;
 import freenet.config.EnumerableOptionCallback;
 import freenet.config.FreenetFilePersistentConfig;
 import freenet.config.InvalidConfigValueException;
@@ -1009,7 +1013,7 @@ public class Node implements TimeSkewDetectorCallback {
 		// FProxy config needs to be here too
 		SubConfig fproxyConfig = config.createSubConfig("fproxy");
 		try {
-			toadlets = new SimpleToadletServer(fproxyConfig, new ArrayBucketFactory(), executor, this);
+			toadlets = new SimpleToadletServer(fproxyConfig, new ArrayBucketFactory(), executor, this, getCountryLookup());
 			fproxyConfig.finishedInitialization();
 			toadlets.start();
 		} catch (IOException e4) {
@@ -2537,6 +2541,25 @@ public class Node implements TimeSkewDetectorCallback {
 
 		Logger.normal(this, "Node constructor completed");
 		System.out.println("Node constructor completed");
+	}
+
+	private CountryLookup getCountryLookup() {
+		try (InputStream databaseInputStream = getClass().getResourceAsStream("/GeoLite2-Country.mmdb")) {
+			if (databaseInputStream != null) {
+				return new GeoIP2(databaseInputStream);
+			}
+			Logger.normal(Node.class, "GeoIP2 Country Database (GeoLite2-Country.mmdb) not found.");
+			/* fallthrough to using a null implementation. */
+		} catch (IOException ioe1) {
+			Logger.warning(Node.class, "Could not load GeoIP2 Country Database!", ioe1);
+			/* fallthrough to using a null implementation. */
+		}
+		return new CountryLookup() {
+			@Override
+			public Country getCountry(InetAddress address) {
+				return null;
+			}
+		};
 	}
 
     /** Delete files from old BDB-index datastore. */

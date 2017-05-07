@@ -38,6 +38,7 @@ import freenet.clients.http.ajaxpush.PushKeepaliveToadlet;
 import freenet.clients.http.ajaxpush.PushLeavingToadlet;
 import freenet.clients.http.ajaxpush.PushNotificationToadlet;
 import freenet.clients.http.ajaxpush.PushTesterToadlet;
+import freenet.clients.http.geoip2.CountryLookup;
 import freenet.clients.http.updateableelements.ProgressBarElement;
 import freenet.clients.http.updateableelements.ProgressInfoElement;
 import freenet.config.Config;
@@ -1106,7 +1107,7 @@ public final class FProxyToadlet extends Toadlet implements RequestClient {
 	}
 
 	public static void maybeCreateFProxyEtc(NodeClientCore core, Node node, Config config,
-	        SimpleToadletServer server) throws IOException {
+		SimpleToadletServer server, CountryLookup countryLookup) throws IOException {
 
 		// FIXME how to change these on the fly when the interface language is changed?
 
@@ -1209,7 +1210,7 @@ public final class FProxyToadlet extends Toadlet implements RequestClient {
 		ExternalLinkToadlet externalLinkToadlet = new ExternalLinkToadlet(client, node);
 		server.register(externalLinkToadlet, null, ExternalLinkToadlet.PATH, true, false);
 
-		DarknetConnectionsToadlet friendsToadlet = new DarknetConnectionsToadlet(node, core, client);
+		DarknetConnectionsToadlet friendsToadlet = new DarknetConnectionsToadlet(node, core, client, countryLookup);
 		server.register(friendsToadlet, "FProxyToadlet.categoryFriends", "/friends/", true,
 		        "FProxyToadlet.friendsTitle", "FProxyToadlet.friends", true, null);
 
@@ -1217,7 +1218,7 @@ public final class FProxyToadlet extends Toadlet implements RequestClient {
 		server.register(addRefToadlet, "FProxyToadlet.categoryFriends", "/addfriend/", true,
 		        "FProxyToadlet.addFriendTitle", "FProxyToadlet.addFriend", true, null);
 
-		OpennetConnectionsToadlet opennetToadlet = new OpennetConnectionsToadlet(node, core, client);
+		OpennetConnectionsToadlet opennetToadlet = new OpennetConnectionsToadlet(node, core, client, countryLookup);
 		server.register(opennetToadlet, "FProxyToadlet.categoryStatus", "/strangers/", true,
 		        "FProxyToadlet.opennetTitle", "FProxyToadlet.opennet", true, opennetToadlet);
 

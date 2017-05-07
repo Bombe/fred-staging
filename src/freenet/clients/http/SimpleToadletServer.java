@@ -21,6 +21,7 @@ import freenet.client.filter.LinkFilterExceptionProvider;
 import freenet.clients.http.FProxyFetchInProgress.REFILTER_POLICY;
 import freenet.clients.http.PageMaker.THEME;
 import freenet.clients.http.bookmark.BookmarkManager;
+import freenet.clients.http.geoip2.CountryLookup;
 import freenet.clients.http.updateableelements.PushDataManager;
 import freenet.config.EnumerableOptionCallback;
 import freenet.config.InvalidConfigValueException;
@@ -128,6 +129,8 @@ public final class SimpleToadletServer implements ToadletContainer, Runnable, Li
 	
 	/** The IntervalPusherManager handles interval pushing*/
 	public IntervalPusherManager intervalPushManager;
+	
+	private final CountryLookup countryLookup;
 
         private static volatile boolean logMINOR;
 	static {
@@ -426,7 +429,7 @@ public final class SimpleToadletServer implements ToadletContainer, Runnable, Li
 		intervalPushManager=new IntervalPusherManager(getTicker(), pushDataManager);
 		bookmarkManager = new BookmarkManager(core, publicGatewayMode());
 		try {
-			FProxyToadlet.maybeCreateFProxyEtc(core, node, node.config, this);
+			FProxyToadlet.maybeCreateFProxyEtc(core, node, node.config, this, countryLookup);
 		} catch (IOException e) {
 			Logger.error(this, "Could not start fproxy: "+e, e);
 			System.err.println("Could not start fproxy:");
@@ -444,9 +447,10 @@ public final class SimpleToadletServer implements ToadletContainer, Runnable, Li
 	 * Create a SimpleToadletServer, using the settings from the SubConfig (the fproxy.*
 	 * config).
 	 */
-	public SimpleToadletServer(SubConfig fproxyConfig, BucketFactory bucketFactory, Executor executor, Node node) throws IOException, InvalidConfigValueException {
+	public SimpleToadletServer(SubConfig fproxyConfig, BucketFactory bucketFactory, Executor executor, Node node, CountryLookup countryLookup) throws IOException, InvalidConfigValueException {
 
 		this.executor = executor;
+		this.countryLookup = countryLookup;
 		this.core = null; // setCore() will be called later. 
 		this.random = new Random();
 		

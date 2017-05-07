@@ -5,6 +5,7 @@ import java.net.URI;
 import java.util.Comparator;
 
 import freenet.client.HighLevelSimpleClient;
+import freenet.clients.http.geoip2.CountryLookup;
 import freenet.l10n.NodeL10n;
 import freenet.node.Node;
 import freenet.node.NodeClientCore;
@@ -17,8 +18,8 @@ import freenet.support.api.HTTPRequest;
 
 public class OpennetConnectionsToadlet extends ConnectionsToadlet implements LinkEnabledCallback {
 
-	protected OpennetConnectionsToadlet(Node n, NodeClientCore core, HighLevelSimpleClient client) {
-		super(n, core, client);
+	protected OpennetConnectionsToadlet(Node n, NodeClientCore core, HighLevelSimpleClient client, CountryLookup countryLookup) {
+		super(n, core, client, countryLookup);
 	}
 
 	@Override

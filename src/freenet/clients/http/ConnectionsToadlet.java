@@ -6,22 +6,27 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import freenet.client.HighLevelSimpleClient;
 import freenet.clients.fcp.AddPeer;
-import freenet.clients.http.geoip.IPConverter;
-import freenet.clients.http.geoip.IPConverter.Country;
+import freenet.clients.http.geoip2.Country;
+import freenet.clients.http.geoip2.CountryLookup;
 import freenet.io.comm.PeerParseException;
 import freenet.io.comm.ReferenceSignatureVerificationException;
 import freenet.io.xfer.PacketThrottle;
@@ -32,7 +37,6 @@ import freenet.node.DarknetPeerNode.FRIEND_TRUST;
 import freenet.node.FSParseException;
 import freenet.node.Node;
 import freenet.node.NodeClientCore;
-import freenet.node.NodeFile;
 import freenet.node.NodeStats;
 import freenet.node.PeerManager;
 import freenet.node.PeerNode;
@@ -162,15 +166,17 @@ public abstract class ConnectionsToadlet extends Toadlet {
 	protected final NodeClientCore core;
 	protected final NodeStats stats;
 	protected final PeerManager peers;
+	protected final CountryLookup countryLookup;
 	protected boolean isReversed = false;
 	protected boolean showTrivialFoafConnections = false;
 
 	public enum PeerAdditionReturnCodes{ OK, WRONG_ENCODING, CANT_PARSE, INTERNAL_ERROR, INVALID_SIGNATURE, TRY_TO_ADD_SELF, ALREADY_IN_REFERENCE}
 
-	protected ConnectionsToadlet(Node n, NodeClientCore core, HighLevelSimpleClient client) {
+	protected ConnectionsToadlet(Node n, NodeClientCore core, HighLevelSimpleClient client, CountryLookup countryLookup) {
 		super(client);
 		this.node = n;
 		this.core = core;
+		this.countryLookup = countryLookup;
 		this.stats = n.nodeStats;
 		this.peers = n.peers;
 	    REF_LINK = HTMLNode.link(path()+"myref.fref").setReadOnly();
@@ -989,14 +995,8 @@ public abstract class ConnectionsToadlet extends Toadlet {
 			(int) peerNodeStatus.getAveragePingTimeCorrected()+"ms)";
 		}
 		HTMLNode addressRow = peerRow.addChild("td", "class", "peer-address");
-		// Ip to country + Flags
-		IPConverter ipc = IPConverter.getInstance(NodeFile.IPv4ToCountry.getFile(node));
-		byte[] addr = peerNodeStatus.getPeerAddressBytes();
 
-		Country country = ipc.locateIP(addr);
-		if(country != null) {
-			country.renderFlagIcon(addressRow);
-		}
+		addCountryFlag(addressRow, peerNodeStatus.getPeerAddressBytes());
 
 		addressRow.addChild("#", ((peerNodeStatus.getPeerAddress() != null) ? (peerNodeStatus.getPeerAddress() + ':' + peerNodeStatus.getPeerPort()) : (l10n("unknownAddress"))) + pingTime);
 
@@ -1107,6 +1107,32 @@ public abstract class ConnectionsToadlet extends Toadlet {
 		
 		if (drawMessageTypes) {
 			drawMessageTypes(peerTable, peerNodeStatus);
+		}
+	}
+
+	private final Set<String> countriesWithFlag = new HashSet<String>();
+
+	private void addCountryFlag(HTMLNode addressRow, byte[] peerAddress) {
+		Country country = null;
+		try {
+			country = countryLookup.getCountry(InetAddress.getByAddress(peerAddress));
+		} catch (UnknownHostException uhe1) {
+			Logger.error(ConnectionsToadlet.class, "Got Peer Address with illegal length: " + Arrays.toString(peerAddress), uhe1);
+		}
+
+		if (country == null) {
+			return;
+		}
+
+		String flagPath = "icon/flags/" + country.getIsoCode().toLowerCase() + ".png";
+		if (!countriesWithFlag.contains(country.getIsoCode())) {
+			if (StaticToadlet.haveFile(flagPath)) {
+				countriesWithFlag.add(country.getIsoCode());
+			}
+		}
+		if (countriesWithFlag.contains(country.getIsoCode())) {
+			Locale currentLocale = new Locale(NodeL10n.getBase().getSelectedLanguage().shortCode);
+			addressRow.addChild("img", new String[] { "src", "title" }, new String[] { StaticToadlet.ROOT_URL + flagPath, country.getName(currentLocale)});
 		}
 	}
 
