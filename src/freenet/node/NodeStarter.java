@@ -8,6 +8,7 @@ import org.tanukisoftware.wrapper.WrapperManager;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.Policy;
 import java.security.SecureRandom;
 import java.util.Properties;
 import java.util.UUID;
@@ -20,6 +21,7 @@ import freenet.crypt.JceLoader;
 import freenet.crypt.RandomSource;
 import freenet.crypt.SSL;
 import freenet.crypt.Yarrow;
+import freenet.node.security.FreenetPolicy;
 import freenet.support.Executor;
 import freenet.support.JVMVersion;
 import freenet.support.Logger;
@@ -262,12 +264,21 @@ public class NodeStarter implements WrapperListener {
 		// Immediately try entering background mode. This way also class
 		//  loading will be subject to reduced priority. 
 		ProcessPriority.enterBackgroundMode();
+
+		// install the security manager before starting the node.
+		installSecurityManager();
 		
 		// Start the application.  If the JVM was launched from the native
 		//  Wrapper then the application will wait for the native Wrapper to
 		//  call the application's start method.  Otherwise the start method
 		//  will be called immediately.
 		WrapperManager.start(new NodeStarter(), args);
+	}
+
+	private static void installSecurityManager() {
+		Policy freenetPolicy = new FreenetPolicy();
+		Policy.setPolicy(freenetPolicy);
+		System.setSecurityManager(new SecurityManager());
 	}
 
 	static SemiOrderedShutdownHook shutdownHook;

@@ -26,6 +26,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.CodeSigner;
+import java.security.CodeSource;
+import java.security.ProtectionDomain;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -138,8 +141,10 @@ public class JarClassLoader extends ClassLoader implements Closeable {
 				byte[] classBytes = classBytesOutputStream.toByteArray();
 
 				definePackage(name);
-					
-				Class<?> clazz = defineClass(name, classBytes, 0, classBytes.length);
+
+				CodeSource codeSource = new CodeSource(new File(tempJarFile.getName()).getCanonicalFile().toURI().toURL(), (CodeSigner[]) null);
+				ProtectionDomain protectionDomain = new ProtectionDomain(codeSource, null, this, null);
+				Class<?> clazz = defineClass(name, classBytes, 0, classBytes.length, protectionDomain);
 				return clazz;
 			}
 			throw new ClassNotFoundException("could not find jar entry for class " + name);
