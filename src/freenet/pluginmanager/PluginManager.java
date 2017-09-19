@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.Semaphore;
@@ -71,16 +72,7 @@ import freenet.support.io.NativeThread;
 
 public class PluginManager {
 
-	/*
-	 *
-	 * TODO: Synchronize
-	 * TODO: Synchronize
-	 * TODO: Synchronize
-	 * TODO: Synchronize
-	 * TODO: Synchronize
-	 *
-	 */
-	private final HashMap<String, FredPlugin> toadletList;
+	private final LoadedPlugins loadedPlugins = new LoadedPlugins();
 
 	/* All currently starting plugins. */
 	private final OfficialPlugins officialPlugins = new OfficialPlugins();
@@ -111,7 +103,6 @@ public class PluginManager {
 		logDEBUG = Logger.shouldLog(LogLevel.DEBUG, this);
 		// config
 
-		toadletList = new HashMap<String, FredPlugin>();
 		pluginWrappers = new ArrayList<PluginInfoWrapper>();
 		pluginsFailedLoad = new HashMap<String, PluginLoadFailedUserAlert>();
 		this.node = node;
@@ -790,9 +781,7 @@ public class PluginManager {
 
 	private void registerToadlet(FredPlugin pl) {
 		//toadletList.put(e.getStackTrace()[1].getClass().toString(), pl);
-		synchronized(toadletList) {
-			toadletList.put(pl.getClass().getName(), pl);
-		}
+		loadedPlugins.addLoadedPlugin(pl);
 		Logger.normal(this, "Added HTTP handler for /plugins/" + pl.getClass().getName() + '/');
 	}
 
@@ -845,37 +834,28 @@ public class PluginManager {
 	}
 
 	public void unregisterPluginToadlet(PluginInfoWrapper pi) {
-		synchronized(toadletList) {
-			try {
-				toadletList.remove(pi.getPluginClassName());
-				Logger.normal(this, "Removed HTTP handler for /plugins/" +
-					pi.getPluginClassName() + '/', new Exception("debug"));
-			} catch(Throwable ex) {
-				Logger.error(this, "removing Plugin", ex);
-			}
-		}
+		loadedPlugins.removeLoadedPlugin(pi.plug);
+		Logger.normal(this, "Removed HTTP handler for /plugins/" +
+			pi.getPluginClassName() + '/', new Exception("debug"));
 	}
 
 	public void addToadletSymlinks(PluginInfoWrapper pi) {
-		synchronized(toadletList) {
 			try {
 				String targets[] = pi.getPluginToadletSymlinks();
 				if(targets == null)
 					return;
 
 				for(String target: targets) {
-					toadletList.remove(target);
+					loadedPlugins.removeLoadedPlugin(target);
 					Logger.normal(this, "Removed HTTP symlink: " + target +
 						" => /plugins/" + pi.getPluginClassName() + '/');
 				}
 			} catch(Throwable ex) {
 				Logger.error(this, "removing Toadlet-link", ex);
 			}
-		}
 	}
 
 	public void removeToadletSymlinks(PluginInfoWrapper pi) {
-		synchronized(toadletList) {
 			String rm = null;
 			try {
 				String targets[] = pi.getPluginToadletSymlinks();
@@ -884,7 +864,7 @@ public class PluginManager {
 
 				for(String target: targets) {
 					rm = target;
-					toadletList.remove(target);
+					loadedPlugins.removeLoadedPlugin(target);
 					pi.removePluginToadletSymlink(target);
 					Logger.normal(this, "Removed HTTP symlink: " + target +
 						" => /plugins/" + pi.getPluginClassName() + '/');
@@ -892,7 +872,6 @@ public class PluginManager {
 			} catch(Throwable ex) {
 				Logger.error(this, "removing Toadlet-link: " + rm, ex);
 			}
-		}
 	}
 
 	public String dumpPlugins() {
@@ -1061,10 +1040,7 @@ public class PluginManager {
 	}
 
 	public String handleHTTPGet(String plugin, HTTPRequest request) throws PluginHTTPException {
-		FredPlugin handler = null;
-		synchronized(toadletList) {
-			handler = toadletList.get(plugin);
-		}
+		FredPlugin handler = loadedPlugins.getLoadedPlugin(plugin);
 		if (!(handler instanceof FredPluginHTTP)) {
 			throw new NotFoundPluginHTTPException("Plugin not loaded!", "/plugins");
 		}
@@ -1080,10 +1056,7 @@ public class PluginManager {
 	}
 
 	public String handleHTTPPost(String plugin, HTTPRequest request) throws PluginHTTPException {
-		FredPlugin handler = null;
-		synchronized(toadletList) {
-			handler = toadletList.get(plugin);
-		}
+		FredPlugin handler = loadedPlugins.getLoadedPlugin(plugin);
 		if (handler == null)
 			throw new NotFoundPluginHTTPException("Plugin '"+plugin+"' not found!", "/plugins");
 
@@ -1797,5 +1770,38 @@ public class PluginManager {
     public boolean isEnabled() {
         return enabled;
     }
+
+	/**
+	 * Container for currently loaded plugins.
+	 */
+	public static class LoadedPlugins {
+
+		private final Map<String, FredPlugin> loadedPlugins = new HashMap<>();
+
+		public void addLoadedPlugin(FredPlugin plugin) {
+			synchronized (loadedPlugins) {
+				loadedPlugins.put(loadedPlugins.getClass().getName(), plugin);
+			}
+		}
+
+		public FredPlugin getLoadedPlugin(String className) {
+			synchronized (loadedPlugins) {
+				return loadedPlugins.get(className);
+			}
+		}
+
+		public void removeLoadedPlugin(FredPlugin plugin) {
+			synchronized (loadedPlugins) {
+				loadedPlugins.remove(plugin.getClass().getName());
+			}
+		}
+
+		public void removeLoadedPlugin(String className) {
+			synchronized (loadedPlugins) {
+				loadedPlugins.remove(className);
+			}
+		}
+
+	}
 
 }
