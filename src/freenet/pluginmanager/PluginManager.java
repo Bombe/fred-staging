@@ -840,38 +840,38 @@ public class PluginManager {
 	}
 
 	public void addToadletSymlinks(PluginInfoWrapper pi) {
-			try {
-				String targets[] = pi.getPluginToadletSymlinks();
-				if(targets == null)
-					return;
+		try {
+			String targets[] = pi.getPluginToadletSymlinks();
+			if(targets == null)
+				return;
 
-				for(String target: targets) {
-					loadedPlugins.removeLoadedPlugin(target);
-					Logger.normal(this, "Removed HTTP symlink: " + target +
-						" => /plugins/" + pi.getPluginClassName() + '/');
-				}
-			} catch(Throwable ex) {
-				Logger.error(this, "removing Toadlet-link", ex);
+			for(String target: targets) {
+				loadedPlugins.removeLoadedPlugin(target);
+				Logger.normal(this, "Removed HTTP symlink: " + target +
+					" => /plugins/" + pi.getPluginClassName() + '/');
 			}
+		} catch(Throwable ex) {
+			Logger.error(this, "removing Toadlet-link", ex);
+		}
 	}
 
 	public void removeToadletSymlinks(PluginInfoWrapper pi) {
-			String rm = null;
-			try {
-				String targets[] = pi.getPluginToadletSymlinks();
-				if(targets == null)
-					return;
+		String rm = null;
+		try {
+			String targets[] = pi.getPluginToadletSymlinks();
+			if(targets == null)
+				return;
 
-				for(String target: targets) {
-					rm = target;
-					loadedPlugins.removeLoadedPlugin(target);
-					pi.removePluginToadletSymlink(target);
-					Logger.normal(this, "Removed HTTP symlink: " + target +
-						" => /plugins/" + pi.getPluginClassName() + '/');
-				}
-			} catch(Throwable ex) {
-				Logger.error(this, "removing Toadlet-link: " + rm, ex);
+			for(String target: targets) {
+				rm = target;
+				loadedPlugins.removeLoadedPlugin(target);
+				pi.removePluginToadletSymlink(target);
+				Logger.normal(this, "Removed HTTP symlink: " + target +
+					" => /plugins/" + pi.getPluginClassName() + '/');
 			}
+		} catch(Throwable ex) {
+			Logger.error(this, "removing Toadlet-link: " + rm, ex);
+		}
 	}
 
 	public String dumpPlugins() {
