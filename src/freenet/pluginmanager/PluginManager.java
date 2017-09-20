@@ -76,7 +76,6 @@ public class PluginManager {
 
 	/* All currently starting plugins. */
 	private final OfficialPlugins officialPlugins = new OfficialPlugins();
-	private final Set<PluginProgress> startingPlugins = new HashSet<PluginProgress>();
 	private final ArrayList<PluginInfoWrapper> pluginWrappers;
 	private final HashMap<String, PluginLoadFailedUserAlert> pluginsFailedLoad;
 	final Node node;
@@ -279,16 +278,10 @@ public class PluginManager {
 	public void stop(long maxWaitTime) {
 	    if(!enabled) return;
 		// Stop loading plugins.
-		ArrayList<PluginProgress> matches = new ArrayList<PluginProgress>();
 		synchronized(this) {
 			stopping = true;
-			for(Iterator<PluginProgress> i = startingPlugins.iterator();i.hasNext();) {
-				PluginProgress progress = i.next();
-				matches.add(progress);
-				i.remove();
-			}
 		}
-		for(PluginProgress progress : matches) {
+		for (PluginProgress progress : loadedPlugins.drainStartingPlugins()) {
 			progress.kill();
 		}
 		// Stop already loaded plugins.
@@ -355,9 +348,7 @@ public class PluginManager {
 	 * @return All currently starting plugins
 	 */
 	public Set<PluginProgress> getStartingPlugins() {
-		synchronized(startingPlugins) {
-			return new HashSet<PluginProgress>(startingPlugins);
-		}
+		return loadedPlugins.getStartingPlugins();
 	}
 	// try to guess around...
 	public PluginInfoWrapper startPluginAuto(final String pluginname, boolean store) {
@@ -415,9 +406,7 @@ public class PluginManager {
 		if(filename.trim().length() == 0)
 			return null;
 		final PluginProgress pluginProgress = new PluginProgress(filename, pdl);
-		synchronized(startingPlugins) {
-			startingPlugins.add(pluginProgress);
-		}
+		loadedPlugins.addStartingPlugin(pluginProgress);
 		Logger.normal(this, "Loading plugin: " + filename);
 		FredPlugin plug;
 		PluginInfoWrapper pi = null;
@@ -508,9 +497,7 @@ public class PluginManager {
 			core.alerts.register(newAlert);
 			core.alerts.unregister(oldAlert);
 		} finally {
-			synchronized (startingPlugins) {
-				startingPlugins.remove(pluginProgress);
-			}
+			loadedPlugins.removeStartingPlugin(pluginProgress);
 		}
 		/* try not to destroy the config. */
 		synchronized(this) {
@@ -524,7 +511,7 @@ public class PluginManager {
 
 	private synchronized boolean twoCopiesInStartingPlugins(String filename) {
 		int count = 0;
-		for(PluginProgress progress : startingPlugins) {
+		for (PluginProgress progress : loadedPlugins.getStartingPlugins()) {
 			if(filename.equals(progress.name)) {
 				count++;
 				if(count == 2) return true;
@@ -730,19 +717,7 @@ public class PluginManager {
 
 	public void cancelRunningLoads(String filename, PluginProgress exceptFor) {
 		Logger.normal(this, "Cancelling loads for plugin "+filename);
-		ArrayList<PluginProgress> matches = null;
-		synchronized(this) {
-			for(Iterator<PluginProgress> i = startingPlugins.iterator();i.hasNext();) {
-				PluginProgress progress = i.next();
-				if(progress == exceptFor) continue;
-				if(!filename.equals(progress.name)) continue;
-				if(matches == null) matches = new ArrayList<PluginProgress>();
-				matches.add(progress);
-				i.remove();
-			}
-		}
-		if(matches == null) return;
-		for(PluginProgress progress : matches) {
+		for (PluginProgress progress : loadedPlugins.drainStartingPlugins(exceptFor, filename)) {
 			progress.kill();
 		}
 	}
@@ -1034,7 +1009,7 @@ public class PluginManager {
 			}
 		}
 		if(pluginsFailedLoad.containsKey(plugname)) return true;
-		for(PluginProgress prog : startingPlugins)
+		for (PluginProgress prog : loadedPlugins.getStartingPlugins())
 			if(prog.name.equals(plugname)) return true;
 		return false;
 	}
@@ -1776,7 +1751,68 @@ public class PluginManager {
 	 */
 	public static class LoadedPlugins {
 
+		private final Set<PluginProgress> startingPlugins = new HashSet<>();
+
+		// all access is synchronized on this object.
 		private final Map<String, FredPlugin> loadedPlugins = new HashMap<>();
+
+		public void addStartingPlugin(PluginProgress pluginProgress) {
+			synchronized (loadedPlugins) {
+				startingPlugins.add(pluginProgress);
+			}
+		}
+
+		/**
+		 * Returns all currently starting plugins. Modifying the returned list has no effect.
+		 *
+		 * @return All currently starting plugins
+		 */
+		public Set<PluginProgress> getStartingPlugins() {
+			synchronized (loadedPlugins) {
+				return new HashSet<>(startingPlugins);
+			}
+		}
+
+		/**
+		 * Returns all currently starting plugins and clears the list of starting plugins.
+		 *
+		 * @return All currently starting plugins
+		 */
+		public Set<PluginProgress> drainStartingPlugins() {
+			synchronized (loadedPlugins) {
+				HashSet<PluginProgress> plugins = new HashSet<>(startingPlugins);
+				startingPlugins.clear();
+				return plugins;
+			}
+		}
+
+		/**
+		 * Returns all currently starting plugins and clears the list of starting plugins, except for the given plugin progress
+		 * and all plugins that are loaded from the given filename.
+		 *
+		 * @return All currently starting plugins
+		 */
+		// TODO - when Java 8 comes around, use lambdas for this
+		public Set<PluginProgress> drainStartingPlugins(PluginProgress ignorePlugin, String ignoreFilename) {
+			synchronized (loadedPlugins) {
+				// TODO - when Java 8 comes around, use streams for this
+				HashSet<PluginProgress> plugins = new HashSet<>(startingPlugins);
+				for (PluginProgress pluginProgress : startingPlugins) {
+					if ((pluginProgress == ignorePlugin) || pluginProgress.name.equals(ignoreFilename)) {
+						continue;
+					}
+					plugins.add(pluginProgress);
+				}
+				startingPlugins.removeAll(plugins);
+				return plugins;
+			}
+		}
+
+		public void removeStartingPlugin(PluginProgress pluginProgress) {
+			synchronized (loadedPlugins) {
+				startingPlugins.remove(pluginProgress);
+			}
+		}
 
 		public void addLoadedPlugin(FredPlugin plugin) {
 			synchronized (loadedPlugins) {
