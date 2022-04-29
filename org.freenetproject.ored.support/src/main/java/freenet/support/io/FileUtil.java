@@ -23,6 +23,7 @@ import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.Random;
 
+import freenet.support.GlobalSecureRandom;
 import org.bouncycastle.crypto.BufferedBlockCipher;
 import org.bouncycastle.crypto.engines.AESFastEngine;
 import org.bouncycastle.crypto.io.CipherInputStream;
@@ -30,8 +31,7 @@ import org.bouncycastle.crypto.modes.SICBlockCipher;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.crypto.params.ParametersWithIV;
 
-import freenet.client.DefaultMIMETypes;
-import freenet.node.NodeStarter;
+import freenet.support.client.DefaultMIMETypes;
 import freenet.support.LogThresholdCallback;
 import freenet.support.Logger;
 import freenet.support.StringValidityChecker;
@@ -50,7 +50,7 @@ final public class FileUtil {
 	 * @param logfile The file to open
 	 * @param byteLimit The maximum number of bytes to read
 	 * @return A line reader for the trailing portion of the file
-	 * @throws java.io.IOException if an I/O error occurs
+	 * @throws IOException if an I/O error occurs
 	 */
 	public static LineReadingInputStream getLogTailReader(File logfile, long byteLimit) throws IOException {
 	    long length = logfile.length();
@@ -438,30 +438,31 @@ final public class FileUtil {
             return true;
         }
 
-        /**
-         * Like renameTo(), but can move across filesystems, by copying the data.
-         * @param orig
-         * @param dest
-         * @param overwrite
-         */
-    	public static boolean moveTo(File orig, File dest, boolean overwrite) {
-            if(orig.equals(dest))
-                throw new IllegalArgumentException("Huh? the two file descriptors are the same!");
-            if(!orig.exists()) {
-            	throw new IllegalArgumentException("Original doesn't exist!");
-            }
-            if(dest.exists()) {
-            	if(overwrite)
-            		dest.delete();
-            	else {
-            		System.err.println("Not overwriting "+dest+" - already exists moving "+orig);
-            		return false;
-            	}
-            }
-    		if(!orig.renameTo(dest))
-    		    return copyFile(orig, dest);
-    		else return true;
-    	}
+	// TODO: Modularity: move to freenet.client
+//        /**
+//         * Like renameTo(), but can move across filesystems, by copying the data.
+//         * @param orig
+//         * @param dest
+//         * @param overwrite
+//         */
+//    	public static boolean moveTo(File orig, File dest, boolean overwrite) {
+//            if(orig.equals(dest))
+//                throw new IllegalArgumentException("Huh? the two file descriptors are the same!");
+//            if(!orig.exists()) {
+//            	throw new IllegalArgumentException("Original doesn't exist!");
+//            }
+//            if(dest.exists()) {
+//            	if(overwrite)
+//            		dest.delete();
+//            	else {
+//            		System.err.println("Not overwriting "+dest+" - already exists moving "+orig);
+//            		return false;
+//            	}
+//            }
+//    		if(!orig.renameTo(dest))
+//    		    return copyFile(orig, dest);
+//    		else return true;
+//    	}
 
     /**
      * Sanitizes the given filename to be valid on the given operating system.
@@ -777,25 +778,26 @@ final public class FileUtil {
 		return File.createTempFile(prefix, suffix, directory);
 	}
 
-	public static boolean copyFile(File copyFrom, File copyTo) {
-		copyTo.delete();
-		boolean executable = copyFrom.canExecute();
-		FileBucket outBucket = new FileBucket(copyTo, false, true, false, false);
-		FileBucket inBucket = new FileBucket(copyFrom, true, false, false, false);
-		try {
-			BucketTools.copy(inBucket, outBucket);
-			if(executable) {
-			    if(!(copyTo.setExecutable(true) || copyTo.canExecute())) {
-			        System.err.println("Unable to preserve executable bit when copying "+copyFrom+" to "+copyTo+" - you may need to make it executable!");
-			        // return false; ??? FIXME debatable.
-			    }
-			}
-			return true;
-		} catch (IOException e) {
-			System.err.println("Unable to copy from "+copyFrom+" to "+copyTo);
-			return false;
-		}
-	}
+	// TODO: move to freenet.client
+//	public static boolean copyFile(File copyFrom, File copyTo) {
+//		copyTo.delete();
+//		boolean executable = copyFrom.canExecute();
+//		FileBucket outBucket = new FileBucket(copyTo, false, true, false, false);
+//		FileBucket inBucket = new FileBucket(copyFrom, true, false, false, false);
+//		try {
+//			BucketTools.copy(inBucket, outBucket);
+//			if(executable) {
+//			    if(!(copyTo.setExecutable(true) || copyTo.canExecute())) {
+//			        System.err.println("Unable to preserve executable bit when copying "+copyFrom+" to "+copyTo+" - you may need to make it executable!");
+//			        // return false; ??? FIXME debatable.
+//			    }
+//			}
+//			return true;
+//		} catch (IOException e) {
+//			System.err.println("Unable to copy from "+copyFrom+" to "+copyTo);
+//			return false;
+//		}
+//	}
 	
 	private static CipherInputStream cis;
 	private static ZeroInputStream zis = new ZeroInputStream();
@@ -817,7 +819,7 @@ final public class FileUtil {
 	                // Reset it well before the birthday paradox (note this is actually counting bytes).
 	                byte[] key = new byte[16];
 	                byte[] iv = new byte[16];
-	                SecureRandom rng = NodeStarter.getGlobalSecureRandom();
+	                SecureRandom rng = GlobalSecureRandom.getGlobalSecureRandom();
 	                rng.nextBytes(key);
 	                rng.nextBytes(iv);
 	                AESFastEngine e = new AESFastEngine();

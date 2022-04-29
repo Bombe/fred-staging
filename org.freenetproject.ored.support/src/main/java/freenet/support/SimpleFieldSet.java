@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import freenet.node.FSParseException;
 import freenet.support.io.Closer;
 import freenet.support.io.LineReader;
 import freenet.support.io.Readers;
@@ -149,7 +148,7 @@ public class SimpleFieldSet {
     /**
      * Construct from a {@link String} array.
      * <p>
-     * Similar to {@link #SimpleFieldSet(String, boolean, boolean)},
+     * Similar to {@link #SimpleFieldSet(String, boolean, boolean, boolean)},
      * but each item of array represents a single line
      * </p>
      * @param content to be parsed 
@@ -166,7 +165,7 @@ public class SimpleFieldSet {
     }
     
     /**
-     * @see #read(LineReader, int, int, boolean, boolean)
+     * @see #read(LineReader, int, int, boolean, boolean, boolean)
      */
 	private void read(LineReader lr, boolean allowMultiple, boolean allowBase64) throws IOException {
 		read(lr, Integer.MAX_VALUE, 0x100, true, allowMultiple, allowBase64);
@@ -645,15 +644,16 @@ public class SimpleFieldSet {
 		return fs.subset(after);
 	}
 
-	/**
-	 * Like subset(), only throws instead of returning null.
-	 * @throws FSParseException
-	 */
-	public synchronized SimpleFieldSet getSubset(String key) throws FSParseException {
-		SimpleFieldSet fs = subset(key);
-		if(fs == null) throw new FSParseException("No such subset "+key);
-		return fs;
-	}
+	// TODO: Modularity: Move to freenet.node together with FSParseException
+//	/**
+//	 * Like subset(), only throws instead of returning null.
+//	 * @throws FSParseException
+//	 */
+//	public synchronized SimpleFieldSet getSubset(String key) throws FSParseException {
+//		SimpleFieldSet fs = subset(key);
+//		if(fs == null) throw new FSParseException("No such subset "+key);
+//		return fs;
+//	}
 
 	/** Iterate over all keys in the SimpleFieldSet, even if they are at lower levels. */
 	public Iterator<String> keyIterator() {
@@ -684,7 +684,7 @@ public class SimpleFieldSet {
     	 * which passes through every key.
     	 * (e.g. for key1=value1 key2.sub2=value2 key1.sub=value3
     	 * it will provide key1,key2.sub2,key1.sub)
-    	 * @param a prefix to put BEFORE every key
+    	 * @param prefix a prefix to put BEFORE every key
     	 * (e.g. for key1=value, if the iterator is created with prefix "aPrefix",
     	 * it will provide aPrefixkey1
     	 */
@@ -859,7 +859,7 @@ public class SimpleFieldSet {
 	 * foo.bar.boo=foobarboo
 	 * calling it with the parameter "foo"
 	 * means to drop the second and the third line.
-	 * @param is the subset to remove
+	 * @param key is the subset to remove
 	 */
 	public synchronized void removeSubset(String key) {
 		if(subsets == null) return;
@@ -1020,22 +1020,23 @@ public class SimpleFieldSet {
 		}
 	}
 
-    /** Get an integer value for the given key. This may be at the top level or lower in the tree,
-     * it's just key=value. (Value in decimal)
-     * @param key The key to fetch.
-     * @return The integer value of the key, if it exists and is valid.
-     * @throws FSParseException If the key=value pair does not exist or if the value cannot be 
-     * parsed as an integer.
-     */
-	public int getInt(String key) throws FSParseException {
-		String s = get(key);
-		if(s == null) throw new FSParseException("No key "+key);
-		try {
-			return Integer.parseInt(s);
-		} catch (NumberFormatException e) {
-			throw new FSParseException("Cannot parse "+s+" for integer "+key);
-		}
-	}
+	// TODO: Modularity: Move to freenet.node together with FSParseException
+//    /** Get an integer value for the given key. This may be at the top level or lower in the tree,
+//     * it's just key=value. (Value in decimal)
+//     * @param key The key to fetch.
+//     * @return The integer value of the key, if it exists and is valid.
+//     * @throws FSParseException If the key=value pair does not exist or if the value cannot be
+//     * parsed as an integer.
+//     */
+//	public int getInt(String key) throws FSParseException {
+//		String s = get(key);
+//		if(s == null) throw new FSParseException("No key "+key);
+//		try {
+//			return Integer.parseInt(s);
+//		} catch (NumberFormatException e) {
+//			throw new FSParseException("Cannot parse "+s+" for integer "+key);
+//		}
+//	}
 
     /** Get a double precision value for the given key. This may be at the top level or lower in 
      * the tree, it's just key=value. (Value in decimal)
@@ -1053,22 +1054,23 @@ public class SimpleFieldSet {
 		}
 	}
 
-    /** Get a double precision value for the given key. This may be at the top level or lower in 
-     * the tree, it's just key=value. (Value in decimal)
-     * @param key The key to fetch.
-     * @return The value of the key as a double, if it exists and is valid.
-     * @throws FSParseException If the key=value pair does not exist or if the value cannot be 
-     * parsed as a double.
-     */
-	public double getDouble(String key) throws FSParseException {
-		String s = get(key);
-		if(s == null) throw new FSParseException("No key "+key);
-		try {
-			return Double.parseDouble(s);
-		} catch (NumberFormatException e) {
-			throw new FSParseException("Cannot parse "+s+" for integer "+key);
-		}
-	}
+	// TODO: Modularity: Move to freenet.node together with FSParseException
+//    /** Get a double precision value for the given key. This may be at the top level or lower in
+//     * the tree, it's just key=value. (Value in decimal)
+//     * @param key The key to fetch.
+//     * @return The value of the key as a double, if it exists and is valid.
+//     * @throws FSParseException If the key=value pair does not exist or if the value cannot be
+//     * parsed as a double.
+//     */
+//	public double getDouble(String key) throws FSParseException {
+//		String s = get(key);
+//		if(s == null) throw new FSParseException("No key "+key);
+//		try {
+//			return Double.parseDouble(s);
+//		} catch (NumberFormatException e) {
+//			throw new FSParseException("Cannot parse "+s+" for integer "+key);
+//		}
+//	}
 
     /** Get a long value for the given key. This may be at the top level or lower in the tree, 
      * it's just key=value. (Value in decimal)
@@ -1086,39 +1088,41 @@ public class SimpleFieldSet {
 		}
 	}
 
-    /** Get a long value for the given key. This may be at the top level or lower in the tree, 
-     * it's just key=value. (Value in decimal)
-     * @param key The key to fetch.
-     * @return The value of the key as a long, if it exists and is valid.
-     * @throws FSParseException If the key=value pair does not exist or if the value cannot be 
-     * parsed as a long.
-     */
-	public long getLong(String key) throws FSParseException {
-		String s = get(key);
-		if(s == null) throw new FSParseException("No key "+key);
-		try {
-			return Long.parseLong(s);
-		} catch (NumberFormatException e) {
-			throw new FSParseException("Cannot parse "+s+" for long "+key);
-		}
-	}
+	// TODO: Modularity: Move to freenet.node together with FSParseException
+//    /** Get a long value for the given key. This may be at the top level or lower in the tree,
+//     * it's just key=value. (Value in decimal)
+//     * @param key The key to fetch.
+//     * @return The value of the key as a long, if it exists and is valid.
+//     * @throws FSParseException If the key=value pair does not exist or if the value cannot be
+//     * parsed as a long.
+//     */
+//	public long getLong(String key) throws FSParseException {
+//		String s = get(key);
+//		if(s == null) throw new FSParseException("No key "+key);
+//		try {
+//			return Long.parseLong(s);
+//		} catch (NumberFormatException e) {
+//			throw new FSParseException("Cannot parse "+s+" for long "+key);
+//		}
+//	}
 
-    /** Get a short value for the given key. This may be at the top level or lower in the tree, 
-     * it's just key=value. (Value in decimal)
-     * @param key The key to fetch.
-     * @return The value of the key as a short, if it exists and is valid.
-     * @throws FSParseException If the key=value pair does not exist or if the value cannot be 
-     * parsed as a short.
-     */
-	public short getShort(String key) throws FSParseException {
-		String s = get(key);
-		if(s == null) throw new FSParseException("No key "+key);
-		try {
-			return Short.parseShort(s);
-		} catch (NumberFormatException e) {
-			throw new FSParseException("Cannot parse "+s+" for short "+key);
-		}
-	}
+	// TODO: Modularity: Move to freenet.node together with FSParseException
+//    /** Get a short value for the given key. This may be at the top level or lower in the tree,
+//     * it's just key=value. (Value in decimal)
+//     * @param key The key to fetch.
+//     * @return The value of the key as a short, if it exists and is valid.
+//     * @throws FSParseException If the key=value pair does not exist or if the value cannot be
+//     * parsed as a short.
+//     */
+//	public short getShort(String key) throws FSParseException {
+//		String s = get(key);
+//		if(s == null) throw new FSParseException("No key "+key);
+//		try {
+//			return Short.parseShort(s);
+//		} catch (NumberFormatException e) {
+//			throw new FSParseException("Cannot parse "+s+" for short "+key);
+//		}
+//	}
 
     /** Get a short value for the given key. This may be at the top level or lower in the tree, 
      * it's just key=value. (Value in decimal)
@@ -1135,95 +1139,99 @@ public class SimpleFieldSet {
 		}
 	}
 
-	/** Get a byte value for the given key (represented as a number in decimal). This may be at 
-	 * the top level or lower in the tree, it's just key=value. (Value in decimal)
-     * @param key The key to fetch.
-     * @return The value of the key as a byte, if it exists and is valid.
-     * @throws FSParseException If the key=value pair does not exist or if the value cannot be 
-     * parsed as a byte.
-     */
-	public byte getByte(String key) throws FSParseException {
-		String s = get(key);
-		if(s == null) throw new FSParseException("No key " + key);
-		try {
-			return Byte.parseByte(s);
-		} catch (NumberFormatException e) {
-			throw new FSParseException("Cannot parse \"" + s + "\" as a byte.");
-		}
-	}
+	// TODO: Modularity: Move to freenet.node together with FSParseException
+//	/** Get a byte value for the given key (represented as a number in decimal). This may be at
+//	 * the top level or lower in the tree, it's just key=value. (Value in decimal)
+//     * @param key The key to fetch.
+//     * @return The value of the key as a byte, if it exists and is valid.
+//     * @throws FSParseException If the key=value pair does not exist or if the value cannot be
+//     * parsed as a byte.
+//     */
+//	public byte getByte(String key) throws FSParseException {
+//		String s = get(key);
+//		if(s == null) throw new FSParseException("No key " + key);
+//		try {
+//			return Byte.parseByte(s);
+//		} catch (NumberFormatException e) {
+//			throw new FSParseException("Cannot parse \"" + s + "\" as a byte.");
+//		}
+//	}
 
-    /** Get a byte value for the given key (represented as a number in decimal). This may be at 
-     * the top level or lower in the tree, it's just key=value. (Value in decimal)
-     * @param key The key to fetch.
-     * @return The value of the key as a byte, if it exists and is valid, otherwise the default
-     * value.
-     */
-	public byte getByte(String key, byte def) {
-		try {
-			return getByte(key);
-		} catch (FSParseException e) {
-			return def;
-		}
-	}
+	// TODO: Modularity: Move to freenet.node together with FSParseException
+//    /** Get a byte value for the given key (represented as a number in decimal). This may be at
+//     * the top level or lower in the tree, it's just key=value. (Value in decimal)
+//     * @param key The key to fetch.
+//     * @return The value of the key as a byte, if it exists and is valid, otherwise the default
+//     * value.
+//     */
+//	public byte getByte(String key, byte def) {
+//		try {
+//			return getByte(key);
+//		} catch (FSParseException e) {
+//			return def;
+//		}
+//	}
 
-	/** Get a byte array for the given key (represented in Base64). The key may be at the top level
-	 * or further down the tree, so this is key=[base64 of value].
-	 * @param key The key to fetch.
-	 * @return The byte array to fetch.
-	 * @throws FSParseException If the key does not exist or cannot be parsed as a byte array.
-	 */
-	public byte[] getByteArray(String key) throws FSParseException {
-        String s = get(key);
-        if(s == null) throw new FSParseException("No key " + key);
-        try {
-            return Base64.decode(s);
-        } catch (IllegalBase64Exception e) {
-            throw new FSParseException("Cannot parse value \""+s+"\" as a byte[]");
-        }
-	}
+	// TODO: Modularity: Move to freenet.node together with FSParseException
+//	/** Get a byte array for the given key (represented in Base64). The key may be at the top level
+//	 * or further down the tree, so this is key=[base64 of value].
+//	 * @param key The key to fetch.
+//	 * @return The byte array to fetch.
+//	 * @throws FSParseException If the key does not exist or cannot be parsed as a byte array.
+//	 */
+//	public byte[] getByteArray(String key) throws FSParseException {
+//        String s = get(key);
+//        if(s == null) throw new FSParseException("No key " + key);
+//        try {
+//            return Base64.decode(s);
+//        } catch (IllegalBase64Exception e) {
+//            throw new FSParseException("Cannot parse value \""+s+"\" as a byte[]");
+//        }
+//	}
 
-	/** Get a char for the given key (represented as a single character). The key may be at the 
-	 * top level or further down the tree, so this is key=[character].
-     * @param key The key to fetch.
-	 * @return The character to fetch.
-	 * @throws FSParseException If the key does not exist or there is more than one character.
-	 */
-	public char getChar(String key) throws FSParseException {
-		String s = get(key);
-		if(s == null) throw new FSParseException("No key "+key);
-			if (s.length() == 1)
-				return s.charAt(0);
-			else
-				throw new FSParseException("Cannot parse "+s+" for char "+key);
-	}
+	// TODO: Modularity: Move to freenet.node together with FSParseException
+//	/** Get a char for the given key (represented as a single character). The key may be at the
+//	 * top level or further down the tree, so this is key=[character].
+//     * @param key The key to fetch.
+//	 * @return The character to fetch.
+//	 * @throws FSParseException If the key does not exist or there is more than one character.
+//	 */
+//	public char getChar(String key) throws FSParseException {
+//		String s = get(key);
+//		if(s == null) throw new FSParseException("No key "+key);
+//			if (s.length() == 1)
+//				return s.charAt(0);
+//			else
+//				throw new FSParseException("Cannot parse "+s+" for char "+key);
+//	}
 
     /** Get a char for the given key (represented as a single character). The key may be at the 
      * top level or further down the tree, so this is key=[character].
      * @param key The key to fetch.
      * @param def The default value to return if the key does not exist or can't be parsed.
      * @return The character to fetch.
-     * @throws FSParseException If the key does not exist or there is more than one character.
      */
 	public char getChar(String key, char def) {
 		String s = get(key);
 		if(s == null) return def;
-			if (s.length() == 1)
-				return s.charAt(0);
-			else
-				return def;
+		if (s.length() == 1)
+			return s.charAt(0);
+		else
+			return def;
 	}
 
 	public boolean getBoolean(String key, boolean def) {
 		return Fields.stringToBool(get(key), def);
 	}
 
-	public boolean getBoolean(String key) throws FSParseException {
-		try {
-		    return Fields.stringToBool(get(key));
-		} catch(NumberFormatException e) {
-		    throw new FSParseException(e);
-		}
-	}
+	// TODO: Modularity: Move to freenet.node together with FSParseException
+//	public boolean getBoolean(String key) throws FSParseException {
+//		try {
+//		    return Fields.stringToBool(get(key));
+//		} catch(NumberFormatException e) {
+//		    throw new FSParseException(e);
+//		}
+//	}
 
 	public void put(String key, int[] value) {
 		removeValue(key);
@@ -1362,11 +1370,12 @@ public class SimpleFieldSet {
         putSingle(key, unsplit(copy));
     }
 
-	public String getString(String key) throws FSParseException {
-		String s = get(key);
-		if(s == null) throw new FSParseException("No such element "+key);
-		return s;
-	}
+	// TODO: Modularity: Move to freenet.node together with FSParseException
+//	public String getString(String key) throws FSParseException {
+//		String s = get(key);
+//		if(s == null) throw new FSParseException("No such element "+key);
+//		return s;
+//	}
 
 	/** Set the headers. This is a list of String's that are written before the name=value pairs.
 	 * Usually this is a comment (with each line starting with "#").

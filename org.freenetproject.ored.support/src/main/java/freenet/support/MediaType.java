@@ -22,7 +22,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import freenet.client.DefaultMIMETypes;
+import freenet.support.client.DefaultMIMETypes;
 
 /**
  * A media type denotes the content type of a document. A media consists of a

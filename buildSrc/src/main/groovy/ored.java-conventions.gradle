@@ -1,0 +1,21 @@
+plugins {
+    id 'org.javamodularity.moduleplugin'
+}
+
+version = '0.7.5.1493.0-dev'
+group = 'org.freenetproject'
+
+repositories {
+    mavenCentral()
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = 17
+    options.encoding = "UTF-8"
+}
+
+tasks.withType(Javadoc).configureEach {
+    options.encoding = "UTF-8"
+}
+
+java.modularity.inferModulePath=false

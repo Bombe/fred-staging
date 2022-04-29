@@ -10,7 +10,7 @@ import java.util.GregorianCalendar;
 import java.util.StringTokenizer;
 import java.util.TimeZone;
 
-import freenet.config.Dimension;
+import freenet.support.Dimension;
 import freenet.l10n.NodeL10n;
 import freenet.support.Logger.LogLevel;
 

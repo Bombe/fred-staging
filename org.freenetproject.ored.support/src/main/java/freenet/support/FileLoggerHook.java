@@ -28,8 +28,8 @@ import java.util.TimeZone;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.zip.GZIPOutputStream;
 
-import freenet.node.SemiOrderedShutdownHook;
-import freenet.node.Version;
+import freenet.support.node.SemiOrderedShutdownHook;
+import freenet.support.node.Version;
 import freenet.support.io.FileUtil;
 
 /**
