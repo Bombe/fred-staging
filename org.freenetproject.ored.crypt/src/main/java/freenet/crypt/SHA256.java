@@ -42,10 +42,6 @@ import java.security.Provider;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import org.tanukisoftware.wrapper.WrapperManager;
-
-import freenet.node.Node;
-import freenet.node.NodeInitException;
 import freenet.support.Logger;
 import freenet.support.io.Closer;
 
@@ -59,8 +55,8 @@ public class SHA256 {
 
 	/**
 	 * It won't reset the Message Digest for you!
-	 * @param InputStream
-	 * @param MessageDigest
+	 * @param is InputStream
+	 * @param md MessageDigest
 	 * @return
 	 * @throws IOException
 	 */
@@ -96,11 +92,12 @@ public class SHA256 {
 			return MessageDigest.getInstance("SHA-256", mdProvider);
 		} catch(NoSuchAlgorithmException e2) {
 			//TODO: maybe we should point to a HOWTO for freejvms
-			Logger.error(Node.class, "Check your JVM settings especially the JCE!" + e2);
+			Logger.error(SHA256.class, "Check your JVM settings especially the JCE!" + e2);
 			System.err.println("Check your JVM settings especially the JCE!" + e2);
 			e2.printStackTrace();
 		}
-		WrapperManager.stop(NodeInitException.EXIT_CRAPPY_JVM);
+		// TODO: Modularity: Should not stop Wrapper here. Look for somewhere else later.
+//		WrapperManager.stop(NodeInitException.EXIT_CRAPPY_JVM);
 		throw new RuntimeException();
 	}
 

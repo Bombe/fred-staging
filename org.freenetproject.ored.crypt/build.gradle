@@ -1,0 +1,9 @@
+plugins {
+    id 'ored.java-conventions'
+    id 'java-library'
+}
+
+dependencies {
+    implementation project(':org.freenetproject.ored.support')
+    implementation 'org.bouncycastle:bcprov-jdk18on:1.71'
+}

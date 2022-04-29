@@ -19,7 +19,7 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
 
-import freenet.node.FSParseException;
+import freenet.support.node.FSParseException;
 import freenet.support.Base64;
 import freenet.support.Logger;
 import freenet.support.SimpleFieldSet;

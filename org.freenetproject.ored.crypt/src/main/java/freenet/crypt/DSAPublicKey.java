@@ -7,14 +7,13 @@ import java.io.InputStream;
 import java.math.BigInteger;
 import java.util.Arrays;
 
-import freenet.node.FSParseException;
-import freenet.store.StorableBlock;
+import freenet.support.node.FSParseException;
 import freenet.support.Base64;
 import freenet.support.HexUtil;
 import freenet.support.IllegalBase64Exception;
 import freenet.support.SimpleFieldSet;
 
-public class DSAPublicKey extends CryptoKey implements StorableBlock {
+public class DSAPublicKey extends CryptoKey {
 
 	private static final long serialVersionUID = -1;
 	private final BigInteger y;
@@ -205,15 +204,16 @@ public class DSAPublicKey extends CryptoKey implements StorableBlock {
 		}
 	}
 
-	@Override
-	public byte[] getFullKey() {
-		return asBytesHash();
-	}
-
-	@Override
-	public byte[] getRoutingKey() {
-		return asBytesHash();
-	}
+	// TODO: Modularity: wrap this class and implement StorableBlock in freenet.store
+//	@Override
+//	public byte[] getFullKey() {
+//		return asBytesHash();
+//	}
+//
+//	@Override
+//	public byte[] getRoutingKey() {
+//		return asBytesHash();
+//	}
 
 	public DSAPublicKey cloneKey() {
 		return new DSAPublicKey(this);

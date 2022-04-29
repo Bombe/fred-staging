@@ -53,7 +53,7 @@ public class Closer {
 		}
 	}
 
-	// TODO: Modularity: move this method and Bucket to freenet.client.async
+	// TODO: Modularity: move this method and Bucket bucket module
 //	/**
 //	 * Frees the given bucket. Notice that you have to do removeFrom() for persistent buckets yourself.
 //	 * @param bucket The Bucket to close.

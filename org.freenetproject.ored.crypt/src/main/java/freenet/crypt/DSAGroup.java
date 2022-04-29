@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
 
-import freenet.node.FSParseException;
+import freenet.support.node.FSParseException;
 import freenet.support.Base64;
 import freenet.support.HexUtil;
 import freenet.support.IllegalBase64Exception;

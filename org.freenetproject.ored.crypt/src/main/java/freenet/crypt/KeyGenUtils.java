@@ -22,9 +22,9 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
+import freenet.support.GlobalSecureRandom;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
-import freenet.node.NodeStarter;
 import freenet.support.Fields;
 
 /**
@@ -258,7 +258,7 @@ public final class KeyGenUtils {
      */
     private static byte[] genRandomBytes(int length){
         byte[] randBytes = new byte[length];
-        NodeStarter.getGlobalSecureRandom().nextBytes(randBytes);
+        GlobalSecureRandom.getGlobalSecureRandom().nextBytes(randBytes);
         return randBytes;
     }
 

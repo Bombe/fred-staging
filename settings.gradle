@@ -2,4 +2,5 @@ rootProject.name="ored"
 
 include 'org.freenetproject.ored.l10n'
 include 'org.freenetproject.ored.support'
+include 'org.freenetproject.ored.crypt'
 
