@@ -15,7 +15,6 @@ import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.NoSuchElementException;
 
-import freenet.clients.http.TranslationToadlet;
 import freenet.support.HTMLEncoder;
 import freenet.support.HTMLNode;
 import freenet.support.Logger;
@@ -220,24 +219,14 @@ public class BaseL10n {
 	private SimpleFieldSet currentTranslation = null;
 	private SimpleFieldSet fallbackTranslation = null;
 	private SimpleFieldSet translationOverride;
-	private ClassLoader cl;
-
-	private static ClassLoader getClassLoaderFallback() {
-		ClassLoader _cl;
-		// getClassLoader() can return null on some implementations if the boot classloader was used.
-		_cl = BaseL10n.class.getClassLoader();
-		if (_cl == null) {
-			_cl = ClassLoader.getSystemClassLoader();
-		}
-		return _cl;
-	}
+	private Class cl;
 
 	public BaseL10n(String l10nFilesBasePath, String l10nFilesMask, String l10nOverrideFilesMask) {
 		this(l10nFilesBasePath, l10nFilesMask, l10nOverrideFilesMask, LANGUAGE.getDefault());
 	}
 
 	public BaseL10n(String l10nFilesBasePath, String l10nFilesMask, String l10nOverrideFilesMask, final LANGUAGE lang) {
-		this(l10nFilesBasePath, l10nFilesMask, l10nOverrideFilesMask, lang, getClassLoaderFallback());
+		this(l10nFilesBasePath, l10nFilesMask, l10nOverrideFilesMask, lang, BaseL10n.class);
 	}
 
 	/**
@@ -250,7 +239,7 @@ public class BaseL10n {
 	 * @param lang Language to use.
 	 * @param cl ClassLoader to use.
 	 */
-	public BaseL10n(String l10nFilesBasePath, String l10nFilesMask, String l10nOverrideFilesMask, final LANGUAGE lang, final ClassLoader cl) {
+	public BaseL10n(String l10nFilesBasePath, String l10nFilesMask, String l10nOverrideFilesMask, final LANGUAGE lang, final Class cl) {
 		if (!l10nFilesBasePath.endsWith("/")) {
 			l10nFilesBasePath += "/";
 		}
@@ -528,39 +517,40 @@ public class BaseL10n {
         };
     }
 
-	/**
-	 * Get a localized string and put it in a HTMLNode for the translation page.
-	 * @param key Key to search for.
-	 * @return HTMLNode
-	 */
-	public HTMLNode getHTMLNode(String key) {
-		return getHTMLNode(key, null, null);
-	}
-	
-	/**
-	 * Get a localized string and put it in a HTMLNode for the translation page.
-	 * @param key Key to search for.
-	 * @param patterns Patterns to replace. May be null, if so values must also be null.
-	 * @param values Values to replace patterns with.
-	 * @return HTMLNode
-	 */
-	public HTMLNode getHTMLNode(String key, String[] patterns, String[] values) {
-		String value = this.getString(key, true);
-		if (value != null) {
-			if(patterns != null)
-				return new HTMLNode("#", getString(key, patterns, values));
-			else
-				return new HTMLNode("#", value);
-		}
-		HTMLNode translationField = new HTMLNode("span", "class", "translate_it");
-		if(patterns != null)
-			translationField.addChild("#", getDefaultString(key, patterns, values));
-		else
-			translationField.addChild("#", getDefaultString(key));
-		translationField.addChild("a", "href", TranslationToadlet.TOADLET_URL + "?translate=" + key).addChild("small", " (translate it in your native language!)");
-
-		return translationField;
-	}
+	// TODO: Modularity: The following methods should be moved to freenet.clients.http
+//	/**
+//	 * Get a localized string and put it in a HTMLNode for the translation page.
+//	 * @param key Key to search for.
+//	 * @return HTMLNode
+//	 */
+//	public HTMLNode getHTMLNode(String key) {
+//		return getHTMLNode(key, null, null);
+//	}
+//
+//	/**
+//	 * Get a localized string and put it in a HTMLNode for the translation page.
+//	 * @param key Key to search for.
+//	 * @param patterns Patterns to replace. May be null, if so values must also be null.
+//	 * @param values Values to replace patterns with.
+//	 * @return HTMLNode
+//	 */
+//	public HTMLNode getHTMLNode(String key, String[] patterns, String[] values) {
+//		String value = this.getString(key, true);
+//		if (value != null) {
+//			if(patterns != null)
+//				return new HTMLNode("#", getString(key, patterns, values));
+//			else
+//				return new HTMLNode("#", value);
+//		}
+//		HTMLNode translationField = new HTMLNode("span", "class", "translate_it");
+//		if(patterns != null)
+//			translationField.addChild("#", getDefaultString(key, patterns, values));
+//		else
+//			translationField.addChild("#", getDefaultString(key));
+//		translationField.addChild("a", "href", TranslationToadlet.TOADLET_URL + "?translate=" + key).addChild("small", " (translate it in your native language!)");
+//
+//		return translationField;
+//	}
     
     /**
      * Get the value for a key in the fallback translation, or null.

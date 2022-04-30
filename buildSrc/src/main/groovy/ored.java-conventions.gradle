@@ -1,13 +1,31 @@
 plugins {
-    id 'org.javamodularity.moduleplugin'
+    id "de.jjohannes.extra-java-module-info"
 }
-
 version = '0.7.5.1493.0-dev'
 group = 'org.freenetproject'
 
 repositories {
     maven { url 'https://mvn.freenetproject.org' }
     mavenCentral()
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.8.2')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testCompileOnly 'junit:junit:4.13'
+    testRuntimeOnly 'org.junit.vintage:junit-vintage-engine'
+}
+
+extraJavaModuleInfo {
+    failOnMissingModuleInfo.set(false)
+    automaticModule("freenet-ext-29.jar", "freenet.ext")
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -18,5 +36,3 @@ tasks.withType(JavaCompile).configureEach {
 tasks.withType(Javadoc).configureEach {
     options.encoding = "UTF-8"
 }
-
-java.modularity.inferModulePath=false

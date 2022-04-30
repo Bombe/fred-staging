@@ -1,6 +1,7 @@
 plugins {
-    id 'ored.java-conventions'
     id 'java-library'
+    id 'java-test-fixtures'
+    id 'ored.java-conventions'
 }
 
 dependencies {
