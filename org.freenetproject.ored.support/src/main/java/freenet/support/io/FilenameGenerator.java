@@ -118,16 +118,17 @@ public class FilenameGenerator {
 	        file.getName().startsWith(prefix);
 	}
 
-    public File maybeMove(File file, long id) {
-        if(matches(file)) return file;
-        File newFile = getFilename(id);
-        Logger.normal(this, "Moving tempfile "+file+" to "+newFile);
-        if(FileUtil.moveTo(file, newFile, false))
-            return newFile;
-        else {
-            Logger.error(this, "Unable to move old temporary file "+file+" to "+newFile);
-            return file;
-        }
-    }
+	// TODO: Modularity: move to freenet.client
+//	public File maybeMove(File file, long id) {
+//        if(matches(file)) return file;
+//        File newFile = getFilename(id);
+//        Logger.normal(this, "Moving tempfile "+file+" to "+newFile);
+//        if(FileUtil.moveTo(file, newFile, false))
+//            return newFile;
+//        else {
+//            Logger.error(this, "Unable to move old temporary file "+file+" to "+newFile);
+//            return file;
+//        }
+//    }
 
 }

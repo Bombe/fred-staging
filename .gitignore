@@ -1,5 +1,6 @@
 /bin
-/build
+**/build/
+!src/**/build/
 /dist
 /freenet-*
 /javadoc
@@ -20,3 +21,4 @@
 \#*\#
 /override.properties
 /gradle.properties
+gradle-app.setting

@@ -6,6 +6,7 @@ version = '0.7.5.1493.0-dev'
 group = 'org.freenetproject'
 
 repositories {
+    maven { url 'https://mvn.freenetproject.org' }
     mavenCentral()
 }
 
