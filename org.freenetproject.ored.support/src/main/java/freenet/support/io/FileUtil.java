@@ -438,32 +438,6 @@ final public class FileUtil {
             return true;
         }
 
-	// TODO: Modularity: move to freenet.client
-//        /**
-//         * Like renameTo(), but can move across filesystems, by copying the data.
-//         * @param orig
-//         * @param dest
-//         * @param overwrite
-//         */
-//    	public static boolean moveTo(File orig, File dest, boolean overwrite) {
-//            if(orig.equals(dest))
-//                throw new IllegalArgumentException("Huh? the two file descriptors are the same!");
-//            if(!orig.exists()) {
-//            	throw new IllegalArgumentException("Original doesn't exist!");
-//            }
-//            if(dest.exists()) {
-//            	if(overwrite)
-//            		dest.delete();
-//            	else {
-//            		System.err.println("Not overwriting "+dest+" - already exists moving "+orig);
-//            		return false;
-//            	}
-//            }
-//    		if(!orig.renameTo(dest))
-//    		    return copyFile(orig, dest);
-//    		else return true;
-//    	}
-
     /**
      * Sanitizes the given filename to be valid on the given operating system.
      * If OperatingSystem.Unknown is specified this function will generate a filename which fullfils the restrictions of all known OS, currently
@@ -778,27 +752,6 @@ final public class FileUtil {
 		return File.createTempFile(prefix, suffix, directory);
 	}
 
-	// TODO: move to freenet.client
-//	public static boolean copyFile(File copyFrom, File copyTo) {
-//		copyTo.delete();
-//		boolean executable = copyFrom.canExecute();
-//		FileBucket outBucket = new FileBucket(copyTo, false, true, false, false);
-//		FileBucket inBucket = new FileBucket(copyFrom, true, false, false, false);
-//		try {
-//			BucketTools.copy(inBucket, outBucket);
-//			if(executable) {
-//			    if(!(copyTo.setExecutable(true) || copyTo.canExecute())) {
-//			        System.err.println("Unable to preserve executable bit when copying "+copyFrom+" to "+copyTo+" - you may need to make it executable!");
-//			        // return false; ??? FIXME debatable.
-//			    }
-//			}
-//			return true;
-//		} catch (IOException e) {
-//			System.err.println("Unable to copy from "+copyFrom+" to "+copyTo);
-//			return false;
-//		}
-//	}
-	
 	private static CipherInputStream cis;
 	private static ZeroInputStream zis = new ZeroInputStream();
 	private static long cisCounter;

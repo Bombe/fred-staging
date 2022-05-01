@@ -3,8 +3,6 @@
  * http://www.gnu.org/ for further details of the GPL. */
 package freenet.keys;
 
-import freenet.store.StorableBlock;
-
 /**
  * Interface for fetched blocks. Can be decoded by using a ClientKey to 
  * construct a ClientKeyBlock, which can then be decoded to a Bucket.

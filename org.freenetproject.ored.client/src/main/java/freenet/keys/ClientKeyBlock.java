@@ -5,8 +5,8 @@ package freenet.keys;
 
 import java.io.IOException;
 
-import freenet.support.api.Bucket;
-import freenet.support.api.BucketFactory;
+import freenet.bucket.Bucket;
+import freenet.bucket.BucketFactory;
 
 /** A KeyBlock with a ClientKey. Can be decoded. Not a child of KeyBlock because of issues with equals().
  */

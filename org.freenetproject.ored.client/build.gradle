@@ -6,4 +6,7 @@ plugins {
 dependencies {
     implementation project(':org.freenetproject.ored.support')
     implementation project(':org.freenetproject.ored.crypt')
+    implementation project(':org.freenetproject.ored.l10n')
+    implementation 'org.bouncycastle:bcprov-jdk18on:1.71'
+    implementation "org.freenetproject:freenet-ext:29"
 }

@@ -4,4 +4,5 @@ module org.freenetproject.ored.crypt {
     requires freenet.ext;
 
     exports freenet.crypt;
+    exports freenet.crypt.ciphers;
 }

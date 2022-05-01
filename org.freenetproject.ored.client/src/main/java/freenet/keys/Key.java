@@ -15,20 +15,20 @@ import freenet.crypt.CryptFormatException;
 import freenet.crypt.DSAPublicKey;
 import freenet.crypt.SHA256;
 import freenet.crypt.Util;
-import freenet.io.WritableToDataOutputStream;
 import freenet.support.Fields;
 import freenet.support.LogThresholdCallback;
 import freenet.support.Logger;
 import freenet.support.Logger.LogLevel;
-import freenet.support.SimpleReadOnlyArrayBucket;
-import freenet.support.api.Bucket;
-import freenet.support.api.BucketFactory;
-import freenet.support.compress.CompressionOutputSizeException;
-import freenet.support.compress.Compressor.COMPRESSOR_TYPE;
-import freenet.support.compress.InvalidCompressionCodecException;
-import freenet.support.io.ArrayBucket;
-import freenet.support.io.ArrayBucketFactory;
-import freenet.support.io.BucketTools;
+import freenet.bucket.SimpleReadOnlyArrayBucket;
+import freenet.bucket.Bucket;
+import freenet.bucket.BucketFactory;
+import freenet.compress.CompressionOutputSizeException;
+import freenet.compress.Compressor.COMPRESSOR_TYPE;
+import freenet.compress.InvalidCompressionCodecException;
+import freenet.bucket.ArrayBucket;
+import freenet.bucket.ArrayBucketFactory;
+import freenet.bucket.BucketTools;
+import freenet.support.io.WritableToDataOutputStream;
 
 /**
  * @author amphibian
