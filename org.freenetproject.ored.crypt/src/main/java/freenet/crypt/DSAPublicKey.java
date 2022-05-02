@@ -204,17 +204,6 @@ public class DSAPublicKey extends CryptoKey {
 		}
 	}
 
-	// TODO: Modularity: wrap this class and implement StorableBlock in freenet.store
-//	@Override
-//	public byte[] getFullKey() {
-//		return asBytesHash();
-//	}
-//
-//	@Override
-//	public byte[] getRoutingKey() {
-//		return asBytesHash();
-//	}
-
 	public DSAPublicKey cloneKey() {
 		return new DSAPublicKey(this);
 	}

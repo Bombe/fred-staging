@@ -6,4 +6,8 @@ module org.freenetproject.ored.client {
     requires org.bouncycastle.provider;
     requires freenet.ext;
     requires java.naming;
+
+    exports freenet.keys;
+    exports freenet.bucket;
+    exports freenet.client.async;
 }

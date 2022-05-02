@@ -5,19 +5,19 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import freenet.keys.BlockMetadata;
+import freenet.keys.KeyCollisionException;
 import freenet.keys.KeyVerifyException;
-import freenet.node.SemiOrderedShutdownHook;
-import freenet.store.BlockMetadata;
+import freenet.keys.StorableBlock;
 import freenet.store.FreenetStore;
-import freenet.store.KeyCollisionException;
 import freenet.store.ProxyFreenetStore;
-import freenet.store.StorableBlock;
 import freenet.store.StoreCallback;
 import freenet.support.ByteArrayWrapper;
 import freenet.support.LRUMap;
 import freenet.support.Logger;
 import freenet.support.Ticker;
 import freenet.support.io.NativeThread;
+import freenet.support.node.SemiOrderedShutdownHook;
 
 /**
  * CachingFreenetStore
@@ -73,7 +73,7 @@ public class CachingFreenetStore<T extends StorableBlock> extends ProxyFreenetSt
 	@Override
 	public T fetch(byte[] routingKey, byte[] fullKey,
 			boolean dontPromote, boolean canReadClientCache,
-			boolean canReadSlashdotCache, boolean ignoreOldBlocks, BlockMetadata meta) 
+			boolean canReadSlashdotCache, boolean ignoreOldBlocks, BlockMetadata meta)
 			throws IOException {
 		ByteArrayWrapper key = new ByteArrayWrapper(routingKey);
 		

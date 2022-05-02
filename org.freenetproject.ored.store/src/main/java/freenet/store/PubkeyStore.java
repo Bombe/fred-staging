@@ -4,11 +4,13 @@ import java.io.IOException;
 
 import freenet.crypt.CryptFormatException;
 import freenet.crypt.DSAPublicKey;
+import freenet.keys.BlockMetadata;
+import freenet.keys.KeyCollisionException;
 import freenet.keys.KeyVerifyException;
 import freenet.keys.PubkeyVerifyException;
 import freenet.support.Logger;
 
-public class PubkeyStore extends StoreCallback<DSAPublicKey> {
+public class PubkeyStore extends StoreCallback<StoreDSAPublicKey> {
 
 	@Override
 	public boolean collisionPossible() {
@@ -16,11 +18,11 @@ public class PubkeyStore extends StoreCallback<DSAPublicKey> {
 	}
 
 	@Override
-	public DSAPublicKey construct(byte[] data, byte[] headers, byte[] routingKey,
-			byte[] fullKey, boolean canReadClientCache, boolean canReadSlashdotCache, BlockMetadata meta, DSAPublicKey ignored) throws KeyVerifyException {
+	public StoreDSAPublicKey construct(byte[] data, byte[] headers, byte[] routingKey,
+								  byte[] fullKey, boolean canReadClientCache, boolean canReadSlashdotCache, BlockMetadata meta, StoreDSAPublicKey ignored) throws KeyVerifyException {
 		if(data == null) throw new PubkeyVerifyException("Need data to construct pubkey");
 		try {
-			return DSAPublicKey.create(data);
+			return StoreDSAPublicKey.create(data);
 		} catch (CryptFormatException e) {
 			throw new PubkeyVerifyException(e);
 		}
@@ -32,7 +34,7 @@ public class PubkeyStore extends StoreCallback<DSAPublicKey> {
 	
 	final private static byte[] empty = new byte[0];
 	
-	public void put(byte[] hash, DSAPublicKey key, boolean isOldBlock) throws IOException {
+	public void put(byte[] hash, StoreDSAPublicKey key, boolean isOldBlock) throws IOException {
 		try {
 			store.put(key, key.asPaddedBytes(), empty, false, isOldBlock);
 		} catch (KeyCollisionException e) {

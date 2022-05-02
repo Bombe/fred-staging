@@ -3,6 +3,8 @@ package freenet.store;
 import java.io.IOException;
 
 import freenet.crypt.DSAPublicKey;
+import freenet.keys.BlockMetadata;
+import freenet.keys.GetPubkey;
 import freenet.support.HexUtil;
 import freenet.support.Logger;
 
@@ -30,7 +32,7 @@ public class SimpleGetPubkey implements GetPubkey {
 			boolean canWriteClientCache, boolean canWriteDatastore,
 			boolean forULPR, boolean writeLocalToDatastore) {
 		try {
-			store.put(hash, key, false);
+			store.put(hash, StoreDSAPublicKey.from(key), false);
 		} catch (IOException e) {
 			Logger.error(this, "Caught "+e+" storing pubkey for "+HexUtil.bytesToHex(hash));
 		}

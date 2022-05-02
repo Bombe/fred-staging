@@ -2,9 +2,12 @@ package freenet.store;
 
 import java.io.IOException;
 
-import freenet.node.stats.StoreAccessStats;
-import freenet.node.useralerts.UserAlertManager;
+import freenet.client.async.UserAlertRegister;
+import freenet.keys.BlockMetadata;
+import freenet.keys.KeyCollisionException;
+import freenet.keys.StorableBlock;
 import freenet.support.Ticker;
+import freenet.support.node.stats.StoreAccessStats;
 
 public class ProxyFreenetStore<T extends StorableBlock> implements FreenetStore<T> {
 	
@@ -61,8 +64,8 @@ public class ProxyFreenetStore<T extends StorableBlock> implements FreenetStore<
 	}
 
 	@Override
-	public void setUserAlertManager(UserAlertManager userAlertManager) {
-		this.backDatastore.setUserAlertManager(userAlertManager);
+	public void setUserAlertRegister(UserAlertRegister userAlertRegister) {
+		this.backDatastore.setUserAlertRegister(userAlertRegister);
 	}
 	
 	@Override

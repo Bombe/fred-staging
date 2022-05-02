@@ -3,10 +3,7 @@ package freenet.store;
 import java.io.IOException;
 
 import freenet.crypt.DSAPublicKey;
-import freenet.keys.CHKBlock;
-import freenet.keys.CHKVerifyException;
-import freenet.keys.KeyVerifyException;
-import freenet.keys.NodeCHK;
+import freenet.keys.*;
 import freenet.support.Logger;
 
 public class CHKStore extends StoreCallback<CHKBlock> {
@@ -18,7 +15,7 @@ public class CHKStore extends StoreCallback<CHKBlock> {
 
 	@Override
 	public CHKBlock construct(byte[] data, byte[] headers,
-			byte[] routingKey, byte[] fullKey, boolean canReadClientCache, boolean canReadSlashdotCache, BlockMetadata meta, DSAPublicKey ignored) throws KeyVerifyException {
+							  byte[] routingKey, byte[] fullKey, boolean canReadClientCache, boolean canReadSlashdotCache, BlockMetadata meta, StoreDSAPublicKey ignored) throws KeyVerifyException {
 		if(data == null || headers == null) throw new CHKVerifyException("Need either data and headers");
 		return CHKBlock.construct(data, headers, NodeCHK.cryptoAlgorithmFromFullKey(fullKey));
 	}

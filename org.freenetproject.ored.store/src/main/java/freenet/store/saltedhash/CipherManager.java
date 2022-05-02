@@ -14,7 +14,7 @@ import freenet.crypt.PCFBMode;
 import freenet.crypt.SHA256;
 import freenet.crypt.UnsupportedCipherException;
 import freenet.crypt.ciphers.Rijndael;
-import freenet.node.MasterKeys;
+import freenet.keys.MasterKeys;
 import freenet.support.ByteArrayWrapper;
 import freenet.support.Logger;
 

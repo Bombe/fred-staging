@@ -3,9 +3,7 @@ package freenet.store;
 import java.io.IOException;
 
 import freenet.crypt.DSAPublicKey;
-import freenet.keys.NodeSSK;
-import freenet.keys.SSKBlock;
-import freenet.keys.SSKVerifyException;
+import freenet.keys.*;
 
 public class SSKStore extends StoreCallback<SSKBlock> {
 
@@ -17,8 +15,8 @@ public class SSKStore extends StoreCallback<SSKBlock> {
 	
 	@Override
 	public SSKBlock construct(byte[] data, byte[] headers,
-			byte[] routingKey, byte[] fullKey, 
-			boolean canReadClientCache, boolean canReadSlashdotCache, BlockMetadata meta, DSAPublicKey knownPublicKey) 
+							  byte[] routingKey, byte[] fullKey,
+							  boolean canReadClientCache, boolean canReadSlashdotCache, BlockMetadata meta, StoreDSAPublicKey knownPublicKey)
 	throws SSKVerifyException {
 		if(data == null || headers == null) throw new SSKVerifyException("Need data and headers");
 		if(fullKey == null) throw new SSKVerifyException("Need full key to reconstruct an SSK");

@@ -2,9 +2,12 @@ package freenet.store;
 
 import java.io.IOException;
 
-import freenet.node.stats.StoreAccessStats;
-import freenet.node.useralerts.UserAlertManager;
+import freenet.client.async.UserAlertRegister;
+import freenet.keys.BlockMetadata;
+import freenet.keys.KeyCollisionException;
 import freenet.support.Ticker;
+import freenet.keys.StorableBlock;
+import freenet.support.node.stats.StoreAccessStats;
 
 public class NullFreenetStore<T extends StorableBlock> implements FreenetStore<T> {
 
@@ -106,7 +109,7 @@ public class NullFreenetStore<T extends StorableBlock> implements FreenetStore<T
 	}
 
 	@Override
-	public void setUserAlertManager(UserAlertManager userAlertManager) {
+	public void setUserAlertRegister(UserAlertRegister userAlertRegister) {
 		// Do nothing
 	}
 	

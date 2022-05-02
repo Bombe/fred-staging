@@ -3,9 +3,12 @@ package freenet.store;
 import java.io.Closeable;
 import java.io.IOException;
 
-import freenet.node.stats.StoreAccessStats;
-import freenet.node.useralerts.UserAlertManager;
+import freenet.client.async.UserAlertRegister;
+import freenet.keys.BlockMetadata;
+import freenet.keys.KeyCollisionException;
 import freenet.support.Ticker;
+import freenet.keys.StorableBlock;
+import freenet.support.node.stats.StoreAccessStats;
 
 /**
  * Datastore interface
@@ -22,10 +25,6 @@ public interface FreenetStore<T extends StorableBlock> extends Closeable {
 	 * @return A StorableBlock, or null if the key cannot be found.
 	 * @param canReadClientCache Whether we can read the client-cache, for purposes of finding
 	 * the pubkey for an SSK.
-	 * @param canWriteClientCache Whether we can write the client-cache, for purposes of finding
-	 * the pubkey for an SSK.
-	 * @param canWriteDatastore Whether we can write the datastore, for purposes of finding the
-	 * pubkey for an SSK.
 	 * @throws IOException If a disk I/O error occurs.
 	 */
 	T fetch(byte[] routingKey, byte[] fullKey, boolean dontPromote, boolean canReadClientCache, boolean canReadSlashdotCache, boolean ignoreOldBlocks, BlockMetadata meta) throws IOException;
@@ -52,7 +51,6 @@ public interface FreenetStore<T extends StorableBlock> extends Closeable {
      * @param maxStoreKeys The maximum number of keys to be cached.
      * @param shrinkNow If false, don't shrink the store immediately.
      * @throws IOException 
-     * @throws DatabaseException 
      */
 	public void setMaxKeys(long maxStoreKeys, boolean shrinkNow) throws IOException;
     
@@ -71,7 +69,7 @@ public interface FreenetStore<T extends StorableBlock> extends Closeable {
 	/**
 	 * Check if a routing key probably
 	 * 
-	 * @param routingkey
+	 * @param routingKey
 	 * @return <code>false</code> <b>only</b> if the key does not exist in store.
 	 */
 	public boolean probablyInStore(byte[] routingKey);
@@ -84,7 +82,7 @@ public interface FreenetStore<T extends StorableBlock> extends Closeable {
 	
 	public void close();
 	
-	public void setUserAlertManager(UserAlertManager userAlertManager);
+	public void setUserAlertRegister(UserAlertRegister userAlertRegister);
 	
 	public FreenetStore<T> getUnderlyingStore();
 }

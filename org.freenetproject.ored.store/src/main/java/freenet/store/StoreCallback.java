@@ -6,8 +6,10 @@ package freenet.store;
 import java.io.IOException;
 
 import freenet.crypt.DSAPublicKey;
+import freenet.keys.BlockMetadata;
 import freenet.keys.KeyVerifyException;
-import freenet.node.stats.StoreAccessStats;
+import freenet.keys.StorableBlock;
+import freenet.support.node.stats.StoreAccessStats;
 
 /**
  * @author toad
@@ -55,7 +57,7 @@ public abstract class StoreCallback<T extends StorableBlock> {
 	 * IMPORTANT: Using the full key or routing key is OPTIONAL, and if we don't use them, WE DON'T
 	 * CHECK THEM EITHER! Caller MUST check that the key is the one expected.
 	 * @throws KeyVerifyException */
-	public abstract T construct(byte[] data, byte[] headers, byte[] routingKey, byte[] fullKey, boolean canReadClientCache, boolean canReadSlashdotCache, BlockMetadata meta, DSAPublicKey knownPubKey)
+	public abstract T construct(byte[] data, byte[] headers, byte[] routingKey, byte[] fullKey, boolean canReadClientCache, boolean canReadSlashdotCache, BlockMetadata meta, StoreDSAPublicKey knownPubKey)
 	        throws KeyVerifyException;
 	
 	public void setMaxKeys(long maxStoreKeys, boolean shrinkNow) throws IOException {

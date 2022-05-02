@@ -1,4 +1,4 @@
-package freenet.node.stats;
+package freenet.support.node.stats;
 
 public abstract class StoreAccessStats {
 	

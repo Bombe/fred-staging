@@ -4,13 +4,16 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Enumeration;
 
+import freenet.client.async.UserAlertRegister;
+import freenet.keys.BlockMetadata;
+import freenet.keys.KeyCollisionException;
 import freenet.keys.KeyVerifyException;
-import freenet.node.stats.StoreAccessStats;
-import freenet.node.useralerts.UserAlertManager;
+import freenet.keys.StorableBlock;
 import freenet.support.ByteArrayWrapper;
 import freenet.support.LRUMap;
 import freenet.support.Logger;
 import freenet.support.Ticker;
+import freenet.support.node.stats.StoreAccessStats;
 
 /**
  * LRU in memory store.
@@ -229,7 +232,7 @@ public class RAMFreenetStore<T extends StorableBlock> implements FreenetStore<T>
 	}
 
 	@Override
-	public void setUserAlertManager(UserAlertManager userAlertManager) {
+	public void setUserAlertRegister(UserAlertRegister userAlertRegister) {
 		// Do nothing
 	}
 	

@@ -7,17 +7,20 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import freenet.bucket.Bucket;
+import freenet.bucket.TempBucketFactory;
+import freenet.client.async.UserAlertRegister;
+import freenet.keys.BlockMetadata;
+import freenet.keys.KeyCollisionException;
 import freenet.keys.KeyVerifyException;
-import freenet.node.stats.StoreAccessStats;
-import freenet.node.useralerts.UserAlertManager;
+import freenet.keys.StorableBlock;
 import freenet.support.ByteArrayWrapper;
 import freenet.support.LRUMap;
 import freenet.support.LogThresholdCallback;
 import freenet.support.Logger;
 import freenet.support.Ticker;
 import freenet.support.Logger.LogLevel;
-import freenet.support.api.Bucket;
-import freenet.support.io.TempBucketFactory;
+import freenet.support.node.stats.StoreAccessStats;
 
 /** Short-term cache. Used to cache all blocks retrieved in the last 30 minutes (on low 
  * security levels), or just to cache data fetched through ULPRs (on higher security levels).
@@ -306,7 +309,7 @@ public class SlashdotStore<T extends StorableBlock> implements FreenetStore<T> {
 	}
 
 	@Override
-	public void setUserAlertManager(UserAlertManager userAlertManager) {
+	public void setUserAlertRegister(UserAlertRegister userAlertRegister) {
 		// Do nothing
 	}
 

@@ -30,25 +30,22 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import freenet.client.async.UserAlertRegister;
+import freenet.keys.*;
+import freenet.store.StoreDSAPublicKey;
+import freenet.support.node.BaseUserAlert;
+import freenet.support.node.FastRunnable;
+import freenet.support.node.SemiOrderedShutdownHook;
+import freenet.support.node.UserAlert;
+import freenet.support.node.stats.StoreAccessStats;
 import org.tanukisoftware.wrapper.WrapperManager;
 
 import freenet.crypt.BlockCipher;
 import freenet.crypt.DSAPublicKey;
 import freenet.crypt.UnsupportedCipherException;
 import freenet.crypt.ciphers.Rijndael;
-import freenet.keys.KeyVerifyException;
-import freenet.keys.SSKBlock;
 import freenet.l10n.NodeL10n;
-import freenet.node.FastRunnable;
-import freenet.node.SemiOrderedShutdownHook;
-import freenet.node.stats.StoreAccessStats;
-import freenet.node.useralerts.AbstractUserAlert;
-import freenet.node.useralerts.UserAlert;
-import freenet.node.useralerts.UserAlertManager;
-import freenet.store.BlockMetadata;
 import freenet.store.FreenetStore;
-import freenet.store.KeyCollisionException;
-import freenet.store.StorableBlock;
 import freenet.store.StoreCallback;
 import freenet.support.Fields;
 import freenet.support.HTMLNode;
@@ -149,7 +146,7 @@ public class SaltedHashFreenetStore<T extends StorableBlock> implements FreenetS
 	}
 
 	public static <T extends StorableBlock> SaltedHashFreenetStore<T> construct(File baseDir, String name, StoreCallback<T> callback, Random random,
-	        long maxKeys, boolean useSlotFilter, SemiOrderedShutdownHook shutdownHook, boolean preallocate, boolean resizeOnStart, Ticker exec, byte[] masterKey)
+																				long maxKeys, boolean useSlotFilter, SemiOrderedShutdownHook shutdownHook, boolean preallocate, boolean resizeOnStart, Ticker exec, byte[] masterKey)
 	        throws IOException {
 		return new SaltedHashFreenetStore<T>(baseDir, name, callback, random, maxKeys, useSlotFilter,
 		        shutdownHook, preallocate, resizeOnStart, masterKey);
@@ -466,7 +463,7 @@ public class SaltedHashFreenetStore<T extends StorableBlock> implements FreenetS
 							return true;
 						}
 						oldEntry.setHD(readHD(oldOffset)); // read from disk
-						T oldBlock = oldEntry.getStorableBlock(routingKey, fullKey, false, false, null, (block instanceof SSKBlock) ? ((SSKBlock)block).getPubKey() : null);
+						T oldBlock = oldEntry.getStorableBlock(routingKey, fullKey, false, false, null, (block instanceof SSKBlock) ? StoreDSAPublicKey.from(((SSKBlock)block).getPubKey()) : null);
 						if (block.equals(oldBlock)) {
 							if(logDEBUG) Logger.debug(this, "Block already stored");
 							if((oldEntry.flag & Entry.ENTRY_NEW_BLOCK) == 0 && !isOldBlock) {
@@ -661,8 +658,7 @@ public class SaltedHashFreenetStore<T extends StorableBlock> implements FreenetS
 		/**
 		 * Set header/data after construction.
 		 *
-		 * @param storeBuf
-		 * @param store
+		 * @param hdBuf
 		 */
 		private void setHD(ByteBuffer hdBuf) {
 			assert hdBuf.remaining() == headerBlockLength + dataBlockLength + hdPadding;
@@ -742,7 +738,7 @@ public class SaltedHashFreenetStore<T extends StorableBlock> implements FreenetS
 			return out;
 		}
 
-		private T getStorableBlock(byte[] routingKey, byte[] fullKey, boolean canReadClientCache, boolean canReadSlashdotCache, BlockMetadata meta, DSAPublicKey knownKey) throws KeyVerifyException {
+		private T getStorableBlock(byte[] routingKey, byte[] fullKey, boolean canReadClientCache, boolean canReadSlashdotCache, BlockMetadata meta, StoreDSAPublicKey knownKey) throws KeyVerifyException {
 			if (isFree() || header == null || data == null)
 				return null; // this is a free block
 			if (!cipherManager.decrypt(this, routingKey))
@@ -1805,7 +1801,7 @@ public class SaltedHashFreenetStore<T extends StorableBlock> implements FreenetS
 		}
 	}
 
-	private final class CleanerStatusUserAlert extends AbstractUserAlert {
+	private final class CleanerStatusUserAlert extends BaseUserAlert {
 		private Cleaner cleaner;
 
 		private CleanerStatusUserAlert(Cleaner cleaner) {
@@ -1898,9 +1894,9 @@ public class SaltedHashFreenetStore<T extends StorableBlock> implements FreenetS
 		}
 	}
 
-	public void setUserAlertManager(UserAlertManager userAlertManager) {
+	public void setUserAlertRegister(UserAlertRegister userAlertRegister) {
 		if (cleanerStatusUserAlert != null)
-			userAlertManager.register(cleanerStatusUserAlert);
+			userAlertRegister.register(cleanerStatusUserAlert);
 	}
 
 	@Override
