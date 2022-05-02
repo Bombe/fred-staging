@@ -87,7 +87,7 @@ public class ChosenBlockImpl extends ChosenBlock {
             @Override
             public boolean run(ClientContext context) {
                 try {
-                    ((BaseSendableGet) request).onFailure(e, token, context);
+                    ((SendableGet) request).onFailure(e, token, context);
                 } finally {
                     sched.removeFetchingKey(key);
                 }

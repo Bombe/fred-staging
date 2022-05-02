@@ -33,15 +33,17 @@ public class PersistentStatsPutter implements Serializable {
 		return this.latestUptime;
 	}
 
-	public void updateData(long[] nodeBW, long uptime) {
+	public void updateData(PersistentStatsChecker statsChecker) {
 		// Update our values
 		// 0 : total bytes out, 1 : total bytes in
+		final long[] nodeBW = statsChecker.getTotalIO();
 		this.latestBW.totalBytesOut += nodeBW[0] - this.latestNodeBytesOut;
 		this.latestBW.totalBytesIn += nodeBW[1] - this.latestNodeBytesIn;
 		this.latestBW.creationTime = System.currentTimeMillis();
 		this.latestNodeBytesOut = nodeBW[0];
 		this.latestNodeBytesIn = nodeBW[1];
-		
+
+		final long uptime = statsChecker.getUptime();
 		this.latestUptime.totalUptime += uptime - this.latestUptimeVal;
 		this.latestUptime.creationTime = System.currentTimeMillis();
 		this.latestUptimeVal = uptime;

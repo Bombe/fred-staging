@@ -6,6 +6,7 @@ import java.net.MalformedURLException;
 import java.util.HashMap;
 
 import freenet.bucket.Bucket;
+import freenet.bucket.BucketTools;
 import freenet.bucket.NotPersistentBucket;
 import freenet.bucket.RandomAccessBucket;
 import freenet.client.ClientMetadata;
@@ -28,6 +29,7 @@ import freenet.keys.BaseClientKey;
 import freenet.keys.CHKBlock;
 import freenet.keys.FreenetURI;
 import freenet.keys.SSKBlock;
+import freenet.lockablebuffer.LockableRandomAccessBuffer;
 import freenet.support.LogThresholdCallback;
 import freenet.support.Logger;
 import freenet.support.Logger.LogLevel;
@@ -898,7 +900,6 @@ class SingleFileInserter implements ClientPutState, Serializable {
 		
 		/**
 		 * Start fetching metadata.
-		 * @param container
 		 * @param context
 		 * @return True unless we don't have all URI's and so can't remove sfi.
 		 */

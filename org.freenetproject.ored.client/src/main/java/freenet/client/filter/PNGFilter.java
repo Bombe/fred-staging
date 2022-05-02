@@ -17,14 +17,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.zip.CRC32;
 
+import freenet.bucket.Bucket;
+import freenet.bucket.FileBucket;
 import freenet.l10n.NodeL10n;
 import freenet.support.HexUtil;
 import freenet.support.LogThresholdCallback;
 import freenet.support.Logger;
 import freenet.support.Logger.LogLevel;
-import freenet.support.api.Bucket;
 import freenet.support.io.Closer;
-import freenet.support.io.FileBucket;
 
 /**
  * Content filter for PNG's. Only allows valid chunks (valid CRC, known chunk type).

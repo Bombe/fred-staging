@@ -2,6 +2,7 @@ package freenet.client.request;
 
 import freenet.client.async.ClientContext;
 import freenet.client.async.ClientRequestSelector;
+import freenet.support.Logger;
 
 /** Second level tree node. At the base we have RGA's. Then we have these, SRGAs containing RGAs.
  * Then we have SRGAs containing SRGAs.

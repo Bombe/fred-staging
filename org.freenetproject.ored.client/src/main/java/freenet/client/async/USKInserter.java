@@ -9,6 +9,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.util.Arrays;
 
+import freenet.bucket.Bucket;
+import freenet.bucket.BucketTools;
 import freenet.client.InsertContext;
 import freenet.client.InsertException;
 import freenet.client.InsertException.InsertExceptionMode;
@@ -20,8 +22,6 @@ import freenet.keys.USK;
 import freenet.support.LogThresholdCallback;
 import freenet.support.Logger;
 import freenet.support.Logger.LogLevel;
-import freenet.support.api.Bucket;
-import freenet.support.io.BucketTools;
 import freenet.support.io.ResumeFailedException;
 
 /**

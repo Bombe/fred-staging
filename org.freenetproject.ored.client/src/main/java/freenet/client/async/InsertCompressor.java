@@ -14,6 +14,7 @@ import freenet.compress.CompressionOutputSizeException;
 import freenet.compress.CompressionRatioException;
 import freenet.compress.Compressor.COMPRESSOR_TYPE;
 import freenet.compress.InvalidCompressionCodecException;
+import freenet.config.Config;
 import freenet.crypt.HashResult;
 import freenet.crypt.MultiHashInputStream;
 import freenet.keys.CHKBlock;

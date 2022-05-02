@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import freenet.bucket.Bucket;
 import freenet.client.InsertException;
 import freenet.client.InsertException.InsertExceptionMode;
 import freenet.client.Metadata;
@@ -12,7 +13,6 @@ import freenet.support.ListUtils;
 import freenet.support.LogThresholdCallback;
 import freenet.support.Logger;
 import freenet.support.Logger.LogLevel;
-import freenet.support.api.Bucket;
 import freenet.support.io.ResumeFailedException;
 
 public class MultiPutCompletionCallback implements PutCompletionCallback, ClientPutState, Serializable {

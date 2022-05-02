@@ -13,18 +13,12 @@ import java.util.HashSet;
 import java.util.regex.Pattern;
 
 import freenet.client.filter.HTMLFilter.ParsedTag;
-import freenet.clients.http.ExternalLinkToadlet;
-import freenet.clients.http.HTTPRequestImpl;
-import freenet.clients.http.StaticToadlet;
+import freenet.http.SimpleHTTPRequest;
 import freenet.keys.FreenetURI;
 import freenet.l10n.NodeL10n;
-import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
-import freenet.support.URIPreEncoder;
-import freenet.support.URLDecoder;
-import freenet.support.URLEncodedFormatException;
+import freenet.support.*;
 import freenet.support.Logger.LogLevel;
-import freenet.support.api.HTTPRequest;
+import freenet.http.HTTPRequest;
 
 public class GenericReadFilterCallback implements FilterCallback, URIProcessor {
 	public static final HashSet<String> allowedProtocols;
@@ -150,11 +144,11 @@ public class GenericReadFilterCallback implements FilterCallback, URIProcessor {
 		}
 		String path = uri.getPath();
 
-		HTTPRequest req = new HTTPRequestImpl(uri, "GET");
+		HTTPRequest req = new SimpleHTTPRequest(uri, "GET");
 		if (path != null) {
 			if (path.equals("/") && req.isParameterSet("newbookmark") && !forBaseHref) {
 				return processBookmark(req);
-			} else if(path.startsWith(StaticToadlet.ROOT_URL)) {
+			} else if(path.startsWith(Toadlet.Static.ROOT_URL)) {
 				// @see bug #2297
 				return path;
 			} else if (linkFilterExceptionProvider != null) {
@@ -247,7 +241,7 @@ public class GenericReadFilterCallback implements FilterCallback, URIProcessor {
 		if(forBaseHref)
 			throw new CommentException(l10n("bogusBaseHref"));
 		if(GenericReadFilterCallback.allowedProtocols.contains(uri.getScheme()))
-			return ExternalLinkToadlet.escape(uri.toString());
+			return Toadlet.ExternalLink.escape(uri.toString());
 		else {
 			if(uri.getScheme() == null) {
 				throw new CommentException(reason);
@@ -396,7 +390,7 @@ public class GenericReadFilterCallback implements FilterCallback, URIProcessor {
 	private String processURI(FreenetURI furi, URI uri, String overrideType, boolean noRelative, boolean inline) {
 		// Valid Freenet URI, allow it
 		// Now what about the queries?
-		HTTPRequest req = new HTTPRequestImpl(uri, "GET");
+		HTTPRequest req = new SimpleHTTPRequest(uri, "GET");
 		if(cb != null) cb.foundURI(furi);
 		if(cb != null) cb.foundURI(furi, inline);
 		return finishProcess(req, overrideType, '/' + furi.toString(false, false), uri, noRelative);

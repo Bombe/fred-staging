@@ -122,7 +122,7 @@ public class AEADCryptBucket implements Bucket, Serializable {
         underlying.storeTo(dos);
     }
 
-    public AEADCryptBucket(DataInputStream dis, FilenameGenerator fg, 
+    public AEADCryptBucket(DataInputStream dis, BucketFilenameGenerator fg,
             PersistentFileTracker persistentFileTracker, MasterSecret masterKey)
     throws IOException, StorageFormatException, ResumeFailedException {
         // Magic already read by caller.

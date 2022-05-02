@@ -319,8 +319,8 @@ public class HTMLNode implements XMLCharacterClasses, Cloneable {
 	/**
 	 * Add a tag with several attributes inside/under this node.
 	 * @param nodeName The tag name e.g. "div".
-	 * @param attributeName The name of the attribute, e.g. "class"
-	 * @param attributeValue The value of the attribute.
+	 * @param attributeNames The name of the attribute, e.g. "class"
+	 * @param attributeValues The value of the attribute.
 	 * @return The added node. You can add more tags inside it with addChild(), or add attributes
 	 * with addAttribute() etc. If you render the parent tag with generate(), it will include this 
 	 * tag in its output. 
@@ -332,8 +332,8 @@ public class HTMLNode implements XMLCharacterClasses, Cloneable {
 	/**
 	 * Add a tag with several attributes and body text inside/under this node.
 	 * @param nodeName The tag name e.g. "div".
-	 * @param attributeName The name of the attribute, e.g. "class"
-	 * @param attributeValue The value of the attribute.
+	 * @param attributeNames The name of the attribute, e.g. "class"
+	 * @param attributeValues The value of the attribute.
 	 * @param content The content (to be added as body text).
 	 * @return The added node. You can add more tags inside it with addChild(), or add attributes
 	 * with addAttribute() etc. If you render the parent tag with generate(), it will include this 

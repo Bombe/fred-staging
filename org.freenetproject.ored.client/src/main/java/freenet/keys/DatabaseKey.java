@@ -1,14 +1,14 @@
-package freenet.node;
+package freenet.keys;
 
+import freenet.bucket.AEADCryptBucket;
+import freenet.bucket.Bucket;
 import org.bouncycastle.util.Arrays;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Random;
 
-import freenet.crypt.AEADCryptBucket;
 import freenet.crypt.HMAC;
 import freenet.crypt.RandomSource;
-import freenet.support.api.Bucket;
 
 public class DatabaseKey {
     

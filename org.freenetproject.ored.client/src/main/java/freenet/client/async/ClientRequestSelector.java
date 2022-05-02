@@ -233,13 +233,11 @@ public class ClientRequestSelector implements KeysFetchingLocally {
 				key = null;
 				ckey = null;
 			} else {
-				if(req instanceof BaseSendableGet) {
-					key = ((BaseSendableGet)req).getNodeKey(token);
-					ckey = ((BaseSendableGet)req).getKey(token);
-				} else {
-					key = null;
+				key = ((BaseSendableGet)req).getNodeKey(token);
+				if(req instanceof SendableGet)
+					ckey = ((SendableGet)req).getKey(token);
+				else
 					ckey = null;
-				}
 			}
 			ChosenBlock ret;
 			if(key != null && key.getRoutingKey() == null)
@@ -249,8 +247,8 @@ public class ClientRequestSelector implements KeysFetchingLocally {
 			boolean canWriteClientCache;
 			boolean forkOnCacheable;
 			boolean realTimeFlag;
-			if(req instanceof BaseSendableGet) {
-				BaseSendableGet sg = (BaseSendableGet) req;
+			if(req instanceof SendableGet) {
+				SendableGet sg = (SendableGet) req;
 				FetchContext ctx = sg.getContext();
 				localRequestOnly = ctx.localRequestOnly;
 				ignoreStore = ctx.ignoreStore;

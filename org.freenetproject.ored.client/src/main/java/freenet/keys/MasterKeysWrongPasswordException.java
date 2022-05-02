@@ -1,4 +1,4 @@
-package freenet.node;
+package freenet.keys;
 
 public class MasterKeysWrongPasswordException extends Exception {
 

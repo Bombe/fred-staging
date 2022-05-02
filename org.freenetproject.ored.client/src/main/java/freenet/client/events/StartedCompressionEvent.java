@@ -3,7 +3,7 @@
  * http://www.gnu.org/ for further details of the GPL. */
 package freenet.client.events;
 
-import freenet.support.compress.Compressor.COMPRESSOR_TYPE;
+import freenet.compress.Compressor.COMPRESSOR_TYPE;
 
 /**
  * Event indicating that we are attempting to compress the file.

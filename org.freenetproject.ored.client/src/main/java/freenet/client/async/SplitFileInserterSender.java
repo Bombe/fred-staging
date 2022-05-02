@@ -4,22 +4,11 @@ import java.io.IOException;
 
 import freenet.client.InsertException;
 import freenet.client.async.SplitFileInserterSegmentStorage.BlockInsert;
-import freenet.keys.CHKBlock;
-import freenet.keys.ClientCHK;
-import freenet.keys.ClientCHKBlock;
-import freenet.keys.ClientKey;
-import freenet.node.KeysFetchingLocally;
-import freenet.node.LowLevelPutException;
-import freenet.node.Node;
-import freenet.node.NodeClientCore;
-import freenet.node.RequestClient;
-import freenet.node.RequestScheduler;
-import freenet.node.SendableInsert;
-import freenet.node.SendableRequestItem;
-import freenet.node.SendableRequestSender;
-import freenet.store.KeyCollisionException;
+import freenet.client.request.*;
+import freenet.keys.*;
 import freenet.support.Logger;
 import freenet.support.io.ResumeFailedException;
+import freenet.support.node.NodeConstants;
 
 /**
  * Interface to the low level insertion code for inserting a splitfile.
@@ -46,8 +35,8 @@ public class SplitFileInserterSender extends SendableInsert {
     }
 
     @Override
-    public void onFailure(LowLevelPutException e, SendableRequestItem keyNum, ClientContext context) {
-        InsertException e1 = InsertException.constructFrom(e);
+    public void onFailure(LowLevelException e, SendableRequestItem keyNum, ClientContext context) {
+        InsertException e1 = InsertException.constructFrom((LowLevelPutException) e);
         if(keyNum == null) {
             storage.fail(e1);
         } else {
@@ -118,8 +107,8 @@ public class SplitFileInserterSender extends SendableInsert {
     class MySendableRequestSender implements SendableRequestSender {
         
         @Override
-        public boolean send(NodeClientCore node, final RequestScheduler sched, ClientContext context,
-                final ChosenBlock request) {
+        public boolean send(NodeClientRequest core, final RequestScheduler sched, ClientContext context,
+                            final ChosenBlock request) {
             final BlockInsert token = (BlockInsert) request.token;
             try {
                 ClientCHKBlock clientBlock = token.segment.encodeBlock(token.blockNumber);
@@ -136,12 +125,12 @@ public class SplitFileInserterSender extends SendableInsert {
                 });
                 if(request.localRequestOnly) {
                     try {
-                        node.node.store(block, false, request.canWriteClientCache, true, false);
+                        core.getKeyBlockStore().store(block, false, request.canWriteClientCache, true, false);
                     } catch (KeyCollisionException e) {
                         throw new LowLevelPutException(LowLevelPutException.COLLISION);
                     }
                 } else {
-                    node.realPut(block, request.canWriteClientCache, request.forkOnCacheable, Node.PREFER_INSERT_DEFAULT, Node.IGNORE_LOW_BACKOFF_DEFAULT, request.realTimeFlag);
+                    core.realPut(block, request.canWriteClientCache, request.forkOnCacheable, NodeConstants.PREFER_INSERT_DEFAULT, NodeConstants.IGNORE_LOW_BACKOFF_DEFAULT, request.realTimeFlag);
                 }
                 request.onInsertSuccess(key, context);
                 return true;

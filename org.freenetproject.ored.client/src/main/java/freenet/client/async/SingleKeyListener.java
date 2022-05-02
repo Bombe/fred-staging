@@ -1,10 +1,10 @@
 package freenet.client.async;
 
+import freenet.client.request.LowLevelGetException;
+import freenet.client.request.SendableGet;
 import freenet.keys.Key;
 import freenet.keys.KeyBlock;
 import freenet.keys.NodeSSK;
-import freenet.node.LowLevelGetException;
-import freenet.node.SendableGet;
 import freenet.support.Logger;
 
 public class SingleKeyListener implements KeyListener {

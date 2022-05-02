@@ -17,11 +17,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import freenet.bucket.Bucket;
+import freenet.bucket.FileBucket;
 import freenet.support.Fields;
 import freenet.support.Logger;
-import freenet.support.api.Bucket;
 import freenet.support.io.Closer;
-import freenet.support.io.FileBucket;
 
 import java.io.File;
 import java.io.InputStream;

@@ -6,7 +6,7 @@ package freenet.client;
 import freenet.client.async.ClientContext;
 import freenet.client.async.ClientGetCallback;
 import freenet.client.async.ClientGetter;
-import freenet.node.RequestClient;
+import freenet.client.request.RequestClient;
 
 /** Provides a blocking wrapper for a fetch. Used for simple blocking APIs such as HighLevelSimpleClient. */
 public class FetchWaiter implements ClientGetCallback {

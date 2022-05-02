@@ -11,8 +11,8 @@ import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Map;
 
-import freenet.clients.http.ExternalLinkToadlet;
 import freenet.l10n.NodeL10n;
+import freenet.support.Toadlet;
 
 /**
  * Content filter for M3Us
@@ -137,8 +137,8 @@ public class M3UFilter implements ContentDataFilter {
                                     // lead to a file to not be played
                                     // (players will get progress-bar
                                     // HTML content instead).
-                                    if (!filtered.contains(ExternalLinkToadlet.PATH)
-                                        && !filtered.contains(ExternalLinkToadlet.magicHTTPEscapeString)) {
+                                    if (!filtered.contains(Toadlet.ExternalLink.PATH)
+                                        && !filtered.contains(Toadlet.ExternalLink.magicHTTPEscapeString)) {
                                         if (filtered.contains("?")) {
                                             filtered += "&";
                                         } else {

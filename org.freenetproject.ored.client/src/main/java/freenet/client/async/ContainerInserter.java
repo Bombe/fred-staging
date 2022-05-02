@@ -13,11 +13,14 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import freenet.bucket.Bucket;
+import freenet.bucket.BucketTools;
+import freenet.bucket.RandomAccessBucket;
+import freenet.support.client.DefaultMIMETypes;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 
 import freenet.client.ClientMetadata;
-import freenet.client.DefaultMIMETypes;
 import freenet.client.InsertBlock;
 import freenet.client.InsertContext;
 import freenet.client.InsertException;
@@ -30,10 +33,6 @@ import freenet.client.Metadata.SimpleManifestComposer;
 import freenet.client.async.BaseManifestPutter.PutHandler;
 import freenet.keys.FreenetURI;
 import freenet.support.Logger;
-import freenet.support.api.Bucket;
-import freenet.support.api.ManifestElement;
-import freenet.support.api.RandomAccessBucket;
-import freenet.support.io.BucketTools;
 import freenet.support.io.Closer;
 import freenet.support.io.ResumeFailedException;
 
@@ -344,7 +343,7 @@ public class ContainerInserter implements ClientPutState, Serializable {
 				//System.out.println("Decompose: "+name+" (Metadata)");
 				smc.addItem(name, (Metadata)o);
 			} else {
-				ManifestElement element = (ManifestElement) o;
+				ManifestElementNew element = (ManifestElementNew) o;
 				String mimeType = element.getMimeType();
 				ClientMetadata cm;
 				if(mimeType == null || mimeType.equals(DefaultMIMETypes.DEFAULT_MIME_TYPE))
@@ -392,16 +391,16 @@ public class ContainerInserter implements ClientPutState, Serializable {
         for (Object o : manifestElements.values()) {
             if(o instanceof HashMap) {
                 resumeMetadata((Map<String, Object>)o, context);
-            } else if(o instanceof ManifestElement) {
-                ManifestElement e = (ManifestElement) o;
+            } else if(o instanceof ManifestElementNew) {
+				ManifestElementNew e = (ManifestElementNew) o;
                 e.onResume(context);
             } else if(o instanceof Metadata) {
                 // Ignore
             } else if(o instanceof PutHandler) {
                 PutHandler handler = (PutHandler) o;
                 handler.onResume(context);
-            } else if(o instanceof ManifestElement) {
-                ((ManifestElement)o).onResume(context);
+            } else if(o instanceof ManifestElementNew) {
+                ((ManifestElementNew)o).onResume(context);
             } else throw new IllegalArgumentException("Unknown manifest element: "+o);
         }
     }

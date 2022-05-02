@@ -385,7 +385,7 @@ public class EncryptedRandomAccessBucket implements RandomAccessBucket, Serializ
         underlying.storeTo(dos);
     }
     
-    public EncryptedRandomAccessBucket(DataInputStream dis, FilenameGenerator fg,
+    public EncryptedRandomAccessBucket(DataInputStream dis, BucketFilenameGenerator fg,
             PersistentFileTracker persistentFileTracker, MasterSecret masterKey2) throws IOException, ResumeFailedException, StorageFormatException {
         type = EncryptedRandomAccessBufferType.getByBitmask(dis.readInt());
         if(type == null) throw new ResumeFailedException("Unknown EncryptedRandomAccessBucket type");

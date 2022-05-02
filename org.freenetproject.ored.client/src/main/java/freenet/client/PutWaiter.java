@@ -1,15 +1,15 @@
 package freenet.client;
 
+import freenet.bucket.Bucket;
 import freenet.client.InsertException.InsertExceptionMode;
 import freenet.client.async.BaseClientPutter;
 import freenet.client.async.ClientContext;
 import freenet.client.async.ClientPutCallback;
+import freenet.client.request.RequestClient;
 import freenet.keys.FreenetURI;
-import freenet.node.RequestClient;
 import freenet.support.LogThresholdCallback;
 import freenet.support.Logger;
 import freenet.support.Logger.LogLevel;
-import freenet.support.api.Bucket;
 
 /** Provides a blocking wrapper for an insert. Used for simple blocking APIs such as HighLevelSimpleClient. */
 public class PutWaiter implements ClientPutCallback {

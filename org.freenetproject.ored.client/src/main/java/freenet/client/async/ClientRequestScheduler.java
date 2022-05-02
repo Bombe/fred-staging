@@ -110,7 +110,7 @@ public class ClientRequestScheduler implements RequestScheduler {
 	 * register the listener once.
 	 * @throws FetchException 
 	 */
-	public void register(final HasKeyListener hasListener, final BaseSendableGet[] getters, final boolean persistent, final BlockSet blocks, final boolean noCheckStore) {
+	public void register(final HasKeyListener hasListener, final SendableGet[] getters, final boolean persistent, final BlockSet blocks, final boolean noCheckStore) {
 		if(logMINOR)
 			Logger.minor(this, "register("+persistent+","+hasListener+","+Fields.commaList(getters));
 		if(isInsertScheduler) {
@@ -127,11 +127,11 @@ public class ClientRequestScheduler implements RequestScheduler {
 		} else
 		    listener = null;
 		if(getters != null && !noCheckStore) {
-		    for(BaseSendableGet getter : getters)
+		    for(SendableGet getter : getters)
 		        datastoreChecker.queueRequest(getter, blocks);
 		} else {
 		    boolean anyValid = false;
-		    for(BaseSendableGet getter : getters) {
+		    for(SendableGet getter : getters) {
 		        if(!(getter.isCancelled() || getter.getWakeupTime(clientContext, System.currentTimeMillis()) != 0))
 		            anyValid = true;
 		    }

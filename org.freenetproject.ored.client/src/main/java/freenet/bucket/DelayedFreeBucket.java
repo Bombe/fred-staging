@@ -159,7 +159,7 @@ public class DelayedFreeBucket implements Bucket, Serializable, DelayedFree {
         bucket.storeTo(dos);
     }
 
-    protected DelayedFreeBucket(DataInputStream dis, FilenameGenerator fg,
+    protected DelayedFreeBucket(DataInputStream dis, BucketFilenameGenerator fg,
 								PersistentFileTracker persistentFileTracker, MasterSecret masterKey)
     throws StorageFormatException, IOException, ResumeFailedException {
         int version = dis.readInt();

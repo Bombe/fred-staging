@@ -1,10 +1,9 @@
-package freenet.support;
+package freenet.client.async;
 
-import freenet.client.async.ClientContext;
-import freenet.client.async.PersistentJob;
-import freenet.client.async.PersistentJobRunner;
-import freenet.node.PrioRunnable;
+import freenet.support.Executor;
+import freenet.support.Logger;
 import freenet.support.io.NativeThread;
+import freenet.support.node.PrioRunnable;
 
 /** A PersistentJobRunner that isn't persistent. Convenient for transient requests, code doesn't
  * need messy if(persistent) everywhere. */

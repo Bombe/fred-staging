@@ -17,28 +17,20 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
-import freenet.clients.fcp.ClientRequest;
-import freenet.clients.fcp.RequestIdentifier;
-import freenet.crypt.CRCChecksumChecker;
-import freenet.crypt.ChecksumChecker;
-import freenet.crypt.ChecksumFailedException;
-import freenet.node.DatabaseKey;
-import freenet.node.MasterKeysWrongPasswordException;
-import freenet.node.Node;
-import freenet.node.NodeClientCore;
-import freenet.node.NodeInitException;
-import freenet.node.RequestStarterGroup;
+import freenet.bucket.*;
+import freenet.checksum.CRCChecksumChecker;
+import freenet.checksum.ChecksumChecker;
+import freenet.checksum.ChecksumFailedException;
+import freenet.keys.DatabaseKey;
+import freenet.keys.MasterKeysWrongPasswordException;
 import freenet.support.Executor;
 import freenet.support.Logger;
 import freenet.support.Ticker;
-import freenet.support.api.Bucket;
+import freenet.support.fcp.RequestIdentifier;
 import freenet.support.io.DelayedFree;
-import freenet.support.io.FileBucket;
 import freenet.support.io.FileUtil;
-import freenet.support.io.PersistentTempBucketFactory;
-import freenet.support.io.PrependLengthOutputStream;
 import freenet.support.io.StorageFormatException;
-import freenet.support.io.TempBucketFactory;
+import freenet.support.node.NodeInitException;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 
@@ -81,8 +73,8 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 public class ClientLayerPersister extends PersistentJobRunnerImpl {
     
     static final long INTERVAL = MINUTES.toMillis(10);
-    private final Node node; // Needed for bandwidth stats putter
-    private final NodeClientCore clientCore;
+    private final PersistentStatsChecker statsChecker; // Needed for bandwidth stats putter
+    private final ClientRequest[] clientRequests;
     private final PersistentTempBucketFactory persistentTempFactory;
     /** Needed for temporary storage when writing objects. Some of them might be big, e.g. site 
      * inserts. */
@@ -113,12 +105,12 @@ public class ClientLayerPersister extends PersistentJobRunnerImpl {
      * @param persistentTempFactory Only passed in so that we can call its pre- and post- commit
      * hooks. We don't explicitly save it; it must be populated lazily in onResume() like 
      * everything else. */
-    public ClientLayerPersister(Executor executor, Ticker ticker, Node node, NodeClientCore core,
+    public ClientLayerPersister(Executor executor, Ticker ticker, PersistentStatsChecker statsChecker, ClientRequest[] clientRequests,
             PersistentTempBucketFactory persistentTempFactory, TempBucketFactory tempBucketFactory,
             PersistentStatsPutter stats) {
         super(executor, ticker, INTERVAL);
-        this.node = node;
-        this.clientCore = core;
+        this.statsChecker = statsChecker;
+        this.clientRequests = clientRequests;
         this.persistentTempFactory = persistentTempFactory;
         this.tempBucketFactory = tempBucketFactory;
         this.checker = new CRCChecksumChecker();
@@ -131,8 +123,8 @@ public class ClientLayerPersister extends PersistentJobRunnerImpl {
      * @throws MasterKeysWrongPasswordException If we need the encryption key but it has not been 
      * supplied. */
     public void setFilesAndLoad(File dir, String baseName, boolean writeEncrypted, boolean noWrite, 
-            DatabaseKey encryptionKey, ClientContext context, RequestStarterGroup requestStarters, 
-            Random random) throws MasterKeysWrongPasswordException {
+            DatabaseKey encryptionKey, ClientContext context, RequestStarterSchedulerGroup requestStarters,
+            ClientRequestRestarter requestRestarter, Random random) throws MasterKeysWrongPasswordException {
         if(noWrite)
             super.disableWrite();
         synchronized(serializeCheckpoints) {
@@ -157,11 +149,11 @@ public class ClientLayerPersister extends PersistentJobRunnerImpl {
                 // So if that happens we need to retry with serialization turned off.
                 // The requests that loaded fine already will not be affected as we check for duplicates.
                 if(innerSetFilesAndLoad(false, dir, baseName, writeEncrypted, encryptionKey, context, 
-                        requestStarters, random)) {
+                        requestStarters, requestRestarter, random)) {
                     Logger.error(this, "Some requests failed to restart after serializing. Trying to recover/restart ...");
                     System.err.println("Some requests failed to restart after serializing. Trying to recover/restart ...");
                     innerSetFilesAndLoad(true, dir, baseName, writeEncrypted, encryptionKey, context, 
-                            requestStarters, random);
+                            requestStarters, requestRestarter, random);
                 }
                 onStarted(noWrite);
             } else {
@@ -209,8 +201,8 @@ public class ClientLayerPersister extends PersistentJobRunnerImpl {
     }
 
     private boolean innerSetFilesAndLoad(boolean noSerialize, File dir, String baseName, 
-            boolean writeEncrypted, DatabaseKey encryptionKey, ClientContext context, 
-            RequestStarterGroup requestStarters, Random random) throws MasterKeysWrongPasswordException {
+            boolean writeEncrypted, DatabaseKey encryptionKey, ClientContext context,
+            RequestStarterSchedulerGroup requestStarters, ClientRequestRestarter requestRestarter, Random random) throws MasterKeysWrongPasswordException {
         if(writeEncrypted && encryptionKey == null)
             throw new MasterKeysWrongPasswordException();
         File clientDat = new File(dir, baseName);
@@ -228,16 +220,16 @@ public class ClientLayerPersister extends PersistentJobRunnerImpl {
         boolean failedSerialize = false;
         PartialLoad loaded = new PartialLoad();
         if(clientDatExists) {
-            innerLoad(loaded, makeBucket(dir, baseName, false, null), noSerialize, context, requestStarters, random);
+            innerLoad(loaded, makeBucket(dir, baseName, false, null), noSerialize, context, requestStarters, requestRestarter, random);
         }
         if(clientDatCryptExists && loaded.needsMore()) {
-            innerLoad(loaded, makeBucket(dir, baseName, false, encryptionKey), noSerialize, context, requestStarters, random);
+            innerLoad(loaded, makeBucket(dir, baseName, false, encryptionKey), noSerialize, context, requestStarters, requestRestarter, random);
         }
         if(clientDatBakExists) {
-            innerLoad(loaded, makeBucket(dir, baseName, true, null), noSerialize, context, requestStarters, random);
+            innerLoad(loaded, makeBucket(dir, baseName, true, null), noSerialize, context, requestStarters, requestRestarter, random);
         }
         if(clientDatBakCryptExists && loaded.needsMore()) {
-            innerLoad(loaded, makeBucket(dir, baseName, true, encryptionKey), noSerialize, context, requestStarters, random);
+            innerLoad(loaded, makeBucket(dir, baseName, true, encryptionKey), noSerialize, context, requestStarters, requestRestarter, random);
         }
         
         deleteAfterSuccessfulWrite = writeEncrypted ? clientDat : clientDatCrypt;
@@ -358,7 +350,7 @@ public class ClientLayerPersister extends PersistentJobRunnerImpl {
     }
     
     private class PartialLoad {
-        private final Map<RequestIdentifier, PartiallyLoadedRequest> partiallyLoadedRequests 
+        private final Map<RequestIdentifier, PartiallyLoadedRequest> partiallyLoadedRequests
             = new HashMap<RequestIdentifier, PartiallyLoadedRequest>();
         
         private byte[] salt;
@@ -413,13 +405,13 @@ public class ClientLayerPersister extends PersistentJobRunnerImpl {
     }
     
     private void innerLoad(PartialLoad loaded, Bucket bucket, boolean noSerialize,
-            ClientContext context, RequestStarterGroup requestStarters, Random random) {
+            ClientContext context, RequestStarterSchedulerGroup requestStarters, ClientRequestRestarter requestRestarter, Random random) {
         long length = bucket.size();
         InputStream fis = null;
         try {
             fis = bucket.getInputStream();
             innerLoad(loaded, fis, length, !noSerialize && !loaded.doneSomething(), context, 
-                    requestStarters, random, noSerialize);
+                    requestStarters, requestRestarter, random, noSerialize);
         } catch (IOException e) {
             // FIXME tell user more obviously.
             Logger.error(this, "Failed to load persistent requests from "+bucket+" : "+e, e);
@@ -441,8 +433,9 @@ public class ClientLayerPersister extends PersistentJobRunnerImpl {
         }
     }
     
-    private void innerLoad(PartialLoad loaded, InputStream fis, long length, boolean latest, 
-            ClientContext context, RequestStarterGroup requestStarters, Random random, boolean noSerialize) throws NodeInitException, IOException {
+    private void innerLoad(PartialLoad loaded, InputStream fis, long length, boolean latest,
+                           ClientContext context, RequestStarterSchedulerGroup requestStarters,
+                           ClientRequestRestarter requestRestarter, Random random, boolean noSerialize) throws NodeInitException, IOException {
         ObjectInputStream ois = new ObjectInputStream(fis);
         long magic = ois.readLong();
         if(magic != MAGIC) throw new IOException("Bad magic");
@@ -460,7 +453,7 @@ public class ClientLayerPersister extends PersistentJobRunnerImpl {
         for(int i=0;i<requestCount;i++) {
             ClientRequest request = null;
             RequestIdentifier reqID = readRequestIdentifier(ois);
-            if(reqID != null && context.persistentRoot.hasRequest(reqID)) {
+            if(reqID != null && context.persistentRequestChecker.hasRequest(reqID)) {
                 Logger.warning(this, "Not reading request because already have it");
                 skipChecksummedObject(ois, length); // Request itself
                 skipChecksummedObject(ois, length); // Recovery data
@@ -492,7 +485,7 @@ public class ClientLayerPersister extends PersistentJobRunnerImpl {
             }
             if(request == null || logMINOR) {
                 try {
-                    ClientRequest restored = readRequestFromRecoveryData(ois, length, reqID);
+                    ClientRequest restored = readRequestFromRecoveryData(requestRestarter, ois, length, reqID);
                     if(request == null && restored != null) {
                         request = restored;
                         boolean loadedFully = restored.fullyResumed();
@@ -604,7 +597,7 @@ public class ClientLayerPersister extends PersistentJobRunnerImpl {
                 // just a single splitfile.
                 writeRecoveryData(oos, req);
             }
-            bandwidthStatsPutter.updateData(node);
+            bandwidthStatsPutter.updateData(statsChecker);
             oos.writeObject(bandwidthStatsPutter);
             if(buckets == null) {
                 oos.writeInt(0);
@@ -649,11 +642,13 @@ public class ClientLayerPersister extends PersistentJobRunnerImpl {
         }
     }
     
-    private ClientRequest readRequestFromRecoveryData(ObjectInputStream is, long totalLength, RequestIdentifier reqID) throws IOException, ChecksumFailedException, StorageFormatException {
+    private ClientRequest readRequestFromRecoveryData(ClientRequestRestarter requestRestarter, ObjectInputStream is,
+                                                      long totalLength, RequestIdentifier reqID)
+            throws IOException, ChecksumFailedException, StorageFormatException {
         InputStream tmp = checker.checksumReaderWithLength(is, this.tempBucketFactory, totalLength);
         try {
             DataInputStream dis = new DataInputStream(tmp);
-            ClientRequest request = ClientRequest.restartFrom(dis, reqID, getClientContext(), checker);
+            ClientRequest request = requestRestarter.restartFrom(dis, reqID, getClientContext(), checker);
             dis.close();
             dis = null;
             tmp = null;
@@ -705,7 +700,7 @@ public class ClientLayerPersister extends PersistentJobRunnerImpl {
     }
 
     private ClientRequest[] getRequests() {
-        return clientCore.getPersistentRequests();
+        return this.clientRequests;
     }
 
     public boolean newSalt() {

@@ -1,9 +1,8 @@
 /* This code is part of Freenet. It is distributed under the GNU General
  * Public License, version 2 (or at your option any later version). See
  * http://www.gnu.org/ for further details of the GPL. */
-package freenet.node.useralerts;
+package freenet.support.node;
 
-import freenet.clients.fcp.FCPMessage;
 import freenet.support.HTMLNode;
 
 public interface UserAlert {
@@ -70,11 +69,11 @@ public interface UserAlert {
 	 */
 	public boolean isEventNotification();
 
-	/**
-	 * @param The identifier of the subscription
-	 * @return A FCPMessage that is sent subscribing FCPClients
-	 */
-	public FCPMessage getFCPMessage();
+	// TODO: Modularity: Should be moved to freenet.clients.fcp
+//	/**
+//	 * @return A FCPMessage that is sent subscribing FCPClients
+//	 */
+//	public FCPMessage getFCPMessage();
 	
 	/**
 	 * @return The Unix timestamp of when the alert was last updated

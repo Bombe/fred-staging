@@ -9,7 +9,6 @@ import java.util.Map;
 import freenet.client.InsertContext;
 import freenet.keys.FreenetURI;
 import freenet.support.Logger;
-import freenet.support.api.ManifestElement;
 import freenet.support.io.ResumeFailedException;
 
 /**
@@ -53,7 +52,7 @@ public class PlainManifestPutter extends BaseManifestPutter {
 				builder.popCurrentDir();
 				if(logDEBUG) Logger.debug(this, "Sub map for "+name+" : "+subMap.size()+" elements");
 			} else {
-				ManifestElement element = (ManifestElement) o;
+				ManifestElementNew element = (ManifestElementNew) o;
 				builder.addElement(name, element, name.equals(defaultName));
 			}
 		}

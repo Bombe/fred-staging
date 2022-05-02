@@ -3,6 +3,8 @@ package freenet.client.async;
 import java.io.IOException;
 import java.io.Serializable;
 
+import freenet.checksum.CRCChecksumChecker;
+import freenet.checksum.ChecksumFailedException;
 import freenet.client.ArchiveManager.ARCHIVE_TYPE;
 import freenet.client.ClientMetadata;
 import freenet.client.InsertContext;
@@ -10,12 +12,10 @@ import freenet.client.InsertException;
 import freenet.client.InsertException.InsertExceptionMode;
 import freenet.client.Metadata;
 import freenet.client.async.SplitFileInserterSegmentStorage.MissingKeyException;
-import freenet.crypt.CRCChecksumChecker;
-import freenet.crypt.ChecksumFailedException;
 import freenet.crypt.HashResult;
+import freenet.lockablebuffer.LockableRandomAccessBuffer;
 import freenet.support.Logger;
-import freenet.support.api.LockableRandomAccessBuffer;
-import freenet.support.compress.Compressor.COMPRESSOR_TYPE;
+import freenet.compress.Compressor.COMPRESSOR_TYPE;
 import freenet.support.io.ResumeFailedException;
 import freenet.support.io.StorageFormatException;
 

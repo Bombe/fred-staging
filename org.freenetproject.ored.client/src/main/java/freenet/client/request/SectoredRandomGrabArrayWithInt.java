@@ -1,6 +1,7 @@
 package freenet.client.request;
 
 import freenet.client.async.ClientRequestSelector;
+import freenet.support.IntNumberedItem;
 
 public class SectoredRandomGrabArrayWithInt<T, C extends RemoveRandomWithObject<T>>
 		extends SectoredRandomGrabArray<T, C> implements IntNumberedItem {

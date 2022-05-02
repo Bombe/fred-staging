@@ -766,7 +766,7 @@ public class FilterUtils {
 		}
 		return false;
 	}
-//	public static HTMLNode getHTMLNodeFromElement(Element node)
+	//	public static HTMLNode getHTMLNodeFromElement(Element node)
 //	{
 //		String[] propertyName=new String[node.getAttributes().size()];
 //		String[] propertyValue=new String[node.getAttributes().size()];
@@ -778,5 +778,5 @@ public class FilterUtils {
 //			propertyValue[index]=currentAttr.getValue();
 //		}
 //		return new HTMLNode(node.getName(),propertyName,propertyValue,node.getValue());
-//	}	
+//	}
 }

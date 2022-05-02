@@ -151,7 +151,7 @@ public class DelayedFreeRandomAccessBucket implements Bucket, Serializable, Rand
         bucket.storeTo(dos);
     }
 
-    protected DelayedFreeRandomAccessBucket(DataInputStream dis, FilenameGenerator fg,
+    protected DelayedFreeRandomAccessBucket(DataInputStream dis, BucketFilenameGenerator fg,
             PersistentFileTracker persistentFileTracker, MasterSecret masterKey) 
     throws StorageFormatException, IOException, ResumeFailedException {
         int version = dis.readInt();

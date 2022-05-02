@@ -16,7 +16,9 @@ import freenet.client.InsertContext;
 import freenet.client.InsertException;
 import freenet.client.events.SimpleEventProducer;
 import freenet.client.filter.LinkFilterExceptionProvider;
+import freenet.client.request.RequestScheduler;
 import freenet.compress.RealCompressor;
+import freenet.config.Config;
 import freenet.crypt.MasterSecret;
 import freenet.crypt.RandomSource;
 import freenet.lockablebuffer.FileRandomAccessBufferFactory;
@@ -24,9 +26,9 @@ import freenet.lockablebuffer.LockableRandomAccessBufferFactory;
 import freenet.support.Executor;
 import freenet.support.MemoryLimitedJobRunner;
 import freenet.support.Ticker;
-import freenet.support.io.FilenameGenerator;
 import freenet.support.io.NativeThread;
 import freenet.support.io.PersistentFileTracker;
+import freenet.support.node.UserAlert;
 
 /**
  * Object passed in to client-layer operations, containing references to essential but mostly transient 
@@ -43,7 +45,7 @@ public class ClientContext {
 	private transient ClientRequestScheduler chkFetchSchedulerRT;
 	private transient ClientRequestScheduler sskInsertSchedulerRT;
 	private transient ClientRequestScheduler chkInsertSchedulerRT;
-	private transient UserAlertManager alerts;
+	private transient UserAlertRegister alertRegister;
 	/** The main Executor for the node. Jobs for transient requests run here. */
 	public transient final Executor mainExecutor;
 	/** We need to be able to suspend execution of jobs changing persistent state in order to write
@@ -70,7 +72,7 @@ public class ClientContext {
 	 * I/O and we don't guarantee to serialise them. The new splitfile code does FEC decodes 
 	 * entirely in memory, which saves a lot of seeks and improves robustness. */
 	public transient final MemoryLimitedJobRunner memoryLimitedJobRunner;
-	public transient final PersistentRequestRoot persistentRoot;
+	public transient final PersistentRequestChecker persistentRequestChecker;
 	private transient FetchContext defaultPersistentFetchContext;
 	private transient InsertContext defaultPersistentInsertContext;
 	public transient final MasterSecret cryptoSecretTransient;
@@ -85,16 +87,17 @@ public class ClientContext {
     public PersistentJobRunner dummyJobRunner;
 
 	private transient final Config config;
+	public transient final int maxBackgroundUSKFetchers;
 
 	public ClientContext(long bootID, ClientLayerPersister jobRunner, Executor mainExecutor,
 						 ArchiveManager archiveManager, PersistentTempBucketFactory ptbf, TempBucketFactory tbf, PersistentFileTracker tracker,
 						 HealingQueue hq, USKManager uskManager, RandomSource strongRandom, Random fastWeakRandom,
-						 Ticker ticker, MemoryLimitedJobRunner memoryLimitedJobRunner, FilenameGenerator fg, FilenameGenerator persistentFG,
+						 Ticker ticker, MemoryLimitedJobRunner memoryLimitedJobRunner, BucketFilenameGenerator fg, BucketFilenameGenerator persistentFG,
 						 LockableRandomAccessBufferFactory rafFactory, LockableRandomAccessBufferFactory persistentRAFFactory,
 						 FileRandomAccessBufferFactory fileRAFTransient, FileRandomAccessBufferFactory fileRAFPersistent,
-						 RealCompressor rc, DatastoreChecker checker, PersistentRequestRoot persistentRoot, MasterSecret cryptoSecretTransient,
-						 LinkFilterExceptionProvider linkFilterExceptionProvider,
-						 FetchContext defaultPersistentFetchContext, InsertContext defaultPersistentInsertContext, Config config) {
+						 RealCompressor rc, DatastoreChecker checker, PersistentRequestChecker persistentRequestChecker, MasterSecret cryptoSecretTransient,
+						 LinkFilterExceptionProvider linkFilterExceptionProvider, FetchContext defaultPersistentFetchContext,
+						 InsertContext defaultPersistentInsertContext, Config config, int maxBackgroundUSKFetchers) {
 		this.bootID = bootID;
 		this.jobRunner = jobRunner;
 		this.mainExecutor = mainExecutor;
@@ -117,24 +120,25 @@ public class ClientContext {
 		this.linkFilterExceptionProvider = linkFilterExceptionProvider;
 		this.memoryLimitedJobRunner = memoryLimitedJobRunner;
 		this.tempRAFFactory = rafFactory; 
-		this.persistentRoot = persistentRoot;
+		this.persistentRequestChecker = persistentRequestChecker;
 		this.dummyJobRunner = new DummyJobRunner(mainExecutor, this);
 		this.defaultPersistentFetchContext = defaultPersistentFetchContext;
 		this.defaultPersistentInsertContext = defaultPersistentInsertContext;
 		this.cryptoSecretTransient = cryptoSecretTransient;
 		this.config = config;
+		this.maxBackgroundUSKFetchers = maxBackgroundUSKFetchers;
 	}
 	
-	public void init(RequestStarterGroup starters, UserAlertManager alerts) {
-		this.sskFetchSchedulerBulk = starters.sskFetchSchedulerBulk;
-		this.chkFetchSchedulerBulk = starters.chkFetchSchedulerBulk;
-		this.sskInsertSchedulerBulk = starters.sskPutSchedulerBulk;
-		this.chkInsertSchedulerBulk = starters.chkPutSchedulerBulk;
-		this.sskFetchSchedulerRT = starters.sskFetchSchedulerRT;
-		this.chkFetchSchedulerRT = starters.chkFetchSchedulerRT;
-		this.sskInsertSchedulerRT = starters.sskPutSchedulerRT;
-		this.chkInsertSchedulerRT = starters.chkPutSchedulerRT;
-		this.alerts = alerts;
+	public void init(RequestStarterSchedulerGroup starters, UserAlertRegister alertRegister) {
+		this.sskFetchSchedulerBulk = starters.getSskFetchSchedulerBulk();
+		this.chkFetchSchedulerBulk = starters.getChkFetchSchedulerBulk();
+		this.sskInsertSchedulerBulk = starters.getSskPutSchedulerBulk();
+		this.chkInsertSchedulerBulk = starters.getChkPutSchedulerBulk();
+		this.sskFetchSchedulerRT = starters.getSskFetchSchedulerRT();
+		this.chkFetchSchedulerRT = starters.getChkFetchSchedulerRT();
+		this.sskInsertSchedulerRT = starters.getSskPutSchedulerRT();
+		this.chkInsertSchedulerRT = starters.getChkPutSchedulerRT();
+		this.alertRegister = alertRegister;
 	}
 	
 	public synchronized void setPersistentMasterSecret(MasterSecret secret) {
@@ -164,11 +168,8 @@ public class ClientContext {
 	/** 
 	 * Start an insert. Queue a database job if it is a persistent insert, otherwise start it right now.
 	 * @param inserter The insert to start.
-	 * @param earlyEncode Whether to try to encode the data and insert the upper layers as soon as possible.
-	 * Normally we wait for each layer to complete before inserting the next one because an attacker may be
-	 * able to identify lower blocks once the top block has been inserted (e.g. if it's a known SSK).
 	 * @throws InsertException If the insert is transient and it fails to start.
-	 * @throws DatabaseDisabledException If the insert is persistent and the database is disabled (e.g. 
+	 * @throws PersistenceDisabledException If the insert is persistent and the database is disabled (e.g.
 	 * because it is encrypted and the user hasn't entered the password yet).
 	 */
 	public void start(final ClientPutter inserter) throws InsertException, PersistenceDisabledException {
@@ -196,7 +197,7 @@ public class ClientContext {
 	 * immediately.
 	 * @param getter The request to start.
 	 * @throws FetchException If the request is transient and failed to start.
-	 * @throws DatabaseDisabledException If the request is persistent and the database is disabled.
+	 * @throws PersistenceDisabledException If the request is persistent and the database is disabled.
 	 */
 	public void start(final ClientGetter getter) throws FetchException, PersistenceDisabledException {
 		if(getter.persistent()) {
@@ -223,7 +224,7 @@ public class ClientContext {
 	 * otherwise start it immediately.
 	 * @param inserter The request to start.
 	 * @throws InsertException If the insert is transient and failed to start.
-	 * @throws DatabaseDisabledException If the insert is persistent and the database is disabled.
+	 * @throws PersistenceDisabledException If the insert is persistent and the database is disabled.
 	 */
 	public void start(final BaseManifestPutter inserter) throws InsertException, PersistenceDisabledException {
 		if(inserter.persistent()) {
@@ -268,18 +269,18 @@ public class ClientContext {
 	}
 	
 	public void postUserAlert(final UserAlert alert) {
-		if(alerts == null) {
+		if(alertRegister == null) {
 			// Wait until after startup
 			ticker.queueTimedJob(new Runnable() {
 
 				@Override
 				public void run() {
-					alerts.register(alert);
+					alertRegister.register(alert);
 				}
 				
 			}, "Post alert", 0L, false, false);
 		} else {
-			alerts.register(alert);
+			alertRegister.register(alert);
 		}
 	}
 

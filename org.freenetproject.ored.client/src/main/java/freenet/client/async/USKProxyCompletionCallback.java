@@ -12,7 +12,7 @@ import freenet.client.InsertContext.CompatibilityMode;
 import freenet.crypt.HashResult;
 import freenet.keys.FreenetURI;
 import freenet.keys.USK;
-import freenet.support.compress.Compressor;
+import freenet.compress.Compressor;
 
 /**
  * Passes everything through, except that is updates the lastKnownGood on the USKManager,

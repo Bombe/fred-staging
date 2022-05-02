@@ -1,4 +1,4 @@
-package freenet.clients.fcp;
+package freenet.support.fcp;
 
 import java.io.DataInput;
 import java.io.DataOutput;
