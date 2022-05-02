@@ -4,4 +4,5 @@ include 'org.freenetproject.ored.l10n'
 include 'org.freenetproject.ored.support'
 include 'org.freenetproject.ored.crypt'
 include 'org.freenetproject.ored.client'
+include 'org.freenetproject.ored.config'
 

@@ -15,7 +15,7 @@ import java.util.Random;
 import freenet.support.Base64;
 import freenet.support.ByteArrayWrapper;
 import freenet.support.Fields;
-import freenet.support.compress.Compressor.COMPRESSOR_TYPE;
+import freenet.compress.Compressor.COMPRESSOR_TYPE;
 
 /**
  * Client level CHK. Can be converted into a FreenetURI, can be used to decrypt
@@ -71,7 +71,6 @@ public class ClientCHK extends ClientKey implements Serializable {
      * header and content of the key.
      * @param encKey The decryption key. This is not passed to other nodes
      * and is extracted from the URI.
-     * @param isCompressed True if the data was gzipped before encoding.
      * @param isControlDocument True if the document is a Control Document.
      * These carry metadata, whereas ordinary keys carry data, and have no
      * type.

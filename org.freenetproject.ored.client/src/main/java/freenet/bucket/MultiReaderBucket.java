@@ -16,7 +16,7 @@ import freenet.support.LogThresholdCallback;
 import freenet.support.ListUtils;
 import freenet.support.Logger;
 import freenet.support.Logger.LogLevel;
-import freenet.support.api.Bucket;
+import freenet.support.io.ResumeFailedException;
 
 /**
  * A wrapper for a read-only bucket providing for multiple readers. The data is 

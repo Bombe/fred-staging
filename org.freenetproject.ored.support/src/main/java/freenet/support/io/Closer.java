@@ -53,21 +53,6 @@ public class Closer {
 		}
 	}
 
-	// TODO: Modularity: move this method and Bucket bucket module
-//	/**
-//	 * Frees the given bucket. Notice that you have to do removeFrom() for persistent buckets yourself.
-//	 * @param bucket The Bucket to close.
-//	 */
-//	public static void close(Bucket bucket) {
-//		if (bucket != null) {
-//			try {
-//				bucket.free();
-//			} catch(RuntimeException e) {
-//				Logger.error(Closer.class, "Error during free().", e);
-//			}
-//		}
-//	}
-
 	/**
 	 * Closes the given zip file.
 	 * 

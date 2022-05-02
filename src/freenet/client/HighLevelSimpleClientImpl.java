@@ -26,16 +26,16 @@ import freenet.keys.FreenetURI;
 import freenet.keys.InsertableClientSSK;
 import freenet.node.Node;
 import freenet.node.NodeClientCore;
-import freenet.node.RequestClient;
+import freenet.support.node.RequestClient;
 import freenet.node.RequestScheduler;
 import freenet.node.RequestStarter;
 import freenet.support.Logger;
 import freenet.support.Logger.LogLevel;
-import freenet.support.api.Bucket;
-import freenet.support.api.BucketFactory;
-import freenet.support.api.RandomAccessBucket;
-import freenet.support.compress.Compressor;
-import freenet.support.io.NullBucket;
+import freenet.bucket.Bucket;
+import freenet.bucket.BucketFactory;
+import freenet.bucket.RandomAccessBucket;
+import freenet.compress.Compressor;
+import freenet.bucket.NullBucket;
 import freenet.support.io.PersistentFileTracker;
 
 public class HighLevelSimpleClientImpl implements HighLevelSimpleClient, RequestClient, Cloneable {
@@ -82,14 +82,6 @@ public class HighLevelSimpleClientImpl implements HighLevelSimpleClient, Request
 	// going by memory usage only; 4kB per stripe
 	static final int MAX_SPLITFILE_BLOCKS_PER_SEGMENT = 256;
 	static final int MAX_SPLITFILE_CHECK_BLOCKS_PER_SEGMENT = 256;
-	// For scaling purposes, 128 data 128 check blocks i.e. one check block per data block.
-	public static final int SPLITFILE_SCALING_BLOCKS_PER_SEGMENT = 128;
-	/* The number of data blocks in a segment depends on how many segments there are.
-	 * FECCodec.standardOnionCheckBlocks will automatically reduce check blocks to compensate for more than half data blocks. */
-	public static final int SPLITFILE_BLOCKS_PER_SEGMENT = 136;
-	public static final int SPLITFILE_CHECK_BLOCKS_PER_SEGMENT = 128;
-	public static final int EXTRA_INSERTS_SINGLE_BLOCK = 2;
-	public static final int EXTRA_INSERTS_SPLITFILE_HEADER = 2;
 	/*Whether or not to filter fetched content*/
 	static final boolean FILTER_DATA = false;
 

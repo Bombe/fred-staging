@@ -9,9 +9,10 @@ import java.io.OutputStream;
 import java.io.Serializable;
 
 import freenet.client.async.ClientContext;
-import freenet.support.api.Bucket;
-import freenet.support.api.LockableRandomAccessBuffer;
-import freenet.support.api.RandomAccessBucket;
+import freenet.lockablebuffer.LockableRandomAccessBuffer;
+import freenet.lockablebuffer.NullRandomAccessBuffer;
+import freenet.support.io.NullInputStream;
+import freenet.support.io.NullOutputStream;
 
 public class NullBucket implements Bucket, Serializable, RandomAccessBucket {
 

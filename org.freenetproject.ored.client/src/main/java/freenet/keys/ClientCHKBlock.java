@@ -15,6 +15,8 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
+import freenet.bucket.*;
+import freenet.compress.InvalidCompressionCodecException;
 import freenet.crypt.BlockCipher;
 import freenet.crypt.CTRBlockCipher;
 import freenet.crypt.JceLoader;
@@ -24,15 +26,9 @@ import freenet.crypt.UnsupportedCipherException;
 import freenet.crypt.Util;
 import freenet.crypt.ciphers.Rijndael;
 import freenet.keys.Key.Compressed;
-import freenet.node.Node;
 import freenet.support.Logger;
-import freenet.support.api.Bucket;
-import freenet.support.api.BucketFactory;
-import freenet.support.compress.InvalidCompressionCodecException;
-import freenet.support.io.ArrayBucket;
-import freenet.support.io.ArrayBucketFactory;
-import freenet.support.io.BucketTools;
 import freenet.support.math.MersenneTwister;
+import freenet.support.node.NodeConstants;
 
 /**
  * @author amphibian
@@ -71,7 +67,7 @@ public class ClientCHKBlock implements ClientKeyBlock {
 
     /**
      * Decode into RAM, if short.
-     * @throws CHKDecodeException 
+     * @throws CHKDecodeException
      */
 	@Override
 	public byte[] memoryDecode() throws CHKDecodeException {
@@ -127,7 +123,7 @@ public class ClientCHKBlock implements ClientKeyBlock {
             throw new Error(e);
         }
         byte[] cryptoKey = key.cryptoKey;
-        if(cryptoKey.length < Node.SYMMETRIC_KEY_LENGTH)
+        if(cryptoKey.length < NodeConstants.SYMMETRIC_KEY_LENGTH)
             throw new CHKDecodeException("Crypto key too short");
         cipher.initialize(key.cryptoKey);
         PCFBMode pcfb = PCFBMode.create(cipher);
@@ -162,7 +158,7 @@ public class ClientCHKBlock implements ClientKeyBlock {
 		long times = Long.MAX_VALUE;
 		byte[] input = new byte[1024];
 		byte[] output = new byte[hmac.getMacLength()];
-		byte[] key = new byte[Node.SYMMETRIC_KEY_LENGTH];
+		byte[] key = new byte[NodeConstants.SYMMETRIC_KEY_LENGTH];
 		final String algo = hmac.getAlgorithm();
 		hmac.init(new SecretKeySpec(key, algo));
 		// warm-up
@@ -193,7 +189,7 @@ public class ClientCHKBlock implements ClientKeyBlock {
 			final Class<ClientCHKBlock> clazz = ClientCHKBlock.class;
 			final String algo = "HmacSHA256";
 			final Provider sun = JceLoader.SunJCE;
-			SecretKeySpec dummyKey = new SecretKeySpec(new byte[Node.SYMMETRIC_KEY_LENGTH], algo);
+			SecretKeySpec dummyKey = new SecretKeySpec(new byte[NodeConstants.SYMMETRIC_KEY_LENGTH], algo);
 			Mac hmac = Mac.getInstance(algo);
 			hmac.init(dummyKey); // resolve provider
 			boolean logMINOR = Logger.shouldLog(Logger.LogLevel.MINOR, clazz);
@@ -245,7 +241,7 @@ public class ClientCHKBlock implements ClientKeyBlock {
         byte[] data = block.data;
     	byte[] hash = Arrays.copyOfRange(headers, 2, 2+32);
         byte[] cryptoKey = key.cryptoKey;
-        if(cryptoKey.length < Node.SYMMETRIC_KEY_LENGTH)
+        if(cryptoKey.length < NodeConstants.SYMMETRIC_KEY_LENGTH)
             throw new CHKDecodeException("Crypto key too short");
 		try {
         Cipher cipher = Cipher.getInstance("AES/CTR/NOPADDING", Rijndael.AesCtrProvider);
@@ -286,7 +282,7 @@ public class ClientCHKBlock implements ClientKeyBlock {
         byte[] data = block.data;
     	byte[] hash = Arrays.copyOfRange(headers, 2, 2+32);
         byte[] cryptoKey = key.cryptoKey;
-        if(cryptoKey.length < Node.SYMMETRIC_KEY_LENGTH)
+        if(cryptoKey.length < NodeConstants.SYMMETRIC_KEY_LENGTH)
             throw new CHKDecodeException("Crypto key too short");
         Rijndael aes;
         try {
@@ -360,7 +356,6 @@ public class ClientCHKBlock implements ClientKeyBlock {
      * @param cryptoKey 
      * @throws CHKEncodeException
      * @throws IOException If there is an error reading from the Bucket.
-     * @throws InvalidCompressionCodecException 
      */
     static public ClientCHKBlock encode(
 				Bucket sourceData,

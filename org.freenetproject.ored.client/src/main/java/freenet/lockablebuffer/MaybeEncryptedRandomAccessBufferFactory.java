@@ -3,11 +3,10 @@ package freenet.lockablebuffer;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 
-import freenet.crypt.EncryptedRandomAccessBuffer;
+import freenet.bucket.PaddedEphemerallyEncryptedBucket;
+import freenet.bucket.TempBucketFactory;
 import freenet.crypt.MasterSecret;
 import freenet.support.Logger;
-import freenet.support.api.LockableRandomAccessBuffer;
-import freenet.support.api.LockableRandomAccessBufferFactory;
 
 /** Wraps another LockableRandomAccessBufferFactory to enable encryption if currently turned on. */
 public class MaybeEncryptedRandomAccessBufferFactory implements LockableRandomAccessBufferFactory {

@@ -6,9 +6,9 @@ package freenet.client;
 import java.util.HashMap;
 
 import freenet.client.async.TooManyFilesInsertException;
+import freenet.client.request.LowLevelPutException;
 import freenet.keys.FreenetURI;
 import freenet.l10n.NodeL10n;
-import freenet.node.LowLevelPutException;
 import freenet.support.LogThresholdCallback;
 import freenet.support.Logger;
 import freenet.support.Logger.LogLevel;

@@ -5,6 +5,10 @@ package freenet.client.async;
 
 import java.util.Random;
 
+import freenet.bucket.BucketFactory;
+import freenet.bucket.BucketFilenameGenerator;
+import freenet.bucket.PersistentTempBucketFactory;
+import freenet.bucket.TempBucketFactory;
 import freenet.client.ArchiveManager;
 import freenet.client.FetchContext;
 import freenet.client.FetchException;
@@ -12,27 +16,17 @@ import freenet.client.InsertContext;
 import freenet.client.InsertException;
 import freenet.client.events.SimpleEventProducer;
 import freenet.client.filter.LinkFilterExceptionProvider;
-import freenet.clients.fcp.PersistentRequestRoot;
-import freenet.config.Config;
+import freenet.compress.RealCompressor;
 import freenet.crypt.MasterSecret;
 import freenet.crypt.RandomSource;
-import freenet.node.RequestScheduler;
-import freenet.node.RequestStarterGroup;
-import freenet.node.useralerts.UserAlert;
-import freenet.node.useralerts.UserAlertManager;
-import freenet.support.DummyJobRunner;
+import freenet.lockablebuffer.FileRandomAccessBufferFactory;
+import freenet.lockablebuffer.LockableRandomAccessBufferFactory;
 import freenet.support.Executor;
 import freenet.support.MemoryLimitedJobRunner;
 import freenet.support.Ticker;
-import freenet.support.api.BucketFactory;
-import freenet.support.api.LockableRandomAccessBufferFactory;
-import freenet.support.compress.RealCompressor;
-import freenet.support.io.FileRandomAccessBufferFactory;
 import freenet.support.io.FilenameGenerator;
 import freenet.support.io.NativeThread;
 import freenet.support.io.PersistentFileTracker;
-import freenet.support.io.PersistentTempBucketFactory;
-import freenet.support.io.TempBucketFactory;
 
 /**
  * Object passed in to client-layer operations, containing references to essential but mostly transient 
@@ -67,8 +61,8 @@ public class ClientContext {
 	public transient final Random fastWeakRandom;
 	public transient final long bootID;
 	public transient final Ticker ticker;
-	public transient final FilenameGenerator fg;
-	public transient final FilenameGenerator persistentFG;
+	public transient final BucketFilenameGenerator fg;
+	public transient final BucketFilenameGenerator persistentFG;
 	public transient final RealCompressor rc;
 	public transient final DatastoreChecker checker;
 	public transient DownloadCache downloadCache;
@@ -93,14 +87,14 @@ public class ClientContext {
 	private transient final Config config;
 
 	public ClientContext(long bootID, ClientLayerPersister jobRunner, Executor mainExecutor,
-			ArchiveManager archiveManager, PersistentTempBucketFactory ptbf, TempBucketFactory tbf, PersistentFileTracker tracker,
-			HealingQueue hq, USKManager uskManager, RandomSource strongRandom, Random fastWeakRandom, 
-			Ticker ticker, MemoryLimitedJobRunner memoryLimitedJobRunner, FilenameGenerator fg, FilenameGenerator persistentFG,
-			LockableRandomAccessBufferFactory rafFactory, LockableRandomAccessBufferFactory persistentRAFFactory,
-			FileRandomAccessBufferFactory fileRAFTransient, FileRandomAccessBufferFactory fileRAFPersistent,
-			RealCompressor rc, DatastoreChecker checker, PersistentRequestRoot persistentRoot, MasterSecret cryptoSecretTransient,
-			LinkFilterExceptionProvider linkFilterExceptionProvider,
-			FetchContext defaultPersistentFetchContext, InsertContext defaultPersistentInsertContext, Config config) {
+						 ArchiveManager archiveManager, PersistentTempBucketFactory ptbf, TempBucketFactory tbf, PersistentFileTracker tracker,
+						 HealingQueue hq, USKManager uskManager, RandomSource strongRandom, Random fastWeakRandom,
+						 Ticker ticker, MemoryLimitedJobRunner memoryLimitedJobRunner, FilenameGenerator fg, FilenameGenerator persistentFG,
+						 LockableRandomAccessBufferFactory rafFactory, LockableRandomAccessBufferFactory persistentRAFFactory,
+						 FileRandomAccessBufferFactory fileRAFTransient, FileRandomAccessBufferFactory fileRAFPersistent,
+						 RealCompressor rc, DatastoreChecker checker, PersistentRequestRoot persistentRoot, MasterSecret cryptoSecretTransient,
+						 LinkFilterExceptionProvider linkFilterExceptionProvider,
+						 FetchContext defaultPersistentFetchContext, InsertContext defaultPersistentInsertContext, Config config) {
 		this.bootID = bootID;
 		this.jobRunner = jobRunner;
 		this.mainExecutor = mainExecutor;

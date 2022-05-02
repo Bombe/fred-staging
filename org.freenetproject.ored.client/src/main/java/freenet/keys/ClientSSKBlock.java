@@ -6,15 +6,11 @@ package freenet.keys;
 import java.io.IOException;
 import java.util.Arrays;
 
+import freenet.bucket.*;
 import freenet.crypt.PCFBMode;
 import freenet.crypt.UnsupportedCipherException;
 import freenet.crypt.ciphers.Rijndael;
 import freenet.support.Logger;
-import freenet.support.api.Bucket;
-import freenet.support.api.BucketFactory;
-import freenet.support.io.ArrayBucket;
-import freenet.support.io.ArrayBucketFactory;
-import freenet.support.io.BucketTools;
 
 public class ClientSSKBlock implements ClientKeyBlock {
 	
