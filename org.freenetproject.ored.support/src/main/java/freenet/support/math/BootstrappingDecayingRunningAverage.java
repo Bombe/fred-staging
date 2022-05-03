@@ -99,7 +99,7 @@ public final class BootstrappingDecayingRunningAverage implements RunningAverage
          * @return
          * @see DecayingKeyspaceAverage
 	 */
-	protected synchronized double setCurrentValue(double d) {
+	public synchronized double setCurrentValue(double d) {
 		double old=currentValue;
 		currentValue=d;
 		return old;

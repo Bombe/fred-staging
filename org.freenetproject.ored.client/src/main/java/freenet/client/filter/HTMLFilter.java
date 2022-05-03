@@ -723,7 +723,7 @@ public class HTMLFilter implements ContentDataFilter, CharsetExtractor {
 	public static class ParsedTag {
 		public final String element;
 		public final String[] unparsedAttrs;
-		final boolean startSlash;
+		public final boolean startSlash;
 		final boolean endSlash;
 		/*
 		 * public ParsedTag(ParsedTag t) { this.element = t.element;

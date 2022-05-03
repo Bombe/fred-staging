@@ -30,7 +30,7 @@ public class MasterKeys {
 
 	// Currently we only encrypt the client cache
 
-	final byte[] clientCacheMasterKey;
+	public final byte[] clientCacheMasterKey;
 	private final byte[] databaseKey;
 	private final byte[] tempfilesMasterSecret;
 	final long flags;

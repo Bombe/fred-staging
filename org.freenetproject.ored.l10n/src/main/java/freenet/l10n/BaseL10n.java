@@ -517,41 +517,6 @@ public class BaseL10n {
         };
     }
 
-	// TODO: Modularity: The following methods should be moved to freenet.clients.http
-//	/**
-//	 * Get a localized string and put it in a HTMLNode for the translation page.
-//	 * @param key Key to search for.
-//	 * @return HTMLNode
-//	 */
-//	public HTMLNode getHTMLNode(String key) {
-//		return getHTMLNode(key, null, null);
-//	}
-//
-//	/**
-//	 * Get a localized string and put it in a HTMLNode for the translation page.
-//	 * @param key Key to search for.
-//	 * @param patterns Patterns to replace. May be null, if so values must also be null.
-//	 * @param values Values to replace patterns with.
-//	 * @return HTMLNode
-//	 */
-//	public HTMLNode getHTMLNode(String key, String[] patterns, String[] values) {
-//		String value = this.getString(key, true);
-//		if (value != null) {
-//			if(patterns != null)
-//				return new HTMLNode("#", getString(key, patterns, values));
-//			else
-//				return new HTMLNode("#", value);
-//		}
-//		HTMLNode translationField = new HTMLNode("span", "class", "translate_it");
-//		if(patterns != null)
-//			translationField.addChild("#", getDefaultString(key, patterns, values));
-//		else
-//			translationField.addChild("#", getDefaultString(key));
-//		translationField.addChild("a", "href", TranslationToadlet.TOADLET_URL + "?translate=" + key).addChild("small", " (translate it in your native language!)");
-//
-//		return translationField;
-//	}
-    
     /**
      * Get the value for a key in the fallback translation, or null.
      */

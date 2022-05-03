@@ -74,7 +74,7 @@ public class ClientLayerPersister extends PersistentJobRunnerImpl {
     
     static final long INTERVAL = MINUTES.toMillis(10);
     private final PersistentStatsChecker statsChecker; // Needed for bandwidth stats putter
-    private final ClientRequest[] clientRequests;
+    private final ClientRequestsFetcher clientRequestsFetcher;
     private final PersistentTempBucketFactory persistentTempFactory;
     /** Needed for temporary storage when writing objects. Some of them might be big, e.g. site 
      * inserts. */
@@ -105,12 +105,12 @@ public class ClientLayerPersister extends PersistentJobRunnerImpl {
      * @param persistentTempFactory Only passed in so that we can call its pre- and post- commit
      * hooks. We don't explicitly save it; it must be populated lazily in onResume() like 
      * everything else. */
-    public ClientLayerPersister(Executor executor, Ticker ticker, PersistentStatsChecker statsChecker, ClientRequest[] clientRequests,
+    public ClientLayerPersister(Executor executor, Ticker ticker, PersistentStatsChecker statsChecker, ClientRequestsFetcher clientRequestsFetcher,
             PersistentTempBucketFactory persistentTempFactory, TempBucketFactory tempBucketFactory,
             PersistentStatsPutter stats) {
         super(executor, ticker, INTERVAL);
         this.statsChecker = statsChecker;
-        this.clientRequests = clientRequests;
+        this.clientRequestsFetcher = clientRequestsFetcher;
         this.persistentTempFactory = persistentTempFactory;
         this.tempBucketFactory = tempBucketFactory;
         this.checker = new CRCChecksumChecker();
@@ -700,7 +700,7 @@ public class ClientLayerPersister extends PersistentJobRunnerImpl {
     }
 
     private ClientRequest[] getRequests() {
-        return this.clientRequests;
+        return this.clientRequestsFetcher.getPersistentRequests();
     }
 
     public boolean newSalt() {

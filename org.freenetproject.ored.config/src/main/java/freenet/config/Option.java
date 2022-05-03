@@ -117,7 +117,7 @@ public abstract class Option<T> {
 	}
 	
 	/** Not used outside the class. */
-	private String getLongDesc(){
+	public String getLongDesc(){
 		return longDesc;
 	}
 	
@@ -206,27 +206,4 @@ public abstract class Option<T> {
 		return getLocalisedLongDesc(NodeL10n.getBase());
 	}
 
-	// TODO: Modularity: The following methods should be moved to freenet.clients.http
-//	/** Get the localised short description as an HTMLNode, possibly with translation link */
-//	public HTMLNode getShortDescNode(FredPluginConfigurable plugin) {
-//		return (plugin == null) ? NodeL10n.getBase()
-//				.getHTMLNode(getShortDesc(), new String[] { "default" } , new String[] { getDefault() }) : new HTMLNode("#",
-//				plugin.getString(getShortDesc()));
-//	}
-//
-//	public HTMLNode getShortDescNode() {
-//		return getShortDescNode(null);
-//	}
-//
-//	/** Get the localised long description as an HTMLNode, possibly with translation link */
-//	public HTMLNode getLongDescNode(FredPluginConfigurable plugin) {
-//		return (plugin == null) ? NodeL10n.getBase()
-//				.getHTMLNode(getLongDesc(), new String[] { "default" } , new String[] { getDefault() }) : new HTMLNode("#",
-//				plugin.getString(getLongDesc()));
-//	}
-//
-//	public HTMLNode getLongDescNode() {
-//		return getLongDescNode(null);
-//	}
-	
 }

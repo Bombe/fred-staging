@@ -12,7 +12,7 @@ import java.io.IOException;
  */
 public final class RequestIdentifier {
     
-    enum RequestType {
+    public enum RequestType {
         // Ordinals matter!
         GET,
         PUT,
@@ -22,9 +22,9 @@ public final class RequestIdentifier {
     static final int MAGIC = 0x25ebd38d;
     static final short VERSION = 1;
     
-    final boolean globalQueue;
-    final String clientName;
-    final String identifier;
+    public final boolean globalQueue;
+    public final String clientName;
+    public final String identifier;
     public final RequestType type;
     
     public RequestIdentifier(boolean globalQueue, String clientName, String identifier, 

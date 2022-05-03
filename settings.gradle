@@ -6,4 +6,5 @@ include 'org.freenetproject.ored.crypt'
 include 'org.freenetproject.ored.client'
 include 'org.freenetproject.ored.config'
 include 'org.freenetproject.ored.store'
+include 'org.freenetproject.ored.node'
 

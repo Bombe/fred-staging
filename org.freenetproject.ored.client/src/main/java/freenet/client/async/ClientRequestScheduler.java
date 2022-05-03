@@ -54,7 +54,6 @@ public class ClientRequestScheduler implements RequestScheduler {
 	public static final String PRIORITY_HARD = "HARD";
 	private String choosenPriorityScheduler; 
 
-	// TODO: Modularity: make Node implement RecentlyFailedChecker
 	public ClientRequestScheduler(boolean forInserts, boolean forSSKs, boolean forRT, RandomSource random, RequestStarter starter, RecentlyFailedChecker failedChecker, NodeClientRequest core, DatastoreChecker storeChecker, String name, ClientContext context) {
 		this.isInsertScheduler = forInserts;
 		this.isSSKScheduler = forSSKs;

@@ -127,6 +127,25 @@ public class SimpleHTTPRequest implements HTTPRequest {
 		this.parseRequestParameters(uri.getRawQuery(), true, false);
 	}
 
+	protected SimpleHTTPRequest(URI uri, MultiValueTable<String, String> headers, Bucket data,
+								BucketFactory bucketfactory, String method) {
+		this.uri = uri;
+		this.headers = headers;
+		this.parseRequestParameters(uri.getRawQuery(), true, false);
+		this.data = data;
+		this.parts = new HashMap<>();
+		this.bucketfactory = bucketfactory;
+		this.method = method;
+		if(data != null) {
+			try {
+				this.parseMultiPartData();
+			} catch (IOException ioe) {
+				Logger.error(this, "Temporary files error ? Could not parse: "+ioe, ioe);
+			}
+		}
+	}
+
+
 	/* (non-Javadoc)
 	 * @see freenet.clients.http.HTTPRequest#getPath()
 	 */

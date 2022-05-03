@@ -6,4 +6,6 @@ module org.freenetproject.ored.store {
     requires freenet.ext;
 
     exports freenet.store;
+    exports freenet.store.caching;
+    exports freenet.store.saltedhash;
 }

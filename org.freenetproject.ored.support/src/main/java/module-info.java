@@ -7,6 +7,7 @@ module org.freenetproject.ored.support {
     exports freenet.support.node;
     exports freenet.support.node.stats;
     exports freenet.support.fcp;
+    exports freenet.support.transport.ip;
 
     requires org.bouncycastle.provider;
     requires freenet.ext;

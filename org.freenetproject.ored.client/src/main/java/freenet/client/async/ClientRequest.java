@@ -8,7 +8,6 @@ import freenet.support.io.StorageFormatException;
 import java.io.DataInputStream;
 import java.io.IOException;
 
-// TODO: Modularity: class freenet.clients.fcp.ClientRequest should implement this and rename to FcpClientRequest
 public interface ClientRequest extends PersistentClientCallback {
 
     /** Called just before the final write when the node is shutting down. Should write any dirty

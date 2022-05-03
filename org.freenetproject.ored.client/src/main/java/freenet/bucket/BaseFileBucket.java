@@ -24,6 +24,7 @@ import freenet.support.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.lockablebuffer.LockableRandomAccessBuffer;
 import freenet.support.io.*;
+import org.tanukisoftware.wrapper.WrapperManager;
 
 public abstract class BaseFileBucket implements RandomAccessBucket {
     private static volatile boolean logMINOR;
@@ -78,12 +79,11 @@ public abstract class BaseFileBucket implements RandomAccessBucket {
 		try {
 			file.deleteOnExit();
 		} catch (NullPointerException e) {
-			// TODO: Modularity: Analyze WrapperManager later.
-//			if(WrapperManager.hasShutdownHookBeenTriggered()) {
-//				Logger.normal(this, "NullPointerException setting deleteOnExit while shutting down - buggy JVM code: "+e, e);
-//			} else {
+			if(WrapperManager.hasShutdownHookBeenTriggered()) {
+				Logger.normal(this, "NullPointerException setting deleteOnExit while shutting down - buggy JVM code: "+e, e);
+			} else {
 				Logger.error(this, "Caught "+e+" doing deleteOnExit() for "+file+" - JVM bug ????");
-//			}
+			}
 		}
 	}
 

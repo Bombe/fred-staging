@@ -69,12 +69,6 @@ public interface UserAlert {
 	 */
 	public boolean isEventNotification();
 
-	// TODO: Modularity: Should be moved to freenet.clients.fcp
-//	/**
-//	 * @return A FCPMessage that is sent subscribing FCPClients
-//	 */
-//	public FCPMessage getFCPMessage();
-	
 	/**
 	 * @return The Unix timestamp of when the alert was last updated
 	 */
