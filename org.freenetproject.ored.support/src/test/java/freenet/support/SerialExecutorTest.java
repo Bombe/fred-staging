@@ -1,7 +1,7 @@
 package freenet.support;
 
-import freenet.node.PrioRunnable;
 import freenet.support.io.NativeThread;
+import freenet.support.node.PrioRunnable;
 import junit.framework.TestCase;
 
 public class SerialExecutorTest extends TestCase {

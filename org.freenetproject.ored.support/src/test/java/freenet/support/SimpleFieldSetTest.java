@@ -24,9 +24,9 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import freenet.node.FSParseException;
 import freenet.support.io.LineReader;
 import freenet.support.io.Readers;
+import freenet.support.node.FSParseException;
 import junit.framework.TestCase;
 
 /**

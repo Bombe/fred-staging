@@ -1,7 +1,7 @@
 /* This code is part of Freenet. It is distributed under the GNU General
  * Public License, version 2 (or at your option any later version). See
  * http://www.gnu.org/ for further details of the GPL. */
-package freenet.support;
+package freenet.nodeapp;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.MINUTES;
@@ -9,6 +9,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.util.Collection;
 
+import freenet.bucket.TempBucketFactory;
 import freenet.client.FetchException;
 import freenet.client.FetchResult;
 import freenet.client.HighLevelSimpleClient;
@@ -19,9 +20,9 @@ import freenet.client.async.ClientGetCallback;
 import freenet.client.async.ClientGetter;
 import freenet.client.async.ClientPutCallback;
 import freenet.keys.FreenetURI;
-import freenet.node.Node;
-import freenet.node.PrioRunnable;
-import freenet.support.io.TempBucketFactory;
+import freenet.support.Logger;
+import freenet.support.TrivialTicker;
+import freenet.support.node.PrioRunnable;
 
 /**
  * A thread which periodically wakes up and iterates to start fetches and/or inserts.

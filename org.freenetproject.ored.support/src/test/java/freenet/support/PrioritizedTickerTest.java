@@ -1,6 +1,6 @@
 package freenet.support;
 
-import freenet.node.FastRunnable;
+import freenet.support.node.FastRunnable;
 import junit.framework.TestCase;
 
 public class PrioritizedTickerTest extends TestCase {

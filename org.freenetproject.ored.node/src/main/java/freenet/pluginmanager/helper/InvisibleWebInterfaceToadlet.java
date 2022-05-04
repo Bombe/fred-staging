@@ -1,7 +1,7 @@
 /* This code is part of Freenet. It is distributed under the GNU General
  * Public License, version 2 (or at your option any later version). See
  * http://www.gnu.org/ for further details of the GPL. */
-package freenet.support.plugins.helpers1;
+package freenet.pluginmanager.helper;
 
 import java.io.IOException;
 import java.net.URI;
@@ -10,7 +10,7 @@ import freenet.clients.http.RedirectException;
 import freenet.clients.http.Toadlet;
 import freenet.clients.http.ToadletContext;
 import freenet.clients.http.ToadletContextClosedException;
-import freenet.support.api.HTTPRequest;
+import freenet.http.HTTPRequest;
 
 public class InvisibleWebInterfaceToadlet extends WebInterfaceToadlet {
 

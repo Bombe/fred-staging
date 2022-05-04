@@ -9,4 +9,9 @@ dependencies {
     implementation "org.freenetproject:freenet-ext:29"
     implementation 'net.java.dev.jna:jna-jpms:5.11.0'
     implementation 'net.java.dev.jna:jna-platform-jpms:5.11.0'
+
+    testFixturesImplementation platform('org.junit:junit-bom:5.8.2')
+    testFixturesImplementation 'org.junit.jupiter:junit-jupiter'
+    testFixturesCompileOnly 'junit:junit:4.13'
+    testFixturesRuntimeOnly 'org.junit.vintage:junit-vintage-engine'
 }

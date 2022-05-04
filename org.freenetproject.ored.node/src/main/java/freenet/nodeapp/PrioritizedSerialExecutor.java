@@ -1,13 +1,16 @@
-package freenet.support;
+package freenet.nodeapp;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 
 import java.util.ArrayDeque;
 
-import freenet.node.NodeStats;
-import freenet.node.PrioRunnable;
+import freenet.support.Executor;
+import freenet.support.ExecutorIdleCallback;
+import freenet.support.LogThresholdCallback;
+import freenet.support.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.io.NativeThread;
+import freenet.support.node.PrioRunnable;
 
 public class PrioritizedSerialExecutor implements Executor {
 	private static volatile boolean logMINOR;

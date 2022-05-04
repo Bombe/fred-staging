@@ -1,16 +1,16 @@
 /* This code is part of Freenet. It is distributed under the GNU General
  * Public License, version 2 (or at your option any later version). See
  * http://www.gnu.org/ for further details of the GPL. */
-package freenet.support.plugins.helpers1;
+package freenet.pluginmanager.helper;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+import freenet.bucket.Bucket;
 import freenet.pluginmanager.PluginNotFoundException;
 import freenet.pluginmanager.PluginReplySender;
 import freenet.support.Logger;
 import freenet.support.SimpleFieldSet;
-import freenet.support.api.Bucket;
 
 public abstract class AbstractFCPHandler {
 

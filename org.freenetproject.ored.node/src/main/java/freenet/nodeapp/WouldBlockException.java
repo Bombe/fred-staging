@@ -1,6 +1,8 @@
-package freenet.support;
+package freenet.nodeapp;
 
 import freenet.io.comm.IncomingPacketFilterException;
+import freenet.support.LogThresholdCallback;
+import freenet.support.Logger;
 import freenet.support.Logger.LogLevel;
 
 /**

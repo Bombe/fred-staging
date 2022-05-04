@@ -1,12 +1,12 @@
 /* This code is part of Freenet. It is distributed under the GNU General
  * Public License, version 2 (or at your option any later version). See
  * http://www.gnu.org/ for further details of the GPL. */
-package freenet.support.plugins.helpers1;
+package freenet.pluginmanager.helper;
 
 import freenet.client.HighLevelSimpleClient;
 import freenet.clients.http.PageMaker;
-import freenet.node.Node;
-import freenet.node.NodeClientCore;
+import freenet.nodeapp.Node;
+import freenet.nodeapp.NodeClientCore;
 import freenet.pluginmanager.PluginRespirator;
 
 public class PluginContext {
