@@ -186,7 +186,7 @@ public abstract class SwitchableProxyRandomAccessBuffer implements LockableRando
     protected abstract LockableRandomAccessBuffer innerMigrate(LockableRandomAccessBuffer underlying) throws IOException;
     
     /** For unit tests only */
-    synchronized LockableRandomAccessBuffer getUnderlying() {
+    public synchronized LockableRandomAccessBuffer getUnderlying() {
         return underlying;
     }
     

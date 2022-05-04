@@ -33,7 +33,7 @@ public class AEADCryptBucket implements Bucket, Serializable {
     private final Bucket underlying;
     private final byte[] key;
     private boolean readOnly;
-    static final int OVERHEAD = AEADOutputStream.AES_OVERHEAD;
+    public static final int OVERHEAD = AEADOutputStream.AES_OVERHEAD;
     
     public AEADCryptBucket(Bucket underlying, byte[] key) {
         this.underlying = underlying;

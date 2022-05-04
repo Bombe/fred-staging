@@ -12,6 +12,12 @@ import java.nio.channels.FileChannel;
 import freenet.support.Logger;
 import freenet.support.math.MersenneTwister;
 
+// TODO: Modularity: FIXME: Reflection on internal JDK class is a bad practice.
+//       But currently there's no way to get OS's fd number without reflection.
+//       Also there's no API in RandomAccessFile class to fallocate.
+//       So for now getDescriptor() and FallocateHolder are disabled.
+//       legacyFill() is always used.
+
 /**
  * Provides access to operating system-specific {@code fallocate} and
  * {@code posix_fallocate} functions.
@@ -70,14 +76,14 @@ public final class Fallocate {
   public void execute() throws IOException {
     int errno = 0;
     boolean isUnsupported = false;
-    if (IS_LINUX) {
-      final int result = FallocateHolder.fallocate(fd, mode, offset, final_filesize-offset);
-      errno = result == 0 ? 0 : Native.getLastError();
-    } else if (IS_POSIX) {
-      errno = FallocateHolderPOSIX.posix_fallocate(fd, offset, final_filesize-offset);
-    } else {
-      isUnsupported = true;
-    }
+//    if (IS_LINUX) {
+//      final int result = FallocateHolder.fallocate(fd, mode, offset, final_filesize-offset);
+//      errno = result == 0 ? 0 : Native.getLastError();
+//    } else if (IS_POSIX) {
+//      errno = FallocateHolderPOSIX.posix_fallocate(fd, offset, final_filesize-offset);
+//    } else {
+//      isUnsupported = true;
+//    }
 
     if (isUnsupported || errno != 0) {
       Logger.normal(this, "fallocate() failed; using legacy method; errno="+errno);
@@ -102,25 +108,27 @@ public final class Fallocate {
   }
 
   private static int getDescriptor(FileChannel channel) {
-    try {
-      // sun.nio.ch.FileChannelImpl declares private final java.io.FileDescriptor fd
-      final Field field = channel.getClass().getDeclaredField("fd");
-      field.setAccessible(true);
-      return getDescriptor((FileDescriptor) field.get(channel));
-    } catch (final Exception e) {
-      throw new UnsupportedOperationException("unsupported FileChannel implementation", e);
-    }
+    return 0;
+//    try {
+//      // sun.nio.ch.FileChannelImpl declares private final java.io.FileDescriptor fd
+//      final Field field = channel.getClass().getDeclaredField("fd");
+//      field.setAccessible(true);
+//      return getDescriptor((FileDescriptor) field.get(channel));
+//    } catch (final Exception e) {
+//      throw new UnsupportedOperationException("unsupported FileChannel implementation", e);
+//    }
   }
 
   private static int getDescriptor(FileDescriptor descriptor) {
-    try {
-      // Oracle java.io.FileDescriptor declares private int fd
-      final Field field = descriptor.getClass().getDeclaredField(IS_ANDROID ? "descriptor" : "fd");
-      field.setAccessible(true);
-      return (int) field.get(descriptor);
-    } catch (final Exception e) {
-      throw new UnsupportedOperationException("unsupported FileDescriptor implementation", e);
-    }
+    return 0;
+//    try {
+//      // Oracle java.io.FileDescriptor declares private int fd
+//      final Field field = descriptor.getClass().getDeclaredField(IS_ANDROID ? "descriptor" : "fd");
+//      field.setAccessible(true);
+//      return (int) field.get(descriptor);
+//    } catch (final Exception e) {
+//      throw new UnsupportedOperationException("unsupported FileDescriptor implementation", e);
+//    }
   }
 
   private static void legacyFill(FileChannel fc, long newLength, long offset) throws IOException {

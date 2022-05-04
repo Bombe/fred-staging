@@ -71,7 +71,7 @@ public class MasterKeys {
 	
 	/** Time in milliseconds to iterate for when encrypting a non-empty password. 
 	 * FIXME make this configurable. FIXME Have a look at real password to key functions. */
-	static int ITERATE_TIME = 1000;
+	public static int ITERATE_TIME = 1000;
 
 	public static MasterKeys read(File masterKeysFile, Random hardRandom, String password) throws MasterKeysWrongPasswordException, MasterKeysFileSizeException, IOException {
 		System.err.println("Trying to read master keys file...");

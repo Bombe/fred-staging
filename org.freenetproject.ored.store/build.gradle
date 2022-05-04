@@ -9,4 +9,6 @@ dependencies {
     implementation project(':org.freenetproject.ored.l10n')
     implementation project(':org.freenetproject.ored.client')
     implementation "org.freenetproject:freenet-ext:29"
+
+    testImplementation testFixtures(project(":org.freenetproject.ored.support"))
 }

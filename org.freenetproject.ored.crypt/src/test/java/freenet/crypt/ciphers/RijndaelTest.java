@@ -1931,7 +1931,7 @@ public class RijndaelTest extends TestCase {
 		for(int testNumber : GLADMAN_TEST_NUMBERS) {
 			InputStream is = null;
 			try {
-				is = getClass().getResourceAsStream("/freenet/crypt/ciphers/rijndael-gladman-test-data/ecbn"+type+testNumber+".txt");
+				is = getClass().getResourceAsStream("/rijndael-gladman-test-data/ecbn"+type+testNumber+".txt");
 				InputStreamReader isr = new InputStreamReader(is, "ISO-8859-1");
 				BufferedReader br = new BufferedReader(isr);
 				for(int i=0;i<7;i++) br.readLine(); // Skip header
