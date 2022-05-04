@@ -1,5 +1,5 @@
 plugins {
-    id 'java-library'
+    id 'org.beryx.jlink' version '2.25.0'
     id 'ored.java-conventions'
 }
 
@@ -16,4 +16,29 @@ dependencies {
     implementation "org.freenetproject:freenet-ext:29"
 
     testImplementation testFixtures(project(":org.freenetproject.ored.support"))
+}
+
+jlink {
+    options = [
+            '--ignore-signing-information',
+            '--compress', '2',
+            '--no-header-files',
+            '--no-man-pages',
+            '--strip-debug'
+    ]
+
+    mainClass = "freenet.node.NodeStarter"
+
+    imageDir = file("$rootDir/build/image")
+    imageZip = file("$rootDir/build/image.zip")
+
+    launcher {
+        name = 'ored'
+        jvmArgs = [
+                '-Dnetworkaddress.cache.ttl', '0',
+                '-Dnetworkaddress.cache.negative.ttl', '0',
+                '-Xss512k',
+        ]
+        args = []
+    }
 }
