@@ -9,7 +9,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
-import java.sql.Date;
+import java.util.Date;
 import java.text.ParseException;
 
 import javax.imageio.ImageIO;
