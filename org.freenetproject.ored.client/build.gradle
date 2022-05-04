@@ -10,4 +10,6 @@ dependencies {
     implementation project(':org.freenetproject.ored.config')
     implementation 'org.bouncycastle:bcprov-jdk18on:1.71'
     implementation "org.freenetproject:freenet-ext:29"
+
+    testImplementation testFixtures(project(":org.freenetproject.ored.support"))
 }

@@ -804,7 +804,7 @@ public class DefaultMIMETypes {
 		return INFOCALYPSE_DIRTY_HACK.matcher(mimeType).matches();
 	}
 	
-	static String[] getMIMETypes() {
+	public static String[] getMIMETypes() {
 		return mimeTypesByNumber.toArray(new String[mimeTypesByNumber.size()]);
 	}
 
