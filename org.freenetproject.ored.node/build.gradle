@@ -27,7 +27,9 @@ jlink {
             '--strip-debug'
     ]
 
-    mainClass = "freenet.node.NodeStarter"
+    mainClass = "freenet.nodeapp.NodeStarter"
+
+    jarExclude 'freenet-ext', '/freenet/support/**'
 
     imageDir = file("$rootDir/build/image")
     imageZip = file("$rootDir/build/image.zip")
@@ -35,8 +37,8 @@ jlink {
     launcher {
         name = 'ored'
         jvmArgs = [
-                '-Dnetworkaddress.cache.ttl', '0',
-                '-Dnetworkaddress.cache.negative.ttl', '0',
+                '-Dnetworkaddress.cache.ttl=0',
+                '-Dnetworkaddress.cache.negative.ttl=0',
                 '-Xss512k',
         ]
         args = []
