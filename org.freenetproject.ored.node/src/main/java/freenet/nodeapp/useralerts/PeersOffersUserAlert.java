@@ -7,7 +7,7 @@ import freenet.config.NodeNeedRestartException;
 import freenet.l10n.NodeL10n;
 import freenet.nodeapp.Node;
 import freenet.support.HTMLNode;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 
 import java.io.File;
 

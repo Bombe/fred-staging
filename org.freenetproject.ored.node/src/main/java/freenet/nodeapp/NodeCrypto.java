@@ -27,7 +27,7 @@ import freenet.keys.FreenetURI;
 import freenet.keys.InsertableClientSSK;
 import freenet.support.Base64;
 import freenet.support.IllegalBase64Exception;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.SimpleFieldSet;
 import freenet.support.io.Closer;
 import freenet.support.node.FSParseException;

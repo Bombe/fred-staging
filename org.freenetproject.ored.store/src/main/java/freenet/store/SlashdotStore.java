@@ -17,7 +17,7 @@ import freenet.keys.StorableBlock;
 import freenet.support.ByteArrayWrapper;
 import freenet.support.LRUMap;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.storelogger.Logger;
 import freenet.support.Ticker;
 import freenet.support.Logger.LogLevel;
 import freenet.support.node.stats.StoreAccessStats;

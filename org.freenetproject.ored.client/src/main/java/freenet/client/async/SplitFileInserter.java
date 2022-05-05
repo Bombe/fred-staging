@@ -14,7 +14,7 @@ import freenet.client.Metadata;
 import freenet.client.async.SplitFileInserterSegmentStorage.MissingKeyException;
 import freenet.crypt.HashResult;
 import freenet.lockablebuffer.LockableRandomAccessBuffer;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.compress.Compressor.COMPRESSOR_TYPE;
 import freenet.support.io.ResumeFailedException;
 import freenet.support.io.StorageFormatException;

@@ -4,7 +4,7 @@
 package freenet.keys;
 
 import freenet.support.LightweightException;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 
 public class KeyCollisionException extends LightweightException {
 	private static final long serialVersionUID = -1;

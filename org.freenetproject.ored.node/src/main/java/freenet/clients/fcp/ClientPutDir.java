@@ -22,7 +22,7 @@ import freenet.keys.FreenetURI;
 import freenet.nodeapp.NodeClientCore;
 import freenet.support.CurrentTimeUTC;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.io.ResumeFailedException;
 

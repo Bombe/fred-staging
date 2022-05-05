@@ -50,7 +50,7 @@ import freenet.keys.SSKBlock;
 import freenet.keys.SSKVerifyException;
 import freenet.keys.USK;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.RemoveRangeArrayList;
 import freenet.support.Logger.LogLevel;
 import freenet.support.io.Closer;

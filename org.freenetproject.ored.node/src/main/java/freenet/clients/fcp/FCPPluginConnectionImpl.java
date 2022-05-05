@@ -24,7 +24,7 @@ import freenet.pluginmanager.PluginManager;
 import freenet.pluginmanager.PluginNotFoundException;
 import freenet.pluginmanager.PluginRespirator;
 import freenet.support.Executor;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.PooledExecutor;
 import freenet.support.SimpleFieldSet;

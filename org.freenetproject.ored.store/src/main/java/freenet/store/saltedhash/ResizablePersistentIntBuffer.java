@@ -10,7 +10,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import freenet.support.Fields;
-import freenet.support.Logger;
+import freenet.storelogger.Logger;
 import freenet.support.Ticker;
 
 /** A large resizable block of int's, which is persisted to disk with a specific policy,

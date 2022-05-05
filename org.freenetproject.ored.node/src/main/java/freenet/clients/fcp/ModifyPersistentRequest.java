@@ -9,7 +9,7 @@ import freenet.client.async.PersistentJob;
 import freenet.client.request.PriorityClasses;
 import freenet.nodeapp.Node;
 import freenet.nodeapp.NodeRequestStarter;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.SimpleFieldSet;
 import freenet.support.io.NativeThread;
 

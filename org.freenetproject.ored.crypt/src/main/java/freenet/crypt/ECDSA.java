@@ -21,7 +21,7 @@ import java.util.Arrays;
 
 import freenet.support.node.FSParseException;
 import freenet.support.Base64;
-import freenet.support.Logger;
+import freenet.cryptlogger.Logger;
 import freenet.support.SimpleFieldSet;
 
 public class ECDSA {

@@ -33,7 +33,7 @@ import freenet.pluginmanager.RedirectPluginHTTPException;
 import freenet.pluginmanager.PluginManager.PluginProgress;
 import freenet.support.HTMLNode;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.MultiValueTable;
 import freenet.support.TimeUtil;
 import freenet.support.Logger.LogLevel;

@@ -3,7 +3,7 @@ package freenet.crypt;
 import java.security.interfaces.ECPublicKey;
 
 import freenet.support.HexUtil;
-import freenet.support.Logger;
+import freenet.cryptlogger.Logger;
 
 public class ECDHLightContext extends KeyAgreementSchemeContext {
     static { Logger.registerClass(ECDHLightContext.class); }

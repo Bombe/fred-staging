@@ -8,7 +8,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.bucket.Bucket;
 import freenet.bucket.BucketFactory;
 

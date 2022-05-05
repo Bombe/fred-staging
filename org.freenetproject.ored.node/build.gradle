@@ -18,6 +18,11 @@ dependencies {
     testImplementation testFixtures(project(":org.freenetproject.ored.support"))
 }
 
+application {
+    mainModule = 'org.freenetproject.ored.node' // name defined in module-info.java
+    mainClass = 'freenet.nodeapp.NodeStarter'
+}
+
 jlink {
     options = [
             '--ignore-signing-information',

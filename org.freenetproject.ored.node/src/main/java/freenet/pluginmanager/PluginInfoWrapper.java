@@ -12,7 +12,7 @@ import freenet.config.SubConfig;
 import freenet.l10n.NodeL10n;
 import freenet.nodeapp.Node;
 import freenet.support.JarClassLoader;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.io.Closer;
 
 public class PluginInfoWrapper implements Comparable<PluginInfoWrapper> {

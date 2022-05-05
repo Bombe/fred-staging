@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import freenet.keys.NodeCHK;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.Ticker;
 
 public class RequestTracker {

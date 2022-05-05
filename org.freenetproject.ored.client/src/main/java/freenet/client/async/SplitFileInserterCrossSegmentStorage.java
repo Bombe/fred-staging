@@ -10,7 +10,7 @@ import freenet.client.FECCodec;
 import freenet.client.async.PersistentJobRunner.CheckpointLock;
 import freenet.keys.CHKBlock;
 import freenet.keys.ClientCHK;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.MemoryLimitedChunk;
 import freenet.support.MemoryLimitedJob;
 import freenet.support.MemoryLimitedJobRunner;

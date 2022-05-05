@@ -9,7 +9,7 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;
 
 public class IOStatisticCollector {

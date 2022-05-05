@@ -29,7 +29,7 @@ import freenet.nodeapp.OpennetManager.ConnectionType;
 import freenet.nodeapp.OpennetManager.NoderefCallback;
 import freenet.nodeapp.OpennetManager.WaitedTooLongForOpennetNoderefException;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.SimpleFieldSet;
 import freenet.support.TimeUtil;
 import freenet.support.Logger.LogLevel;

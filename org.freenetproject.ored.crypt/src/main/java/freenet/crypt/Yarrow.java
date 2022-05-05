@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.cryptlogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.io.Closer;
 

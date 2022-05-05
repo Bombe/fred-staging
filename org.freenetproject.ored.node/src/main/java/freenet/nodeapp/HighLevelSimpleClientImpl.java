@@ -28,7 +28,7 @@ import freenet.client.request.RequestScheduler;
 import freenet.crypt.RandomSource;
 import freenet.keys.FreenetURI;
 import freenet.keys.InsertableClientSSK;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.bucket.Bucket;
 import freenet.bucket.BucketFactory;

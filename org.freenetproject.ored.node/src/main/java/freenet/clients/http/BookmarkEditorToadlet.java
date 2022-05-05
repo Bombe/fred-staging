@@ -19,7 +19,7 @@ import freenet.nodeapp.DarknetPeerNode;
 import freenet.nodeapp.NodeClientCore;
 import freenet.support.HTMLNode;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.URLDecoder;
 import freenet.support.URLEncodedFormatException;
 import freenet.support.URLEncoder;

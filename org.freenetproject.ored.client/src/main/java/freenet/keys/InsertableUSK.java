@@ -9,7 +9,7 @@ import freenet.crypt.DSAGroup;
 import freenet.crypt.DSAPrivateKey;
 import freenet.crypt.DSAPublicKey;
 import freenet.crypt.Global;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 
 /**
  * An insertable USK.

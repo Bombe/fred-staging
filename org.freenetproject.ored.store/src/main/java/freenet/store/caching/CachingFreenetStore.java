@@ -14,7 +14,7 @@ import freenet.store.ProxyFreenetStore;
 import freenet.store.StoreCallback;
 import freenet.support.ByteArrayWrapper;
 import freenet.support.LRUMap;
-import freenet.support.Logger;
+import freenet.storelogger.Logger;
 import freenet.support.Ticker;
 import freenet.support.io.NativeThread;
 import freenet.support.node.SemiOrderedShutdownHook;

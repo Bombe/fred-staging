@@ -25,7 +25,7 @@ import freenet.io.xfer.PartiallyReceivedBlock;
 import freenet.keys.CHKBlock;
 import freenet.keys.CHKVerifyException;
 import freenet.keys.NodeCHK;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.io.NativeThread;
 import freenet.support.node.PrioRunnable;
 

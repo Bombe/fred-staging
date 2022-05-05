@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 
 import freenet.support.Fields;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.Ticker;
 import freenet.support.io.Closer;
 

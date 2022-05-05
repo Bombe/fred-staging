@@ -3,7 +3,7 @@ package freenet.nodeapp;
 import java.util.HashMap;
 import java.util.List;
 
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.WeakHashSet;
 
 /** Track a collection of PeerNode's for each status. */

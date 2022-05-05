@@ -6,7 +6,7 @@ import freenet.client.async.SplitFileFetcherStorage.MyKey;
 import freenet.client.request.*;
 import freenet.keys.ClientKey;
 import freenet.keys.Key;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 
 /** Actually does the splitfile fetch. Only one fetcher object for an entire splitfile.
  * 

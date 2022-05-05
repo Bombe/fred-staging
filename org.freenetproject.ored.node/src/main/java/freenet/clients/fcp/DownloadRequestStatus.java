@@ -10,7 +10,7 @@ import freenet.client.InsertContext;
 import freenet.client.InsertContext.CompatibilityMode;
 import freenet.clients.fcp.FCPClientRequest.Persistence;
 import freenet.keys.FreenetURI;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 
 /** Cached status of a download of a file i.e. a ClientGet */
 public class DownloadRequestStatus extends RequestStatus {

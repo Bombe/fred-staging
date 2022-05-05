@@ -13,7 +13,7 @@ import java.io.UnsupportedEncodingException;
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream;
 
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.bucket.Bucket;
 import freenet.bucket.BucketFactory;
 import freenet.support.io.CountedOutputStream;

@@ -24,7 +24,7 @@ import java.util.LinkedList;
 
 import freenet.io.Buffer;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;
 
 /**

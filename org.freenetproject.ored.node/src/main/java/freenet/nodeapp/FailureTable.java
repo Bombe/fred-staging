@@ -26,7 +26,7 @@ import freenet.keys.SSKBlock;
 import freenet.support.LRUMap;
 import freenet.support.ListUtils;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.SerialExecutor;
 import freenet.support.Logger.LogLevel;
 import freenet.support.io.NativeThread;

@@ -7,7 +7,7 @@ import java.util.ArrayDeque;
 import freenet.support.Executor;
 import freenet.support.ExecutorIdleCallback;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.io.NativeThread;
 import freenet.support.node.PrioRunnable;

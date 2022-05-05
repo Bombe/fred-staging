@@ -10,7 +10,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.LoggerHook;
 import freenet.support.SimpleFieldSet;
 import freenet.support.io.Closer;

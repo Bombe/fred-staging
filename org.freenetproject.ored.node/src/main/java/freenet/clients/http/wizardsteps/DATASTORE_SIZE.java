@@ -11,7 +11,7 @@ import freenet.nodeapp.NodeClientCore;
 import freenet.nodeapp.NodeStarter;
 import freenet.support.Fields;
 import freenet.support.HTMLNode;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.SizeUtil;
 
 /**

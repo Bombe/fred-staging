@@ -10,7 +10,7 @@ import freenet.bucket.*;
 import freenet.crypt.PCFBMode;
 import freenet.crypt.UnsupportedCipherException;
 import freenet.crypt.ciphers.Rijndael;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 
 public class ClientSSKBlock implements ClientKeyBlock {
 	

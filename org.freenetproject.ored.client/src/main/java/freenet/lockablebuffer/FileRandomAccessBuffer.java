@@ -9,7 +9,7 @@ import java.io.RandomAccessFile;
 import java.io.Serializable;
 
 import freenet.client.async.ClientContext;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.io.FileUtil;
 import freenet.support.io.ResumeFailedException;
 import freenet.support.io.StorageFormatException;

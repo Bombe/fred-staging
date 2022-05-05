@@ -9,7 +9,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 
 /**
  * A cookie which the server has received from the client.

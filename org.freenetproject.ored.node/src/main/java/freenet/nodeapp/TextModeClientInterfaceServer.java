@@ -17,7 +17,7 @@ import freenet.config.*;
 import freenet.crypt.RandomSource;
 import freenet.io.NetworkInterface;
 import freenet.io.SSLNetworkInterface;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 
 public class TextModeClientInterfaceServer implements Runnable {
 

@@ -13,7 +13,7 @@ import freenet.nodeapp.Node;
 import freenet.nodeapp.NodeClientCore;
 import freenet.nodeapp.SecurityLevels;
 import freenet.support.HTMLNode;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.io.FileUtil;
 import freenet.support.io.FileUtil.OperatingSystem;
 

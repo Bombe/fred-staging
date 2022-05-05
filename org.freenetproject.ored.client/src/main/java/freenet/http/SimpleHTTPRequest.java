@@ -26,7 +26,7 @@ import javax.naming.SizeLimitExceededException;
 import freenet.bucket.*;
 import freenet.support.Fields;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.MultiValueTable;
 import freenet.support.URLEncoder;
 import freenet.support.Logger.LogLevel;

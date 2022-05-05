@@ -8,7 +8,7 @@ import java.util.TimeZone;
 
 import freenet.support.Fields;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;
 
 /**

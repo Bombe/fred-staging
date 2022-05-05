@@ -22,7 +22,7 @@ import java.util.StringTokenizer;
 
 import freenet.support.transport.ip.AddressIdentifier;
 import freenet.support.transport.ip.AddressIdentifier.AddressType;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 
 /** Implementation of allowedHosts */
 public class AllowedHosts {

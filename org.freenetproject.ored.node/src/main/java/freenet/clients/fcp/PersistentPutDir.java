@@ -13,7 +13,7 @@ import freenet.clients.fcp.FCPClientRequest.Persistence;
 import freenet.keys.FreenetURI;
 import freenet.nodeapp.Node;
 import freenet.support.HexUtil;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.SimpleFieldSet;
 
 public class PersistentPutDir extends FCPMessage {

@@ -24,7 +24,7 @@ import freenet.crypt.RandomSource;
 import freenet.crypt.Yarrow;
 import freenet.support.Executor;
 import freenet.support.JVMVersion;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.LoggerHook.InvalidThresholdException;
 import freenet.support.PooledExecutor;

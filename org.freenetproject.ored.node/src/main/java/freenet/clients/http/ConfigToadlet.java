@@ -17,7 +17,7 @@ import freenet.nodeapp.ProgramDirectory;
 import freenet.nodeapp.useralerts.BaseNodeUserAlert;
 import freenet.pluginmanager.FredPluginConfigurable;
 import freenet.support.HTMLNode;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.MultiValueTable;
 import freenet.support.URLEncoder;

@@ -8,7 +8,7 @@ import java.net.UnknownHostException;
 import freenet.config.*;
 import freenet.io.comm.FreenetInetAddress;
 import freenet.nodeapp.SecurityLevels.NETWORK_THREAT_LEVEL;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.node.NodeInitException;
 
 /**

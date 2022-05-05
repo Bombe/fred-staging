@@ -30,7 +30,7 @@ import freenet.nodeapp.Version;
 import freenet.nodeapp.updater.UpdateOverMandatoryManager.UOMDependencyFetcher;
 import freenet.nodeapp.updater.UpdateOverMandatoryManager.UOMDependencyFetcherCallback;
 import freenet.support.HTMLNode;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.io.Closer;
 import freenet.support.io.FileUtil;
 import freenet.support.io.InsufficientDiskSpaceException;

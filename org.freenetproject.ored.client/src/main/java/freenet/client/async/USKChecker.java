@@ -11,7 +11,7 @@ import freenet.keys.ClientKey;
 import freenet.keys.ClientKeyBlock;
 import freenet.keys.ClientSSKBlock;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.Logger.LogLevel;
 
 /**

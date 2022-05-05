@@ -3,7 +3,7 @@
  * http://www.gnu.org/ for further details of the GPL. */
 package freenet.nodeapp;
 
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 
 /**
  * @author amphibian

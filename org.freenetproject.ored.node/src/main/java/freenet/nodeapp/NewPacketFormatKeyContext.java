@@ -8,7 +8,7 @@ import java.util.TreeMap;
 import freenet.io.xfer.PacketThrottle;
 import freenet.nodeapp.NewPacketFormat.SentPacket;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.SentTimeCache;
 import freenet.support.Logger.LogLevel;
 

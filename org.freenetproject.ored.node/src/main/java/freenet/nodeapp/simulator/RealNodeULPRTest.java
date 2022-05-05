@@ -22,7 +22,7 @@ import freenet.nodeapp.DarknetPeerNode;
 import freenet.nodeapp.NodeDispatcher;
 import freenet.support.Executor;
 import freenet.support.HexUtil;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.PooledExecutor;
 import freenet.support.SimpleFieldSet;
 import freenet.support.Logger.LogLevel;

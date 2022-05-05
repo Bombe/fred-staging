@@ -18,7 +18,7 @@ import java.util.Arrays;
 
 import javax.crypto.KeyAgreement;
 
-import freenet.support.Logger;
+import freenet.cryptlogger.Logger;
 
 public class ECDH {
 

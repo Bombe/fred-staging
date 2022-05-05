@@ -12,7 +12,7 @@ import java.util.Enumeration;
 import java.util.List;
 
 import freenet.support.Executor;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.io.InetAddressComparator;
 import freenet.support.transport.ip.AddressIdentifier;

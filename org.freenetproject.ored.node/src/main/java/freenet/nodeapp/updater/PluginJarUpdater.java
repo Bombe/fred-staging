@@ -17,7 +17,7 @@ import freenet.nodeapp.useralerts.BaseNodeUserAlert;
 import freenet.pluginmanager.PluginInfoWrapper;
 import freenet.pluginmanager.PluginManager;
 import freenet.support.HTMLNode;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 
 public class PluginJarUpdater extends NodeUpdater {
 

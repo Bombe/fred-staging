@@ -14,7 +14,7 @@ import SevenZip.Compression.LZMA.Decoder;
 import SevenZip.Compression.LZMA.Encoder;
 import SevenZip.ICodeProgress;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.bucket.Bucket;
 import freenet.bucket.BucketFactory;

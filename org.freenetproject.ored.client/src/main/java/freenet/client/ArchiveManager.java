@@ -25,7 +25,7 @@ import freenet.client.async.ClientContext;
 import freenet.keys.FreenetURI;
 import freenet.support.ExceptionWrapper;
 import freenet.support.LRUMap;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.MutableBoolean;
 import freenet.bucket.Bucket;

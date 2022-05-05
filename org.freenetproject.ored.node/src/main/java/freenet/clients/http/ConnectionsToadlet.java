@@ -42,7 +42,7 @@ import freenet.nodeapp.PeerNodeStatus;
 import freenet.nodeapp.Version;
 import freenet.support.Fields;
 import freenet.support.HTMLNode;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.MultiValueTable;
 import freenet.support.SimpleFieldSet;

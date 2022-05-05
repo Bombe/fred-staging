@@ -19,7 +19,7 @@ import freenet.io.comm.SlowAsyncMessageFilterCallback;
 import freenet.keys.NodeSSK;
 import freenet.keys.SSKBlock;
 import freenet.keys.SSKVerifyException;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.ShortBuffer;
 import freenet.support.io.NativeThread;
 import freenet.support.node.PrioRunnable;

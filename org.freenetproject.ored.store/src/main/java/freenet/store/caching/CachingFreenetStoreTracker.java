@@ -2,7 +2,7 @@ package freenet.store.caching;
 
 import java.util.ArrayList;
 
-import freenet.support.Logger;
+import freenet.storelogger.Logger;
 import freenet.support.Ticker;
 
 /**

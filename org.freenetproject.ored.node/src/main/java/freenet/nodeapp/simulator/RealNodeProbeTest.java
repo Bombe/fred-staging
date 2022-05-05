@@ -12,7 +12,7 @@ import freenet.nodeapp.probe.Listener;
 import freenet.nodeapp.probe.Probe;
 import freenet.nodeapp.probe.Type;
 import freenet.support.Executor;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.PooledExecutor;
 import freenet.support.io.FileUtil;

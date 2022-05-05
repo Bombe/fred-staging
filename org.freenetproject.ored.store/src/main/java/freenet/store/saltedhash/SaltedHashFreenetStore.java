@@ -50,7 +50,7 @@ import freenet.store.StoreCallback;
 import freenet.support.Fields;
 import freenet.support.HTMLNode;
 import freenet.support.HexUtil;
-import freenet.support.Logger;
+import freenet.storelogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.Ticker;
 import freenet.support.WrapperKeepalive;

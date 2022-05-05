@@ -26,7 +26,7 @@ import freenet.l10n.NodeL10n;
 import freenet.nodeapp.NodeClientCore;
 import freenet.nodeapp.NodeRequestStarter;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.SimpleFieldSet;
 import freenet.support.io.Closer;

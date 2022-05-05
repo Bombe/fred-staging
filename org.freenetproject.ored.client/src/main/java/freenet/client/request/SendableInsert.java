@@ -7,7 +7,7 @@ import freenet.client.InsertException;
 import freenet.client.async.ClientContext;
 import freenet.client.async.ClientRequestScheduler;
 import freenet.keys.ClientKey;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.io.NativeThread;
 import freenet.support.io.ResumeFailedException;
 

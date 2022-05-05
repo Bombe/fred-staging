@@ -20,7 +20,7 @@ import java.util.Set;
 import freenet.bucket.Bucket;
 import freenet.bucket.FileBucket;
 import freenet.support.Fields;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.io.Closer;
 
 import java.io.File;

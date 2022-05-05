@@ -15,7 +15,7 @@ import freenet.nodeapp.PeerNode;
 import freenet.nodeapp.PeerTooOldException;
 import freenet.nodeapp.DarknetPeerNode;
 import freenet.support.Executor;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.PooledExecutor;
 import freenet.support.Logger.LogLevel;
 import freenet.support.LoggerHook.InvalidThresholdException;

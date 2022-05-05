@@ -5,7 +5,7 @@ import freenet.client.request.SendableGet;
 import freenet.keys.Key;
 import freenet.keys.KeyBlock;
 import freenet.keys.NodeSSK;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 
 public class SingleKeyListener implements KeyListener {
 	

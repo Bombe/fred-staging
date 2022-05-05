@@ -37,7 +37,7 @@ import freenet.io.comm.SlowAsyncMessageFilterCallback;
 import freenet.support.BitArray;
 import freenet.support.Executor;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.Ticker;
 import freenet.support.TimeUtil;
 import freenet.support.Logger.LogLevel;

@@ -12,7 +12,7 @@ import freenet.client.request.*;
 import freenet.keys.Key;
 import freenet.nodeapp.NodeStats.RejectReason;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.math.RunningAverage;
 

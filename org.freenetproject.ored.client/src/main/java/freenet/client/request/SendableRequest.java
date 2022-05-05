@@ -7,7 +7,7 @@ import freenet.client.async.ClientRequestScheduler;
 import freenet.client.async.ClientRequestSchedulerGroup;
 import freenet.client.async.ClientRequester;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.Logger.LogLevel;
 
 /**

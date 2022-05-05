@@ -8,7 +8,7 @@ import freenet.client.async.ClientRequester;
 import freenet.client.async.SimpleSingleFileFetcher;
 import freenet.keys.ClientKey;
 import freenet.keys.Key;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 
 /**
  * WARNING: Changing non-transient members on classes that are Serializable can result in 

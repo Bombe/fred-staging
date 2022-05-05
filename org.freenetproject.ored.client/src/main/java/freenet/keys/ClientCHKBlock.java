@@ -26,7 +26,7 @@ import freenet.crypt.UnsupportedCipherException;
 import freenet.crypt.Util;
 import freenet.crypt.ciphers.Rijndael;
 import freenet.keys.Key.Compressed;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.math.MersenneTwister;
 import freenet.support.node.NodeConstants;
 

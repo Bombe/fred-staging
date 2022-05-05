@@ -13,7 +13,7 @@ import freenet.client.request.RequestClient;
 import freenet.client.request.RequestClientBuilder;
 import freenet.keys.FreenetURI;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.fcp.RequestIdentifier;
 import freenet.support.io.NativeThread;

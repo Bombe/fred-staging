@@ -1,7 +1,7 @@
 package freenet.client.async;
 
 import freenet.keys.USK;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 
 /** Proxy class to only pass through latest-slot updates after an onRoundFinished().
  * Note that it completely ignores last-known-good updates.

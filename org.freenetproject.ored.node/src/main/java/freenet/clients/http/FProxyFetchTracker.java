@@ -10,7 +10,7 @@ import freenet.client.request.RequestClient;
 import freenet.clients.http.FProxyFetchInProgress.REFILTER_POLICY;
 import freenet.keys.FreenetURI;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.MultiValueTable;
 import freenet.support.Logger.LogLevel;
 

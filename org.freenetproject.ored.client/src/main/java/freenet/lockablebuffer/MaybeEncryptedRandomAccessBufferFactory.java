@@ -6,7 +6,7 @@ import java.security.GeneralSecurityException;
 import freenet.bucket.PaddedEphemerallyEncryptedBucket;
 import freenet.bucket.TempBucketFactory;
 import freenet.crypt.MasterSecret;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 
 /** Wraps another LockableRandomAccessBufferFactory to enable encryption if currently turned on. */
 public class MaybeEncryptedRandomAccessBufferFactory implements LockableRandomAccessBufferFactory {

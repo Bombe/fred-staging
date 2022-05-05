@@ -45,7 +45,7 @@ import freenet.keys.Key;
 import freenet.lockablebuffer.FileRandomAccessBufferFactory;
 import freenet.lockablebuffer.LockableRandomAccessBuffer;
 import freenet.lockablebuffer.LockableRandomAccessBufferFactory;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.MemoryLimitedJobRunner;
 import freenet.support.RandomArrayIterator;
 import freenet.support.Ticker;

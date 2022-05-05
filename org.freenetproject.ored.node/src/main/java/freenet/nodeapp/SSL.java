@@ -41,7 +41,7 @@ import freenet.config.BooleanCallback;
 import freenet.config.InvalidConfigValueException;
 import freenet.config.StringCallback;
 import freenet.config.SubConfig;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.io.Closer;
 import java.net.ServerSocket;
 

@@ -9,7 +9,7 @@ import freenet.client.filter.FlacMetadataBlock.BlockType;
 import freenet.client.filter.FlacMetadataBlock.FlacMetadataBlockHeader;
 import freenet.crypt.HashResult;
 import freenet.crypt.HashType;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.Logger.LogLevel;
 
 public class FlacPacketFilter  implements CodecPacketFilter {

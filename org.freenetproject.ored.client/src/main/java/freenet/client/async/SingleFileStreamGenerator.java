@@ -12,7 +12,7 @@ import freenet.bucket.Bucket;
 import freenet.bucket.BucketCloser;
 import freenet.support.LogThresholdCallback;
 
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.io.Closer;
 import freenet.support.io.FileUtil;

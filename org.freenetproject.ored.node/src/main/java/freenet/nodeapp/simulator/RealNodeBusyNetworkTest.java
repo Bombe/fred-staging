@@ -27,7 +27,7 @@ import freenet.nodeapp.NodeRequestStarter;
 import freenet.support.Executor;
 import freenet.support.Fields;
 import freenet.support.HexUtil;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.LoggerHook.InvalidThresholdException;
 import freenet.support.PooledExecutor;

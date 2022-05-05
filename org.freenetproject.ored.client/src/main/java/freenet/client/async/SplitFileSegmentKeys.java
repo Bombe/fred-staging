@@ -10,7 +10,7 @@ import java.util.Arrays;
 
 import freenet.keys.ClientCHK;
 import freenet.keys.NodeCHK;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.Fields;
 
 /** Contains the keys for a splitfile segment, in an efficient compressed form. These are 

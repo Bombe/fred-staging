@@ -22,7 +22,7 @@ import freenet.client.events.SplitfileProgressEvent;
 import freenet.keys.FreenetURI;
 import freenet.nodeapp.Node;
 import freenet.pluginmanager.PluginManager.PluginProgress;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 
 public class PluginDownLoaderFreenet extends PluginDownLoader<FreenetURI> {
 	final HighLevelSimpleClient hlsc;

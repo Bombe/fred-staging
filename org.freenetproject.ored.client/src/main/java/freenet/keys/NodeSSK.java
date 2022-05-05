@@ -14,7 +14,7 @@ import freenet.crypt.DSAPublicKey;
 import freenet.crypt.SHA256;
 import freenet.support.Fields;
 import freenet.support.HexUtil;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 
 /**
  * An SSK is a Signed Subspace Key.

@@ -8,7 +8,7 @@ import java.util.HashSet;
 
 import freenet.keys.Key;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;
 
 /** Tracks recent requests for a specific key. If we have recently routed to a specific 

@@ -8,7 +8,7 @@ import freenet.bucket.RandomAccessBucket;
 import freenet.client.ClientMetadata;
 import freenet.client.async.ManifestElementNew;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.SimpleFieldSet;
 import freenet.support.Logger.LogLevel;
 import freenet.support.client.DefaultMIMETypes;

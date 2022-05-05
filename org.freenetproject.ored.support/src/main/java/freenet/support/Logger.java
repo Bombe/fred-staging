@@ -574,10 +574,32 @@ public abstract class Logger {
 	/** Unregister a log threshold callback with this specific logger. */
 	public abstract void instanceUnregisterLogThresholdCallback(LogThresholdCallback ltc);
 	
-	/** Register a class so that its logMINOR and logDEBUG fields (the 
+	@FunctionalInterface
+	public interface SetLogSwitch {
+		enum Field {
+			MINOR("logMINOR"),
+			DEBUG("logDEBUG");
+
+			public final String name;
+
+			Field(String name) {
+				this.name = name;
+			}
+
+		}
+		void set(Class<?> clazz, Field field, boolean shouldLog) throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException;
+	}
+
+	/**
+	 * Register a class so that its logMINOR and logDEBUG fields (the
 	 * latter is optional) are automatically updated whenever they should be
-	 * i.e. whenever shouldLog(classname, MINOR) or ,DEBUG would change. */
-	public static void registerClass(final Class<?> clazz) {
+	 * i.e. whenever shouldLog(classname, MINOR) or ,DEBUG would change.
+	 *
+	 * @param logSwitch is a function that contains reflection code to modify the value of logMINOR and logDEBUG fields.
+	 *                  The function must locate in the corresponding module which needs Logger, so that we don't need to
+	 *                  open the module to this class.
+	 */
+	public static void registerClass(final Class<?> clazz, SetLogSwitch logSwitch) {
 		LogThresholdCallback ltc = new LogThresholdCallback() {
 			WeakReference<Class<?>> ref = new WeakReference<Class<?>> (clazz);
 
@@ -591,38 +613,48 @@ public abstract class Logger {
 
 				boolean done = false;
 				try {
-					Field logMINOR_Field = clazz.getDeclaredField("logMINOR");
-					if ((logMINOR_Field.getModifiers() & Modifier.STATIC) != 0) {
-						logMINOR_Field.setAccessible(true);
-						logMINOR_Field.set(null, shouldLog(LogLevel.MINOR, clazz));
-					}
+					logSwitch.set(clazz, SetLogSwitch.Field.MINOR, shouldLog(LogLevel.MINOR, clazz));
 					done = true;
-				} catch (SecurityException e) {
-				} catch (NoSuchFieldException e) { 
-				} catch (IllegalArgumentException e) {
-				} catch (IllegalAccessException e) {
+				} catch (SecurityException | NoSuchFieldException | IllegalArgumentException | IllegalAccessException ignored) {
 				}
 
 				try {
-					Field logDEBUG_Field = clazz.getDeclaredField("logDEBUG");
-					if ((logDEBUG_Field.getModifiers() & Modifier.STATIC) != 0) {
-						logDEBUG_Field.setAccessible(true);
-						logDEBUG_Field.set(null, shouldLog(LogLevel.DEBUG, clazz));
-					}
+					logSwitch.set(clazz, SetLogSwitch.Field.DEBUG, shouldLog(LogLevel.DEBUG, clazz));
 					done = true;
-				} catch (SecurityException e) {
-				} catch (NoSuchFieldException e) { 
-				} catch (IllegalArgumentException e) {
-				} catch (IllegalAccessException e) {
+				} catch (SecurityException | NoSuchFieldException | IllegalArgumentException | IllegalAccessException ignored) {
 				}
-                
+
 				if (!done) Logger.error(this, "No log level field for " + clazz);
 			}
 		};
-
-		registerLogThresholdCallback(ltc);
 	}
-	
+
+	/**
+	 * This function is for classes in this "support" module which needs Logger.
+	 * @param clazz
+	 * @param field
+	 * @param shouldLog
+	 * @throws SecurityException
+	 * @throws NoSuchFieldException
+	 * @throws IllegalArgumentException
+	 * @throws IllegalAccessException
+	 */
+	private static void setLoggerSwitch(Class<?> clazz, SetLogSwitch.Field field, boolean shouldLog)
+			throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+		Field logMINOR_Field = clazz.getDeclaredField(field.name);
+		if ((logMINOR_Field.getModifiers() & Modifier.STATIC) != 0) {
+			logMINOR_Field.setAccessible(true);
+			logMINOR_Field.set(null, shouldLog);
+		}
+	}
+
+	/**
+	 * This function is for classes in this "support" module which needs Logger.
+	 */
+	static void registerClass(final Class<?> clazz) {
+		registerClass(clazz, Logger::setLoggerSwitch);
+	}
+
 	/**
 	 * Report a fatal error and exit.
 	 * @param cause the object or class involved

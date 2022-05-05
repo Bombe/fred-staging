@@ -3,7 +3,7 @@ package freenet.nodeapp;
 import java.lang.ref.WeakReference;
 
 import freenet.keys.NodeCHK;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.TimeUtil;
 
 /**

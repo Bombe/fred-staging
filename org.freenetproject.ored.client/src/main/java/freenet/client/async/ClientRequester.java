@@ -14,7 +14,7 @@ import freenet.checksum.ChecksumChecker;
 import freenet.keys.FreenetURI;
 import freenet.client.request.RequestClient;
 import freenet.support.CurrentTimeUTC;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.io.ResumeFailedException;
 

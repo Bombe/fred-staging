@@ -4,7 +4,7 @@
 package freenet.client.events;
 
 import freenet.client.async.ClientContext;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.Logger.LogLevel;
 
 /**

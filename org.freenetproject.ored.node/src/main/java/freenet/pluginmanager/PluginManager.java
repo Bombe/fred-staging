@@ -57,7 +57,7 @@ import freenet.pluginmanager.PluginManager.PluginProgress.ProgressState;
 import freenet.support.HTMLNode;
 import freenet.support.HexUtil;
 import freenet.support.JarClassLoader;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.SerialExecutor;
 import freenet.support.Ticker;

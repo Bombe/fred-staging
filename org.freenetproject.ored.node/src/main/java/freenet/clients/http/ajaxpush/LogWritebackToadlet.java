@@ -9,7 +9,7 @@ import freenet.clients.http.Toadlet;
 import freenet.clients.http.ToadletContext;
 import freenet.clients.http.ToadletContextClosedException;
 import freenet.clients.http.updateableelements.UpdaterConstants;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.URLDecoder;
 import freenet.support.URLEncodedFormatException;
 import freenet.http.HTTPRequest;

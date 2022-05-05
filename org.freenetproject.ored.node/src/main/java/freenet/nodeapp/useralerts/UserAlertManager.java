@@ -21,7 +21,7 @@ import freenet.l10n.NodeL10n;
 import freenet.nodeapp.NodeClientCore;
 import freenet.support.Base64;
 import freenet.support.HTMLNode;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.node.UserAlert;
 
 /**

@@ -10,7 +10,7 @@ import freenet.keys.Key;
 import freenet.keys.KeyBlock;
 import freenet.support.Fields;
 import freenet.support.IdentityHashSet;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.io.NativeThread;
 import freenet.support.node.PrioRunnable;
 

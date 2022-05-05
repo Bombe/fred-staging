@@ -48,7 +48,7 @@ import freenet.pluginmanager.OfficialPlugins.OfficialPluginDescription;
 import freenet.pluginmanager.PluginInfoWrapper;
 import freenet.support.HTMLNode;
 import freenet.support.JVMVersion;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.io.Closer;
 import freenet.support.io.FileUtil;
 import freenet.support.node.NodeInitException;

@@ -25,7 +25,7 @@ import freenet.lockablebuffer.*;
 import freenet.crypt.MasterSecret;
 import freenet.support.Executor;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.SizeUtil;
 import freenet.support.TimeUtil;

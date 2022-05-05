@@ -24,7 +24,7 @@ import freenet.crypt.ciphers.Rijndael;
 import freenet.support.Fields;
 import freenet.support.HexUtil;
 import freenet.support.Loader;
-import freenet.support.Logger;
+import freenet.cryptlogger.Logger;
 import freenet.support.math.MersenneTwister;
 
 public class Util {

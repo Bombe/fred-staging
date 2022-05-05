@@ -15,7 +15,7 @@ import freenet.keys.ClientKey;
 import freenet.keys.Key;
 import freenet.keys.KeyBlock;
 import freenet.keys.SSKBlock;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.Logger.LogLevel;
 
 public class BinaryBlobInserter implements ClientPutState {

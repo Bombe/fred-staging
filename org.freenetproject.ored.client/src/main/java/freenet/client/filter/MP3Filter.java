@@ -12,7 +12,7 @@ import java.io.OutputStream;
 import java.util.Map;
 
 import freenet.l10n.NodeL10n;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 
 public class MP3Filter implements ContentDataFilter {
 

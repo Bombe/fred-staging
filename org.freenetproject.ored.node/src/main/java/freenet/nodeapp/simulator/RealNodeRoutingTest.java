@@ -11,7 +11,7 @@ import freenet.nodeapp.LocationManager;
 import freenet.nodeapp.Node;
 import freenet.nodeapp.NodeStarter;
 import freenet.support.Executor;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.PooledExecutor;
 import freenet.support.Logger.LogLevel;
 import freenet.support.io.FileUtil;

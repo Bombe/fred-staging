@@ -13,7 +13,7 @@ import java.util.Random;
 
 import freenet.bucket.BucketFilenameGenerator;
 import freenet.client.async.ClientContext;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.WrapperKeepalive;
 import freenet.support.io.*;
 

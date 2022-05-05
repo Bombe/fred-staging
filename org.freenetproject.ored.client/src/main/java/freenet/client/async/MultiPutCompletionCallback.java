@@ -11,7 +11,7 @@ import freenet.client.Metadata;
 import freenet.keys.BaseClientKey;
 import freenet.support.ListUtils;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.io.ResumeFailedException;
 

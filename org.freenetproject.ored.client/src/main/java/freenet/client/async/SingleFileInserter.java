@@ -31,7 +31,7 @@ import freenet.keys.FreenetURI;
 import freenet.keys.SSKBlock;
 import freenet.lockablebuffer.LockableRandomAccessBuffer;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.compress.Compressor.COMPRESSOR_TYPE;
 import freenet.support.io.NullOutputStream;

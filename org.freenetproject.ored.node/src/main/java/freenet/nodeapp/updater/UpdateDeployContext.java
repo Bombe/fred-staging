@@ -21,7 +21,7 @@ import freenet.nodeapp.NodeStarter;
 import freenet.nodeapp.updater.MainJarDependenciesChecker.Dependency;
 import freenet.nodeapp.updater.MainJarDependenciesChecker.MainJarDependencies;
 import freenet.support.JVMVersion;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.io.Closer;
 
 /**

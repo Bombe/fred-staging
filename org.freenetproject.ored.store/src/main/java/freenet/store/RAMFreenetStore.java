@@ -11,7 +11,7 @@ import freenet.keys.KeyVerifyException;
 import freenet.keys.StorableBlock;
 import freenet.support.ByteArrayWrapper;
 import freenet.support.LRUMap;
-import freenet.support.Logger;
+import freenet.storelogger.Logger;
 import freenet.support.Ticker;
 import freenet.support.node.stats.StoreAccessStats;
 

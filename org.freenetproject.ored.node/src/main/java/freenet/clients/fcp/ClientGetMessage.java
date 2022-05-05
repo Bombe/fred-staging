@@ -18,7 +18,7 @@ import freenet.clients.fcp.FCPClientRequest.Persistence;
 import freenet.keys.FreenetURI;
 import freenet.nodeapp.Node;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.SimpleFieldSet;
 

@@ -13,7 +13,7 @@ import freenet.nodeapp.PeerNode;
 import freenet.nodeapp.PeerTooOldException;
 import freenet.nodeapp.DarknetPeerNode;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.node.NodeInitException;
 

@@ -5,7 +5,7 @@ import java.io.Serializable;
 import freenet.client.ArchiveManager.ARCHIVE_TYPE;
 import freenet.client.async.ClientContext;
 import freenet.keys.FreenetURI;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.bucket.Bucket;
 import freenet.compress.Compressor.COMPRESSOR_TYPE;
 

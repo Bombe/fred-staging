@@ -16,7 +16,7 @@ import freenet.crypt.UnsupportedCipherException;
 import freenet.crypt.ciphers.Rijndael;
 import freenet.keys.MasterKeys;
 import freenet.support.ByteArrayWrapper;
-import freenet.support.Logger;
+import freenet.storelogger.Logger;
 
 /**
  * Cipher Manager

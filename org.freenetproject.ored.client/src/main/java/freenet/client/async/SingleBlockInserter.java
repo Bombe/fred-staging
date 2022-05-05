@@ -21,7 +21,7 @@ import freenet.crypt.RandomSource;
 import freenet.keys.*;
 import freenet.support.Fields;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.io.ResumeFailedException;
 import freenet.support.node.NodeConstants;

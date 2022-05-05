@@ -16,7 +16,7 @@ import freenet.keys.BaseClientKey;
 import freenet.keys.CHKBlock;
 import freenet.keys.FreenetURI;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.Logger.LogLevel;
 
 public class SimpleHealingQueue extends BaseClientPutter implements HealingQueue, PutCompletionCallback {

@@ -16,7 +16,7 @@ import freenet.clients.fcp.FCPPluginConnection.SendDirection;
 import freenet.pluginmanager.FredPluginFCPMessageHandler.ClientSideFCPMessageHandler;
 import freenet.pluginmanager.FredPluginFCPMessageHandler.ServerSideFCPMessageHandler;
 import freenet.pluginmanager.PluginRespirator;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.io.NativeThread;
 
 /**

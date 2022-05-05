@@ -6,7 +6,7 @@ package freenet.crypt.ciphers;
 
 import java.security.InvalidKeyException;
 
-import freenet.support.Logger;
+import freenet.cryptlogger.Logger;
 
 //...........................................................................
 /**

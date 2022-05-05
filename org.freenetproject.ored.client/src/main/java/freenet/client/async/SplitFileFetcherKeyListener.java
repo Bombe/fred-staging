@@ -19,7 +19,7 @@ import freenet.keys.NodeCHK;
 import freenet.support.BinaryBloomFilter;
 import freenet.support.BloomFilter;
 import freenet.support.CountingBloomFilter;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.io.StorageFormatException;
 
 public class SplitFileFetcherKeyListener implements KeyListener {

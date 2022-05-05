@@ -11,7 +11,7 @@ import freenet.clients.fcp.FeedMessage;
 import freenet.l10n.NodeL10n;
 import freenet.nodeapp.PeerTooOldException;
 import freenet.support.HTMLNode;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 
 public class DroppedOldPeersUserAlert implements FCPUserAlert {
 

@@ -6,7 +6,7 @@ import freenet.config.EnumerableOptionCallback;
 import freenet.config.Option;
 import freenet.http.HTTPRequest;
 import freenet.support.HTMLNode;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 
 /**
  * This step is the first, and provides a small welcome screen and an option to change the language.

@@ -12,7 +12,7 @@ import freenet.client.async.ClientRequest;
 import freenet.client.async.PersistentRequestChecker;
 import freenet.clients.fcp.FCPClientRequest.Persistence;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.fcp.RequestIdentifier;
 

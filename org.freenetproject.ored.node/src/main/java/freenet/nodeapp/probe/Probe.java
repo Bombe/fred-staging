@@ -17,7 +17,7 @@ import freenet.nodeapp.Node;
 import freenet.nodeapp.OpennetManager;
 import freenet.nodeapp.PeerNode;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 
 import java.util.Arrays;
 import java.util.Collections;

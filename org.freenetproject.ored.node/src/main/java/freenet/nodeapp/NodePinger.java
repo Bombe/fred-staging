@@ -8,7 +8,7 @@ import static java.util.concurrent.TimeUnit.DAYS;
 import java.util.Arrays;
 
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;
 
 /**

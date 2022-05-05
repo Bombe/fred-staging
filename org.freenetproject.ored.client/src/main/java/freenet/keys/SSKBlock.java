@@ -15,7 +15,7 @@ import freenet.crypt.Global;
 import freenet.crypt.SHA256;
 import freenet.support.Fields;
 import freenet.support.HexUtil;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 
 /**
  * SSKBlock. Contains a full fetched key. Can do a node-level verification. Can 

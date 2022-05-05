@@ -36,7 +36,7 @@ import freenet.nodeapp.SyncSendWaitedTooLongException;
 import freenet.support.BitArray;
 import freenet.io.Buffer;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.Ticker;
 import freenet.support.TimeUtil;

@@ -11,7 +11,7 @@ import freenet.nodeapp.Node;
 import freenet.nodeapp.NodeCrypto;
 import freenet.nodeapp.PeerNode;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;
 
 public class IncomingPacketFilterImpl implements IncomingPacketFilter {

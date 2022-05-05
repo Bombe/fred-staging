@@ -13,7 +13,7 @@ import freenet.store.StoreDSAPublicKey;
 import freenet.support.ByteArrayWrapper;
 import freenet.support.HexUtil;
 import freenet.support.LRUMap;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 
 public class NodeGetPubkey implements GetPubkey {
 	private static volatile boolean logMINOR;

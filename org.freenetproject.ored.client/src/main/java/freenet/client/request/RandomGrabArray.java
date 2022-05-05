@@ -4,7 +4,7 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 
 import java.util.Arrays;
 
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import org.tanukisoftware.wrapper.WrapperManager;
 
 import freenet.client.async.ClientContext;

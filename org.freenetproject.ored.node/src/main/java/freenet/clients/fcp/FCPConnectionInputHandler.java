@@ -10,7 +10,7 @@ import java.io.InputStream;
 import org.tanukisoftware.wrapper.WrapperManager;
 
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.SimpleFieldSet;
 import freenet.support.Logger.LogLevel;
 import freenet.support.io.Closer;

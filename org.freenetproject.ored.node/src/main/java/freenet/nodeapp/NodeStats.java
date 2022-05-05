@@ -25,7 +25,7 @@ import freenet.store.StoreCallback;
 import freenet.support.HTMLNode;
 import freenet.support.Histogram2;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.SimpleFieldSet;
 import freenet.support.StringCounter;

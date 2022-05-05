@@ -25,7 +25,7 @@ import freenet.keys.KeyCollisionException;
 import freenet.keys.NodeCHK;
 import freenet.support.HexUtil;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.ShortBuffer;
 import freenet.support.Logger.LogLevel;
 import freenet.support.io.NativeThread;

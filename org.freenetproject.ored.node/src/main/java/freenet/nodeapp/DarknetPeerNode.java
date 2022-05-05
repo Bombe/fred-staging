@@ -50,7 +50,7 @@ import freenet.nodeapp.useralerts.N2NTMUserAlert;
 import freenet.support.Base64;
 import freenet.support.HTMLNode;
 import freenet.support.IllegalBase64Exception;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.SimpleFieldSet;
 import freenet.support.SizeUtil;
 import freenet.support.api.RandomAccessBuffer;

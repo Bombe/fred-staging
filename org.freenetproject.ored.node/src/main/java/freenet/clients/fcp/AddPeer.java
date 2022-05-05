@@ -29,7 +29,7 @@ import freenet.nodeapp.OpennetDisabledException;
 import freenet.nodeapp.PeerNode;
 import freenet.nodeapp.PeerTooOldException;
 import freenet.nodeapp.NodeRequestStarter;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.MediaType;
 import freenet.support.SimpleFieldSet;
 import freenet.support.io.Closer;

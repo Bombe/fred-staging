@@ -12,7 +12,7 @@ import java.net.URL;
 import java.net.URLConnection;
 
 import freenet.pluginmanager.PluginManager.PluginProgress;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 
 public class PluginDownLoaderURL extends PluginDownLoader<URL> {
 

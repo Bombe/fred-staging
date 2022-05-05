@@ -6,7 +6,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
-import freenet.support.Logger;
+import freenet.cryptlogger.Logger;
 
 public class MultiHashOutputStream extends FilterOutputStream {
 

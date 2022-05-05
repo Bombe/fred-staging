@@ -14,7 +14,7 @@ import freenet.nodeapp.NodeClientCore;
 import freenet.nodeapp.useralerts.BaseNodeUserAlert;
 import freenet.nodeapp.useralerts.UserAlertManager;
 import freenet.support.HTMLNode;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.SimpleFieldSet;
 import freenet.support.node.FSParseException;
 

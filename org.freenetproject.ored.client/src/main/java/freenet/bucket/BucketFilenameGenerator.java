@@ -1,6 +1,6 @@
 package freenet.bucket;
 
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.io.FilenameGenerator;
 
 import java.io.File;

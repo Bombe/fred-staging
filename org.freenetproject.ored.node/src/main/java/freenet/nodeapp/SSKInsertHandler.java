@@ -17,7 +17,7 @@ import freenet.keys.KeyCollisionException;
 import freenet.keys.NodeSSK;
 import freenet.keys.SSKBlock;
 import freenet.keys.SSKVerifyException;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.ShortBuffer;
 import freenet.support.Logger.LogLevel;
 import freenet.support.io.NativeThread;

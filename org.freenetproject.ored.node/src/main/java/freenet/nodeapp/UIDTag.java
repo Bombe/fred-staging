@@ -5,7 +5,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import java.lang.ref.WeakReference;
 import java.util.HashSet;
 
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.LogThresholdCallback;
 import freenet.support.Logger.LogLevel;
 

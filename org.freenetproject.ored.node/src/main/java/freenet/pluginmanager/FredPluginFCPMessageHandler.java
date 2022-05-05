@@ -9,7 +9,7 @@ import java.util.UUID;
 import freenet.clients.fcp.FCPPluginConnection;
 import freenet.clients.fcp.FCPPluginConnection.SendDirection;
 import freenet.clients.fcp.FCPPluginMessage;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.SimpleFieldSet;
 import freenet.support.io.NativeThread;
 

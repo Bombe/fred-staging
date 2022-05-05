@@ -22,7 +22,7 @@ import freenet.io.comm.Peer;
 import freenet.io.comm.PeerParseException;
 import freenet.keys.FreenetURI;
 import freenet.keys.InsertableClientSSK;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.SimpleFieldSet;
 import freenet.support.Logger.LogLevel;
 

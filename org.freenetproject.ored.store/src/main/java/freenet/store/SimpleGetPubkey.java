@@ -6,7 +6,7 @@ import freenet.crypt.DSAPublicKey;
 import freenet.keys.BlockMetadata;
 import freenet.keys.GetPubkey;
 import freenet.support.HexUtil;
-import freenet.support.Logger;
+import freenet.storelogger.Logger;
 
 public class SimpleGetPubkey implements GetPubkey {
 	

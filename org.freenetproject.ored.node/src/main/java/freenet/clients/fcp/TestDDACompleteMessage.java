@@ -8,7 +8,7 @@ import java.io.IOException;
 
 import freenet.clients.fcp.FCPConnectionHandler.DDACheckJob;
 import freenet.nodeapp.Node;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.SimpleFieldSet;
 import freenet.support.io.FileUtil;
 

@@ -8,7 +8,7 @@ import java.util.HashMap;
 import freenet.client.filter.DataFilterException;
 import freenet.keys.FreenetURI;
 import freenet.l10n.NodeL10n;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 
 /**
  * Thrown when a high-level request (fetch) fails. Indicates why, whether it is worth retrying, and may give a 

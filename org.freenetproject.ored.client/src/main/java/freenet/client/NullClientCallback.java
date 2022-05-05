@@ -8,7 +8,7 @@ import freenet.client.async.ClientGetter;
 import freenet.client.async.ClientPutCallback;
 import freenet.client.request.RequestClient;
 import freenet.keys.FreenetURI;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 
 /**
  *

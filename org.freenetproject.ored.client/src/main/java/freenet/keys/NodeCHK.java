@@ -11,7 +11,7 @@ import java.util.Arrays;
 
 import freenet.support.Base64;
 import freenet.support.Fields;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 
 /**
  * @author amphibian

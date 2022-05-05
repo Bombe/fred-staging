@@ -8,7 +8,7 @@ import java.util.Date;
 import freenet.client.async.ClientRequester;
 import freenet.support.CurrentTimeUTC;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.Logger.LogLevel;
 
 public class SplitfileProgressEvent implements ClientEvent {

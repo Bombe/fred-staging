@@ -34,7 +34,7 @@ import freenet.nodeapp.SeedServerPeerNode;
 import freenet.nodeapp.SeedServerTestPeerNode;
 import freenet.nodeapp.SeedServerTestPeerNode.FATE;
 import freenet.support.Executor;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.PooledExecutor;
 import freenet.support.SimpleFieldSet;
 import freenet.support.TimeUtil;

@@ -18,7 +18,7 @@ import freenet.keys.KeyBlock;
 import freenet.keys.NodeSSK;
 import freenet.support.Executor;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.io.NativeThread;
 import freenet.support.node.PrioRunnable;

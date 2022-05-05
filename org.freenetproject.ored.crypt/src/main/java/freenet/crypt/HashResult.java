@@ -8,7 +8,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 
 import freenet.support.HexUtil;
-import freenet.support.Logger;
+import freenet.cryptlogger.Logger;
 
 public class HashResult implements Comparable<HashResult>, Cloneable, Serializable {
 

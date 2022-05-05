@@ -13,7 +13,7 @@ import freenet.config.SubConfig;
 import freenet.http.HTTPRequest;
 import freenet.l10n.NodeL10n;
 import freenet.nodeapp.Node;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 
 /**
  * Symlinker Toadlet

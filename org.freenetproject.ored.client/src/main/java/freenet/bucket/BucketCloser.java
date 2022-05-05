@@ -1,6 +1,6 @@
 package freenet.bucket;
 
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.io.Closer;
 
 public class BucketCloser extends Closer {

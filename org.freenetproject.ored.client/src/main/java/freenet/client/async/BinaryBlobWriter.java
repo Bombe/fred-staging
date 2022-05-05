@@ -14,7 +14,7 @@ import freenet.bucket.BucketFactory;
 import freenet.bucket.BucketTools;
 import freenet.keys.ClientKeyBlock;
 import freenet.keys.Key;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 
 /**
  * Helper class to write FBlobs. Threadsafe, allows multiple getters to

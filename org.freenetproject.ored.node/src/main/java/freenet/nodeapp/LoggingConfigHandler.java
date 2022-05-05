@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import freenet.config.*;
 import freenet.support.Executor;
 import freenet.support.FileLoggerHook;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.LoggerHook;
 import freenet.support.LoggerHookChain;
 import freenet.support.FileLoggerHook.IntervalParseException;

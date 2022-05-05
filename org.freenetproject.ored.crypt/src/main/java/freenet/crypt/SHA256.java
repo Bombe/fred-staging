@@ -42,7 +42,7 @@ import java.security.Provider;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import freenet.support.Logger;
+import freenet.cryptlogger.Logger;
 import freenet.support.io.Closer;
 
 /**

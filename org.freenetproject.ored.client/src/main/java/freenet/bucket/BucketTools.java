@@ -21,7 +21,7 @@ import freenet.support.math.MersenneTwister;
 import freenet.crypt.MasterSecret;
 import freenet.crypt.SHA256;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.api.RandomAccessBuffer;
 

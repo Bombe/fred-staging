@@ -9,7 +9,7 @@ import java.io.OutputStream;
 
 import freenet.bucket.*;
 import freenet.client.async.PersistenceDisabledException;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.io.FileUtil;
 import freenet.support.io.NullOutputStream;
 

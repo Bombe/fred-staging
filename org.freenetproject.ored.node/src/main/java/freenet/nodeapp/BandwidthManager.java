@@ -5,7 +5,7 @@ import freenet.config.InvalidConfigValueException;
 import freenet.l10n.NodeL10n;
 import freenet.nodeapp.useralerts.UpgradeConnectionSpeedUserAlert;
 import freenet.pluginmanager.FredPluginBandwidthIndicator;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 
 import static java.util.concurrent.TimeUnit.*;
 

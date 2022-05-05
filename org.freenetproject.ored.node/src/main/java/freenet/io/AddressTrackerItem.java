@@ -15,7 +15,7 @@
  */
 package freenet.io;
 
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.SimpleFieldSet;
 import freenet.support.node.FSParseException;
 

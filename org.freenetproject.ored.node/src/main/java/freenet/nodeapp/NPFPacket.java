@@ -15,7 +15,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import freenet.crypt.Util;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.LogThresholdCallback;
 import freenet.support.Logger.LogLevel;
 

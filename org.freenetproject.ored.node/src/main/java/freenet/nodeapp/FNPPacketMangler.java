@@ -39,7 +39,7 @@ import freenet.support.ByteArrayWrapper;
 import freenet.support.Fields;
 import freenet.support.HexUtil;
 import freenet.support.LRUMap;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.SerialExecutor;
 import freenet.support.SimpleFieldSet;
 import freenet.support.TimeUtil;

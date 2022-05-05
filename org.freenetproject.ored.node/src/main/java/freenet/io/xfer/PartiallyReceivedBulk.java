@@ -10,7 +10,7 @@ import freenet.io.comm.MessageCore;
 import freenet.io.comm.RetrievalException;
 import freenet.support.BitArray;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.api.RandomAccessBuffer;
 

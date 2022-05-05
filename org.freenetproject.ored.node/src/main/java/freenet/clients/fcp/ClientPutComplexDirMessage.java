@@ -16,7 +16,7 @@ import freenet.client.async.ManifestElement;
 import freenet.client.async.ManifestElementNew;
 import freenet.clients.fcp.FCPClientRequest.Persistence;
 import freenet.nodeapp.Node;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.SimpleFieldSet;
 import freenet.support.Logger.LogLevel;
 

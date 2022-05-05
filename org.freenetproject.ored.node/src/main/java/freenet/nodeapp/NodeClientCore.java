@@ -47,7 +47,7 @@ import freenet.nodeapp.SecurityLevels.PHYSICAL_THREAT_LEVEL;
 import freenet.pluginmanager.PluginStores;
 import freenet.support.Base64;
 import freenet.support.Executor;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.MemoryLimitedJobRunner;
 import freenet.support.SimpleFieldSet;
 import freenet.support.SizeUtil;

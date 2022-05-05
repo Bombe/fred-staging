@@ -8,7 +8,7 @@ import freenet.client.async.ClientPutCallback;
 import freenet.client.request.RequestClient;
 import freenet.keys.FreenetURI;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.Logger.LogLevel;
 
 /** Provides a blocking wrapper for an insert. Used for simple blocking APIs such as HighLevelSimpleClient. */

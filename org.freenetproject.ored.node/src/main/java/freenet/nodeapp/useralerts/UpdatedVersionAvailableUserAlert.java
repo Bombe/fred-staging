@@ -11,7 +11,7 @@ import freenet.nodeapp.Node;
 import freenet.nodeapp.updater.NodeUpdateManager;
 import freenet.nodeapp.updater.RevocationChecker;
 import freenet.support.HTMLNode;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.TimeUtil;
 
 public class UpdatedVersionAvailableUserAlert extends BaseNodeUserAlert {

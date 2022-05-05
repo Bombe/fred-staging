@@ -67,7 +67,7 @@ import freenet.nodeapp.Version;
 import freenet.nodeapp.useralerts.BaseNodeUserAlert;
 import freenet.support.HTMLNode;
 import freenet.support.HexUtil;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.ShortBuffer;
 import freenet.support.SizeUtil;
 import freenet.support.TimeUtil;

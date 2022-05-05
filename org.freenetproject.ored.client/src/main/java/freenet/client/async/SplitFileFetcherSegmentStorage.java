@@ -25,7 +25,7 @@ import freenet.keys.ClientCHK;
 import freenet.keys.ClientCHKBlock;
 import freenet.keys.Key;
 import freenet.keys.NodeCHK;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.MemoryLimitedChunk;
 import freenet.support.MemoryLimitedJob;
 import freenet.support.MemoryLimitedJobRunner;

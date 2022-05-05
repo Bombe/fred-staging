@@ -13,7 +13,7 @@ import java.util.Map;
 
 import freenet.client.FetchException.FetchExceptionMode;
 import freenet.client.InsertException.InsertExceptionMode;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.SimpleFieldSet;
 import freenet.support.io.StorageFormatException;
 

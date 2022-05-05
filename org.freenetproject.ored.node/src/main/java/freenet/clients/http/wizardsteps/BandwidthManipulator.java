@@ -7,7 +7,7 @@ import freenet.nodeapp.NodeClientCore;
 import freenet.nodeapp.Node;
 import freenet.pluginmanager.FredPluginBandwidthIndicator;
 import freenet.support.HTMLNode;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 
 /**
  * Utility class used by bandwidth steps to detect and set bandwidth, and set the wizard completion flag.

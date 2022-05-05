@@ -12,7 +12,7 @@ import freenet.l10n.NodeL10n;
 import freenet.lockablebuffer.ByteArrayRandomAccessBuffer;
 import freenet.lockablebuffer.FileRandomAccessBuffer;
 import freenet.nodeapp.NodeClientCore;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.MediaType;
 import freenet.support.api.RandomAccessBuffer;

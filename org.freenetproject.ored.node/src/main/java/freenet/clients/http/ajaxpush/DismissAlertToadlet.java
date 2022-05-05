@@ -10,7 +10,7 @@ import freenet.clients.http.ToadletContext;
 import freenet.clients.http.ToadletContextClosedException;
 import freenet.clients.http.updateableelements.UpdaterConstants;
 import freenet.support.HTMLDecoder;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.http.HTTPRequest;
 
 /** This toadlet is used to dismiss alerts from the client side */

@@ -13,7 +13,7 @@ import freenet.bucket.FileBucket;
 import freenet.client.async.ManifestElementNew;
 import freenet.nodeapp.Node;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.SimpleFieldSet;
 import freenet.bucket.BucketFactory;

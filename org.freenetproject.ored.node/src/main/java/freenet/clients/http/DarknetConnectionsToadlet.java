@@ -18,7 +18,7 @@ import freenet.nodeapp.NodeClientCore;
 import freenet.nodeapp.PeerManager;
 import freenet.nodeapp.PeerNodeStatus;
 import freenet.support.HTMLNode;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.MultiValueTable;
 import freenet.support.SimpleFieldSet;
 import freenet.support.io.FileUtil;

@@ -5,7 +5,7 @@ package freenet.pluginmanager;
 
 import freenet.clients.fcp.FCPPluginConnection;
 import freenet.nodeapp.Node;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.SimpleFieldSet;
 import freenet.bucket.Bucket;
 

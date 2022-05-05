@@ -1,6 +1,6 @@
 package freenet.client.filter;
 
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;

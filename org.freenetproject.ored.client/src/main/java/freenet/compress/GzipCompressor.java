@@ -8,7 +8,7 @@ import java.io.OutputStream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.bucket.Bucket;
 import freenet.bucket.BucketFactory;
 import freenet.support.io.Closer;

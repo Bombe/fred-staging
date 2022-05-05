@@ -46,7 +46,7 @@ import freenet.support.Fields;
 import freenet.support.HTMLNode;
 import freenet.support.LRUQueue;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.SimpleFieldSet;
 import freenet.support.TimeSortedHashtable;

@@ -11,7 +11,7 @@ import freenet.client.ContainerSizeEstimator;
 import freenet.client.ContainerSizeEstimator.ContainerSize;
 import freenet.client.InsertContext;
 import freenet.keys.FreenetURI;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.io.ResumeFailedException;
 
 /**

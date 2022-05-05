@@ -21,7 +21,7 @@ import freenet.keys.CHKBlock;
 import freenet.keys.CHKEncodeException;
 import freenet.keys.ClientCHK;
 import freenet.keys.ClientCHKBlock;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.MemoryLimitedChunk;
 import freenet.support.MemoryLimitedJob;
 import freenet.support.MemoryLimitedJobRunner;

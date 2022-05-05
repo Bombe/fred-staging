@@ -5,7 +5,7 @@ import java.io.Serializable;
 import freenet.client.events.ExpectedHashesEvent;
 import freenet.crypt.HashResult;
 import freenet.nodeapp.Node;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.SimpleFieldSet;
 
 public class ExpectedHashes extends FCPMessage implements Serializable {

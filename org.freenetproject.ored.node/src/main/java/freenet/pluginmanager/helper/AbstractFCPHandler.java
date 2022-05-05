@@ -9,7 +9,7 @@ import java.io.StringWriter;
 import freenet.bucket.Bucket;
 import freenet.pluginmanager.PluginNotFoundException;
 import freenet.pluginmanager.PluginReplySender;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.SimpleFieldSet;
 
 public abstract class AbstractFCPHandler {

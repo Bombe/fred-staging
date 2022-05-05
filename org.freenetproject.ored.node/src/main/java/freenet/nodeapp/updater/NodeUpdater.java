@@ -36,7 +36,7 @@ import freenet.nodeapp.Node;
 import freenet.nodeapp.NodeClientCore;
 import freenet.nodeapp.NodeRequestStarter;
 import freenet.nodeapp.Version;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.Ticker;
 import freenet.support.io.Closer;

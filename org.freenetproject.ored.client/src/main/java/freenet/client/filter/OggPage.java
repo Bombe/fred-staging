@@ -14,7 +14,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 
 import freenet.l10n.NodeL10n;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.Logger.LogLevel;
 
 /** Represents a single page of an Ogg bitstream

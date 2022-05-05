@@ -6,7 +6,7 @@ import freenet.client.InsertException;
 import freenet.client.async.SplitFileInserterSegmentStorage.BlockInsert;
 import freenet.client.request.*;
 import freenet.keys.*;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.io.ResumeFailedException;
 import freenet.support.node.NodeConstants;
 

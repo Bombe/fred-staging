@@ -3,7 +3,7 @@ package freenet.client.async;
 import freenet.client.request.*;
 import freenet.keys.ClientKey;
 import freenet.keys.Key;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 
 /**
  * @author Matthew Toseland <toad@amphibian.dyndns.org> (0xE43DA450)

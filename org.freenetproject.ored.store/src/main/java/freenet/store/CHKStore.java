@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import freenet.crypt.DSAPublicKey;
 import freenet.keys.*;
-import freenet.support.Logger;
+import freenet.storelogger.Logger;
 
 public class CHKStore extends StoreCallback<CHKBlock> {
 

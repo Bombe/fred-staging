@@ -17,7 +17,7 @@ import freenet.crypt.SHA256;
 import freenet.crypt.Util;
 import freenet.support.Fields;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.bucket.SimpleReadOnlyArrayBucket;
 import freenet.bucket.Bucket;

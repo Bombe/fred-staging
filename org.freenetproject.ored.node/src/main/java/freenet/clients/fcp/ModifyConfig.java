@@ -7,7 +7,7 @@ import freenet.config.Config;
 import freenet.config.Option;
 import freenet.config.SubConfig;
 import freenet.nodeapp.Node;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.SimpleFieldSet;
 import freenet.support.Logger.LogLevel;
 

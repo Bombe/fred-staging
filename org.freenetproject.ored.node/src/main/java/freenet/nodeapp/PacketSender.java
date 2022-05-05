@@ -12,7 +12,7 @@ import java.util.ArrayList;
 
 import freenet.l10n.NodeL10n;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.TimeUtil;
 import freenet.support.io.NativeThread;

@@ -8,7 +8,7 @@ import freenet.keys.BlockMetadata;
 import freenet.keys.KeyCollisionException;
 import freenet.keys.KeyVerifyException;
 import freenet.keys.PubkeyVerifyException;
-import freenet.support.Logger;
+import freenet.storelogger.Logger;
 
 public class PubkeyStore extends StoreCallback<StoreDSAPublicKey> {
 

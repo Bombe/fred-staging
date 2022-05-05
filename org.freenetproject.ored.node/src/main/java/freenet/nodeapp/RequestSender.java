@@ -31,7 +31,7 @@ import freenet.nodeapp.FailureTable.OfferList;
 import freenet.nodeapp.OpennetManager.ConnectionType;
 import freenet.nodeapp.OpennetManager.WaitedTooLongForOpennetNoderefException;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.ShortBuffer;
 import freenet.support.SimpleFieldSet;

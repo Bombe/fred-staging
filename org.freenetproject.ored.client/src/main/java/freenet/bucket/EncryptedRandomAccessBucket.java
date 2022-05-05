@@ -33,7 +33,7 @@ import org.bouncycastle.crypto.params.ParametersWithIV;
 import freenet.client.async.ClientContext;
 import freenet.lockablebuffer.EncryptedRandomAccessBuffer.kdfInput;
 import freenet.support.Fields;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.io.FilenameGenerator;
 import freenet.support.io.NullInputStream;
 import freenet.support.io.PersistentFileTracker;

@@ -11,7 +11,7 @@ import javax.crypto.spec.SecretKeySpec;
 import freenet.crypt.BlockCipher;
 import freenet.crypt.JceLoader;
 import freenet.crypt.UnsupportedCipherException;
-import freenet.support.Logger;
+import freenet.cryptlogger.Logger;
 
 /*
   This code is part of the Java Adaptive Network Client by Ian Clarke. 

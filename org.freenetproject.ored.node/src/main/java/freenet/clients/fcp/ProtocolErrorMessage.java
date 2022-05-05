@@ -6,7 +6,7 @@ package freenet.clients.fcp;
 import java.io.Serializable;
 
 import freenet.nodeapp.Node;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.SimpleFieldSet;
 
 /**

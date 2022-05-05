@@ -34,7 +34,7 @@ import freenet.nodeapp.Node;
 import freenet.nodeapp.NodeClientCore;
 import freenet.nodeapp.SecurityLevels;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;
 
 /**

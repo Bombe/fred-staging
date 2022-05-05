@@ -14,7 +14,7 @@ import freenet.nodeapp.SecurityLevels;
 import freenet.nodeapp.filter.PushingTagReplacerCallback;
 import freenet.pluginmanager.FredPluginL10n;
 import freenet.support.HTMLNode;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 
 /** Simple class to output standard heads and tail for web interface pages. 
 */

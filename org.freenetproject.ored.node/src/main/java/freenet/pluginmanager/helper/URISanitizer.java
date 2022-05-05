@@ -7,7 +7,7 @@ import java.net.MalformedURLException;
 import java.util.List;
 
 import freenet.keys.FreenetURI;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 
 public class URISanitizer {
 

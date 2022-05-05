@@ -46,7 +46,7 @@ import freenet.pluginmanager.FredPluginFCPMessageHandler.ClientSideFCPMessageHan
 import freenet.pluginmanager.PluginNotFoundException;
 import freenet.pluginmanager.PluginRespirator;
 import freenet.support.Base64;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.io.NativeThread;
 

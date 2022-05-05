@@ -11,7 +11,7 @@ import java.util.Deque;
 
 import freenet.support.LogThresholdCallback;
 
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;
 
 public class FCPConnectionOutputHandler implements Runnable {

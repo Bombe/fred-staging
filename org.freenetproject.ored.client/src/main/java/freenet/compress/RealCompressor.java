@@ -13,7 +13,7 @@ import freenet.client.InsertException;
 import freenet.client.InsertException.InsertExceptionMode;
 import freenet.client.async.ClientContext;
 import freenet.support.node.PrioRunnable;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.io.NativeThread;
 
 public class RealCompressor {

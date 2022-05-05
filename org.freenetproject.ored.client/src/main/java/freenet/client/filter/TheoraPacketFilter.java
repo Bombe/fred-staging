@@ -4,7 +4,7 @@ import java.io.*;
 import java.util.*;
 import java.util.function.Predicate;
 
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.io.BitInputStream;
 
 import static freenet.support.PredicateUtil.not;

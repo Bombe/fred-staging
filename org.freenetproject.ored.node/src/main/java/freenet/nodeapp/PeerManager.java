@@ -33,7 +33,7 @@ import freenet.keys.Key;
 import freenet.nodeapp.useralerts.DroppedOldPeersUserAlert;
 import freenet.nodeapp.useralerts.PeerManagerUserAlert;
 import freenet.support.ByteArrayWrapper;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.ShortBuffer;
 import freenet.support.SimpleFieldSet;
 import freenet.support.TimeUtil;

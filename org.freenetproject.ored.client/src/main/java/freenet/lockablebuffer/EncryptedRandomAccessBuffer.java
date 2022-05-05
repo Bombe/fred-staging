@@ -26,7 +26,7 @@ import org.bouncycastle.crypto.params.ParametersWithIV;
 
 import freenet.client.async.ClientContext;
 import freenet.support.Fields;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.bucket.BucketTools;
 import freenet.support.io.PersistentFileTracker;
 import freenet.support.io.ResumeFailedException;

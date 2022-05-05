@@ -1,6 +1,6 @@
 package freenet.nodeapp;
 
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.TimeUtil;
 
 /** Contains information on why we can't route a request. Initially just a flag

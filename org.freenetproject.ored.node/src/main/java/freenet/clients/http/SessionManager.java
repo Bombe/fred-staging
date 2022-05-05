@@ -18,7 +18,7 @@ import java.util.UUID;
 
 import freenet.support.CurrentTimeUTC;
 import freenet.support.LRUMap;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.StringValidityChecker;
 
 /**

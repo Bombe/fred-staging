@@ -20,7 +20,7 @@ import freenet.keys.ClientKeyBlock;
 import freenet.keys.KeyDecodeException;
 import freenet.keys.TooBigException;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.io.InsufficientDiskSpaceException;
 

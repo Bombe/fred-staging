@@ -1,6 +1,6 @@
 package freenet.pluginmanager;
 
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 
 /**
  * Methods to handle a specific plugin (= set it up and start it)

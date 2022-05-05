@@ -38,7 +38,7 @@ import freenet.lockablebuffer.LockableRandomAccessBuffer;
 import freenet.lockablebuffer.LockableRandomAccessBuffer.RAFLock;
 import freenet.lockablebuffer.LockableRandomAccessBufferFactory;
 import freenet.support.HexUtil;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.MemoryLimitedJobRunner;
 import freenet.support.RandomArrayIterator;
 import freenet.support.Ticker;

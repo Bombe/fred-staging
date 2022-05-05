@@ -6,7 +6,7 @@ import java.util.Random;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.io.DiskSpaceChecker;
 import freenet.support.io.FileUtil;
 import freenet.support.io.InsufficientDiskSpaceException;

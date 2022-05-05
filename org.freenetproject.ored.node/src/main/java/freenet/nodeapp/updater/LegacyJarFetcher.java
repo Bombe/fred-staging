@@ -17,7 +17,7 @@ import freenet.client.request.RequestClientBuilder;
 import freenet.keys.FreenetURI;
 import freenet.nodeapp.NodeClientCore;
 import freenet.nodeapp.NodeRequestStarter;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.io.FileUtil;
 
 /** Fetches the old freenet-ext.jar and freenet-stable-latest.jar. In other

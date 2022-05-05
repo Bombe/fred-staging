@@ -42,7 +42,7 @@ import freenet.pluginmanager.FredPluginL10n;
 import freenet.support.Executor;
 import freenet.support.HTMLNode;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.Ticker;
 import freenet.support.io.NativeThread;

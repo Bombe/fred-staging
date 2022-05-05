@@ -16,7 +16,7 @@ import freenet.nodeapp.PeerNode.RequestLikelyAcceptedState;
 import freenet.nodeapp.PeerNode.SlotWaiter;
 import freenet.nodeapp.PeerNode.SlotWaiterFailedException;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.TimeUtil;
 

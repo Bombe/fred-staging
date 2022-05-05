@@ -10,7 +10,7 @@ import java.security.NoSuchAlgorithmException;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
-import freenet.support.Logger;
+import freenet.cryptlogger.Logger;
 
 /**
  * Implements the HMAC Keyed Message Authentication function, as described in the draft FIPS

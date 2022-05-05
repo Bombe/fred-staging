@@ -6,7 +6,7 @@ import freenet.config.ConfigException;
 import freenet.http.HTTPRequest;
 import freenet.l10n.NodeL10n;
 import freenet.support.HTMLNode;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 
 /**
  * Allows the user to choose a node name for Darknet.

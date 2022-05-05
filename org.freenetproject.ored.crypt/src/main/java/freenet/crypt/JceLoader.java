@@ -12,7 +12,7 @@ import java.security.Signature;
 
 import javax.crypto.KeyAgreement;
 
-import freenet.support.Logger;
+import freenet.cryptlogger.Logger;
 import freenet.support.io.Closer;
 
 public class JceLoader {

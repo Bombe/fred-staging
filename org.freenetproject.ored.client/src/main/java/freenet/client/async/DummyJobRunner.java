@@ -1,7 +1,7 @@
 package freenet.client.async;
 
 import freenet.support.Executor;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.io.NativeThread;
 import freenet.support.node.PrioRunnable;
 

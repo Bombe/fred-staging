@@ -6,7 +6,7 @@ import freenet.nodeapp.OpennetManager.ConnectionType;
 import freenet.nodeapp.OpennetManager.LinkLengthClass;
 import freenet.nodeapp.updater.NodeUpdateManager;
 import freenet.nodeapp.updater.UpdateOverMandatoryManager;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.SimpleFieldSet;
 import freenet.support.node.FSParseException;
 import freenet.support.node.FastRunnable;

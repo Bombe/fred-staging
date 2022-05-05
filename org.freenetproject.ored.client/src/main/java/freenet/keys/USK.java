@@ -10,7 +10,7 @@ import java.util.Comparator;
 import java.util.regex.Pattern;
 
 import freenet.support.Fields;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 
 /**
  * Updatable Subspace Key.

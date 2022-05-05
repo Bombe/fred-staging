@@ -33,7 +33,7 @@ import freenet.support.Base64;
 import freenet.support.CurrentTimeUTC;
 import freenet.support.IllegalBase64Exception;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.io.Closer;
 import freenet.support.io.ResumeFailedException;

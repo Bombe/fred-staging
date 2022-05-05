@@ -19,7 +19,7 @@ import freenet.clients.http.ToadletContext;
 import freenet.keys.FreenetURI;
 import freenet.support.Base64;
 import freenet.support.HTMLNode;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 
 /** A pushed image, the progress is shown with the ImageCreatorToadlet */
 public class ImageElement extends BaseUpdateableElement {

@@ -16,7 +16,7 @@ import freenet.client.filter.FilterOperation;
 import freenet.client.filter.UnsafeContentTypeException;
 import freenet.client.filter.ContentFilter.FilterStatus;
 import freenet.nodeapp.Node;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.SimpleFieldSet;
 import freenet.support.client.DefaultMIMETypes;
 import freenet.support.io.Closer;

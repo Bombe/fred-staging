@@ -25,7 +25,7 @@ import freenet.keys.FreenetURI;
 import freenet.l10n.NodeL10n;
 import freenet.support.HTMLEncoder;
 import freenet.support.HTMLNode;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.MultiValueTable;
 
 /**

@@ -5,7 +5,7 @@ import freenet.client.async.ClientContext;
 import freenet.keys.ClientKey;
 import freenet.keys.Key;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.Logger.LogLevel;
 
 public class SendableGetRequestSender implements SendableRequestSender {

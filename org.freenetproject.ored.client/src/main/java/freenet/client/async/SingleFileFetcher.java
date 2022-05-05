@@ -46,7 +46,7 @@ import freenet.keys.ClientSSK;
 import freenet.keys.FreenetURI;
 import freenet.keys.USK;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.io.Closer;
 import freenet.support.io.InsufficientDiskSpaceException;

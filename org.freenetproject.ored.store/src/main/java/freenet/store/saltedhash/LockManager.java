@@ -10,7 +10,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import freenet.support.Logger;
+import freenet.storelogger.Logger;
 import freenet.support.Logger.LogLevel;
 
 /**

@@ -46,7 +46,7 @@ import freenet.compress.DecompressorThreadManager;
 import freenet.crypt.HashResult;
 import freenet.keys.ClientKeyBlock;
 import freenet.keys.FreenetURI;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.client.DefaultMIMETypes;
 import freenet.support.io.Closer;
 import freenet.support.io.FileUtil;

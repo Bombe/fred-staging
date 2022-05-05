@@ -14,7 +14,7 @@ import java.util.Map;
 import freenet.clients.http.StaticToadlet;
 import freenet.nodeapp.Node;
 import freenet.support.HTMLNode;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 
 public class IPConverter {
 	// Regex indicating ipranges start

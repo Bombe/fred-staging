@@ -7,7 +7,7 @@ import java.io.OutputStream;
 import java.io.Serializable;
 
 import freenet.client.async.ClientContext;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.io.*;
 
 public class PersistentTempFileBucket extends TempFileBucket implements Serializable {

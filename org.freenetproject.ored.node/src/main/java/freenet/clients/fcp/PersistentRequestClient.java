@@ -17,7 +17,7 @@ import freenet.clients.fcp.ListPersistentRequestsMessage.PersistentListJob;
 import freenet.clients.fcp.ListPersistentRequestsMessage.TransientListJob;
 import freenet.keys.FreenetURI;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;
 
 /**

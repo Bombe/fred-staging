@@ -13,7 +13,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 import freenet.support.HexUtil;
-import freenet.support.Logger;
+import freenet.cryptlogger.Logger;
 
 public abstract class CryptoKey implements CryptoElement, Serializable {
 

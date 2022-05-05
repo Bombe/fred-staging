@@ -26,7 +26,7 @@ import freenet.nodeapp.useralerts.UserEvent;
 import freenet.support.ByteArrayWrapper;
 import freenet.support.HTMLNode;
 import freenet.support.ListUtils;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.SimpleFieldSet;
 import freenet.support.TimeUtil;

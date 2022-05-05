@@ -14,7 +14,7 @@ import freenet.crypt.UnsupportedCipherException;
 import freenet.crypt.ciphers.Rijndael;
 import freenet.support.Fields;
 import freenet.support.HexUtil;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 
 /** Client-level SSK, i.e. a low level SSK with the decryption key needed to
  * decrypt the data once it is fetched. Note that you can only use this to

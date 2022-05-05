@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import freenet.config.*;
 import freenet.l10n.NodeL10n;
 import freenet.support.HTMLNode;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 
 /**
  * We have 3 basic security settings. The user chooses these in the first-time 

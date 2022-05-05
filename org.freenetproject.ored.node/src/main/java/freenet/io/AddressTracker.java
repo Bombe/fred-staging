@@ -36,7 +36,7 @@ import java.util.Iterator;
 import freenet.io.comm.Peer;
 import freenet.l10n.NodeL10n;
 import freenet.nodeapp.ProgramDirectory;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.SimpleFieldSet;
 import freenet.support.io.FileUtil;
 import freenet.support.node.FSParseException;

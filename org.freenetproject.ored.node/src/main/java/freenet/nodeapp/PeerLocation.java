@@ -3,7 +3,7 @@ package freenet.nodeapp;
 import java.util.Arrays;
 import java.util.Set;
 
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 
 public class PeerLocation {
 	

@@ -20,7 +20,7 @@ import freenet.client.async.ClientGetCallback;
 import freenet.client.async.ClientGetter;
 import freenet.client.async.ClientPutCallback;
 import freenet.keys.FreenetURI;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.TrivialTicker;
 import freenet.support.node.PrioRunnable;
 

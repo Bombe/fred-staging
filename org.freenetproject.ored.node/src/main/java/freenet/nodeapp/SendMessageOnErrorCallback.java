@@ -8,7 +8,7 @@ import freenet.io.comm.ByteCounter;
 import freenet.io.comm.Message;
 import freenet.io.comm.NotConnectedException;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;
 
 /**

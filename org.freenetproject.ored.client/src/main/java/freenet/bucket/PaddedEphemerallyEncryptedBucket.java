@@ -21,7 +21,7 @@ import freenet.crypt.RandomSource;
 import freenet.crypt.UnsupportedCipherException;
 import freenet.crypt.ciphers.Rijndael;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.io.PersistentFileTracker;
 import freenet.support.io.ResumeFailedException;

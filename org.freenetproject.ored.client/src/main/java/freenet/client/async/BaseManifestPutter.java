@@ -30,7 +30,7 @@ import freenet.client.events.SplitfileProgressEvent;
 import freenet.keys.BaseClientKey;
 import freenet.keys.FreenetURI;
 import freenet.keys.Key;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.client.DefaultMIMETypes;
 import freenet.support.io.ResumeFailedException;
 

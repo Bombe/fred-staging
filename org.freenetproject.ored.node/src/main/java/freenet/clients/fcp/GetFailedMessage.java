@@ -15,7 +15,7 @@ import freenet.client.FetchException.FetchExceptionMode;
 import freenet.keys.FreenetURI;
 import freenet.nodeapp.Node;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.fcp.RequestIdentifier;
 import freenet.support.io.StorageFormatException;

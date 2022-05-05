@@ -8,7 +8,7 @@ import freenet.clients.fcp.FeedMessage;
 import freenet.l10n.NodeL10n;
 import freenet.nodeapp.NodeClientCore;
 import freenet.support.HTMLNode;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.io.FilenameGenerator;
 
 /** Tell the user when there is insufficient disk space for either short term (transient requests, 

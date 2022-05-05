@@ -23,7 +23,7 @@ import freenet.nodeapp.NodeStats.RejectReason;
 import freenet.nodeapp.probe.Probe;
 import freenet.support.Fields;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.ShortBuffer;
 import freenet.support.io.NativeThread;

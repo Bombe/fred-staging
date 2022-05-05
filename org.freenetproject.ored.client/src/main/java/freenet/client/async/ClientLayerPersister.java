@@ -24,7 +24,7 @@ import freenet.checksum.ChecksumFailedException;
 import freenet.keys.DatabaseKey;
 import freenet.keys.MasterKeysWrongPasswordException;
 import freenet.support.Executor;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.Ticker;
 import freenet.support.fcp.RequestIdentifier;
 import freenet.support.io.DelayedFree;

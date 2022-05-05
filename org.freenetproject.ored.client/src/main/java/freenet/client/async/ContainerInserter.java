@@ -32,7 +32,7 @@ import freenet.client.Metadata.DocumentType;
 import freenet.client.Metadata.SimpleManifestComposer;
 import freenet.client.async.BaseManifestPutter.PutHandler;
 import freenet.keys.FreenetURI;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.io.Closer;
 import freenet.support.io.ResumeFailedException;
 

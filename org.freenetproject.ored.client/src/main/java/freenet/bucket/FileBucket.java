@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.io.Serializable;
 
 import freenet.client.async.ClientContext;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.io.ResumeFailedException;
 import freenet.support.io.StorageFormatException;
 

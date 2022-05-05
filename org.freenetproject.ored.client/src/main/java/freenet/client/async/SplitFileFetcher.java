@@ -23,7 +23,7 @@ import freenet.keys.ClientCHKBlock;
 import freenet.keys.FreenetURI;
 import freenet.lockablebuffer.LockableRandomAccessBuffer;
 import freenet.lockablebuffer.PooledFileRandomAccessBuffer;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.compress.Compressor.COMPRESSOR_TYPE;
 import freenet.support.io.InsufficientDiskSpaceException;
 import freenet.support.io.ResumeFailedException;

@@ -5,7 +5,7 @@ import java.io.Serializable;
 import freenet.client.FetchContext;
 import freenet.keys.USK;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.io.NativeThread;
 

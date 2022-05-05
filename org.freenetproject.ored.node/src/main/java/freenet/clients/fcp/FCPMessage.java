@@ -7,7 +7,7 @@ import freenet.bucket.BucketFactory;
 import freenet.bucket.PersistentTempBucketFactory;
 import freenet.nodeapp.Node;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.SimpleFieldSet;
 import freenet.support.Logger.LogLevel;
 

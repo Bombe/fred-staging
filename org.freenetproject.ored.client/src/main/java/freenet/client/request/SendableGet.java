@@ -15,7 +15,7 @@ import freenet.client.async.SimpleSingleFileFetcher;
 import freenet.client.async.WantsCooldownCallback;
 import freenet.keys.ClientKey;
 import freenet.keys.Key;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.io.NativeThread;
 
 /**

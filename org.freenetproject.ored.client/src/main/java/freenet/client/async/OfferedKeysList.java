@@ -11,7 +11,7 @@ import freenet.crypt.RandomSource;
 import freenet.keys.Key;
 import freenet.support.ListUtils;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.Logger.LogLevel;
 
 /**

@@ -9,7 +9,7 @@ import freenet.http.HTTPRequest;
 import freenet.l10n.NodeL10n;
 import freenet.nodeapp.NodeClientCore;
 import freenet.support.HTMLNode;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.SizeUtil;
 import freenet.support.URLEncoder;
 

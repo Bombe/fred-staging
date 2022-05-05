@@ -11,7 +11,7 @@ import freenet.keys.ClientSSK;
 import freenet.keys.Key;
 import freenet.keys.KeyBlock;
 import freenet.keys.KeyVerifyException;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 import freenet.support.TimeUtil;
 
 /**

@@ -5,7 +5,7 @@ import java.util.Arrays;
 import freenet.client.async.ClientContext;
 import freenet.client.async.ClientRequestSelector;
 import freenet.client.async.RequestSelectionTreeNode;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 
 /**
  * Like RandomGrabArray, but there is an equal chance of any given client's requests being

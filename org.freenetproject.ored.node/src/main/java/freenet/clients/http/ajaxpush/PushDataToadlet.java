@@ -12,7 +12,7 @@ import freenet.clients.http.ToadletContextClosedException;
 import freenet.clients.http.updateableelements.BaseUpdateableElement;
 import freenet.clients.http.updateableelements.UpdaterConstants;
 import freenet.support.Base64;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.http.HTTPRequest;
 
 /** A toadlet that provides the current data of pushed elements. It requires the requestId and the elementId parameters. */

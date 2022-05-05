@@ -19,7 +19,7 @@ import freenet.nodeapp.NodeClientCore;
 import freenet.nodeapp.NodeStarter;
 import freenet.nodeapp.PeerManager;
 import freenet.support.HTMLNode;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.MultiValueTable;
 import freenet.support.SizeUtil;
 

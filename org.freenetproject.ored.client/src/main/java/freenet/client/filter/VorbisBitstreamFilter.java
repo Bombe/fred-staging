@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import freenet.support.Logger.LogLevel;
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 
 /**An Ogg bitstream parser for the Ogg Vorbis codec
  * @author sajack

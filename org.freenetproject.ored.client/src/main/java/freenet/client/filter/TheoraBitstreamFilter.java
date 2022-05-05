@@ -1,6 +1,6 @@
 package freenet.client.filter;
 
-import freenet.support.Logger;
+import freenet.clientlogger.Logger;
 
 import java.io.IOException;
 import java.util.ArrayList;

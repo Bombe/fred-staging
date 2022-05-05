@@ -23,7 +23,7 @@ import freenet.nodeapp.SecurityLevels.NETWORK_THREAT_LEVEL;
 import freenet.nodeapp.SecurityLevels.PHYSICAL_THREAT_LEVEL;
 import freenet.support.HTMLNode;
 import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
+import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.MultiValueTable;
 import freenet.http.HTTPRequest;
