@@ -190,7 +190,7 @@ public final class PageMaker {
 		if (theme2 == null) {
 			this.theme = THEME.getDefault();
 		} else {
-			URL themeurl = getClass().getResource("staticfiles/themes/" + theme2.code + "/theme.css");
+			URL themeurl = getClass().getResource("/staticfiles/themes/" + theme2.code + "/theme.css");
 			if (themeurl == null)
 				this.theme = THEME.getDefault();
 			else
@@ -340,7 +340,7 @@ public final class PageMaker {
 		}
 
 		if (ctx != null && ctx.getContainer().isFProxyJavascriptEnabled()) {
-			URL themeJsUrl = getClass().getResource("staticfiles/themes/" + theme.code + "/script.js");
+			URL themeJsUrl = getClass().getResource("/staticfiles/themes/" + theme.code + "/script.js");
 			if (themeJsUrl != null) {
 				headNode.addChild("script",
 						new String[]{"type", "language", "src"},

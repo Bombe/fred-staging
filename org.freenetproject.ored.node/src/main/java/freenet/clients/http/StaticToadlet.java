@@ -24,7 +24,7 @@ public class StaticToadlet extends Toadlet {
 	}
 	
 	public static final String ROOT_URL = "/static/";
-	public static final String ROOT_PATH = "staticfiles/";
+	public static final String ROOT_PATH = "/staticfiles/";
 	public static final String OVERRIDE = "override/";
 	public static final String OVERRIDE_URL = ROOT_URL + OVERRIDE;
 	
