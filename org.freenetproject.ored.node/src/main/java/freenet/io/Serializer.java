@@ -29,7 +29,7 @@ import freenet.io.comm.Peer;
 import freenet.keys.Key;
 import freenet.keys.NodeCHK;
 import freenet.keys.NodeSSK;
-import freenet.nodeapp.NewPacketFormat;
+import freenet.node.NewPacketFormat;
 import freenet.support.BitArray;
 import freenet.support.ShortBuffer;
 import freenet.support.io.WritableToDataOutputStream;

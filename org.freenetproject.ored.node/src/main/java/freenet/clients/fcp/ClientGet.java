@@ -35,7 +35,7 @@ import freenet.support.fcp.RequestIdentifier;
 import freenet.support.fcp.RequestIdentifier.RequestType;
 import freenet.crypt.HashResult;
 import freenet.keys.FreenetURI;
-import freenet.nodeapp.NodeClientCore;
+import freenet.node.NodeClientCore;
 import freenet.support.CurrentTimeUTC;
 import freenet.support.LogThresholdCallback;
 import freenet.nodelogger.Logger;

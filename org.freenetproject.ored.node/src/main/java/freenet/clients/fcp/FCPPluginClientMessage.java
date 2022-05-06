@@ -7,7 +7,7 @@ import java.io.IOException;
 
 import freenet.clients.fcp.FCPPluginConnection.SendDirection;
 import freenet.support.node.FSParseException;
-import freenet.nodeapp.Node;
+import freenet.node.Node;
 import freenet.pluginmanager.PluginManager;
 import freenet.pluginmanager.PluginNotFoundException;
 import freenet.pluginmanager.PluginTalker;

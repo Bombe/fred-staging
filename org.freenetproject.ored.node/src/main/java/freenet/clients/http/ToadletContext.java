@@ -10,7 +10,7 @@ import freenet.bucket.BucketFactory;
 import freenet.clients.http.FProxyFetchInProgress.REFILTER_POLICY;
 import freenet.clients.http.bookmark.BookmarkManager;
 import freenet.http.HTTPRequest;
-import freenet.nodeapp.useralerts.UserAlertManager;
+import freenet.node.useralerts.UserAlertManager;
 import freenet.support.HTMLNode;
 import freenet.support.MultiValueTable;
 

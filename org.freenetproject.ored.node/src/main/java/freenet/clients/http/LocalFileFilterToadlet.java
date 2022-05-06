@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.Hashtable;
 
 import freenet.client.HighLevelSimpleClient;
-import freenet.nodeapp.NodeClientCore;
+import freenet.node.NodeClientCore;
 import freenet.support.HTMLNode;
 
 /**

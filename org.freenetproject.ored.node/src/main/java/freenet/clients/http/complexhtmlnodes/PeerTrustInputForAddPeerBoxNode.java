@@ -1,7 +1,7 @@
 package freenet.clients.http.complexhtmlnodes;
 
 import freenet.l10n.NodeL10n;
-import freenet.nodeapp.DarknetPeerNode;
+import freenet.node.DarknetPeerNode;
 import freenet.support.HTMLNode;
 
 public class PeerTrustInputForAddPeerBoxNode extends HTMLNode {

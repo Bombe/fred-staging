@@ -3,8 +3,8 @@ package freenet.clients.http.wizardsteps;
 import freenet.clients.http.FirstTimeWizardToadlet;
 import freenet.http.HTTPRequest;
 import freenet.l10n.NodeL10n;
-import freenet.nodeapp.NodeClientCore;
-import freenet.nodeapp.SecurityLevels;
+import freenet.node.NodeClientCore;
+import freenet.node.SecurityLevels;
 import freenet.support.Fields;
 import freenet.support.HTMLNode;
 

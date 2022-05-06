@@ -7,7 +7,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 
 import freenet.keys.FreenetURI;
-import freenet.nodeapp.Node;
+import freenet.node.Node;
 import freenet.pluginmanager.PluginInfoWrapper;
 import freenet.nodelogger.Logger;
 import freenet.support.SimpleFieldSet;

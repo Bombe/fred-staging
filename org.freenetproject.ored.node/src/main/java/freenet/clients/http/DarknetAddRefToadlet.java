@@ -8,8 +8,8 @@ import freenet.bucket.FileBucket;
 import freenet.client.HighLevelSimpleClient;
 import freenet.http.HTTPRequest;
 import freenet.l10n.NodeL10n;
-import freenet.nodeapp.Node;
-import freenet.nodeapp.NodeFile;
+import freenet.node.Node;
+import freenet.node.NodeFile;
 import freenet.support.HTMLNode;
 import freenet.support.SimpleFieldSet;
 

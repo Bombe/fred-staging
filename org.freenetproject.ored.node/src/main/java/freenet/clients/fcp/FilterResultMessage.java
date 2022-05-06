@@ -1,7 +1,7 @@
 package freenet.clients.fcp;
 
 import freenet.bucket.Bucket;
-import freenet.nodeapp.Node;
+import freenet.node.Node;
 import freenet.support.SimpleFieldSet;
 
 /**

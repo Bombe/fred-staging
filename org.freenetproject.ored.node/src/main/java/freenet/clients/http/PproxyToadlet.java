@@ -21,7 +21,7 @@ import java.util.TreeMap;
 import freenet.client.HighLevelSimpleClient;
 import freenet.http.HTTPRequest;
 import freenet.l10n.NodeL10n;
-import freenet.nodeapp.Node;
+import freenet.node.Node;
 import freenet.pluginmanager.AccessDeniedPluginHTTPException;
 import freenet.pluginmanager.DownloadPluginHTTPException;
 import freenet.pluginmanager.NotFoundPluginHTTPException;

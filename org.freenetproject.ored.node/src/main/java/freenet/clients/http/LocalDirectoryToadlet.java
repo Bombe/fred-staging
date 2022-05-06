@@ -1,7 +1,7 @@
 package freenet.clients.http;
 
 import freenet.client.HighLevelSimpleClient;
-import freenet.nodeapp.NodeClientCore;
+import freenet.node.NodeClientCore;
 import freenet.support.HTMLNode;
 
 public abstract class LocalDirectoryToadlet extends LocalFileBrowserToadlet {

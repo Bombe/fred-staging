@@ -6,7 +6,7 @@ package freenet.clients.fcp;
 import freenet.client.async.ClientContext;
 import freenet.client.async.PersistenceDisabledException;
 import freenet.client.async.PersistentJob;
-import freenet.nodeapp.Node;
+import freenet.node.Node;
 import freenet.support.SimpleFieldSet;
 import freenet.support.io.NativeThread;
 

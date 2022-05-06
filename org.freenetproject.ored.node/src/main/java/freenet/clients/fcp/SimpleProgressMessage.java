@@ -6,7 +6,7 @@ package freenet.clients.fcp;
 import java.util.Date;
 
 import freenet.client.events.SplitfileProgressEvent;
-import freenet.nodeapp.Node;
+import freenet.node.Node;
 import freenet.support.SimpleFieldSet;
 
 public class SimpleProgressMessage extends FCPMessage {

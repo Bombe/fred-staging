@@ -8,8 +8,7 @@ import java.net.MalformedURLException;
 import freenet.client.request.PriorityClasses;
 import freenet.keys.FreenetURI;
 import freenet.keys.USK;
-import freenet.nodeapp.Node;
-import freenet.nodeapp.NodeRequestStarter;
+import freenet.node.Node;
 import freenet.support.SimpleFieldSet;
 
 /**

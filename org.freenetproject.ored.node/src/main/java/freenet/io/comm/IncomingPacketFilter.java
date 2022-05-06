@@ -3,7 +3,7 @@
  * http://www.gnu.org/ for further details of the GPL. */
 package freenet.io.comm;
 
-import freenet.nodeapp.OutgoingPacketMangler;
+import freenet.node.OutgoingPacketMangler;
 
 /**
  * Filter interface used by Freenet to decrypt incoming UDP packets.

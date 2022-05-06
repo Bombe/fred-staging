@@ -13,6 +13,7 @@ import freenet.io.comm.PeerContext;
 import freenet.io.comm.SocketHandler;
 import freenet.io.comm.Peer.LocalAddressException;
 import freenet.io.xfer.PacketThrottle;
+import freenet.node.*;
 
 /** Tests can override this to record specific events e.g. rekey */
 public class NullBasePeerNode implements BasePeerNode {
@@ -44,7 +45,7 @@ public class NullBasePeerNode implements BasePeerNode {
 
 	@Override
 	public MessageItem sendAsync(Message msg, AsyncMessageCallback cb,
-			ByteCounter ctr) throws NotConnectedException {
+                                 ByteCounter ctr) throws NotConnectedException {
 		throw new UnsupportedOperationException();
 	}
 

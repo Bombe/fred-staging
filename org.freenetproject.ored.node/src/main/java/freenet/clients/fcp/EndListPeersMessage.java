@@ -3,7 +3,7 @@
  * http://www.gnu.org/ for further details of the GPL. */
 package freenet.clients.fcp;
 
-import freenet.nodeapp.Node;
+import freenet.node.Node;
 import freenet.support.SimpleFieldSet;
 
 public class EndListPeersMessage extends FCPMessage {

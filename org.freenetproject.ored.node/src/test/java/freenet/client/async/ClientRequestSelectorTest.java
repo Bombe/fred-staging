@@ -10,7 +10,7 @@ import freenet.checksum.CRCChecksumChecker;
 import freenet.checksum.ChecksumChecker;
 import freenet.client.request.*;
 import freenet.lockablebuffer.*;
-import freenet.nodeapp.HighLevelSimpleClientImpl;
+import freenet.node.HighLevelSimpleClientImpl;
 import junit.framework.TestCase;
 
 import freenet.client.ClientMetadata;
@@ -37,7 +37,6 @@ import freenet.support.PooledExecutor;
 import freenet.support.Ticker;
 import freenet.support.WaitableExecutor;
 import freenet.support.io.FileUtil;
-import freenet.support.io.FilenameGenerator;
 import freenet.support.io.NativeThread;
 import freenet.support.io.NullOutputStream;
 import freenet.support.io.PersistentFileTracker;

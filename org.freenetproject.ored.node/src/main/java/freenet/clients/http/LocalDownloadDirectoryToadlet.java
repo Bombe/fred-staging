@@ -2,7 +2,7 @@ package freenet.clients.http;
 
 import freenet.client.HighLevelSimpleClient;
 import freenet.l10n.NodeL10n;
-import freenet.nodeapp.NodeClientCore;
+import freenet.node.NodeClientCore;
 import freenet.support.HTMLNode;
 
 import java.io.File;

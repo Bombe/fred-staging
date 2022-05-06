@@ -11,7 +11,7 @@ import freenet.client.async.BaseManifestPutter;
 import freenet.client.async.ManifestElementNew;
 import freenet.clients.fcp.FCPClientRequest.Persistence;
 import freenet.keys.FreenetURI;
-import freenet.nodeapp.Node;
+import freenet.node.Node;
 import freenet.support.HexUtil;
 import freenet.nodelogger.Logger;
 import freenet.support.SimpleFieldSet;

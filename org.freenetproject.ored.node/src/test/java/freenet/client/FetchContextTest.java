@@ -6,7 +6,7 @@ import java.io.IOException;
 
 import freenet.bucket.ArrayBucket;
 import freenet.bucket.ArrayBucketFactory;
-import freenet.nodeapp.HighLevelSimpleClientImpl;
+import freenet.node.HighLevelSimpleClientImpl;
 import junit.framework.TestCase;
 
 import freenet.client.events.SimpleEventProducer;

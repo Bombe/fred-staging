@@ -32,7 +32,7 @@ import freenet.io.comm.MessageFilter;
 import freenet.io.comm.NotConnectedException;
 import freenet.io.comm.PeerContext;
 import freenet.io.comm.RetrievalException;
-import freenet.nodeapp.MessageItem;
+import freenet.node.MessageItem;
 import freenet.io.comm.SlowAsyncMessageFilterCallback;
 import freenet.support.BitArray;
 import freenet.support.Executor;

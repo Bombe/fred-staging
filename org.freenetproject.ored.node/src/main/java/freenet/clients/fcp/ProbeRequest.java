@@ -1,11 +1,11 @@
 package freenet.clients.fcp;
 
 import freenet.support.node.FSParseException;
-import freenet.nodeapp.Node;
-import freenet.nodeapp.probe.Error;
-import freenet.nodeapp.probe.Listener;
-import freenet.nodeapp.probe.Probe;
-import freenet.nodeapp.probe.Type;
+import freenet.node.Node;
+import freenet.node.probe.Error;
+import freenet.node.probe.Listener;
+import freenet.node.probe.Probe;
+import freenet.node.probe.Type;
 import freenet.support.SimpleFieldSet;
 
 /**

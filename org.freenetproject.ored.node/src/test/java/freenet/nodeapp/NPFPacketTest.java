@@ -6,6 +6,8 @@ package freenet.nodeapp;
 import java.util.Arrays;
 import java.util.Random;
 
+import freenet.node.MessageFragment;
+import freenet.node.NPFPacket;
 import junit.framework.TestCase;
 
 public class NPFPacketTest extends TestCase {

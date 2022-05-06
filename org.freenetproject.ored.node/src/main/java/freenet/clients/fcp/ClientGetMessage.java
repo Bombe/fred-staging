@@ -16,7 +16,7 @@ import freenet.client.request.PriorityClasses;
 import freenet.clients.fcp.ClientGet.ReturnType;
 import freenet.clients.fcp.FCPClientRequest.Persistence;
 import freenet.keys.FreenetURI;
-import freenet.nodeapp.Node;
+import freenet.node.Node;
 import freenet.support.LogThresholdCallback;
 import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;

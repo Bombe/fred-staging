@@ -5,8 +5,8 @@ package freenet.pluginmanager.helper;
 
 import freenet.client.HighLevelSimpleClient;
 import freenet.clients.http.PageMaker;
-import freenet.nodeapp.Node;
-import freenet.nodeapp.NodeClientCore;
+import freenet.node.Node;
+import freenet.node.NodeClientCore;
 import freenet.pluginmanager.PluginRespirator;
 
 public class PluginContext {

@@ -1,5 +1,6 @@
 package freenet.nodeapp.probe;
 
+import freenet.node.probe.Type;
 import junit.framework.TestCase;
 
 import java.util.HashSet;

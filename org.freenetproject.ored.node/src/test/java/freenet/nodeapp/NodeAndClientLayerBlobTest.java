@@ -9,6 +9,8 @@ import java.io.IOException;
 
 import freenet.bucket.Bucket;
 import freenet.bucket.BucketTools;
+import freenet.node.Node;
+import freenet.node.NodeStarter;
 import freenet.support.node.NodeInitException;
 import org.junit.After;
 import org.junit.Test;
@@ -28,7 +30,7 @@ import freenet.client.async.ClientGetter;
 import freenet.client.async.SimpleBlockSet;
 import freenet.crypt.DummyRandomSource;
 import freenet.keys.FreenetURI;
-import freenet.nodeapp.NodeStarter.TestNodeParameters;
+import freenet.node.NodeStarter.TestNodeParameters;
 import freenet.support.Executor;
 import freenet.support.Logger;
 import freenet.support.LoggerHook.InvalidThresholdException;

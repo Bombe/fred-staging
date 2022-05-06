@@ -21,7 +21,7 @@ import java.util.Random;
 
 import freenet.io.AddressTracker;
 import freenet.io.comm.Peer.LocalAddressException;
-import freenet.nodeapp.Node;
+import freenet.node.Node;
 import freenet.nodelogger.Logger;
 import freenet.support.io.NativeThread;
 import freenet.support.node.PrioRunnable;

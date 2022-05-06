@@ -15,7 +15,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import freenet.clients.fcp.FCPPluginMessage.ClientPermissions;
-import freenet.nodeapp.NodeStarter;
+import freenet.node.NodeStarter;
 import freenet.pluginmanager.FredPluginFCPMessageHandler;
 import freenet.pluginmanager.FredPluginFCPMessageHandler.ClientSideFCPMessageHandler;
 import freenet.pluginmanager.FredPluginFCPMessageHandler.PrioritizedMessageHandler;

@@ -10,7 +10,7 @@ import freenet.config.Config;
 import freenet.config.FilePersistentConfig;
 import freenet.config.SubConfig;
 import freenet.l10n.NodeL10n;
-import freenet.nodeapp.Node;
+import freenet.node.Node;
 import freenet.support.JarClassLoader;
 import freenet.nodelogger.Logger;
 import freenet.support.io.Closer;

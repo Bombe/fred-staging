@@ -3,6 +3,8 @@ package freenet.nodeapp;
 import java.util.HashSet;
 import java.util.Set;
 
+import freenet.node.Location;
+import freenet.node.PeerLocation;
 import junit.framework.TestCase;
 
 public class PeerLocationTest extends TestCase {

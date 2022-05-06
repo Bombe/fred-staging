@@ -19,7 +19,7 @@ import freenet.client.request.KeysFetchingLocally;
 import freenet.client.request.SendableRequestItemKey;
 import freenet.io.BarrierRandomAccessBuffer;
 import freenet.lockablebuffer.*;
-import freenet.nodeapp.HighLevelSimpleClientImpl;
+import freenet.node.HighLevelSimpleClientImpl;
 import junit.framework.TestCase;
 
 import freenet.client.ClientMetadata;
@@ -54,7 +54,6 @@ import freenet.support.Ticker;
 import freenet.support.WaitableExecutor;
 import freenet.compress.Compressor.COMPRESSOR_TYPE;
 import freenet.support.io.FileUtil;
-import freenet.support.io.FilenameGenerator;
 import freenet.support.io.NativeThread;
 import freenet.support.io.NullOutputStream;
 import freenet.support.io.PersistentFileTracker;

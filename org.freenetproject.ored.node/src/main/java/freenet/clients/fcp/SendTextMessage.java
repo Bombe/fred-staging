@@ -3,7 +3,7 @@ package freenet.clients.fcp;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
-import freenet.nodeapp.DarknetPeerNode;
+import freenet.node.DarknetPeerNode;
 import freenet.support.SimpleFieldSet;
 import freenet.bucket.BucketTools;
 

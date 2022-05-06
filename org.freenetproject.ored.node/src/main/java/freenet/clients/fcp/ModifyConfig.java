@@ -6,7 +6,7 @@ package freenet.clients.fcp;
 import freenet.config.Config;
 import freenet.config.Option;
 import freenet.config.SubConfig;
-import freenet.nodeapp.Node;
+import freenet.node.Node;
 import freenet.nodelogger.Logger;
 import freenet.support.SimpleFieldSet;
 import freenet.support.Logger.LogLevel;

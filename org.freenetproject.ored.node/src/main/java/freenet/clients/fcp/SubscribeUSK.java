@@ -7,7 +7,7 @@ import freenet.client.async.ClientContext;
 import freenet.client.async.USKCallback;
 import freenet.client.async.USKProgressCallback;
 import freenet.keys.USK;
-import freenet.nodeapp.NodeClientCore;
+import freenet.node.NodeClientCore;
 
 public class SubscribeUSK implements USKProgressCallback {
 

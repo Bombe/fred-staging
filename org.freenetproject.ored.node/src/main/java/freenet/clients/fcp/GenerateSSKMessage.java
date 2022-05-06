@@ -5,7 +5,7 @@ package freenet.clients.fcp;
 
 import freenet.keys.FreenetURI;
 import freenet.keys.InsertableClientSSK;
-import freenet.nodeapp.Node;
+import freenet.node.Node;
 import freenet.support.SimpleFieldSet;
 
 public class GenerateSSKMessage extends FCPMessage {

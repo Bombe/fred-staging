@@ -5,7 +5,7 @@ import java.io.OutputStream;
 
 import freenet.bucket.BucketFactory;
 import freenet.bucket.PersistentTempBucketFactory;
-import freenet.nodeapp.Node;
+import freenet.node.Node;
 import freenet.support.LogThresholdCallback;
 import freenet.nodelogger.Logger;
 import freenet.support.SimpleFieldSet;

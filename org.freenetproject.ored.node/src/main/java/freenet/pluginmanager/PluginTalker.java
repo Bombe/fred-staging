@@ -9,7 +9,7 @@ import java.util.UUID;
 import freenet.bucket.Bucket;
 import freenet.clients.fcp.FCPConnectionHandler;
 import freenet.clients.fcp.FCPPluginConnection;
-import freenet.nodeapp.Node;
+import freenet.node.Node;
 import freenet.nodelogger.Logger;
 import freenet.support.SimpleFieldSet;
 

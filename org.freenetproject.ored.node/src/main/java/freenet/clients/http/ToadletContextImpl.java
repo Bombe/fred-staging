@@ -30,7 +30,7 @@ import freenet.clients.http.annotation.AllowData;
 import freenet.clients.http.bookmark.BookmarkManager;
 import freenet.http.HTTPRequest;
 import freenet.l10n.NodeL10n;
-import freenet.nodeapp.useralerts.UserAlertManager;
+import freenet.node.useralerts.UserAlertManager;
 import freenet.support.HTMLEncoder;
 import freenet.support.HTMLNode;
 import freenet.support.LogThresholdCallback;

@@ -18,7 +18,7 @@ import freenet.client.filter.ContentFilter.FilterStatus;
 import freenet.http.HTTPRequest;
 import freenet.http.HTTPUploadedFile;
 import freenet.l10n.NodeL10n;
-import freenet.nodeapp.NodeClientCore;
+import freenet.node.NodeClientCore;
 import freenet.support.HTMLNode;
 import freenet.nodelogger.Logger;
 import freenet.support.MultiValueTable;

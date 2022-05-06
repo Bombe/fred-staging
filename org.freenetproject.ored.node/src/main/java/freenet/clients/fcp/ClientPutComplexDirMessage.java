@@ -12,10 +12,9 @@ import java.util.Map;
 
 import freenet.bucket.BucketFactory;
 import freenet.bucket.PersistentTempBucketFactory;
-import freenet.client.async.ManifestElement;
 import freenet.client.async.ManifestElementNew;
 import freenet.clients.fcp.FCPClientRequest.Persistence;
-import freenet.nodeapp.Node;
+import freenet.node.Node;
 import freenet.nodelogger.Logger;
 import freenet.support.SimpleFieldSet;
 import freenet.support.Logger.LogLevel;

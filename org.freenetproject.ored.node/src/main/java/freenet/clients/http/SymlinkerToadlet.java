@@ -12,7 +12,7 @@ import freenet.config.StringArrCallback;
 import freenet.config.SubConfig;
 import freenet.http.HTTPRequest;
 import freenet.l10n.NodeL10n;
-import freenet.nodeapp.Node;
+import freenet.node.Node;
 import freenet.nodelogger.Logger;
 
 /**

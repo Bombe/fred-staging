@@ -3,10 +3,10 @@
  * http://www.gnu.org/ for further details of the GPL. */
 package freenet.clients.fcp;
 
-import freenet.nodeapp.DarknetPeerNode;
+import freenet.node.DarknetPeerNode;
 import freenet.support.node.FSParseException;
-import freenet.nodeapp.Node;
-import freenet.nodeapp.PeerNode;
+import freenet.node.Node;
+import freenet.node.PeerNode;
 import freenet.support.Base64;
 import freenet.support.IllegalBase64Exception;
 import freenet.nodelogger.Logger;

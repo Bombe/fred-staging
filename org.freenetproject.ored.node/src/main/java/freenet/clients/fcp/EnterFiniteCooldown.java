@@ -1,6 +1,6 @@
 package freenet.clients.fcp;
 
-import freenet.nodeapp.Node;
+import freenet.node.Node;
 import freenet.support.SimpleFieldSet;
 
 /** Status message sent when the whole of a request is waiting for a cooldown.

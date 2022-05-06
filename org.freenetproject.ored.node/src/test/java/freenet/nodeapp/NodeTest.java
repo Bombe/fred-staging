@@ -3,6 +3,7 @@
  * http://www.gnu.org/ for further details of the GPL. */
 package freenet.nodeapp;
 
+import freenet.node.Node;
 import junit.framework.TestCase;
 
 /**

@@ -6,10 +6,10 @@ package freenet.io.comm;
 import java.util.concurrent.atomic.AtomicLong;
 
 import freenet.crypt.EntropySource;
-import freenet.nodeapp.FNPPacketMangler;
-import freenet.nodeapp.Node;
-import freenet.nodeapp.NodeCrypto;
-import freenet.nodeapp.PeerNode;
+import freenet.node.FNPPacketMangler;
+import freenet.node.Node;
+import freenet.node.NodeCrypto;
+import freenet.node.PeerNode;
 import freenet.support.LogThresholdCallback;
 import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;

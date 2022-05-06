@@ -5,8 +5,8 @@ import freenet.config.Config;
 import freenet.config.InvalidConfigValueException;
 import freenet.http.HTTPRequest;
 import freenet.l10n.NodeL10n;
-import freenet.nodeapp.Node;
-import freenet.nodeapp.NodeClientCore;
+import freenet.node.Node;
+import freenet.node.NodeClientCore;
 import freenet.support.*;
 
 /**

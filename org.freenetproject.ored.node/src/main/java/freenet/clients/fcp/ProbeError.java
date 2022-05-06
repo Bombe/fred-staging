@@ -1,7 +1,7 @@
 package freenet.clients.fcp;
 
-import freenet.nodeapp.probe.Error;
-import freenet.nodeapp.probe.Listener;
+import freenet.node.probe.Error;
+import freenet.node.probe.Listener;
 
 /**
  * FCP message sent from the node to the client which indicates that an error has occurred.

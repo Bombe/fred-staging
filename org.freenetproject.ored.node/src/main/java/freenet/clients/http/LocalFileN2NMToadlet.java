@@ -8,7 +8,7 @@ import java.util.Hashtable;
 import java.util.Set;
 
 import freenet.client.HighLevelSimpleClient;
-import freenet.nodeapp.NodeClientCore;
+import freenet.node.NodeClientCore;
 import freenet.support.HTMLNode;
 
 public class LocalFileN2NMToadlet extends LocalFileBrowserToadlet {

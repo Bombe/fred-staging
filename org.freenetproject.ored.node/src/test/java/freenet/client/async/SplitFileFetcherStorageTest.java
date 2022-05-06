@@ -40,7 +40,7 @@ import freenet.keys.NodeCHK;
 import freenet.lockablebuffer.ByteArrayRandomAccessBufferFactory;
 import freenet.lockablebuffer.LockableRandomAccessBuffer;
 import freenet.lockablebuffer.LockableRandomAccessBufferFactory;
-import freenet.nodeapp.HighLevelSimpleClientImpl;
+import freenet.node.HighLevelSimpleClientImpl;
 import freenet.support.CheatingTicker;
 import freenet.support.MemoryLimitedJobRunner;
 import freenet.support.PooledExecutor;

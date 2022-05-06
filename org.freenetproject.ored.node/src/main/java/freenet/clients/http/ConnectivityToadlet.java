@@ -27,7 +27,7 @@ import freenet.io.PeerAddressTrackerItem;
 import freenet.io.AddressTrackerItem.Gap;
 import freenet.io.comm.UdpSocketHandler;
 import freenet.l10n.NodeL10n;
-import freenet.nodeapp.Node;
+import freenet.node.Node;
 import freenet.support.HTMLNode;
 import freenet.support.SimpleFieldSet;
 import freenet.support.TimeUtil;

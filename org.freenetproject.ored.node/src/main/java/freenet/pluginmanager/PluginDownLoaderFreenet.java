@@ -20,7 +20,7 @@ import freenet.client.events.ClientEvent;
 import freenet.client.events.ClientEventListener;
 import freenet.client.events.SplitfileProgressEvent;
 import freenet.keys.FreenetURI;
-import freenet.nodeapp.Node;
+import freenet.node.Node;
 import freenet.pluginmanager.PluginManager.PluginProgress;
 import freenet.nodelogger.Logger;
 

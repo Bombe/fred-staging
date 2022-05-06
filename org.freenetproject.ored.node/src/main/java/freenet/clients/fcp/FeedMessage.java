@@ -2,7 +2,7 @@ package freenet.clients.fcp;
 
 import java.io.UnsupportedEncodingException;
 
-import freenet.nodeapp.Node;
+import freenet.node.Node;
 import freenet.support.SimpleFieldSet;
 import freenet.bucket.Bucket;
 import freenet.bucket.ArrayBucket;

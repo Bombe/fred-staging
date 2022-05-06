@@ -2,7 +2,7 @@ package freenet.clients.fcp;
 
 import freenet.client.InsertContext;
 import freenet.client.async.CompatibilityAnalyser;
-import freenet.nodeapp.Node;
+import freenet.node.Node;
 import freenet.support.HexUtil;
 import freenet.support.SimpleFieldSet;
 

@@ -8,8 +8,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import freenet.keys.FreenetURI;
-import freenet.nodeapp.updater.NodeUpdater;
-import freenet.nodeapp.updater.PluginJarUpdater;
+import freenet.node.updater.NodeUpdater;
+import freenet.node.updater.PluginJarUpdater;
 
 /**
  * Container for Freenet’s official plugins.

@@ -35,7 +35,7 @@ import java.util.Iterator;
 
 import freenet.io.comm.Peer;
 import freenet.l10n.NodeL10n;
-import freenet.nodeapp.ProgramDirectory;
+import freenet.node.ProgramDirectory;
 import freenet.nodelogger.Logger;
 import freenet.support.SimpleFieldSet;
 import freenet.support.io.FileUtil;

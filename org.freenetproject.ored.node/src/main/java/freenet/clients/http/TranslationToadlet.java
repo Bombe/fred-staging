@@ -12,7 +12,7 @@ import freenet.client.HighLevelSimpleClient;
 import freenet.http.HTTPRequest;
 import freenet.l10n.BaseL10n;
 import freenet.l10n.NodeL10n;
-import freenet.nodeapp.NodeClientCore;
+import freenet.node.NodeClientCore;
 import freenet.pluginmanager.FredPluginBaseL10n;
 import freenet.pluginmanager.PluginInfoWrapper;
 import freenet.pluginmanager.PluginL10n;

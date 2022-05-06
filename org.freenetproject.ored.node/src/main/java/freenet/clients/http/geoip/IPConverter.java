@@ -12,7 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import freenet.clients.http.StaticToadlet;
-import freenet.nodeapp.Node;
+import freenet.node.Node;
 import freenet.support.HTMLNode;
 import freenet.nodelogger.Logger;
 

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.TimeUnit;
 
+import freenet.node.PrioritizedSerialExecutor;
 import freenet.support.Executor;
 import freenet.support.PooledExecutor;
 import freenet.support.node.PrioRunnable;

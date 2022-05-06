@@ -4,7 +4,7 @@
 package freenet.clients.fcp;
 
 import freenet.clients.fcp.FCPConnectionHandler.DDACheckJob;
-import freenet.nodeapp.Node;
+import freenet.node.Node;
 import freenet.support.SimpleFieldSet;
 
 /**

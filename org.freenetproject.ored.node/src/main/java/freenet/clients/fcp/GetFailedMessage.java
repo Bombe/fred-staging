@@ -13,7 +13,7 @@ import freenet.client.FailureCodeTracker;
 import freenet.client.FetchException;
 import freenet.client.FetchException.FetchExceptionMode;
 import freenet.keys.FreenetURI;
-import freenet.nodeapp.Node;
+import freenet.node.Node;
 import freenet.support.LogThresholdCallback;
 import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;

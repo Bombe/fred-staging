@@ -28,7 +28,7 @@ import freenet.support.client.DefaultMIMETypes;
 import freenet.support.fcp.RequestIdentifier.RequestType;
 import freenet.crypt.SHA256;
 import freenet.keys.FreenetURI;
-import freenet.nodeapp.NodeClientCore;
+import freenet.node.NodeClientCore;
 import freenet.support.Base64;
 import freenet.support.CurrentTimeUTC;
 import freenet.support.IllegalBase64Exception;

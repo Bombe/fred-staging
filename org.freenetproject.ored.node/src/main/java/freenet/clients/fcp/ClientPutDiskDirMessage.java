@@ -11,7 +11,7 @@ import java.util.HashMap;
 
 import freenet.bucket.FileBucket;
 import freenet.client.async.ManifestElementNew;
-import freenet.nodeapp.Node;
+import freenet.node.Node;
 import freenet.support.LogThresholdCallback;
 import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;

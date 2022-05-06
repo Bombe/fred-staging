@@ -17,9 +17,8 @@ import freenet.clients.http.PageMaker;
 import freenet.clients.http.SessionManager;
 import freenet.clients.http.ToadletContainer;
 import freenet.config.SubConfig;
-import freenet.nodeapp.Node;
-import freenet.nodeapp.NodeClientCore;
-import freenet.nodeapp.NodeRequestStarter;
+import freenet.node.Node;
+import freenet.node.NodeClientCore;
 import freenet.support.HTMLNode;
 import freenet.support.URIPreEncoder;
 

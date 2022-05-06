@@ -6,6 +6,8 @@ import java.io.File;
 import java.io.IOException;
 
 import freenet.bucket.BucketTools;
+import freenet.node.Node;
+import freenet.node.NodeStarter;
 import freenet.support.TestProperty;
 import freenet.support.node.NodeInitException;
 import org.junit.After;
@@ -21,7 +23,7 @@ import freenet.client.InsertContext;
 import freenet.client.InsertException;
 import freenet.crypt.DummyRandomSource;
 import freenet.keys.FreenetURI;
-import freenet.nodeapp.NodeStarter.TestNodeParameters;
+import freenet.node.NodeStarter.TestNodeParameters;
 import freenet.support.Executor;
 import freenet.support.Logger;
 import freenet.support.LoggerHook.InvalidThresholdException;

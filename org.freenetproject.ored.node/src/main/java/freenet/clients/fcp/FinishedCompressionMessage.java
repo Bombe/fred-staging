@@ -4,7 +4,7 @@
 package freenet.clients.fcp;
 
 import freenet.client.events.FinishedCompressionEvent;
-import freenet.nodeapp.Node;
+import freenet.node.Node;
 import freenet.support.SimpleFieldSet;
 import freenet.compress.Compressor;
 

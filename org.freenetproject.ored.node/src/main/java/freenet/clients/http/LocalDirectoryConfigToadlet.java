@@ -5,7 +5,7 @@ import java.util.Hashtable;
 
 import freenet.client.HighLevelSimpleClient;
 import freenet.l10n.NodeL10n;
-import freenet.nodeapp.NodeClientCore;
+import freenet.node.NodeClientCore;
 import freenet.support.HTMLNode;
 
 public class LocalDirectoryConfigToadlet extends LocalDirectoryToadlet {

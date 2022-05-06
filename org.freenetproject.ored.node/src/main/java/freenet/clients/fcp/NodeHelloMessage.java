@@ -4,9 +4,9 @@
 package freenet.clients.fcp;
 
 import freenet.l10n.NodeL10n;
-import freenet.nodeapp.Node;
-import freenet.nodeapp.NodeStarter;
-import freenet.nodeapp.Version;
+import freenet.node.Node;
+import freenet.node.NodeStarter;
+import freenet.node.Version;
 import freenet.support.SimpleFieldSet;
 import freenet.compress.Compressor;
 

@@ -4,7 +4,7 @@
 package freenet.clients.fcp;
 
 import freenet.client.FetchResult;
-import freenet.nodeapp.Node;
+import freenet.node.Node;
 import freenet.support.SimpleFieldSet;
 
 public class DataFoundMessage extends FCPMessage {

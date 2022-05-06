@@ -29,7 +29,7 @@ import java.util.ListIterator;
 import java.util.Map;
 
 import freenet.io.comm.MessageFilter.MATCHED;
-import freenet.nodeapp.PeerNode;
+import freenet.node.PeerNode;
 import freenet.support.Executor;
 import freenet.support.LogThresholdCallback;
 import freenet.nodelogger.Logger;

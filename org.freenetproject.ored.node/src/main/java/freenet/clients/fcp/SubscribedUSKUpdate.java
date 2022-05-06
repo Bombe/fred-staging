@@ -4,7 +4,7 @@
 package freenet.clients.fcp;
 
 import freenet.keys.USK;
-import freenet.nodeapp.Node;
+import freenet.node.Node;
 import freenet.support.SimpleFieldSet;
 
 public class SubscribedUSKUpdate extends FCPMessage {

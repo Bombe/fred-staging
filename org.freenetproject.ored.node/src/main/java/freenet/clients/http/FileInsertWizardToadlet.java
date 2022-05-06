@@ -10,8 +10,8 @@ import freenet.client.filter.FilterOperation;
 import freenet.clients.http.ContentFilterToadlet.ResultHandling;
 import freenet.http.HTTPRequest;
 import freenet.l10n.NodeL10n;
-import freenet.nodeapp.NodeClientCore;
-import freenet.nodeapp.SecurityLevels.NETWORK_THREAT_LEVEL;
+import freenet.node.NodeClientCore;
+import freenet.node.SecurityLevels.NETWORK_THREAT_LEVEL;
 import freenet.support.HTMLNode;
 
 public class FileInsertWizardToadlet extends Toadlet implements LinkEnabledCallback {

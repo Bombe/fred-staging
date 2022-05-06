@@ -36,8 +36,8 @@ jlink {
 
     jarExclude 'freenet-ext', '/freenet/support/**'
 
-    imageDir = file("$rootDir/build/image")
-    imageZip = file("$rootDir/build/image.zip")
+    imageDir = file("$rootDir/build/jlink")
+    imageZip = file("$rootDir/build/jlink.zip")
 
     launcher {
         name = 'ored'
@@ -47,5 +47,13 @@ jlink {
                 '-Xss512k',
         ]
         args = []
+    }
+
+    jpackage {
+        imageOutputDir = file("$rootDir/build/jpackage")
+        installerOutputDir = file("$rootDir/build/jpackage")
+        imageName = 'Oldenet'
+        installerName = 'Oldenet'
+        appVersion = '7.5.1493'
     }
 }

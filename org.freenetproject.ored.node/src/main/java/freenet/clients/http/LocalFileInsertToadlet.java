@@ -9,7 +9,7 @@ import java.util.Hashtable;
 
 import freenet.client.HighLevelSimpleClient;
 import freenet.keys.FreenetURI;
-import freenet.nodeapp.NodeClientCore;
+import freenet.node.NodeClientCore;
 
 public class LocalFileInsertToadlet extends LocalFileBrowserToadlet {
 

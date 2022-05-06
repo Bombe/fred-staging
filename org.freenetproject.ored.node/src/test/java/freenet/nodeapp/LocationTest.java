@@ -1,6 +1,6 @@
 package freenet.nodeapp;
 
-import freenet.nodeapp.Location;
+import freenet.node.Location;
 import junit.framework.TestCase;
 
 public class LocationTest extends TestCase {

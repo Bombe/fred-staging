@@ -7,7 +7,7 @@ import java.io.OutputStream;
 import freenet.bucket.Bucket;
 import freenet.bucket.BucketFactory;
 import freenet.bucket.BucketTools;
-import freenet.nodeapp.Node;
+import freenet.node.Node;
 import freenet.support.SimpleFieldSet;
 
 public class GeneratedMetadataMessage extends BaseDataCarryingMessage {

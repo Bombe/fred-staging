@@ -26,7 +26,7 @@ import java.util.Set;
 
 import javax.net.ssl.SSLServerSocket;
 
-import freenet.nodeapp.SSL;
+import freenet.node.SSL;
 import freenet.support.Executor;
 
 /**

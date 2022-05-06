@@ -2,7 +2,7 @@ package freenet.pluginmanager;
 
 import freenet.client.HighLevelSimpleClient;
 import freenet.keys.FreenetURI;
-import freenet.nodeapp.Node;
+import freenet.node.Node;
 import freenet.pluginmanager.OfficialPlugins.OfficialPluginDescription;
 
 public class PluginDownLoaderOfficialFreenet extends PluginDownLoaderFreenet {

@@ -4,7 +4,7 @@ import freenet.client.HighLevelSimpleClient;
 import freenet.clients.http.PageMaker.RenderParameters;
 import freenet.http.HTTPRequest;
 import freenet.l10n.NodeL10n;
-import freenet.nodeapp.Node;
+import freenet.node.Node;
 import freenet.support.HTMLNode;
 import freenet.support.MultiValueTable;
 

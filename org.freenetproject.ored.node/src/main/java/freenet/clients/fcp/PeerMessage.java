@@ -3,8 +3,8 @@
  * http://www.gnu.org/ for further details of the GPL. */
 package freenet.clients.fcp;
 
-import freenet.nodeapp.Node;
-import freenet.nodeapp.PeerNode;
+import freenet.node.Node;
+import freenet.node.PeerNode;
 import freenet.support.SimpleFieldSet;
 
 public class PeerMessage extends FCPMessage {

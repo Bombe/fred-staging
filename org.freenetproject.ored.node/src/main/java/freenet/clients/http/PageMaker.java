@@ -8,10 +8,10 @@ import java.util.Map;
 
 import freenet.http.HTTPRequest;
 import freenet.l10n.NodeL10n;
-import freenet.nodeapp.DarknetPeerNode;
-import freenet.nodeapp.Node;
-import freenet.nodeapp.SecurityLevels;
-import freenet.nodeapp.filter.PushingTagReplacerCallback;
+import freenet.node.DarknetPeerNode;
+import freenet.node.Node;
+import freenet.node.SecurityLevels;
+import freenet.node.filter.PushingTagReplacerCallback;
 import freenet.pluginmanager.FredPluginL10n;
 import freenet.support.HTMLNode;
 import freenet.nodelogger.Logger;

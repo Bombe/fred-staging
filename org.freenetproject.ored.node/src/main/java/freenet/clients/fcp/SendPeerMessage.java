@@ -1,8 +1,8 @@
 package freenet.clients.fcp;
 
-import freenet.nodeapp.DarknetPeerNode;
-import freenet.nodeapp.Node;
-import freenet.nodeapp.PeerNode;
+import freenet.node.DarknetPeerNode;
+import freenet.node.Node;
+import freenet.node.PeerNode;
 import freenet.support.SimpleFieldSet;
 
 public abstract class SendPeerMessage extends DataCarryingMessage {

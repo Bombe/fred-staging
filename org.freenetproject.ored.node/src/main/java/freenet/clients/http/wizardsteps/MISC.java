@@ -5,7 +5,7 @@ import freenet.config.Config;
 import freenet.config.ConfigException;
 import freenet.http.HTTPRequest;
 import freenet.l10n.NodeL10n;
-import freenet.nodeapp.NodeClientCore;
+import freenet.node.NodeClientCore;
 import freenet.support.HTMLNode;
 import freenet.nodelogger.Logger;
 

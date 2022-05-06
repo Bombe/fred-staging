@@ -9,7 +9,7 @@ import freenet.client.InsertContext;
 import freenet.clients.fcp.ClientPutBase.UploadFrom;
 import freenet.clients.fcp.FCPClientRequest.Persistence;
 import freenet.keys.FreenetURI;
-import freenet.nodeapp.Node;
+import freenet.node.Node;
 import freenet.support.HexUtil;
 import freenet.support.SimpleFieldSet;
 
