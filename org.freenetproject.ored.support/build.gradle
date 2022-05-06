@@ -16,5 +16,5 @@ dependencies {
     testFixturesCompileOnly 'junit:junit:4.13'
     testFixturesRuntimeOnly 'org.junit.vintage:junit-vintage-engine'
     // Required by class TestProperty
-    testFixturesRuntimeOnly files(project(":org.freenetproject.ored.l10n").sourceSets.test.output.resourcesDir)
+    testFixturesRuntimeOnly files(project(":org.freenetproject.ored.l10n").sourceSets.test.resources.srcDirs)
 }

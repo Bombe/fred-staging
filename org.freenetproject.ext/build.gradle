@@ -17,7 +17,7 @@ dependencies {
 
 extraJavaModuleInfo {
     module('freenet-ext-29.jar', 'org.freenetproject.ext', '29') {
-        exports('com.onionnetworks.fec')
+        exports 'com.onionnetworks.fec'
         exports 'com.onionnetworks.io'
         exports 'com.onionnetworks.net'
         exports 'com.onionnetworks.util'
@@ -28,6 +28,7 @@ extraJavaModuleInfo {
         exports 'SevenZip'
         exports 'SevenZip.Compression'
         exports 'SevenZip.Compression.LZMA'
+        exports 'freenet.node.ext'
     }
 }
 

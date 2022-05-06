@@ -9,7 +9,6 @@ import freenet.config.InvalidConfigValueException;
 import freenet.config.NodeNeedRestartException;
 import freenet.http.HTTPRequest;
 import freenet.node.*;
-import freenet.nodeapp.*;
 import freenet.node.useralerts.UpgradeConnectionSpeedUserAlert;
 import freenet.support.*;
 import org.tanukisoftware.wrapper.WrapperManager;

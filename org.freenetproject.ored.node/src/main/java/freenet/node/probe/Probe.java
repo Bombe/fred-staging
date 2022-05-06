@@ -35,7 +35,7 @@ import java.util.TimerTask;
  * <li>Success rates for remote requests by HTL; perhaps over some larger amount of time than the past hour.</li>
  * </ul>
  *
- * @see freenet.nodeapp.probe Explanation of Metropolis-Hastings correction
+ * @see freenet.node.probe Explanation of Metropolis-Hastings correction
  */
 public class Probe implements ByteCounter {
 

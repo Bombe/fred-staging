@@ -45,7 +45,7 @@ import freenet.node.probe.Probe;
 import freenet.node.probe.Type;
 import freenet.node.updater.NodeUpdateManager;
 import freenet.node.useralerts.*;
-import freenet.nodeapp.useralerts.*;
+import freenet.node.useralerts.*;
 import freenet.node.stats.DataStoreKeyType;
 import freenet.node.stats.DataStoreType;
 import freenet.node.stats.NotAvailNodeStoreStats;

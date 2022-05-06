@@ -30,6 +30,7 @@ import freenet.support.PooledExecutor;
 import freenet.support.ProcessPriority;
 import freenet.support.SimpleFieldSet;
 import freenet.support.io.NativeThread;
+import freenet.node.ext.ExtVersion;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 
