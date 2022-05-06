@@ -38,7 +38,7 @@ import freenet.support.io.NullWriter;
 
 public class HTMLFilter implements ContentDataFilter, CharsetExtractor {
 
-	private static final String M3U_PLAYER_TAG_FILE = "freenet/clients/http/staticfiles/js/m3u-player.js";
+	private static final String M3U_PLAYER_TAG_FILE = "/staticfiles/js/m3u-player.js";
 	/** if true, embed m3u player. Enabled when fproxy javascript is enabled. **/
 	public static boolean embedM3uPlayer = true;
 	private static boolean logMINOR;
@@ -546,8 +546,7 @@ public class HTMLFilter implements ContentDataFilter, CharsetExtractor {
 	}
 
 	static String m3uPlayerScriptTagContent() {
-		InputStream m3uPlayerTagStream = HTMLFilter.class.getClassLoader()
-				.getResourceAsStream(M3U_PLAYER_TAG_FILE);
+		InputStream m3uPlayerTagStream = HTMLFilter.class.getResourceAsStream(M3U_PLAYER_TAG_FILE);
 		String errorTag = "/* Error: could not load " + M3U_PLAYER_TAG_FILE + " */";
 		if (m3uPlayerTagStream == null) {
 			return errorTag;

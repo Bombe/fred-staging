@@ -205,9 +205,11 @@ public class ContentFilterTest extends TestCase {
 	private static final String META_BOGUS_REDIRECT4 = "<meta http-equiv=\"refresh\" content=\"30; url=//www.google.com\">";
 	private static final String META_BOGUS_REDIRECT5 = "<meta http-equiv=\"refresh\" content=\"30; url=\"/KSK@gpl.txt\"\">";
 	private static final String META_BOGUS_REDIRECT6 = "<meta http-equiv=\"refresh\" content=\"30; /KSK@gpl.txt\">";
-	private static final String META_BOGUS_REDIRECT1_OUT = "<!-- GenericReadFilterCallback.malformedRelativeURL-->";
+	private static final String META_BOGUS_REDIRECT1_OUT = "<!-- Malformed URL (relative): There is no @ in that URI! ()-->";
+	private static final String META_BOGUS_REDIRECT2_OUT = "<!-- Malformed URL (relative): There is no @ in that URI! (plugins)-->";
 	private static final String META_BOGUS_REDIRECT3_OUT = "<meta http-equiv=\"refresh\" content=\"30; url=/external-link/?_CHECKED_HTTP_=http://www.google.com\">";
-	private static final String META_BOGUS_REDIRECT4_OUT = "<!-- GenericReadFilterCallback.deletedURI-->";
+	private static final String META_BOGUS_REDIRECT4_OUT = "<!-- Deleted invalid or dangerous URI-->";
+	private static final String META_BOGUS_REDIRECT5_OUT = "<!-- Malformed URL (relative): Invalid key type: \"/KSK-->";
 	private static final String META_BOGUS_REDIRECT_NO_URL = "<!-- no url but doesn't parse as number in meta refresh -->";
 
 	public void testMetaRefresh() throws Exception {
@@ -222,10 +224,10 @@ public class ContentFilterTest extends TestCase {
 		assertEquals(META_VALID_REDIRECT + HTMLFilter.m3uPlayerScriptTagContent(), headFilter(META_VALID_REDIRECT));
 		assertEquals(META_VALID_REDIRECT + HTMLFilter.m3uPlayerScriptTagContent(), headFilter(META_VALID_REDIRECT_NOSPACE));
 		assertEquals(META_BOGUS_REDIRECT1_OUT + HTMLFilter.m3uPlayerScriptTagContent(), headFilter(META_BOGUS_REDIRECT1));
-		assertEquals(META_BOGUS_REDIRECT1_OUT + HTMLFilter.m3uPlayerScriptTagContent(), headFilter(META_BOGUS_REDIRECT2));
+		assertEquals(META_BOGUS_REDIRECT2_OUT + HTMLFilter.m3uPlayerScriptTagContent(), headFilter(META_BOGUS_REDIRECT2));
 		assertEquals(META_BOGUS_REDIRECT3_OUT + HTMLFilter.m3uPlayerScriptTagContent(), headFilter(META_BOGUS_REDIRECT3));
 		assertEquals(META_BOGUS_REDIRECT4_OUT + HTMLFilter.m3uPlayerScriptTagContent(), headFilter(META_BOGUS_REDIRECT4));
-		assertEquals(META_BOGUS_REDIRECT1_OUT + HTMLFilter.m3uPlayerScriptTagContent(), headFilter(META_BOGUS_REDIRECT5));
+		assertEquals(META_BOGUS_REDIRECT5_OUT + HTMLFilter.m3uPlayerScriptTagContent(), headFilter(META_BOGUS_REDIRECT5));
 		assertEquals(META_BOGUS_REDIRECT_NO_URL + HTMLFilter.m3uPlayerScriptTagContent(), headFilter(META_BOGUS_REDIRECT6));
 		HTMLFilter.metaRefreshSamePageMinInterval = -1;
 		HTMLFilter.metaRefreshRedirectMinInterval = -1;
