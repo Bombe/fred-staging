@@ -1,0 +1,37 @@
+plugins {
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id "de.jjohannes.extra-java-module-info"
+    id 'java-library'
+}
+
+version = '29'
+group = 'org.freenetproject'
+
+repositories {
+    maven { url 'https://mvn.freenetproject.org' }
+}
+
+dependencies {
+    implementation "org.freenetproject:freenet-ext:29"
+}
+
+extraJavaModuleInfo {
+    module('freenet-ext-29.jar', 'org.freenetproject.ext', '29') {
+        exports('com.onionnetworks.fec')
+        exports 'com.onionnetworks.io'
+        exports 'com.onionnetworks.net'
+        exports 'com.onionnetworks.util'
+        exports 'net.contrapunctus.lzma'
+        exports 'org.bitpedia.collider.core'
+        exports 'org.bitpedia.util'
+        exports 'org.spaceroots.mantissa.random'
+        exports 'SevenZip'
+        exports 'SevenZip.Compression'
+        exports 'SevenZip.Compression.LZMA'
+    }
+}
+
+shadowJar {
+    excludes -= 'module-info.class'
+    relocate 'freenet.node', 'freenet.node.ext'
+}

@@ -10,7 +10,8 @@ module org.freenetproject.ored.support {
     exports freenet.support.transport.ip;
 
     requires org.bouncycastle.provider;
-    requires freenet.ext;
+    requires org.tanukisoftware.wrapper;
+    requires org.freenetproject.ext;
     requires com.sun.jna;
     requires com.sun.jna.platform;
 }

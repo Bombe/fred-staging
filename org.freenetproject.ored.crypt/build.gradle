@@ -6,7 +6,7 @@ plugins {
 dependencies {
     implementation project(':org.freenetproject.ored.support')
     implementation 'org.bouncycastle:bcprov-jdk18on:1.71'
-    implementation "org.freenetproject:freenet-ext:29"
+    implementation project(path: ':org.freenetproject.ext', configuration: 'shadow')
 
     testImplementation testFixtures(project(":org.freenetproject.ored.support"))
 }

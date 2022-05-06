@@ -5,8 +5,9 @@ plugins {
 }
 
 dependencies {
+    implementation project(path: ':org.freenetproject.ext', configuration: 'shadow')
+
     implementation 'org.bouncycastle:bcprov-jdk18on:1.71'
-    implementation "org.freenetproject:freenet-ext:29"
     implementation 'net.java.dev.jna:jna-jpms:5.11.0'
     implementation 'net.java.dev.jna:jna-platform-jpms:5.11.0'
 

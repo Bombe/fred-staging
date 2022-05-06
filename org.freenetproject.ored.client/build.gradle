@@ -9,7 +9,8 @@ dependencies {
     implementation project(':org.freenetproject.ored.l10n')
     implementation project(':org.freenetproject.ored.config')
     implementation 'org.bouncycastle:bcprov-jdk18on:1.71'
-    implementation "org.freenetproject:freenet-ext:29"
+    implementation 'org.apache.commons:commons-compress:1.21'
+    implementation project(path: ':org.freenetproject.ext', configuration: 'shadow')
 
     testImplementation testFixtures(project(":org.freenetproject.ored.support"))
 }

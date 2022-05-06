@@ -5,11 +5,12 @@ version = '0.7.5.1493.0-dev'
 group = 'org.freenetproject'
 
 repositories {
-    maven { url 'https://mvn.freenetproject.org' }
     mavenCentral()
 }
 
 dependencies {
+    implementation files("$rootDir/lib/wrapper/wrapper.jar")
+
     testImplementation platform('org.junit:junit-bom:5.8.2')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testCompileOnly 'junit:junit:4.13'
@@ -19,7 +20,9 @@ dependencies {
 
 extraJavaModuleInfo {
     failOnMissingModuleInfo.set(false)
-    automaticModule("freenet-ext-29.jar", "freenet.ext")
+    module('wrapper.jar', 'org.tanukisoftware.wrapper', '3.5.49') {
+        exports 'org.tanukisoftware.wrapper'
+    }
 }
 
 test {

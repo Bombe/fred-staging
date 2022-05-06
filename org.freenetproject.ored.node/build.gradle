@@ -10,10 +10,10 @@ dependencies {
     implementation project(':org.freenetproject.ored.client')
     implementation project(':org.freenetproject.ored.config')
     implementation project(':org.freenetproject.ored.store')
+    implementation project(path: ':org.freenetproject.ext', configuration: 'shadow')
 
     implementation 'net.java.dev.jna:jna-jpms:5.11.0'
     implementation 'net.java.dev.jna:jna-platform-jpms:5.11.0'
-    implementation "org.freenetproject:freenet-ext:29"
 
     testImplementation testFixtures(project(":org.freenetproject.ored.support"))
 }
