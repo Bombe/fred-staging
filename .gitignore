@@ -5,7 +5,8 @@
 /freenet-*
 /javadoc
 /junitvmwatcher*
-/lib
+/lib/*
+!/lib/wrapper/
 /generator/js/lib
 /generator/js/tests/lib
 /generator/js/tests/bin

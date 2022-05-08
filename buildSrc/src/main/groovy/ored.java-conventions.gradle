@@ -9,7 +9,7 @@ repositories {
 }
 
 dependencies {
-    implementation files("$rootDir/lib/wrapper/wrapper.jar")
+    implementation files("$rootDir/lib/wrapper/lib/wrapper.jar")
 
     testImplementation platform('org.junit:junit-bom:5.8.2')
     testImplementation 'org.junit.jupiter:junit-jupiter'

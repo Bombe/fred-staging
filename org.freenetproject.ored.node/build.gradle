@@ -1,6 +1,7 @@
 plugins {
     id 'org.beryx.jlink' version '2.25.0'
     id 'ored.java-conventions'
+    id "com.google.osdetector" version "1.7.0"
 }
 
 dependencies {
@@ -20,7 +21,7 @@ dependencies {
 
 application {
     mainModule = 'org.freenetproject.ored.node' // name defined in module-info.java
-    mainClass = 'freenet.nodeapp.NodeStarter'
+    mainClass = 'freenet.node.NodeStarter'
 }
 
 jlink {
@@ -32,22 +33,12 @@ jlink {
             '--strip-debug'
     ]
 
-    mainClass = "freenet.nodeapp.NodeStarter"
+    mainClass = "freenet.node.NodeStarter"
 
     jarExclude 'freenet-ext', '/freenet/support/**'
 
     imageDir = file("$rootDir/build/jlink")
     imageZip = file("$rootDir/build/jlink.zip")
-
-    launcher {
-        name = 'ored'
-        jvmArgs = [
-                '-Dnetworkaddress.cache.ttl=0',
-                '-Dnetworkaddress.cache.negative.ttl=0',
-                '-Xss512k',
-        ]
-        args = []
-    }
 
     jpackage {
         imageOutputDir = file("$rootDir/build/jpackage")
@@ -56,4 +47,56 @@ jlink {
         installerName = 'Oldenet'
         appVersion = '7.5.1493'
     }
+}
+
+tasks.register('copyWrapper') {
+    def wrapperCmdPath = "${tasks.jlink.imageDir}/bin";
+    def wrapperConfPath = "${tasks.jlink.imageDir}/conf";
+    def wrapperLibPath = "${tasks.jlink.imageDir}/lib/wrapper";
+
+    dependsOn 'jlink'
+    inputs.files tasks.jlink.imageDirAsFile, "${rootDir}/lib/wrapper"
+    outputs.dirs wrapperCmdPath, wrapperConfPath, wrapperLibPath
+
+    doLast {
+        // Copy wrapper command executable
+        copy {
+            from "${rootDir}/lib/wrapper/bin/wrapper-macosx-universal-64"
+            into wrapperCmdPath
+            rename 'wrapper-(.+)', 'wrapper'
+        }
+
+        // Copy wrapper.conf
+        copy {
+            from "${rootDir}/lib/wrapper/conf/wrapper.conf"
+            into wrapperConfPath
+        }
+
+        // Copy lib
+        copy {
+            from "${rootDir}/lib/wrapper/lib/libwrapper-macosx-universal-64.jnilib"
+            into wrapperLibPath
+        }
+
+        // Copy launch script
+        copy {
+            from "${rootDir}/lib/wrapper/bin/App.sh"
+            into wrapperCmdPath
+            rename 'App.sh', 'ored'
+        }
+
+        project.exec {
+            commandLine('chmod', '+x', "${wrapperCmdPath}/wrapper")
+            commandLine('chmod', '+x', "${wrapperCmdPath}/ored")
+        }
+
+        delete "${tasks.jlink.imageDir}/bin/org.freenetproject.ored.node", "${tasks.jlink.imageDir}/bin/org.freenetproject.ored.node.bat"
+    }
+}
+
+tasks.named('clean').configure {
+    delete += jlink.imageDir
+    delete += jlink.imageZip
+    delete += jlink.jpackageData.get().imageOutputDir
+    delete += jlink.jpackageData.get().installerOutputDir
 }

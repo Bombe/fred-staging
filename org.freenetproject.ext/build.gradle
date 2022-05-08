@@ -26,7 +26,6 @@ extraJavaModuleInfo {
         exports 'org.bitpedia.util'
         exports 'org.spaceroots.mantissa.random'
         exports 'SevenZip'
-        exports 'SevenZip.Compression'
         exports 'SevenZip.Compression.LZMA'
         exports 'freenet.node.ext'
     }
@@ -34,5 +33,11 @@ extraJavaModuleInfo {
 
 shadowJar {
     excludes -= 'module-info.class'
+    exclude 'freenet/support/'
+    exclude 'com/db4o/'
+    exclude 'com/sleepycat/'
+    exclude 'net/i2p/util/'
+    exclude 'org/apache/'
+    exclude 'org/tanukisoftware/'
     relocate 'freenet.node', 'freenet.node.ext'
 }
