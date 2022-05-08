@@ -23,6 +23,13 @@ extraJavaModuleInfo {
     module('wrapper.jar', 'org.tanukisoftware.wrapper', '3.5.49') {
         exports 'org.tanukisoftware.wrapper'
     }
+
+    module('net.harawata:appdirs', 'net.harawata.appdirs') {
+        exports 'net.harawata.appdirs'
+
+        requires 'com.sun.jna'
+        requires 'com.sun.jna.platform'
+    }
 }
 
 test {

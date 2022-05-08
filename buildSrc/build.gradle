@@ -7,5 +7,5 @@ repositories {
 }
 
 dependencies {
-    implementation 'de.jjohannes.gradle:extra-java-module-info:0.11'
+    implementation 'de.jjohannes.gradle:extra-java-module-info:0.12'
 }

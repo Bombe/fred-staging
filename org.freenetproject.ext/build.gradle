@@ -16,7 +16,7 @@ dependencies {
 }
 
 extraJavaModuleInfo {
-    module('freenet-ext-29.jar', 'org.freenetproject.ext', '29') {
+    module('org.freenetproject:freenet-ext', 'org.freenetproject.ext') {
         exports 'com.onionnetworks.fec'
         exports 'com.onionnetworks.io'
         exports 'com.onionnetworks.net'
