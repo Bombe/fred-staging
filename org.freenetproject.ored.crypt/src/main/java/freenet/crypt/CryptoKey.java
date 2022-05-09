@@ -17,12 +17,14 @@ import freenet.cryptlogger.Logger;
 
 public abstract class CryptoKey implements CryptoElement, Serializable {
 
-    private static final long serialVersionUID = 1L;
-    protected static final MessageDigest shactx;
+	private static final long serialVersionUID = 1L;
+
+	protected static final MessageDigest shactx;
 	static {
 		try {
 			shactx = MessageDigest.getInstance("SHA1", Util.mdProviders.get("SHA1"));
-		} catch(NoSuchAlgorithmException e) {
+		}
+		catch (NoSuchAlgorithmException e) {
 			// impossible
 			throw new Error(e);
 		}
@@ -36,10 +38,10 @@ public abstract class CryptoKey implements CryptoElement, Serializable {
 		String type = dis.readUTF();
 		try {
 			Class<?> keyClass = Class.forName(type);
-			Method m =
-				keyClass.getMethod("read", new Class<?>[] { InputStream.class });
+			Method m = keyClass.getMethod("read", new Class<?>[] { InputStream.class });
 			return (CryptoKey) m.invoke(null, dis);
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			e.printStackTrace();
 			if (e instanceof CryptFormatException)
 				throw (CryptFormatException) e;
@@ -50,15 +52,17 @@ public abstract class CryptoKey implements CryptoElement, Serializable {
 		}
 	}
 
-//	public abstract void write(OutputStream o) throws IOException;
+	// public abstract void write(OutputStream o) throws IOException;
 
 	public abstract String keyType();
+
 	public abstract byte[] fingerprint();
+
 	public abstract byte[] asBytes();
 
 	protected byte[] fingerprint(BigInteger[] quantities) {
 		synchronized (shactx) {
-			for (BigInteger quantity: quantities) {
+			for (BigInteger quantity : quantities) {
 				byte[] mpi = Util.MPIbytes(quantity);
 				shactx.update(mpi, 0, mpi.length);
 			}
@@ -80,33 +84,18 @@ public abstract class CryptoKey implements CryptoElement, Serializable {
 		return b.toString();
 	}
 
-//	protected void write(OutputStream o, String clazz) throws IOException {
-//		UTF8.writeWithLength(o, clazz);
-//	}
-//
+	// protected void write(OutputStream o, String clazz) throws IOException {
+	// UTF8.writeWithLength(o, clazz);
+	// }
+	//
 	public String fingerprintToString() {
 		String fphex = HexUtil.bytesToHex(fingerprint());
 		StringBuilder b = new StringBuilder(40 + 10);
-		b
-			.append(fphex.substring(0, 4))
-			.append(' ')
-			.append(fphex.substring(4, 8))
-			.append(' ')
-			.append(fphex.substring(8, 12))
-			.append(' ')
-			.append(fphex.substring(12, 16))
-			.append(' ')
-			.append(fphex.substring(16, 20))
-			.append("  ")
-			.append(fphex.substring(20, 24))
-			.append(' ')
-			.append(fphex.substring(24, 28))
-			.append(' ')
-			.append(fphex.substring(28, 32))
-			.append(' ')
-			.append(fphex.substring(32, 36))
-			.append(' ')
-			.append(fphex.substring(36, 40));
+		b.append(fphex.substring(0, 4)).append(' ').append(fphex.substring(4, 8)).append(' ')
+				.append(fphex.substring(8, 12)).append(' ').append(fphex.substring(12, 16)).append(' ')
+				.append(fphex.substring(16, 20)).append("  ").append(fphex.substring(20, 24)).append(' ')
+				.append(fphex.substring(24, 28)).append(' ').append(fphex.substring(28, 32)).append(' ')
+				.append(fphex.substring(32, 36)).append(' ').append(fphex.substring(36, 40));
 		return b.toString();
 	}
 

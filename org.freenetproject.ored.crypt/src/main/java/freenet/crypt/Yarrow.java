@@ -33,23 +33,22 @@ import freenet.support.io.Closer;
 /**
  * An implementation of the Yarrow PRNG in Java.
  * <p>
- * This class implements Yarrow-160, a cryptraphically secure PRNG developed by
- * John Kelsey, Bruce Schneier, and Neils Ferguson. It was designed to follow
- * the specification (www.counterpane.com/labs) given in the paper by the same
- * authors, with the following exceptions:
+ * This class implements Yarrow-160, a cryptraphically secure PRNG developed by John
+ * Kelsey, Bruce Schneier, and Neils Ferguson. It was designed to follow the specification
+ * (www.counterpane.com/labs) given in the paper by the same authors, with the following
+ * exceptions:
  * </p>
  * <ul>
- * <li>Instead of 3DES as the output cipher, Rijndael was chosen. It was my
- * belief that an AES candidate should be selected. Twofish was an alternate
- * choice, but the AES implementation does not allow easy selection of a faster
- * key-schedule, so twofish's severely impaired performance.</li>
- * <li>h prime, described as a 'size adaptor' was not used, since its function
- * is only to constrain the size of a byte array, our own key generation
- * routine was used instead (See
- * {@link freenet.crypt.Util#makeKey freenet.crypt.Util.makeKey})</li>
- * <li>Our own entropy estimation routines are used, as they use a third-order
- * delta calculation that is quite conservative. Still, its used along side the
- * global multiplier and program- supplied guesses, as suggested.</li>
+ * <li>Instead of 3DES as the output cipher, Rijndael was chosen. It was my belief that an
+ * AES candidate should be selected. Twofish was an alternate choice, but the AES
+ * implementation does not allow easy selection of a faster key-schedule, so twofish's
+ * severely impaired performance.</li>
+ * <li>h prime, described as a 'size adaptor' was not used, since its function is only to
+ * constrain the size of a byte array, our own key generation routine was used instead
+ * (See {@link freenet.crypt.Util#makeKey freenet.crypt.Util.makeKey})</li>
+ * <li>Our own entropy estimation routines are used, as they use a third-order delta
+ * calculation that is quite conservative. Still, its used along side the global
+ * multiplier and program- supplied guesses, as suggested.</li>
  * </ul>
  *
  * @author Scott G. Miller <scgmille@indiana.edu>
@@ -57,12 +56,13 @@ import freenet.support.io.Closer;
 public class Yarrow extends RandomSource implements PersistentRandomSource {
 
 	private static final long serialVersionUID = -1;
+
 	private static volatile boolean logMINOR;
 
 	static {
-		Logger.registerLogThresholdCallback(new LogThresholdCallback(){
+		Logger.registerLogThresholdCallback(new LogThresholdCallback() {
 			@Override
-			public void shouldUpdate(){
+			public void shouldUpdate() {
 				logMINOR = Logger.shouldLog(LogLevel.MINOR, this);
 			}
 		});
@@ -71,9 +71,12 @@ public class Yarrow extends RandomSource implements PersistentRandomSource {
 	 * Security parameters
 	 */
 	private static final boolean DEBUG = false;
+
 	private static final int Pg = 10;
+
 	private final SecureRandom sr;
-	public final File seedfile; //A file to which seed data should be dumped periodically
+
+	public final File seedfile; // A file to which seed data should be dumped periodically
 
 	public Yarrow() {
 		this("prng.seed", "SHA1", "Rijndael", true, true);
@@ -100,7 +103,8 @@ public class Yarrow extends RandomSource implements PersistentRandomSource {
 		SecureRandom s;
 		try {
 			s = SecureRandom.getInstance("SHA1PRNG");
-		} catch(NoSuchAlgorithmException e) {
+		}
+		catch (NoSuchAlgorithmException e) {
 			s = null;
 		}
 		sr = s;
@@ -108,36 +112,43 @@ public class Yarrow extends RandomSource implements PersistentRandomSource {
 			accumulator_init(digest);
 			reseed_init(digest);
 			generator_init(cipher);
-		} catch(NoSuchAlgorithmException e) {
+		}
+		catch (NoSuchAlgorithmException e) {
 			Logger.error(this, "Could not init pools trying to getInstance(" + digest + "): " + e, e);
 			throw new RuntimeException("Cannot initialize Yarrow!: " + e, e);
 		}
 
-		if(updateSeed && !(seed.toString()).equals("/dev/urandom")) //Dont try to update the seedfile if we know that it wont be possible anyways
+		if (updateSeed && !(seed.toString()).equals("/dev/urandom")) // Dont try to update
+																		// the seedfile if
+																		// we know that it
+																		// wont be
+																		// possible
+																		// anyways
 			seedfile = seed;
 		else
 			seedfile = null;
-		if(reseedOnStartup) {
+		if (reseedOnStartup) {
 			entropy_init(seed, reseedOnStartup);
 			seedFromExternalStuff(canBlock);
 			/**
-			 * If we don't reseed at this point, we will be predictable,
-			 * because the startup entropy won't cause a reseed.
+			 * If we don't reseed at this point, we will be predictable, because the
+			 * startup entropy won't cause a reseed.
 			 */
 			fast_pool_reseed();
 			slow_pool_reseed();
-		} else {
+		}
+		else {
 			read_seed(seed);
 		}
 	}
 
 	private void seedFromExternalStuff(boolean canBlock) {
 		byte[] buf = new byte[32];
-		if(File.separatorChar == '/') {
+		if (File.separatorChar == '/') {
 			DataInputStream dis = null;
 			FileInputStream fis = null;
 			File hwrng = new File("/dev/hwrng");
-			if(hwrng.exists() && hwrng.canRead())
+			if (hwrng.exists() && hwrng.canRead())
 				try {
 					fis = new FileInputStream(hwrng);
 					dis = new DataInputStream(fis);
@@ -146,9 +157,11 @@ public class Yarrow extends RandomSource implements PersistentRandomSource {
 					dis.readFully(buf);
 					consumeBytes(buf);
 					dis.close();
-				} catch(Throwable t) {
+				}
+				catch (Throwable t) {
 					Logger.normal(this, "Can't read /dev/hwrng even though exists and is readable: " + t, t);
-				} finally {
+				}
+				finally {
 					Closer.close(dis);
 					Closer.close(fis);
 				}
@@ -161,15 +174,18 @@ public class Yarrow extends RandomSource implements PersistentRandomSource {
 				consumeBytes(buf);
 				dis.readFully(buf);
 				consumeBytes(buf);
-			} catch(Throwable t) {
+			}
+			catch (Throwable t) {
 				Logger.normal(this, "Can't read /dev/urandom: " + t, t);
-				// We can't read it; let's skip /dev/random and seed from SecureRandom.generateSeed()
+				// We can't read it; let's skip /dev/random and seed from
+				// SecureRandom.generateSeed()
 				canBlock = true;
-			} finally {
+			}
+			finally {
 				Closer.close(dis);
 				Closer.close(fis);
 			}
-			if(canBlock)
+			if (canBlock)
 				// Read some bits from /dev/random
 				try {
 					fis = new FileInputStream("/dev/random");
@@ -178,18 +194,21 @@ public class Yarrow extends RandomSource implements PersistentRandomSource {
 					consumeBytes(buf);
 					dis.readFully(buf);
 					consumeBytes(buf);
-				} catch(Throwable t) {
+				}
+				catch (Throwable t) {
 					Logger.normal(this, "Can't read /dev/random: " + t, t);
-				} finally {
+				}
+				finally {
 					Closer.close(dis);
 					Closer.close(fis);
 				}
 			fis = null;
-		} else
+		}
+		else
 			// Force generateSeed(), since we can't read random data from anywhere else.
 			// Anyway, Windows's CAPI won't block.
 			canBlock = true;
-		if(canBlock) {
+		if (canBlock) {
 			// SecureRandom hopefully acts as a proxy for CAPI on Windows
 			buf = sr.generateSeed(32);
 			consumeBytes(buf);
@@ -202,12 +221,12 @@ public class Yarrow extends RandomSource implements PersistentRandomSource {
 	}
 
 	private void entropy_init(File seed, boolean reseedOnStartup) {
-		if(reseedOnStartup) {
+		if (reseedOnStartup) {
 			Properties sys = System.getProperties();
 			EntropySource startupEntropy = new EntropySource();
 
 			// Consume the system properties list
-			for(Enumeration<?> enu = sys.propertyNames(); enu.hasMoreElements();) {
+			for (Enumeration<?> enu = sys.propertyNames(); enu.hasMoreElements();) {
 				String key = (String) enu.nextElement();
 				consumeString(key);
 				consumeString(sys.getProperty(key));
@@ -216,7 +235,8 @@ public class Yarrow extends RandomSource implements PersistentRandomSource {
 			// Consume the local IP address
 			try {
 				consumeString(InetAddress.getLocalHost().toString());
-			} catch(Exception e) {
+			}
+			catch (Exception e) {
 				// Ignore
 			}
 			readStartupEntropy(startupEntropy);
@@ -249,39 +269,43 @@ public class Yarrow extends RandomSource implements PersistentRandomSource {
 			dis = new DataInputStream(bis);
 
 			EntropySource seedFile = new EntropySource();
-				for(int i = 0; i < 32; i++)
-					acceptEntropy(seedFile, dis.readLong(), 64);
+			for (int i = 0; i < 32; i++)
+				acceptEntropy(seedFile, dis.readLong(), 64);
 			dis.close();
-		} catch(EOFException f) {
+		}
+		catch (EOFException f) {
 			// Okay.
-		} catch(IOException e) {
+		}
+		catch (IOException e) {
 			Logger.error(this, "IOE trying to read the seedfile from disk : " + e.getMessage());
-		} finally {
+		}
+		finally {
 			Closer.close(dis);
 			Closer.close(bis);
 			Closer.close(fis);
 		}
 		fast_pool_reseed();
 	}
+
 	private long timeLastWroteSeed = -1;
 
 	private void write_seed(File filename) {
 		write_seed(filename, false);
 	}
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void write_seed(boolean force) {
-        write_seed(seedfile, force);
-    }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void write_seed(boolean force) {
+		write_seed(seedfile, force);
+	}
 
-    private void write_seed(File filename, boolean force) {
-		if(!force)
-			synchronized(this) {
+	private void write_seed(File filename, boolean force) {
+		if (!force)
+			synchronized (this) {
 				long now = System.currentTimeMillis();
-				if(now - timeLastWroteSeed <= HOURS.toMillis(1) /* once per hour */)
+				if (now - timeLastWroteSeed <= HOURS.toMillis(1) /* once per hour */)
 					return;
 				else
 					timeLastWroteSeed = now;
@@ -295,25 +319,30 @@ public class Yarrow extends RandomSource implements PersistentRandomSource {
 			bos = new BufferedOutputStream(fos);
 			dos = new DataOutputStream(bos);
 
-			for(int i = 0; i < 32; i++)
+			for (int i = 0; i < 32; i++)
 				dos.writeLong(nextLong());
 
 			dos.flush();
 			dos.close();
-		} catch(IOException e) {
+		}
+		catch (IOException e) {
 			Logger.error(this, "IOE while saving the seed file! : " + e.getMessage());
-		} finally {
+		}
+		finally {
 			Closer.close(dos);
 			Closer.close(bos);
 			Closer.close(fos);
 		}
 	}
+
 	/**
 	 * 5.1 Generation Mechanism
 	 */
 	private BlockCipher cipher_ctx;
-	private byte[] output_buffer,  counter,  allZeroString,  tmp;
-	private int output_count,  fetch_counter;
+
+	private byte[] output_buffer, counter, allZeroString, tmp;
+
+	private int output_count, fetch_counter;
 
 	private void generator_init(String cipher) {
 		cipher_ctx = Util.getCipherByName(cipher);
@@ -326,8 +355,8 @@ public class Yarrow extends RandomSource implements PersistentRandomSource {
 	}
 
 	private void counterInc() {
-		for(int i = counter.length - 1; i >= 0; i--)
-			if(++counter[i] != 0)
+		for (int i = counter.length - 1; i >= 0; i--)
+			if (++counter[i] != 0)
 				break;
 	}
 
@@ -337,7 +366,7 @@ public class Yarrow extends RandomSource implements PersistentRandomSource {
 		output_buffer = new byte[counter.length];
 		cipher_ctx.encipher(counter, output_buffer);
 
-		if(output_count++ > Pg) {
+		if (output_count++ > Pg) {
 			output_count = 0;
 			nextBytes(tmp);
 			rekey(tmp);
@@ -355,7 +384,7 @@ public class Yarrow extends RandomSource implements PersistentRandomSource {
 	// an offset to the bytes
 	private synchronized int getBytes(int count) {
 
-		if(fetch_counter + count > output_buffer.length) {
+		if (fetch_counter + count > output_buffer.length) {
 			fetch_counter = 0;
 			generateOutput();
 			return getBytes(count);
@@ -365,71 +394,13 @@ public class Yarrow extends RandomSource implements PersistentRandomSource {
 		fetch_counter += count;
 		return rv;
 	}
-	static final int bitTable[][] = {{0, 0x0}, {
-			1, 0x1
-		}, {
-			1, 0x3
-		}, {
-			1, 0x7
-		}, {
-			1, 0xf
-		}, {
-			1, 0x1f
-		}, {
-			1, 0x3f
-		}, {
-			1, 0x7f
-		}, {
-			1, 0xff
-		}, {
-			2, 0x1ff
-		}, {
-			2, 0x3ff
-		}, {
-			2, 0x7ff
-		}, {
-			2, 0xfff
-		}, {
-			2, 0x1fff
-		}, {
-			2, 0x3fff
-		}, {
-			2, 0x7fff
-		}, {
-			2, 0xffff
-		}, {
-			3, 0x1ffff
-		}, {
-			3, 0x3ffff
-		}, {
-			3, 0x7ffff
-		}, {
-			3, 0xfffff
-		}, {
-			3, 0x1fffff
-		}, {
-			3, 0x3fffff
-		}, {
-			3, 0x7fffff
-		}, {
-			3, 0xffffff
-		}, {
-			4, 0x1ffffff
-		}, {
-			4, 0x3ffffff
-		}, {
-			4, 0x7ffffff
-		}, {
-			4, 0xfffffff
-		}, {
-			4, 0x1fffffff
-		}, {
-			4, 0x3fffffff
-		}, {
-			4, 0x7fffffff
-		}, {
-			4, 0xffffffff
-		}};
+
+	static final int bitTable[][] = { { 0, 0x0 }, { 1, 0x1 }, { 1, 0x3 }, { 1, 0x7 }, { 1, 0xf }, { 1, 0x1f },
+			{ 1, 0x3f }, { 1, 0x7f }, { 1, 0xff }, { 2, 0x1ff }, { 2, 0x3ff }, { 2, 0x7ff }, { 2, 0xfff },
+			{ 2, 0x1fff }, { 2, 0x3fff }, { 2, 0x7fff }, { 2, 0xffff }, { 3, 0x1ffff }, { 3, 0x3ffff }, { 3, 0x7ffff },
+			{ 3, 0xfffff }, { 3, 0x1fffff }, { 3, 0x3fffff }, { 3, 0x7fffff }, { 3, 0xffffff }, { 4, 0x1ffffff },
+			{ 4, 0x3ffffff }, { 4, 0x7ffffff }, { 4, 0xfffffff }, { 4, 0x1fffffff }, { 4, 0x3fffffff },
+			{ 4, 0x7fffffff }, { 4, 0xffffffff } };
 
 	// This may *look* more complicated than in is, but in fact it is
 	// loop unrolled, cache and operation optimized.
@@ -442,21 +413,26 @@ public class Yarrow extends RandomSource implements PersistentRandomSource {
 
 		int val = output_buffer[offset];
 
-		if(parameters[0] == 4)
-			val += (output_buffer[offset + 1] << 24) + (output_buffer[offset + 2] << 16) + (output_buffer[offset + 3] << 8);
-		else if(parameters[0] == 3)
+		if (parameters[0] == 4)
+			val += (output_buffer[offset + 1] << 24) + (output_buffer[offset + 2] << 16)
+					+ (output_buffer[offset + 3] << 8);
+		else if (parameters[0] == 3)
 			val += (output_buffer[offset + 1] << 16) + (output_buffer[offset + 2] << 8);
-		else if(parameters[0] == 2)
+		else if (parameters[0] == 2)
 			val += output_buffer[offset + 2] << 8;
 
 		return val & parameters[1];
 	}
+
 	/**
 	 * 5.2 Entropy Accumulator
 	 */
-	private MessageDigest fast_pool,  slow_pool;
-	private int fast_entropy,  slow_entropy;
+	private MessageDigest fast_pool, slow_pool;
+
+	private int fast_entropy, slow_entropy;
+
 	private boolean fast_select;
+
 	private Map<EntropySource, int[]> entropySeen;
 
 	private void accumulator_init(String digest) throws NoSuchAlgorithmException {
@@ -471,13 +447,12 @@ public class Yarrow extends RandomSource implements PersistentRandomSource {
 	}
 
 	@Override
-	public int acceptEntropyBytes(EntropySource source, byte[] buf, int offset,
-		int length, double bias) {
+	public int acceptEntropyBytes(EntropySource source, byte[] buf, int offset, int length, double bias) {
 		int totalRealEntropy = 0;
-		for(int i = 0; i < length; i += 8) {
+		for (int i = 0; i < length; i += 8) {
 			long thingy = 0;
 			int bytes = 0;
-			for(int j = 0; j < Math.min(length, i + 8); j++) {
+			for (int j = 0; j < Math.min(length, i + 8); j++) {
 				thingy = (thingy << 8) + (buf[j] & 0xFF);
 				bytes++;
 			}
@@ -486,65 +461,51 @@ public class Yarrow extends RandomSource implements PersistentRandomSource {
 		return totalRealEntropy;
 	}
 
-	private int acceptEntropy(
-		EntropySource source,
-		long data,
-		int entropyGuess,
-		double bias) {
-		return accept_entropy(
-			data,
-			source,
-			(int) (bias * Math.min(
-			32,
-			Math.min(estimateEntropy(source, data), entropyGuess))));
+	private int acceptEntropy(EntropySource source, long data, int entropyGuess, double bias) {
+		return accept_entropy(data, source,
+				(int) (bias * Math.min(32, Math.min(estimateEntropy(source, data), entropyGuess))));
 	}
 
 	private int accept_entropy(long data, EntropySource source, int actualEntropy) {
 
 		boolean performedPoolReseed = false;
-		byte[] b = new byte[] {
-				(byte) data,
-				(byte) (data >> 8),
-				(byte) (data >> 16),
-				(byte) (data >> 24),
-				(byte) (data >> 32),
-				(byte) (data >> 40),
-				(byte) (data >> 48),
-				(byte) (data >> 56)
-		};
+		byte[] b = new byte[] { (byte) data, (byte) (data >> 8), (byte) (data >> 16), (byte) (data >> 24),
+				(byte) (data >> 32), (byte) (data >> 40), (byte) (data >> 48), (byte) (data >> 56) };
 
-		synchronized(this) {
+		synchronized (this) {
 			fast_select = !fast_select;
 			MessageDigest pool = (fast_select ? fast_pool : slow_pool);
 			pool.update(b);
 
-			if(fast_select) {
+			if (fast_select) {
 				fast_entropy += actualEntropy;
-				if(fast_entropy > FAST_THRESHOLD) {
+				if (fast_entropy > FAST_THRESHOLD) {
 					fast_pool_reseed();
 					performedPoolReseed = true;
 				}
-			} else {
+			}
+			else {
 				slow_entropy += actualEntropy;
 
-				if(source != null) {
+				if (source != null) {
 					int[] contributedEntropy = entropySeen.get(source);
-					if(contributedEntropy == null) {
+					if (contributedEntropy == null) {
 						contributedEntropy = new int[] { actualEntropy };
 						entropySeen.put(source, contributedEntropy);
-					} else
-						contributedEntropy[0]+=actualEntropy;
+					}
+					else
+						contributedEntropy[0] += actualEntropy;
 
-					if(slow_entropy >= (SLOW_THRESHOLD * 2)) {
+					if (slow_entropy >= (SLOW_THRESHOLD * 2)) {
 						int kc = 0;
-						for(Map.Entry<EntropySource, int[]> e : entropySeen.entrySet()) {
+						for (Map.Entry<EntropySource, int[]> e : entropySeen.entrySet()) {
 							EntropySource key = e.getKey();
 							int[] v = e.getValue();
-							if(DEBUG)
+							if (DEBUG)
 								Logger.normal(this, "Key: <" + key + "> " + v);
-							if(v[0] > SLOW_THRESHOLD) {
+							if (v[0] > SLOW_THRESHOLD) {
 								kc++;
-								if(kc >= SLOW_K) {
+								if (kc >= SLOW_K) {
 									slow_pool_reseed();
 									performedPoolReseed = true;
 									break;
@@ -554,18 +515,18 @@ public class Yarrow extends RandomSource implements PersistentRandomSource {
 					}
 				}
 			}
-			if(DEBUG)
-				//	    Core.logger.log(this,"Fast pool: "+fast_entropy+"\tSlow pool:
+			if (DEBUG)
+				// Core.logger.log(this,"Fast pool: "+fast_entropy+"\tSlow pool:
 				// "+slow_entropy, LogLevel.NORMAL);
 				System.err.println("Fast pool: " + fast_entropy + "\tSlow pool: " + slow_entropy);
 		}
-		if(performedPoolReseed && (seedfile != null)) {
-			//Dont do this while synchronized on 'this' since
-			//opening a file seems to be suprisingly slow on windows
-			if(logMINOR)
+		if (performedPoolReseed && (seedfile != null)) {
+			// Dont do this while synchronized on 'this' since
+			// opening a file seems to be suprisingly slow on windows
+			if (logMINOR)
 				Logger.minor(this, "Writing seedfile");
 			write_seed(seedfile);
-			if(logMINOR)
+			if (logMINOR)
 				Logger.minor(this, "Written seedfile");
 		}
 
@@ -580,20 +541,20 @@ public class Yarrow extends RandomSource implements PersistentRandomSource {
 		int delta3 = delta2 - source.lastDelta2;
 		source.lastDelta2 = delta2;
 
-		if(delta < 0)
+		if (delta < 0)
 			delta = -delta;
-		if(delta2 < 0)
+		if (delta2 < 0)
 			delta2 = -delta2;
-		if(delta3 < 0)
+		if (delta3 < 0)
 			delta3 = -delta3;
-		if(delta > delta2)
+		if (delta > delta2)
 			delta = delta2;
-		if(delta > delta3)
+		if (delta > delta3)
 			delta = delta3;
 
 		/*
-		 * delta is now minimum absolute delta. Round down by 1 bit on general
-		 * principles, and limit entropy entimate to 12 bits.
+		 * delta is now minimum absolute delta. Round down by 1 bit on general principles,
+		 * and limit entropy entimate to 12 bits.
 		 */
 		delta >>= 1;
 		delta &= (1 << 12) - 1;
@@ -628,17 +589,19 @@ public class Yarrow extends RandomSource implements PersistentRandomSource {
 	}
 
 	/**
-	 * If entropy estimation is supported, this method will block until the
-	 * specified number of bits of entropy are available. If estimation isn't
-	 * supported, this method will return immediately.
+	 * If entropy estimation is supported, this method will block until the specified
+	 * number of bits of entropy are available. If estimation isn't supported, this method
+	 * will return immediately.
 	 */
 	@Override
 	public void waitForEntropy(int bits) {
 	}
+
 	/**
 	 * 5.3 Reseed mechanism
 	 */
 	private static final int Pt = 5;
+
 	private MessageDigest reseed_ctx;
 
 	private void reseed_init(String digest) throws NoSuchAlgorithmException {
@@ -650,7 +613,7 @@ public class Yarrow extends RandomSource implements PersistentRandomSource {
 		byte[] v0 = fast_pool.digest();
 		byte[] vi = v0;
 
-		for(byte i = 0; i < Pt; i++) {
+		for (byte i = 0; i < Pt; i++) {
 			reseed_ctx.update(vi, 0, vi.length);
 			reseed_ctx.update(v0, 0, v0.length);
 			reseed_ctx.update(i);
@@ -664,7 +627,7 @@ public class Yarrow extends RandomSource implements PersistentRandomSource {
 		fast_entropy = 0;
 		if (DEBUG) {
 			long endTime = System.currentTimeMillis();
-			if(endTime - startTime > 5000)
+			if (endTime - startTime > 5000)
 				Logger.normal(this, "Fast pool reseed took " + (endTime - startTime) + "ms");
 		}
 	}
@@ -678,14 +641,15 @@ public class Yarrow extends RandomSource implements PersistentRandomSource {
 
 		entropySeen.clear();
 	}
+
 	/**
 	 * 5.4 Reseed Control parameters
 	 */
-	private static final int FAST_THRESHOLD = 100,  SLOW_THRESHOLD = 160,  SLOW_K = 2;
+	private static final int FAST_THRESHOLD = 100, SLOW_THRESHOLD = 160, SLOW_K = 2;
 
 	/**
-	 * If the RandomSource has any resources it wants to close, it can do so
-	 * when this method is called
+	 * If the RandomSource has any resources it wants to close, it can do so when this
+	 * method is called
 	 */
 	@Override
 	public void close() {
@@ -699,93 +663,92 @@ public class Yarrow extends RandomSource implements PersistentRandomSource {
 
 		byte[] b = new byte[1024];
 
-		if((args.length == 0) || args[0].equalsIgnoreCase("latency")) {
-			if(args.length == 2)
+		if ((args.length == 0) || args[0].equalsIgnoreCase("latency")) {
+			if (args.length == 2)
 				b = new byte[Integer.parseInt(args[1])];
 			long start = System.currentTimeMillis();
-			for(int i = 0; i < 100; i++)
+			for (int i = 0; i < 100; i++)
 				r.nextBytes(b);
-			System.out.println(
-				(double) (System.currentTimeMillis() - start) / (100 * b.length) * 1024 + " ms/k");
+			System.out.println((double) (System.currentTimeMillis() - start) / (100 * b.length) * 1024 + " ms/k");
 			start = System.currentTimeMillis();
-			for(int i = 0; i < 1000; i++)
+			for (int i = 0; i < 1000; i++)
 				r.nextInt();
-			System.out.println(
-				(double) (System.currentTimeMillis() - start) / 1000 + " ms/int");
+			System.out.println((double) (System.currentTimeMillis() - start) / 1000 + " ms/int");
 			start = System.currentTimeMillis();
-			for(int i = 0; i < 1000; i++)
+			for (int i = 0; i < 1000; i++)
 				r.nextLong();
-			System.out.println(
-				(double) (System.currentTimeMillis() - start) / 1000 + " ms/long");
-		} else if(args[0].equalsIgnoreCase("randomness")) {
+			System.out.println((double) (System.currentTimeMillis() - start) / 1000 + " ms/long");
+		}
+		else if (args[0].equalsIgnoreCase("randomness")) {
 			int kb = Integer.parseInt(args[1]);
-			for(int i = 0; i < kb; i++) {
+			for (int i = 0; i < kb; i++) {
 				r.nextBytes(b);
 				System.out.write(b);
 			}
-		} else if(args[0].equalsIgnoreCase("gathering")) {
+		}
+		else if (args[0].equalsIgnoreCase("gathering")) {
 			System.gc();
 			EntropySource t = new EntropySource();
 			long start = System.currentTimeMillis();
-			for(int i = 0; i < 100000; i++)
+			for (int i = 0; i < 100000; i++)
 				r.acceptEntropy(t, System.currentTimeMillis(), 32);
-			System.err.println(
-				(double) (System.currentTimeMillis() - start) / 100000);
+			System.err.println((double) (System.currentTimeMillis() - start) / 100000);
 			System.gc();
 			start = System.currentTimeMillis();
-			for(int i = 0; i < 100000; i++)
+			for (int i = 0; i < 100000; i++)
 				r.acceptTimerEntropy(t);
-			System.err.println(
-				(double) (System.currentTimeMillis() - start) / 100000);
-		} else if(args[0].equalsIgnoreCase("volume")) {
+			System.err.println((double) (System.currentTimeMillis() - start) / 100000);
+		}
+		else if (args[0].equalsIgnoreCase("volume")) {
 			b = new byte[1020];
-			long duration =
-				System.currentTimeMillis() + Integer.parseInt(args[1]);
-			while(System.currentTimeMillis() < duration) {
+			long duration = System.currentTimeMillis() + Integer.parseInt(args[1]);
+			while (System.currentTimeMillis() < duration) {
 				r.nextBytes(b);
 				System.out.write(b);
 			}
-//		} else if (args[0].equals("stream")) {
-//			RandFile f = new RandFile(args[1]);
-//			EntropySource rf = new EntropySource();
-//			byte[] buffer = new byte[131072];
-//			while (true) {
-//				r.acceptEntropy(rf, f.nextLong(), 32);
-//				r.nextBytes(buffer);
-//				System.out.write(buffer);
-//			}
-		} else if(args[0].equalsIgnoreCase("bitstream"))
-			while(true) {
+			// } else if (args[0].equals("stream")) {
+			// RandFile f = new RandFile(args[1]);
+			// EntropySource rf = new EntropySource();
+			// byte[] buffer = new byte[131072];
+			// while (true) {
+			// r.acceptEntropy(rf, f.nextLong(), 32);
+			// r.nextBytes(buffer);
+			// System.out.write(buffer);
+			// }
+		}
+		else if (args[0].equalsIgnoreCase("bitstream"))
+			while (true) {
 				int v = r.nextInt();
-				for(int i = 0; i < 32; i++) {
-					if(((v >> i) & 1) == 1)
+				for (int i = 0; i < 32; i++) {
+					if (((v >> i) & 1) == 1)
 						System.out.print('1');
 					else
 						System.out.print('0');
 				}
 			}
-		else if(args[0].equalsIgnoreCase("sample"))
-			if((args.length == 1) || args[1].equals("general")) {
+		else if (args[0].equalsIgnoreCase("sample"))
+			if ((args.length == 1) || args[1].equals("general")) {
 				System.out.println("nextInt(): ");
-				for(int i = 0; i < 3; i++)
+				for (int i = 0; i < 3; i++)
 					System.out.println(r.nextInt());
 				System.out.println("nextLong(): ");
-				for(int i = 0; i < 3; i++)
+				for (int i = 0; i < 3; i++)
 					System.out.println(r.nextLong());
 				System.out.println("nextFloat(): ");
-				for(int i = 0; i < 3; i++)
+				for (int i = 0; i < 3; i++)
 					System.out.println(r.nextFloat());
 				System.out.println("nextDouble(): ");
-				for(int i = 0; i < 3; i++)
+				for (int i = 0; i < 3; i++)
 					System.out.println(r.nextDouble());
 				System.out.println("nextFullFloat(): ");
-				for(int i = 0; i < 3; i++)
+				for (int i = 0; i < 3; i++)
 					System.out.println(r.nextFullFloat());
 				System.out.println("nextFullDouble(): ");
-				for(int i = 0; i < 3; i++)
+				for (int i = 0; i < 3; i++)
 					System.out.println(r.nextFullDouble());
-			} else if(args[1].equals("normalized"))
-				for(int i = 0; i < 20; i++)
+			}
+			else if (args[1].equals("normalized"))
+				for (int i = 0; i < 20; i++)
 					System.out.println(r.nextDouble());
 	}
 
@@ -793,17 +756,19 @@ public class Yarrow extends RandomSource implements PersistentRandomSource {
 		byte[] b;
 		try {
 			b = str.getBytes("UTF-8");
-		} catch(UnsupportedEncodingException e) {
+		}
+		catch (UnsupportedEncodingException e) {
 			throw new Error("Impossible: JVM doesn't support UTF-8: " + e, e);
 		}
 		consumeBytes(b);
 	}
 
 	private void consumeBytes(byte[] bytes) {
-		if(fast_select)
+		if (fast_select)
 			fast_pool.update(bytes, 0, bytes.length);
 		else
 			slow_pool.update(bytes, 0, bytes.length);
 		fast_select = !fast_select;
 	}
+
 }

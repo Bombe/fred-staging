@@ -9,15 +9,15 @@ import freenet.support.SimpleFieldSet;
 import freenet.support.node.FSParseException;
 
 /**
- *
  * @author nextgens
  */
 public class SeedServerTestPeerNode extends SeedServerPeerNode {
 
-	public SeedServerTestPeerNode(SimpleFieldSet fs, Node node2, NodeCrypto crypto, boolean fromLocal) throws FSParseException, PeerParseException, ReferenceSignatureVerificationException, PeerTooOldException {
+	public SeedServerTestPeerNode(SimpleFieldSet fs, Node node2, NodeCrypto crypto, boolean fromLocal)
+			throws FSParseException, PeerParseException, ReferenceSignatureVerificationException, PeerTooOldException {
 		super(fs, node2, crypto, fromLocal);
 	}
-	
+
 	@Override
 	public SimpleFieldSet exportFieldSet() {
 		SimpleFieldSet sfs = super.exportFieldSet();
@@ -29,11 +29,13 @@ public class SeedServerTestPeerNode extends SeedServerPeerNode {
 	public boolean shouldDisconnectAndRemoveNow() {
 		return false;
 	}
-	
+
 	@Override
-	protected void sendInitialMessages() {}
-	
+	protected void sendInitialMessages() {
+	}
+
 	public enum FATE {
+
 		// Never connected
 		NEVER_CONNECTED,
 		// Connected but no packets received yet
@@ -46,35 +48,38 @@ public class SeedServerTestPeerNode extends SeedServerPeerNode {
 		CONNECTED_TIMEOUT_NO_PACKETS_RECEIVED,
 		// Connected but then disconnected for no known reason
 		CONNECTED_DISCONNECTED_UNKNOWN
+
 	}
-	
+
 	@Override
 	public void onRemove() {
 		long lastReceivedDataPacketTime = lastReceivedDataPacketTime();
-		if(lastReceivedDataPacketTime <= 0 && timeLastConnectionCompleted() > 0)
-			System.err.println(this.getIdentityString()+" : REMOVED: TIMEOUT: NO PACKETS RECEIVED AFTER SUCCESSFUL CONNECTION SETUP");
-		else if(timeLastConnectionCompleted() <= 0)
-			System.err.println(this.getIdentityString()+" : REMOVED: NEVER CONNECTED");
+		if (lastReceivedDataPacketTime <= 0 && timeLastConnectionCompleted() > 0)
+			System.err.println(this.getIdentityString()
+					+ " : REMOVED: TIMEOUT: NO PACKETS RECEIVED AFTER SUCCESSFUL CONNECTION SETUP");
+		else if (timeLastConnectionCompleted() <= 0)
+			System.err.println(this.getIdentityString() + " : REMOVED: NEVER CONNECTED");
 		else
-			System.err.println(this.getIdentityString()+" : REMOVED: UNKNOWN CAUSE");
+			System.err.println(this.getIdentityString() + " : REMOVED: UNKNOWN CAUSE");
 		super.onRemove();
 	}
-	
+
 	public FATE getFate() {
 		long lastReceivedDataPacketTime = lastReceivedDataPacketTime();
-		if(isConnected()) {
-			if(lastReceivedDataPacketTime <= 0)
+		if (isConnected()) {
+			if (lastReceivedDataPacketTime <= 0)
 				return FATE.CONNECTED_NO_PACKETS_RECEIVED;
-			else if(this.isUnroutableOlderVersion())
+			else if (this.isUnroutableOlderVersion())
 				return FATE.CONNECTED_TOO_OLD;
 			else
 				return FATE.CONNECTED_SUCCESS;
 		}
 		long lastConnectionTime = timeLastConnectionCompleted();
-		if(lastConnectionTime <= 0)
+		if (lastConnectionTime <= 0)
 			return FATE.NEVER_CONNECTED;
-		if(lastReceivedDataPacketTime <= 0)
+		if (lastReceivedDataPacketTime <= 0)
 			return FATE.CONNECTED_TIMEOUT_NO_PACKETS_RECEIVED;
 		return FATE.CONNECTED_DISCONNECTED_UNKNOWN;
 	}
+
 }

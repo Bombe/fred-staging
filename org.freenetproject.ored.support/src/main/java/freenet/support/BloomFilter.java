@@ -13,14 +13,16 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import freenet.support.math.MersenneTwister;
 
 public abstract class BloomFilter {
+
 	protected ByteBuffer filter;
 
 	/** Number of hash functions */
 	protected final int k;
+
 	protected final int length;
 
 	protected transient ReadWriteLock lock = new ReentrantReadWriteLock();
-	
+
 	public void init() {
 		lock = new ReentrantReadWriteLock();
 	}
@@ -33,7 +35,7 @@ public abstract class BloomFilter {
 		else
 			return new BinaryBloomFilter(length, k);
 	}
-	
+
 	public static BloomFilter createFilter(File file, int length, int k, boolean counting) throws IOException {
 		if (length == 0)
 			return new NullBloomFilter(length, k);
@@ -42,7 +44,7 @@ public abstract class BloomFilter {
 		else
 			return new BinaryBloomFilter(file, length, k);
 	}
-	
+
 	protected BloomFilter(int length, int k) {
 		if (length < 0) {
 			throw new IllegalArgumentException("Filter must have postitive or zero length");
@@ -65,14 +67,15 @@ public abstract class BloomFilter {
 		this.k = k;
 	}
 
-	//-- Core
+	// -- Core
 	public void addKey(byte[] key) {
 		Random hashes = getHashes(key);
 		lock.writeLock().lock();
 		try {
 			for (int i = 0; i < k; i++)
 				setBit(hashes.nextInt(length));
-		} finally {
+		}
+		finally {
 			lock.writeLock().unlock();
 		}
 
@@ -93,7 +96,8 @@ public abstract class BloomFilter {
 			for (int i = 0; i < k; i++)
 				if (!getBit(hashes.nextInt(length)))
 					return false;
-		} finally {
+		}
+		finally {
 			lock.readLock().unlock();
 		}
 		return true;
@@ -105,7 +109,8 @@ public abstract class BloomFilter {
 		try {
 			for (int i = 0; i < k; i++)
 				unsetBit(hashes.nextInt(length));
-		} finally {
+		}
+		finally {
 			lock.writeLock().unlock();
 		}
 
@@ -113,30 +118,30 @@ public abstract class BloomFilter {
 			forkedFilter.removeKey(key);
 	}
 
-	//-- Bits and Hashes
+	// -- Bits and Hashes
 	protected abstract boolean getBit(int offset);
 
 	protected abstract void setBit(int offset);
 
 	protected abstract void unsetBit(int offset);
-	
+
 	// Wierd impl's should override
 	public void unsetAll() {
 		int x = filter.limit();
-		for(int i=0;i<x;i++)
-			filter.put(i, (byte)0);
+		for (int i = 0; i < x; i++)
+			filter.put(i, (byte) 0);
 	}
 
 	protected Random getHashes(byte[] key) {
 		return new MersenneTwister(key);
 	}
 
-	//-- Fork & Merge
+	// -- Fork & Merge
 	protected BloomFilter forkedFilter;
 
 	/**
-	 * Create an empty, in-memory copy of bloom filter. New updates are written to both filters.
-	 * This is written back to disk on #merge()
+	 * Create an empty, in-memory copy of bloom filter. New updates are written to both
+	 * filters. This is written back to disk on #merge()
 	 */
 	public abstract void fork(int k);
 
@@ -157,10 +162,12 @@ public abstract class BloomFilter {
 				filter.position(0);
 				forkedFilter.close();
 				forkedFilter = null;
-			} finally {
+			}
+			finally {
 				forkedLock.unlock();
 			}
-		} finally {
+		}
+		finally {
 			lock.writeLock().unlock();
 		}
 	}
@@ -172,17 +179,16 @@ public abstract class BloomFilter {
 				return;
 			forkedFilter.close();
 			forkedFilter = null;
-		} finally {
+		}
+		finally {
 			lock.writeLock().unlock();
 		}
 	}
 
-	//-- Misc.
+	// -- Misc.
 	/**
 	 * Calculate optimal K value
-	 * 
-	 * @param filterLength
-	 *            filter length in bits
+	 * @param filterLength filter length in bits
 	 * @param maxKey
 	 * @return optimal K
 	 */
@@ -193,7 +199,7 @@ public abstract class BloomFilter {
 		}
 
 		long k = Math.round(Math.log(2) * filterLength / maxKey);
-		
+
 		if (k > 64)
 			k = 64;
 		if (k < 1)
@@ -220,7 +226,7 @@ public abstract class BloomFilter {
 			((MappedByteBuffer) filter).force();
 		}
 	}
-	
+
 	public void close() {
 		if (filter != null) {
 			force();
@@ -232,37 +238,39 @@ public abstract class BloomFilter {
 	@Override
 	protected void finalize() throws Throwable {
 		close();
-                super.finalize();
+		super.finalize();
 	}
-	
+
 	public int getSizeBytes() {
 		return filter.capacity();
 	}
-	
+
 	public int getLength() {
 		return length;
 	}
-	
+
 	public int getFilledCount() {
 		int x = 0;
-		for(int i=0;i<length;i++)
-			if(getBit(i)) x++;
+		for (int i = 0; i < length; i++)
+			if (getBit(i))
+				x++;
 		return x;
 	}
-	
-    public int copyTo(byte[] buf, int offset) {
-        lock.readLock().lock();
-        try {
-            int capacity = filter.capacity();
-            System.arraycopy(filter.array(), filter.arrayOffset(), buf, offset, capacity);
-            return capacity;
-        } finally {
-            lock.readLock().unlock();
-        }
-    }
-    
-    public void writeTo(OutputStream cos) throws IOException {
-        cos.write(filter.array(), filter.arrayOffset(), filter.capacity());
-    }
+
+	public int copyTo(byte[] buf, int offset) {
+		lock.readLock().lock();
+		try {
+			int capacity = filter.capacity();
+			System.arraycopy(filter.array(), filter.arrayOffset(), buf, offset, capacity);
+			return capacity;
+		}
+		finally {
+			lock.readLock().unlock();
+		}
+	}
+
+	public void writeTo(OutputStream cos) throws IOException {
+		cos.write(filter.array(), filter.arrayOffset(), filter.capacity());
+	}
 
 }

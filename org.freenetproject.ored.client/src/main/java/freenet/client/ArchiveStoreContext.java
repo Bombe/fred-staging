@@ -11,38 +11,43 @@ import freenet.clientlogger.Logger;
 import freenet.support.Logger.LogLevel;
 
 /**
- * Tracks all files currently in the cache from a given key.
- * Keeps the last known hash of the key (if this changes in a fetch, we flush the cache, unpack,
- * then throw an ArchiveRestartedException).
- * Provides fetch methods for Fetcher, which try the cache and then fetch if necessary, 
- * subject to the above.
- * 
- * Always take the lock on ArchiveStoreContext before the lock on ArchiveManager, NOT the other way around.
+ * Tracks all files currently in the cache from a given key. Keeps the last known hash of
+ * the key (if this changes in a fetch, we flush the cache, unpack, then throw an
+ * ArchiveRestartedException). Provides fetch methods for Fetcher, which try the cache and
+ * then fetch if necessary, subject to the above.
+ *
+ * Always take the lock on ArchiveStoreContext before the lock on ArchiveManager, NOT the
+ * other way around.
  */
 class ArchiveStoreContext {
 
 	private FreenetURI key;
+
 	private final ArchiveManager.ARCHIVE_TYPE archiveType;
+
 	/** Archive size */
 	private long lastSize = -1;
+
 	/** Archive hash */
 	private byte[] lastHash;
-	/** Index of still-cached ArchiveStoreItems with this key.
-	 * Note that we never ever hold this and then take another lock! In particular
-	 * we must not take the ArchiveManager lock while holding this lock. It must be
-	 * the inner lock to avoid deadlocks. */
+
+	/**
+	 * Index of still-cached ArchiveStoreItems with this key. Note that we never ever hold
+	 * this and then take another lock! In particular we must not take the ArchiveManager
+	 * lock while holding this lock. It must be the inner lock to avoid deadlocks.
+	 */
 	private final LinkedList<ArchiveStoreItem> myItems;
 
-        private static volatile boolean logMINOR;
+	private static volatile boolean logMINOR;
 	static {
-		Logger.registerLogThresholdCallback(new LogThresholdCallback(){
+		Logger.registerLogThresholdCallback(new LogThresholdCallback() {
 			@Override
-			public void shouldUpdate(){
+			public void shouldUpdate() {
 				logMINOR = Logger.shouldLog(LogLevel.MINOR, this);
 			}
 		});
 	}
-	
+
 	ArchiveStoreContext(FreenetURI key, ArchiveManager.ARCHIVE_TYPE archiveType) {
 		this.key = key;
 		this.archiveType = archiveType;
@@ -53,13 +58,12 @@ class ArchiveStoreContext {
 	long getLastSize() {
 		return lastSize;
 	}
-	
+
 	/** Sets the size of the archive - @see getLastSize() */
 	void setLastSize(long size) {
 		lastSize = size;
 	}
 
-	
 	/** Returns the hash of the archive last time we fetched it, or null */
 	byte[] getLastHash() {
 		return lastHash;
@@ -75,31 +79,33 @@ class ArchiveStoreContext {
 	 */
 	void removeAllCachedItems(ArchiveManager manager) {
 		ArchiveStoreItem item = null;
-		while(true) {
+		while (true) {
 			synchronized (myItems) {
 				// removeCachedItem() will call removeItem(), so don't remove it here.
 				item = myItems.peek();
 			}
-			if(item == null) break;
+			if (item == null)
+				break;
 			manager.removeCachedItem(item);
 		}
 	}
 
 	/** Notify that a new archive store item with this key has been added to the cache. */
 	void addItem(ArchiveStoreItem item) {
-		synchronized(myItems) {
+		synchronized (myItems) {
 			myItems.push(item);
 		}
 	}
 
-	/** Notify that an archive store item with this key has been expelled from the 
-	 * cache. Remove it from our local cache and ask it to free the bucket if 
-	 * necessary. */
+	/**
+	 * Notify that an archive store item with this key has been expelled from the cache.
+	 * Remove it from our local cache and ask it to free the bucket if necessary.
+	 */
 	void removeItem(ArchiveStoreItem item) {
-		synchronized(myItems) {
+		synchronized (myItems) {
 			if (!myItems.remove(item)) {
-				if(logMINOR)
-					Logger.minor(this, "Not removing: "+item+" for "+this+" - already removed");
+				if (logMINOR)
+					Logger.minor(this, "Not removing: " + item + " for " + this + " - already removed");
 				return; // only removed once
 			}
 		}
@@ -109,7 +115,7 @@ class ArchiveStoreContext {
 	public short getArchiveType() {
 		return archiveType.metadataID;
 	}
-	
+
 	public FreenetURI getKey() {
 		return key;
 	}

@@ -9,8 +9,8 @@ import freenet.client.InsertException;
 import freenet.client.request.RequestClient;
 
 public abstract class ManifestPutter extends BaseClientPutter {
-	
-    private static final long serialVersionUID = 1L;
+
+	private static final long serialVersionUID = 1L;
 
 	/** Required because {@link Serializable} is implemented by a parent class. */
 	protected ManifestPutter() {
@@ -21,11 +21,13 @@ public abstract class ManifestPutter extends BaseClientPutter {
 	}
 
 	public abstract int countFiles();
+
 	public abstract long totalSize();
+
 	public abstract void start(ClientContext context) throws InsertException;
-	
+
 	public byte[] getSplitfileCryptoKey() {
 		return null;
 	}
-	
+
 }

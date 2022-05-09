@@ -26,17 +26,21 @@ public class SendTextMessage extends SendPeerMessage {
 	@Override
 	protected int handleFeed(DarknetPeerNode pn) throws MessageInvalidException {
 		try {
-			if(dataLength() > 0) {
+			if (dataLength() > 0) {
 				byte[] text = BucketTools.toByteArray(bucket);
 				return pn.sendTextFeed(new String(text, "UTF-8"));
 			}
 			else {
-				throw new MessageInvalidException(ProtocolErrorMessage.INVALID_FIELD, "Invalid data length", null, false);
+				throw new MessageInvalidException(ProtocolErrorMessage.INVALID_FIELD, "Invalid data length", null,
+						false);
 			}
-		} catch (UnsupportedEncodingException e) {
+		}
+		catch (UnsupportedEncodingException e) {
 			throw new Error("Impossible: JVM doesn't support UTF-8: " + e, e);
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			throw new MessageInvalidException(ProtocolErrorMessage.INVALID_MESSAGE, "", null, false);
 		}
 	}
+
 }

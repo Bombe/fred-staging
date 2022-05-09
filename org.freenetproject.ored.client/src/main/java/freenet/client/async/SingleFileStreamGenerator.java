@@ -17,17 +17,18 @@ import freenet.support.Logger.LogLevel;
 import freenet.support.io.Closer;
 import freenet.support.io.FileUtil;
 
-/**Writes a <code>Bucket</code> to an output stream.*/
+/** Writes a <code>Bucket</code> to an output stream. */
 public class SingleFileStreamGenerator implements StreamGenerator {
 
 	final private Bucket bucket;
+
 	final private boolean persistent;
 
-        private static volatile boolean logMINOR;
+	private static volatile boolean logMINOR;
 	static {
-		Logger.registerLogThresholdCallback(new LogThresholdCallback(){
+		Logger.registerLogThresholdCallback(new LogThresholdCallback() {
 			@Override
-			public void shouldUpdate(){
+			public void shouldUpdate() {
 				logMINOR = Logger.shouldLog(LogLevel.MINOR, this);
 			}
 		});
@@ -40,18 +41,22 @@ public class SingleFileStreamGenerator implements StreamGenerator {
 
 	@Override
 	public void writeTo(OutputStream os, ClientContext context) throws IOException {
-		try{
-			if(logMINOR) Logger.minor(this, "Generating Stream", new Exception("debug"));
+		try {
+			if (logMINOR)
+				Logger.minor(this, "Generating Stream", new Exception("debug"));
 			InputStream data = bucket.getInputStream();
 			try {
-			FileUtil.copy(data, os, -1);
-			} finally {
-			data.close();
+				FileUtil.copy(data, os, -1);
+			}
+			finally {
+				data.close();
 			}
 			os.close();
 			bucket.free();
-			if(logMINOR) Logger.minor(this, "Stream completely generated", new Exception("debug"));
-		} finally {
+			if (logMINOR)
+				Logger.minor(this, "Stream completely generated", new Exception("debug"));
+		}
+		finally {
 			BucketCloser.close(bucket);
 			BucketCloser.close(os);
 		}

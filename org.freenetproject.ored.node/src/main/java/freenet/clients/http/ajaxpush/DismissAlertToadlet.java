@@ -16,7 +16,7 @@ import freenet.http.HTTPRequest;
 /** This toadlet is used to dismiss alerts from the client side */
 public class DismissAlertToadlet extends Toadlet {
 
-	private static volatile boolean	logMINOR;
+	private static volatile boolean logMINOR;
 
 	static {
 		Logger.registerClass(DismissAlertToadlet.class);
@@ -26,15 +26,17 @@ public class DismissAlertToadlet extends Toadlet {
 		super(client);
 	}
 
-	public void handleMethodGET(URI uri, HTTPRequest req, ToadletContext ctx) throws ToadletContextClosedException, IOException, RedirectException {
+	public void handleMethodGET(URI uri, HTTPRequest req, ToadletContext ctx)
+			throws ToadletContextClosedException, IOException, RedirectException {
 		// The anchor is used to identify the alert
 		String anchor = HTMLDecoder.decode(req.getParam("anchor"));
 		if (logMINOR) {
 			Logger.minor(this, "Dismissing alert with anchor:" + anchor);
 		}
 		// Dismiss the alert
-		//boolean success = ((SimpleToadletServer) ctx.getContainer()).getCore().alerts.dismissByAnchor(anchor);
-		//TODO:it's disabled
+		// boolean success = ((SimpleToadletServer)
+		// ctx.getContainer()).getCore().alerts.dismissByAnchor(anchor);
+		// TODO:it's disabled
 		boolean success = true;
 		writeHTMLReply(ctx, 200, "OK", success ? UpdaterConstants.SUCCESS : UpdaterConstants.FAILURE);
 	}

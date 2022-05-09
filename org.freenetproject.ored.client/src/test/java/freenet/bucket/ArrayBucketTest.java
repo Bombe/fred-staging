@@ -5,8 +5,8 @@ package freenet.bucket;
 
 import java.io.IOException;
 
-
 public class ArrayBucketTest extends BucketTestBase {
+
 	public ArrayBucketFactory abf = new ArrayBucketFactory();
 
 	@Override
@@ -18,4 +18,5 @@ public class ArrayBucketTest extends BucketTestBase {
 	protected void freeBucket(Bucket bucket) throws IOException {
 		bucket.free();
 	}
+
 }

@@ -9,26 +9,29 @@ import freenet.bucket.Bucket;
  * Base class for items stored in the archive cache.
  */
 abstract class ArchiveStoreItem {
+
 	final ArchiveKey key;
+
 	final ArchiveStoreContext context;
-	
+
 	/** Basic constructor. */
 	ArchiveStoreItem(ArchiveKey key, ArchiveStoreContext context) {
 		this.key = key;
 		this.context = context;
 	}
-	
+
 	protected void addToContext() {
-	    context.addItem(this);
+		context.addItem(this);
 	}
 
-	/** Delete any stored data on disk etc. 
-	 * Override in subtypes for specific cleanup.
-	 * Will be called with locks held, so should only do low level operations 
-	 * such as deletes.. */
-	void innerClose() { } // override in subtypes for cleanup
-	
-	/** 
+	/**
+	 * Delete any stored data on disk etc. Override in subtypes for specific cleanup. Will
+	 * be called with locks held, so should only do low level operations such as deletes..
+	 */
+	void innerClose() {
+	} // override in subtypes for cleanup
+
+	/**
 	 * Shortcut to start the removal/cleanup process.
 	 */
 	final void close() {
@@ -41,15 +44,15 @@ abstract class ArchiveStoreItem {
 	abstract Bucket getDataOrThrow() throws ArchiveFailureException;
 
 	/**
-	 * Return the amount of cache space used by the item. May be called inside
-	 * locks so should not take any nontrivial locks or take long.
+	 * Return the amount of cache space used by the item. May be called inside locks so
+	 * should not take any nontrivial locks or take long.
 	 */
 	abstract long spaceUsed();
-	
+
 	/**
-	 * Get the data as a Bucket, and guarantee that it won't be freed until the
-	 * returned object is either finalized or freed.
+	 * Get the data as a Bucket, and guarantee that it won't be freed until the returned
+	 * object is either finalized or freed.
 	 */
 	abstract Bucket getReaderBucket() throws ArchiveFailureException;
-	
+
 }

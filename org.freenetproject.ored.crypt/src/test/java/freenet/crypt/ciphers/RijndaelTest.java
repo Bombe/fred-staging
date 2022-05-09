@@ -28,18 +28,25 @@ import freenet.support.io.Closer;
  * @author sdiz
  */
 public class RijndaelTest extends TestCase {
+
 	private final byte[] PLAINTXT128_1 = HexUtil.hexToBytes("0123456789abcdef1123456789abcdef");
+
 	private final byte[] KEY128_1 = HexUtil.hexToBytes("deadbeefcafebabe0123456789abcdef");
+
 	private final byte[] CIPHER128_1 = HexUtil.hexToBytes("8c5b8c04805c0e07dd62b381730d5d10");
 
 	private final byte[] PLAINTXT192_1 = HexUtil.hexToBytes("0123456789abcdef1123456789abcdef2123456789abcdef");
+
 	private final byte[] KEY192_1 = HexUtil.hexToBytes("deadbeefcafebabe0123456789abcdefcafebabedeadbeef");
+
 	private final byte[] CIPHER192_1 = HexUtil.hexToBytes("7fae974786a9741d96693654bc7a8aff09b3f116840ffced");
 
 	private final byte[] PLAINTXT256_1 = HexUtil
 			.hexToBytes("0123456789abcdef1123456789abcdef2123456789abcdef3123456789abcdef");
+
 	private final byte[] KEY256_1 = HexUtil
 			.hexToBytes("deadbeefcafebabe0123456789abcdefcafebabedeadbeefcafebabe01234567");
+
 	private final byte[] CIPHER256_1 = HexUtil
 			.hexToBytes("6fcbc68fc938e5f5a7c24d7422f4b5f153257b6fb53e0bca26770497dd65078c");
 
@@ -56,15 +63,15 @@ public class RijndaelTest extends TestCase {
 		assertTrue("(128,128) DECIPHER", Arrays.equals(des128, PLAINTXT128_1));
 
 		if (false) {
-		/* 192 block size support is dropped for now */
-		Rijndael aes192 = new Rijndael(192, 192);
-		byte[] res192 = new byte[192 / 8];
-		aes192.initialize(KEY192_1);
-		aes192.encipher(PLAINTXT192_1, res192);
-		assertTrue("(192,192) ENCIPHER", Arrays.equals(res192, CIPHER192_1));
-		byte[] des192 = new byte[192 / 8];
-		aes192.decipher(res192, des192);
-		assertTrue("(192,192) DECIPHER", Arrays.equals(des192, PLAINTXT192_1));
+			/* 192 block size support is dropped for now */
+			Rijndael aes192 = new Rijndael(192, 192);
+			byte[] res192 = new byte[192 / 8];
+			aes192.initialize(KEY192_1);
+			aes192.encipher(PLAINTXT192_1, res192);
+			assertTrue("(192,192) ENCIPHER", Arrays.equals(res192, CIPHER192_1));
+			byte[] des192 = new byte[192 / 8];
+			aes192.decipher(res192, des192);
+			assertTrue("(192,192) DECIPHER", Arrays.equals(des192, PLAINTXT192_1));
 		}
 
 		Rijndael aes256 = new Rijndael(256, 256);
@@ -77,10 +84,12 @@ public class RijndaelTest extends TestCase {
 		assertTrue("(256,256) DECIPHER", Arrays.equals(des256, PLAINTXT256_1));
 	}
 
-	// Standard test vector, available at http://csrc.nist.gov/archive/aes/rijndael/rijndael-vals.zip
+	// Standard test vector, available at
+	// http://csrc.nist.gov/archive/aes/rijndael/rijndael-vals.zip
 
 	// ecb_vk.txt
 	private byte[] TEST_VK_PT = HexUtil.hexToBytes("00000000000000000000000000000000");
+
 	private final static byte[][][] TEST_VK128 = { //
 			/* I=1 */
 			{ HexUtil.hexToBytes("80000000000000000000000000000000"),
@@ -465,9 +474,8 @@ public class RijndaelTest extends TestCase {
 					HexUtil.hexToBytes("26D50F485A30408D5AF47A5736292450"), }, //
 			/* I=128 */
 			{ HexUtil.hexToBytes("00000000000000000000000000000001"),
-					HexUtil.hexToBytes("0545AAD56DA2A97C3663D1432A3D1C84") }
-	};
-	
+					HexUtil.hexToBytes("0545AAD56DA2A97C3663D1432A3D1C84") } };
+
 	private final static byte[][][] TEST_VK192 = { //
 			/* I=1 */
 			{ HexUtil.hexToBytes("800000000000000000000000000000000000000000000000"),
@@ -1068,33 +1076,33 @@ public class RijndaelTest extends TestCase {
 		}
 	}
 
-	public void testStandardTestVKJCA() throws UnsupportedCipherException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
-		if(!CTRBlockCipherTest.TEST_JCA) return;
+	public void testStandardTestVKJCA() throws UnsupportedCipherException, InvalidKeyException,
+			NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
+		if (!CTRBlockCipherTest.TEST_JCA)
+			return;
 		// KEYSIZE=128
 		for (int i = 0; i < TEST_VK128.length; i++) {
-			SecretKeySpec k = 
-				new SecretKeySpec(TEST_VK128[i][0], "AES");
+			SecretKeySpec k = new SecretKeySpec(TEST_VK128[i][0], "AES");
 			Cipher c = Cipher.getInstance("AES/ECB/NOPADDING");
 			c.init(Cipher.ENCRYPT_MODE, k);
-			
+
 			byte[] output = c.doFinal(TEST_VK_PT);
 			assertTrue(Arrays.equals(output, TEST_VK128[i][1]));
 		}
 
 		// KEYSIZE=192
 		for (int i = 0; i < TEST_VK192.length; i++) {
-			SecretKeySpec k = 
-				new SecretKeySpec(TEST_VK192[i][0], "AES");
+			SecretKeySpec k = new SecretKeySpec(TEST_VK192[i][0], "AES");
 			Cipher c = Cipher.getInstance("AES/ECB/NOPADDING");
 			c.init(Cipher.ENCRYPT_MODE, k);
-			
+
 			byte[] output = c.doFinal(TEST_VK_PT);
 			assertTrue("ECB_VK KEYSIZE=192 I=" + (i + 1), Arrays.equals(output, TEST_VK192[i][1]));
 		}
 	}
 
 	public void testRandom() throws UnsupportedCipherException {
-		final int[] SIZE = new int[] { 128, /*192,*/ 256 };
+		final int[] SIZE = new int[] { 128, /* 192, */ 256 };
 
 		for (int k = 0; k < SIZE.length; k++) {
 			int size = SIZE[k];
@@ -1118,13 +1126,15 @@ public class RijndaelTest extends TestCase {
 						") KEY=" + HexUtil.bytesToHex(key) + //
 						", PLAIN=" + HexUtil.bytesToHex(plain) + //
 						", CIPHER=" + HexUtil.bytesToHex(cipher) + //
-						", PLAIN2=" + HexUtil.bytesToHex(plain2),//
+						", PLAIN2=" + HexUtil.bytesToHex(plain2), //
 						Arrays.equals(plain, plain2));
 			}
 		}
 	}
 
-	private byte[] TEST_VK_PTx256 = HexUtil.hexToBytes("0000000000000000000000000000000000000000000000000000000000000000");
+	private byte[] TEST_VK_PTx256 = HexUtil
+			.hexToBytes("0000000000000000000000000000000000000000000000000000000000000000");
+
 	/* This test vector for Rijndael(256,256) was generated with generic implementation */
 	private final static byte[][][] TEST_VK256x256 = { //
 			/* I=1 */
@@ -1896,7 +1906,7 @@ public class RijndaelTest extends TestCase {
 			{ HexUtil.hexToBytes("0000000000000000000000000000000000000000000000000000000000000001"),
 					HexUtil.hexToBytes("7536b4b6490c083597f6596de8c627b1c75d0f4f9ba24de284ff575e25dda7eb") }, //
 	};
-	
+
 	public void testNonStandardTestVK() throws UnsupportedCipherException {
 		Rijndael aes128 = new Rijndael(256, 256);
 		for (int i = 0; i < TEST_VK256x256.length; i++) {
@@ -1904,93 +1914,103 @@ public class RijndaelTest extends TestCase {
 
 			byte[] cipher = new byte[256 / 8];
 			aes128.encipher(TEST_VK_PTx256, cipher);
-//			System.out.println("\t\t\t/* I="+(i+1)+" */");
-//			System.out.println("\t\t\t{ HexUtil.hexToBytes(\""+HexUtil.bytesToHex(TEST_VK256x256[i][0])+"\"),");
-//			System.out.println("\t\t\t\t\tHexUtil.hexToBytes(\""+HexUtil.bytesToHex(cipher)+"\") }, //");
+			// System.out.println("\t\t\t/* I="+(i+1)+" */");
+			// System.out.println("\t\t\t{
+			// HexUtil.hexToBytes(\""+HexUtil.bytesToHex(TEST_VK256x256[i][0])+"\"),");
+			// System.out.println("\t\t\t\t\tHexUtil.hexToBytes(\""+HexUtil.bytesToHex(cipher)+"\")
+			// }, //");
 			assertTrue("ECB_VK KEYSIZE=256 I=" + (i + 1), Arrays.equals(cipher, TEST_VK256x256[i][1]));
 		}
 	}
 
-	/* Thanks to Dr Brian Gladman, http://gladman.plushost.co.uk/oldsite/cryptography_technology/rijndael/
-	 * Files:
-	 * http://gladman.plushost.co.uk/oldsite/cryptography_technology/rijndael/rijn.tv.ecbnt.zip
-	 * SHA256: 7149c55ee0cce53a27d048b8bccd5de1399405ff72114da23909dc2954e8a1b5
-	 * http://gladman.plushost.co.uk/oldsite/cryptography_technology/rijndael/rijn.tv.ecbnk.zip
-	 * SHA256: 0b8a5555371ba2ec4cfdd8572e647242bf4927434fbc026996547fa33a10c5bd
+	/*
+	 * Thanks to Dr Brian Gladman,
+	 * http://gladman.plushost.co.uk/oldsite/cryptography_technology/rijndael/ Files:
+	 * http://gladman.plushost.co.uk/oldsite/cryptography_technology/rijndael/rijn.tv.
+	 * ecbnt.zip SHA256: 7149c55ee0cce53a27d048b8bccd5de1399405ff72114da23909dc2954e8a1b5
+	 * http://gladman.plushost.co.uk/oldsite/cryptography_technology/rijndael/rijn.tv.
+	 * ecbnk.zip SHA256: 0b8a5555371ba2ec4cfdd8572e647242bf4927434fbc026996547fa33a10c5bd
 	 */
-	
+
 	/** Apply to both ecbnt (variable text) and ecbnk (variable key) tests */
 	final int[] GLADMAN_TEST_NUMBERS = new int[] { 44, 46, 48, 84, 86, 88 };
 
-	public void testGladmanTestVectors() throws UnsupportedCipherException, IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
+	public void testGladmanTestVectors() throws UnsupportedCipherException, IOException, InvalidKeyException,
+			NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
 		checkGladmanTestVectors("t");
 		checkGladmanTestVectors("k");
 	}
-	
-	private void checkGladmanTestVectors(String type) throws UnsupportedCipherException, IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-		for(int testNumber : GLADMAN_TEST_NUMBERS) {
+
+	private void checkGladmanTestVectors(String type)
+			throws UnsupportedCipherException, IOException, NoSuchAlgorithmException, NoSuchPaddingException,
+			InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+		for (int testNumber : GLADMAN_TEST_NUMBERS) {
 			InputStream is = null;
 			try {
-				is = getClass().getResourceAsStream("/rijndael-gladman-test-data/ecbn"+type+testNumber+".txt");
+				is = getClass().getResourceAsStream("/rijndael-gladman-test-data/ecbn" + type + testNumber + ".txt");
 				InputStreamReader isr = new InputStreamReader(is, "ISO-8859-1");
 				BufferedReader br = new BufferedReader(isr);
-				for(int i=0;i<7;i++) br.readLine(); // Skip header
+				for (int i = 0; i < 7; i++)
+					br.readLine(); // Skip header
 				String line = br.readLine();
 				int blockSize = Integer.parseInt(line.substring("BLOCKSIZE=".length()));
 				line = br.readLine();
 				int keySize = Integer.parseInt(line.substring("KEYSIZE=  ".length()));
-				assert(blockSize == 128 || blockSize == 192 || blockSize == 256);
-				assert(keySize == 128 || keySize == 192 || keySize == 256);
+				assert (blockSize == 128 || blockSize == 192 || blockSize == 256);
+				assert (keySize == 128 || keySize == 192 || keySize == 256);
 				br.readLine();
 				byte[] plaintext = null;
 				byte[] key = null;
 				byte[] ciphertext = null;
 				int test; // Ignored.
-				while(true) {
+				while (true) {
 					line = br.readLine();
-					if(line == null) break; // End of file.
+					if (line == null)
+						break; // End of file.
 					String prefix = line.substring(0, 6);
-					if(prefix.equals("TEST= ")) {
+					if (prefix.equals("TEST= ")) {
 						test = Integer.parseInt(line.substring(6));
-					} else {
+					}
+					else {
 						byte[] data = HexUtil.hexToBytes(line.substring(6));
-						if(prefix.equals("PT=   ")) {
+						if (prefix.equals("PT=   ")) {
 							assertTrue(plaintext == null);
 							plaintext = data;
-							assertEquals(plaintext.length, blockSize/8);
-						} else if(prefix.equals("KEY=  ")) {
+							assertEquals(plaintext.length, blockSize / 8);
+						}
+						else if (prefix.equals("KEY=  ")) {
 							assertTrue(key == null);
 							key = data;
-							assertEquals(key.length, keySize/8);
-						} else if(prefix.equals("CT=   ")) {
+							assertEquals(key.length, keySize / 8);
+						}
+						else if (prefix.equals("CT=   ")) {
 							assertTrue(ciphertext == null);
 							ciphertext = data;
-							assertEquals(ciphertext.length, blockSize/8);
+							assertEquals(ciphertext.length, blockSize / 8);
 						}
-						if(plaintext != null && ciphertext != null && key != null) {
+						if (plaintext != null && ciphertext != null && key != null) {
 							Rijndael cipher = new Rijndael(keySize, blockSize);
 							cipher.initialize(key);
 							// Encrypt
 							byte[] copyOfPlaintext = Arrays.copyOf(plaintext, plaintext.length);
-							byte[] output = new byte[blockSize/8];
+							byte[] output = new byte[blockSize / 8];
 							cipher.encipher(copyOfPlaintext, output);
 							assertTrue(Arrays.equals(output, ciphertext));
 							// Decrypt
 							byte[] copyOfCiphertext = Arrays.copyOf(ciphertext, ciphertext.length);
-							Arrays.fill(output, (byte)0);
+							Arrays.fill(output, (byte) 0);
 							cipher.decipher(copyOfCiphertext, output);
 							assertTrue(Arrays.equals(output, plaintext));
-							if(blockSize == 128) {
-								if(keySize == 128 || CTRBlockCipherTest.TEST_JCA) {
+							if (blockSize == 128) {
+								if (keySize == 128 || CTRBlockCipherTest.TEST_JCA) {
 									// We can test with JCA too.
 									// Encrypt.
-									SecretKeySpec k = 
-										new SecretKeySpec(key, "AES");
+									SecretKeySpec k = new SecretKeySpec(key, "AES");
 									Cipher c = Cipher.getInstance("AES/ECB/NOPADDING");
 									c.init(Cipher.ENCRYPT_MODE, k);
 									output = c.doFinal(plaintext);
 									assertTrue(Arrays.equals(output, ciphertext));
-									
+
 									// Decrypt.
 									c.init(Cipher.DECRYPT_MODE, k);
 									output = c.doFinal(ciphertext);
@@ -1998,17 +2018,19 @@ public class RijndaelTest extends TestCase {
 								}
 							}
 							// Clear
-							if(type.equals("t"))
+							if (type.equals("t"))
 								plaintext = null;
 							ciphertext = null;
-							if(type.equals("k"))
+							if (type.equals("k"))
 								key = null;
 						}
 					}
 				}
-			} finally {
+			}
+			finally {
 				Closer.close(is);
 			}
 		}
 	}
+
 }

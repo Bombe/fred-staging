@@ -1,9 +1,11 @@
 package freenet.clients.fcp;
 
 /**
- * FCP message sent from the node to the client which includes build / main version returned by the endpoint.
+ * FCP message sent from the node to the client which includes build / main version
+ * returned by the endpoint.
  */
 public class ProbeBuild extends FCPResponse {
+
 	/**
 	 * @param fcpIdentifier FCP-level identifier for pairing requests and responses
 	 * @param build build / main version of endpoint
@@ -17,4 +19,5 @@ public class ProbeBuild extends FCPResponse {
 	public String getName() {
 		return "ProbeBuild";
 	}
+
 }

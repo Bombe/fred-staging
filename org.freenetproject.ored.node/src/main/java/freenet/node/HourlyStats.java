@@ -8,11 +8,15 @@ import freenet.support.HTMLNode;
 
 /** Statistics tracking for performance analysis. */
 public class HourlyStats {
+
 	private HourlyStatsRecord prevRecord;
+
 	private HourlyStatsRecord currentRecord;
+
 	private HourlyStatsRecord totalRecord;
 
 	private Calendar lastHourlyTime;
+
 	private Calendar currentTime;
 
 	private final Node node;
@@ -27,21 +31,19 @@ public class HourlyStats {
 		currentTime = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
 	}
 
-	/** Report an incoming accepted remote request.
-	  *
-	  * @param ssk Whether the request was an ssk
-	  * @param success Whether the request succeeded
-	  * @param local If the request succeeded, whether it succeeded locally
-	  * @param htl The htl counter the request had when it arrived
-	  * @param location The routing location of the request
-	  */
-	public synchronized void remoteRequest(boolean ssk, boolean success, boolean local,
-			int htl, double location) {
+	/**
+	 * Report an incoming accepted remote request.
+	 * @param ssk Whether the request was an ssk
+	 * @param success Whether the request succeeded
+	 * @param local If the request succeeded, whether it succeeded locally
+	 * @param htl The htl counter the request had when it arrived
+	 * @param location The routing location of the request
+	 */
+	public synchronized void remoteRequest(boolean ssk, boolean success, boolean local, int htl, double location) {
 		Date now = new Date();
 		currentTime.setTime(now);
-		if (lastHourlyTime.get(Calendar.HOUR_OF_DAY) !=
-				currentTime.get(Calendar.HOUR_OF_DAY)) {
-			//new hour, cycle things.
+		if (lastHourlyTime.get(Calendar.HOUR_OF_DAY) != currentTime.get(Calendar.HOUR_OF_DAY)) {
+			// new hour, cycle things.
 			lastHourlyTime.setTime(now);
 			prevRecord = currentRecord;
 			currentRecord = new HourlyStatsRecord(node, true);
@@ -56,4 +58,5 @@ public class HourlyStats {
 	public void fillRemoteRequestHTLsBox(HTMLNode html) {
 		totalRecord.fillRemoteRequestHTLsBox(html);
 	}
+
 }

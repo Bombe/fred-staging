@@ -29,18 +29,19 @@ import freenet.support.math.SimpleRunningAverage;
 /**
  * @author ArneBab
  *
- * This test spins uf Freenet nodes and simulates a pitch black attack and defense.
- * It moves fake days forward to simulate the defense despite limited swapping speed.
+ * This test spins uf Freenet nodes and simulates a pitch black attack and defense. It
+ * moves fake days forward to simulate the defense despite limited swapping speed.
  *
  * It spins up NUMBER_OF_NODES freenet nodes with DEEGREE.
  *
  * MIN_PINGS and MAX_PINGS give the minimum and maximum runtime.
  *
- * Adjust the variables NUMBER_OF_NODES, DEGREE, and PINGS_PER_ITERATION to adjust test parameters.
+ * Adjust the variables NUMBER_OF_NODES, DEGREE, and PINGS_PER_ITERATION to adjust test
+ * parameters.
  *
- * Set PITCH_BLACK_ATTACK_MEAN_LOCATION and PITCH_BLACK_ATTACK_JITTER to select the location
- * to attack. PITCH_BLACK_ATTACK_JITTER is necessary to prevent existind heuristics from deticting
- * the naive attack with exactly one location.
+ * Set PITCH_BLACK_ATTACK_MEAN_LOCATION and PITCH_BLACK_ATTACK_JITTER to select the
+ * location to attack. PITCH_BLACK_ATTACK_JITTER is necessary to prevent existind
+ * heuristics from deticting the naive attack with exactly one location.
  *
  * Set BETWEEN_PING_SLEEP_TIME to give the nodes time to swap between logging.
  *
@@ -49,22 +50,24 @@ import freenet.support.math.SimpleRunningAverage;
  *
  * Just grep the test output to get test results. Example Gnuplot calls to evaluate:
  *
- * set title "Average peer locations during pitch black mitigation"
- * set xlabel "Time / Cycle"
- * set ylabel "node / index"
- * set cblabel "location / position in ring"
- * plot "<(grep Cycle real-node-pitch-black-mitigation-test-results-11.log | grep ' node ' | sed 's/Cycle //;s/ node / /;s/: .*average=/ /;s/, .*$//;s/,/./g')" using 1:2:3 palette pt 5 ps 1.5 lw 1 title "RealNodePitchBlackMitigationTest"
+ * set title "Average peer locations during pitch black mitigation" set xlabel "Time /
+ * Cycle" set ylabel "node / index" set cblabel "location / position in ring" plot "<(grep
+ * Cycle real-node-pitch-black-mitigation-test-results-11.log | grep ' node ' | sed
+ * 's/Cycle //;s/ node / /;s/: .*average=/ /;s/, .*$//;s/,/./g')" using 1:2:3 palette pt 5
+ * ps 1.5 lw 1 title "RealNodePitchBlackMitigationTest"
  *
- *  set title "Average path length of successful pings"
- * set xlabel "Time / Cycle"
- * set ylabel "average path lenth / hops"
- * plot "<(grep 'Average path length' real-node-pitch-black-mitigation-test-results-11.log | sed 's/.*: //')" using 0:1 pt 5 ps 1.5 lw 1 title "RealNodePitchBlackMitigationTest"
+ * set title "Average path length of successful pings" set xlabel "Time / Cycle" set
+ * ylabel "average path lenth / hops" plot "<(grep 'Average path length'
+ * real-node-pitch-black-mitigation-test-results-11.log | sed 's/.*: //')" using 0:1 pt 5
+ * ps 1.5 lw 1 title "RealNodePitchBlackMitigationTest"
  *
- *  set title "Ping-Statistics"
- * set xlabel "Time / Ping Number"
- * set ylabel "fraction / unitless"
- * set cblabel "path / hops needed"
- * plot "<(grep 'Routed ping' real-node-pitch-black-mitigation-test-results-11.log | grep success | sed 's/Routed ping //;s/ success: / /g')" using 1:(($0+1)/$1):2 palette pt 3 ps 1 lw 1 title "succeeded", "<(grep 'Routed ping' real-node-pitch-black-mitigation-test-results-11.log | grep FAILED | sed 's/Routed ping //;s/FAILED from//')" using 1:(($0+1)/$1) pt 6 ps 1 lw 1 title "FAILED"
+ * set title "Ping-Statistics" set xlabel "Time / Ping Number" set ylabel "fraction /
+ * unitless" set cblabel "path / hops needed" plot "<(grep 'Routed ping'
+ * real-node-pitch-black-mitigation-test-results-11.log | grep success | sed 's/Routed
+ * ping //;s/ success: / /g')" using 1:(($0+1)/$1):2 palette pt 3 ps 1 lw 1 title
+ * "succeeded", "<(grep 'Routed ping' real-node-pitch-black-mitigation-test-results-11.log
+ * | grep FAILED | sed 's/Routed ping //;s/FAILED from//')" using 1:(($0+1)/$1) pt 6 ps 1
+ * lw 1 title "FAILED"
  *
  */
 public class RealNodePitchBlackMitigationTest extends RealNodeTest {
@@ -81,14 +84,21 @@ public class RealNodePitchBlackMitigationTest extends RealNodeTest {
 	static final boolean ENABLE_FOAF = true;
 	static final boolean ACTIVE_PITCH_BLACK_ATTACK = false;
 	static final boolean INITIAL_PITCH_BLACK_ATTACK = true;
+
 	public static final long PITCH_BLACK_MITIGATION_STARTUP_DELAY = MINUTES.toMillis(1);
+
 	public static final long PITCH_BLACK_MITIGATION_FREQUENCY_ONE_DAY = MINUTES.toMillis(30);
+
 	public static final int PINGS_PER_ITERATION = 10;
 
 	public static int DARKNET_PORT_BASE = RealNodeRequestInsertTest.DARKNET_PORT_END;
+
 	public static final int DARKNET_PORT_END = DARKNET_PORT_BASE + NUMBER_OF_NODES;
+
 	public static final double PITCH_BLACK_ATTACK_JITTER = 0.001;
+
 	public static final double PITCH_BLACK_ATTACK_MEAN_LOCATION = 0.5;
+
 	public static final int BETWEEN_PING_SLEEP_TIME = 500000;
 
 	public static void main(String[] args) throws Exception {
@@ -101,50 +111,33 @@ public class RealNodePitchBlackMitigationTest extends RealNodeTest {
 			System.exit(EXIT_CANNOT_DELETE_OLD_DATA);
 		}
 		wd.mkdir();
-		//NOTE: globalTestInit returns in ignored random source
+		// NOTE: globalTestInit returns in ignored random source
 		NodeStarter.globalTestInit(dir, false, LogLevel.ERROR, "", true);
-		// Make the network reproducible so we can easily compare different routing options by specifying a seed.
+		// Make the network reproducible so we can easily compare different routing
+		// options by specifying a seed.
 		DummyRandomSource random = new DummyRandomSource(3142);
-		//DiffieHellman.init(random);
+		// DiffieHellman.init(random);
 		Node[] nodes = new Node[NUMBER_OF_NODES];
 		Logger.normal(RealNodePitchBlackMitigationTest.class, "Creating nodes...");
 		Executor executor = new PooledExecutor();
 		for (int i = 0; i < NUMBER_OF_NODES; i++) {
 			System.err.println("Creating node " + i);
-			nodes[i] = NodeStarter.createTestNode(
-					DARKNET_PORT_BASE + i,
-					0,
-					dir,
-					true,
-					MAX_HTL,
-					0 /* no dropped packets */,
-					random,
-					executor,
-					500 * NUMBER_OF_NODES,
-					4000000, // 30 CHKs to avoid stray failures through overwriting
-					true,
-					ENABLE_SWAPPING,
-					false,
-					false,
-					false,
-					ENABLE_SWAP_QUEUEING,
-					true,
-					0,
-					ENABLE_FOAF,
-					false,
-					true,
-					false,
-					null);
+			nodes[i] = NodeStarter.createTestNode(DARKNET_PORT_BASE + i, 0, dir, true, MAX_HTL,
+					0 /* no dropped packets */, random, executor, 500 * NUMBER_OF_NODES, 4000000, // 30
+																									// CHKs
+																									// to
+																									// avoid
+																									// stray
+																									// failures
+																									// through
+																									// overwriting
+					true, ENABLE_SWAPPING, false, false, false, ENABLE_SWAP_QUEUEING, true, 0, ENABLE_FOAF, false, true,
+					false, null);
 			Logger.normal(RealNodePitchBlackMitigationTest.class, "Created node " + i);
 		}
 		Logger.normal(RealNodePitchBlackMitigationTest.class, "Created " + NUMBER_OF_NODES + " nodes");
 		// Now link them up
-		makeKleinbergNetwork(
-				nodes,
-				START_WITH_IDEAL_LOCATIONS,
-				DEGREE,
-				FORCE_NEIGHBOUR_CONNECTIONS,
-				random);
+		makeKleinbergNetwork(nodes, START_WITH_IDEAL_LOCATIONS, DEGREE, FORCE_NEIGHBOUR_CONNECTIONS, random);
 
 		Logger.normal(RealNodePitchBlackMitigationTest.class, "Added random links");
 
@@ -152,11 +145,7 @@ public class RealNodePitchBlackMitigationTest extends RealNodeTest {
 		if (INITIAL_PITCH_BLACK_ATTACK) {
 			for (int i = 0; i < NUMBER_OF_NODES; i++) {
 				Node nodeToAttack = nodes[i];
-				attackSpecificNode(
-						PITCH_BLACK_ATTACK_MEAN_LOCATION,
-						PITCH_BLACK_ATTACK_JITTER,
-						nodeToAttack,
-						i);
+				attackSpecificNode(PITCH_BLACK_ATTACK_MEAN_LOCATION, PITCH_BLACK_ATTACK_JITTER, nodeToAttack, i);
 			}
 		}
 
@@ -169,17 +158,11 @@ public class RealNodePitchBlackMitigationTest extends RealNodeTest {
 		Runnable dayIncrementingJob = new Runnable() {
 			@Override
 			public void run() {
-				nodes[0].ticker.queueTimedJob(
-						this,
-						PITCH_BLACK_MITIGATION_FREQUENCY_ONE_DAY);
-				nodes[0].lm.setClockForTesting(Clock.offset(
-						nodes[0].lm.getClockForTesting(),
-						Duration.ofDays(1)));
+				nodes[0].ticker.queueTimedJob(this, PITCH_BLACK_MITIGATION_FREQUENCY_ONE_DAY);
+				nodes[0].lm.setClockForTesting(Clock.offset(nodes[0].lm.getClockForTesting(), Duration.ofDays(1)));
 			}
 		};
-		nodes[0].ticker.queueTimedJob(
-				dayIncrementingJob,
-				PITCH_BLACK_MITIGATION_FREQUENCY_ONE_DAY);
+		nodes[0].ticker.queueTimedJob(dayIncrementingJob, PITCH_BLACK_MITIGATION_FREQUENCY_ONE_DAY);
 
 		// start the nodes and adjust mitigation times
 		nodes[0].lm.PITCH_BLACK_MITIGATION_FREQUENCY_ONE_DAY = PITCH_BLACK_MITIGATION_FREQUENCY_ONE_DAY;
@@ -199,31 +182,18 @@ public class RealNodePitchBlackMitigationTest extends RealNodeTest {
 		System.exit(0);
 	}
 
-	public static void attackSpecificNode(
-			double pitchBlackAttackMeanLocation,
-			double pitchBlackAttackJitter,
-			Node nodeToAttack,
-			int indexOfNode) {
+	public static void attackSpecificNode(double pitchBlackAttackMeanLocation, double pitchBlackAttackJitter,
+			Node nodeToAttack, int indexOfNode) {
 		double pitchBlackFakeLocation = pitchBlackAttackMeanLocation
 				+ (nodeToAttack.fastWeakRandom.nextDouble() * pitchBlackAttackJitter);
-		System.err.println("Pitch-Black-Attack on node "
-				+ indexOfNode
-				+ " using mean "
-				+ pitchBlackAttackMeanLocation
-				+ " with jitter "
-				+ pitchBlackAttackJitter
-				+ ": "
-				+ pitchBlackFakeLocation);
+		System.err.println("Pitch-Black-Attack on node " + indexOfNode + " using mean " + pitchBlackAttackMeanLocation
+				+ " with jitter " + pitchBlackAttackJitter + ": " + pitchBlackFakeLocation);
 		nodeToAttack.setLocation(pitchBlackFakeLocation);
 		System.err.println("New location of node " + indexOfNode + ": " + nodeToAttack.getLocation());
 	}
 
-	static void waitForPingAverage(
-			double accuracy,
-			Node[] nodes,
-			RandomSource random,
-			int maxTests,
-			int sleepTime) throws InterruptedException {
+	static void waitForPingAverage(double accuracy, Node[] nodes, RandomSource random, int maxTests, int sleepTime)
+			throws InterruptedException {
 		int totalHopsTaken = 0;
 		int cycleNumber = 0;
 		int lastSwaps = 0;
@@ -242,48 +212,34 @@ public class RealNodePitchBlackMitigationTest extends RealNodeTest {
 					if (nodeToAttack.fastWeakRandom.nextFloat() < 0.98) {
 						continue;
 					}
-					attackSpecificNode(
-							PITCH_BLACK_ATTACK_MEAN_LOCATION,
-							PITCH_BLACK_ATTACK_JITTER,
-							nodeToAttack,
-							i);
+					attackSpecificNode(PITCH_BLACK_ATTACK_MEAN_LOCATION, PITCH_BLACK_ATTACK_JITTER, nodeToAttack, i);
 				}
-		}
+			}
 			try {
 				Thread.sleep(sleepTime);
-			} catch (InterruptedException e) {
+			}
+			catch (InterruptedException e) {
 				// Ignore
 			}
 			for (int i = 0; i < nodes.length; i++) {
-				System.err.println("Cycle " + cycleNumber + " node " + i + ": " + nodes[i].getLocation() + " degree: " + nodes[i].getPeerNodes().length + " locs: " + Arrays
-						.stream(nodes[i].getPeerNodes()).map(PeerNode::getLocation).collect(Collectors.summarizingDouble(d -> d)));
+				System.err.println("Cycle " + cycleNumber + " node " + i + ": " + nodes[i].getLocation() + " degree: "
+						+ nodes[i].getPeerNodes().length + " locs: " + Arrays.stream(nodes[i].getPeerNodes())
+								.map(PeerNode::getLocation).collect(Collectors.summarizingDouble(d -> d)));
 			}
 			int newSwaps = LocationManager.swaps;
 			int totalStarted = LocationManager.startedSwaps;
 			int noSwaps = LocationManager.noSwaps;
 			System.err.println("Swaps: " + (newSwaps - lastSwaps));
-			System.err.println("\nTotal swaps: Started*2: "
-					+ totalStarted * 2
-					+ ", succeeded: "
-					+ newSwaps
-					+ ", last minute failures: "
-					+ noSwaps
-					+
-					", ratio "
-					+ (double) noSwaps / (double) newSwaps
-					+ ", early failures: "
-					+ ((totalStarted * 2) - (noSwaps + newSwaps)));
-			System.err.println("This cycle ratio: " + ((double) (noSwaps - lastNoSwaps)) / ((double) (
-					newSwaps
-							- lastSwaps)));
+			System.err.println("\nTotal swaps: Started*2: " + totalStarted * 2 + ", succeeded: " + newSwaps
+					+ ", last minute failures: " + noSwaps + ", ratio " + (double) noSwaps / (double) newSwaps
+					+ ", early failures: " + ((totalStarted * 2) - (noSwaps + newSwaps)));
+			System.err.println(
+					"This cycle ratio: " + ((double) (noSwaps - lastNoSwaps)) / ((double) (newSwaps - lastSwaps)));
 			lastNoSwaps = noSwaps;
-			System.err.println("Swaps rejected (already locked): "
-					+ LocationManager.swapsRejectedAlreadyLocked);
-			System.err.println("Swaps rejected (nowhere to go): "
-					+ LocationManager.swapsRejectedNowhereToGo);
+			System.err.println("Swaps rejected (already locked): " + LocationManager.swapsRejectedAlreadyLocked);
+			System.err.println("Swaps rejected (nowhere to go): " + LocationManager.swapsRejectedNowhereToGo);
 			System.err.println("Swaps rejected (rate limit): " + LocationManager.swapsRejectedRateLimit);
-			System.err.println("Swaps rejected (recognized ID):"
-					+ LocationManager.swapsRejectedRecognizedID);
+			System.err.println("Swaps rejected (recognized ID):" + LocationManager.swapsRejectedRecognizedID);
 			System.err.println("Swaps failed:" + LocationManager.noSwaps);
 			System.err.println("Swaps succeeded:" + LocationManager.swaps);
 
@@ -303,7 +259,8 @@ public class RealNodePitchBlackMitigationTest extends RealNodeTest {
 			for (int i = 0; i < PINGS_PER_ITERATION; i++) {
 				try {
 					Thread.sleep(sleepTime);
-				} catch (InterruptedException e1) {
+				}
+				catch (InterruptedException e1) {
 				}
 				try {
 					Node randomNode = nodes[random.nextInt(nodes.length)];
@@ -312,10 +269,9 @@ public class RealNodePitchBlackMitigationTest extends RealNodeTest {
 						randomNode2 = nodes[random.nextInt(nodes.length)];
 					}
 					double loc2 = randomNode2.getLocation();
-					Logger.normal(
-							RealNodePitchBlackMitigationTest.class,
-							"Pinging " + randomNode2.getDarknetPortNumber() + " @ " + loc2 + " from " + randomNode
-									.getDarknetPortNumber() + " @ " + randomNode.getLocation());
+					Logger.normal(RealNodePitchBlackMitigationTest.class,
+							"Pinging " + randomNode2.getDarknetPortNumber() + " @ " + loc2 + " from "
+									+ randomNode.getDarknetPortNumber() + " @ " + randomNode.getLocation());
 
 					int hopsTaken = randomNode.routedPing(loc2, randomNode2.getDarknetPubKeyHash());
 					pings++;
@@ -324,65 +280,41 @@ public class RealNodePitchBlackMitigationTest extends RealNodeTest {
 						avg.report(0.0);
 						avg2.report(0.0);
 						double ratio = (double) successes / ((double) (failures + successes));
-						System.err.println("Routed ping "
-								+ pings
-								+ " FAILED from "
-								+ randomNode.getDarknetPortNumber()
-								+ " to "
-								+ randomNode2.getDarknetPortNumber()
-								+ " (long:"
-								+ ratio
-								+ ", short:"
-								+ avg.currentValue()
-								+ ", vague:"
-								+ avg2.currentValue()
-								+ ')');
-					} else {
+						System.err.println("Routed ping " + pings + " FAILED from " + randomNode.getDarknetPortNumber()
+								+ " to " + randomNode2.getDarknetPortNumber() + " (long:" + ratio + ", short:"
+								+ avg.currentValue() + ", vague:" + avg2.currentValue() + ')');
+					}
+					else {
 						totalHopsTaken += hopsTaken;
 						successes++;
 						avg.report(1.0);
 						avg2.report(1.0);
 						double ratio = (double) successes / ((double) (failures + successes));
-						System.err.println("Routed ping "
-								+ pings
-								+ " success: "
-								+ hopsTaken
-								+ ' '
-								+ randomNode.getDarknetPortNumber()
-								+ " to "
-								+ randomNode2.getDarknetPortNumber()
-								+ " (long:"
-								+ ratio
-								+ ", short:"
-								+ avg.currentValue()
-								+ ", vague:"
-								+ avg2.currentValue()
+						System.err.println("Routed ping " + pings + " success: " + hopsTaken + ' '
+								+ randomNode.getDarknetPortNumber() + " to " + randomNode2.getDarknetPortNumber()
+								+ " (long:" + ratio + ", short:" + avg.currentValue() + ", vague:" + avg2.currentValue()
 								+ ')');
 					}
-				} catch (Throwable t) {
+				}
+				catch (Throwable t) {
 					Logger.error(RealNodePitchBlackMitigationTest.class, "Caught " + t, t);
 				}
 			}
-			System.err.println("Average path length for successful requests: "
-					+ ((double) totalHopsTaken) / successes);
-			if (pings > MAX_PINGS || pings > MIN_PINGS && avg.currentValue() > accuracy && ((double) successes / ((double) (failures
-					+ successes)) > accuracy)) {
+			System.err.println("Average path length for successful requests: " + ((double) totalHopsTaken) / successes);
+			if (pings > MAX_PINGS || pings > MIN_PINGS && avg.currentValue() > accuracy
+					&& ((double) successes / ((double) (failures + successes)) > accuracy)) {
 				System.err.println();
 				System.err.println("Reached " + (accuracy * 100) + "% accuracy.");
 				System.err.println();
 				System.err.println("Network size: " + nodes.length);
 				System.err.println("Maximum HTL: " + MAX_HTL);
-				System.err.println("Average path length for successful requests: "
-						+ totalHopsTaken / successes);
+				System.err.println("Average path length for successful requests: " + totalHopsTaken / successes);
 				System.err.println("Total started swaps: " + LocationManager.startedSwaps);
-				System.err.println("Total rejected swaps (already locked): "
-						+ LocationManager.swapsRejectedAlreadyLocked);
-				System.err.println("Total swaps rejected (nowhere to go): "
-						+ LocationManager.swapsRejectedNowhereToGo);
-				System.err.println("Total swaps rejected (rate limit): "
-						+ LocationManager.swapsRejectedRateLimit);
-				System.err.println("Total swaps rejected (recognized ID):"
-						+ LocationManager.swapsRejectedRecognizedID);
+				System.err.println(
+						"Total rejected swaps (already locked): " + LocationManager.swapsRejectedAlreadyLocked);
+				System.err.println("Total swaps rejected (nowhere to go): " + LocationManager.swapsRejectedNowhereToGo);
+				System.err.println("Total swaps rejected (rate limit): " + LocationManager.swapsRejectedRateLimit);
+				System.err.println("Total swaps rejected (recognized ID):" + LocationManager.swapsRejectedRecognizedID);
 				System.err.println("Total swaps failed:" + LocationManager.noSwaps);
 				System.err.println("Total swaps succeeded:" + LocationManager.swaps);
 				return;
@@ -390,4 +322,5 @@ public class RealNodePitchBlackMitigationTest extends RealNodeTest {
 		}
 		System.exit(EXIT_PING_TARGET_NOT_REACHED);
 	}
+
 }

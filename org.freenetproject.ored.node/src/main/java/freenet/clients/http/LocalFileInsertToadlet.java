@@ -14,9 +14,10 @@ import freenet.node.NodeClientCore;
 public class LocalFileInsertToadlet extends LocalFileBrowserToadlet {
 
 	public static final String PATH = "/insert-browse/";
+
 	public static final String POST_TO = "/uploads/";
 
-	public LocalFileInsertToadlet (NodeClientCore core, HighLevelSimpleClient highLevelSimpleClient) {
+	public LocalFileInsertToadlet(NodeClientCore core, HighLevelSimpleClient highLevelSimpleClient) {
 		super(core, highLevelSimpleClient);
 	}
 
@@ -40,15 +41,16 @@ public class LocalFileInsertToadlet extends LocalFileBrowserToadlet {
 		return defaultUploadDir();
 	}
 
-    @Override
-	protected Hashtable<String, String> persistenceFields (Hashtable<String, String> set) {
+	@Override
+	protected Hashtable<String, String> persistenceFields(Hashtable<String, String> set) {
 		Hashtable<String, String> fieldPairs = new Hashtable<String, String>();
 		FreenetURI furi = null;
 		String key = set.get("key");
 		if (key != null) {
 			try {
 				furi = new FreenetURI(key);
-			} catch (MalformedURLException e) {
+			}
+			catch (MalformedURLException e) {
 				furi = null;
 			}
 		}
@@ -58,7 +60,7 @@ public class LocalFileInsertToadlet extends LocalFileBrowserToadlet {
 			fieldPairs.put("compress", element);
 		}
 
-		element = set.get("compatibilityMode"); 
+		element = set.get("compatibilityMode");
 		if (element != null) {
 			fieldPairs.put("compatibilityMode", element);
 		}
@@ -68,7 +70,9 @@ public class LocalFileInsertToadlet extends LocalFileBrowserToadlet {
 		}
 
 		element = set.get("overrideSplitfileKey");
-		if (element != null) fieldPairs.put("overrideSplitfileKey", element);
+		if (element != null)
+			fieldPairs.put("overrideSplitfileKey", element);
 		return fieldPairs;
 	}
+
 }

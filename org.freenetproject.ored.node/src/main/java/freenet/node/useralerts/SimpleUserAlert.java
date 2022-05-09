@@ -11,9 +11,11 @@ public class SimpleUserAlert extends BaseNodeUserAlert {
 	public SimpleUserAlert(boolean canDismiss, String title, String text, String shortText, short type) {
 		this(canDismiss, title, text, shortText, type, null);
 	}
-	
-	public SimpleUserAlert(boolean canDismiss, String title, String text, String shortText, short type, Object userIdentifier) {
-		super(canDismiss, title, text, shortText, new HTMLNode("div", text), type, true, NodeL10n.getBase().getString("UserAlert.hide"), true, userIdentifier);
+
+	public SimpleUserAlert(boolean canDismiss, String title, String text, String shortText, short type,
+			Object userIdentifier) {
+		super(canDismiss, title, text, shortText, new HTMLNode("div", text), type, true,
+				NodeL10n.getBase().getString("UserAlert.hide"), true, userIdentifier);
 	}
 
 	@Override

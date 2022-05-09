@@ -11,6 +11,7 @@ import freenet.client.async.ManifestElementNew;
 
 /**
  * Helper class to estaminate the container size,
+ *
  * @author saces
  *
  */
@@ -21,8 +22,11 @@ public final class ContainerSizeEstimator {
 	public final static class ContainerSize {
 
 		private long _sizeFiles;
+
 		private long _sizeFilesNoLimit;
+
 		private long _sizeSubTrees;
+
 		private long _sizeSubTreesNoLimit;
 
 		private ContainerSize() {
@@ -33,11 +37,11 @@ public final class ContainerSizeEstimator {
 		}
 
 		public long getSizeTotal() {
-			return _sizeFiles+_sizeSubTrees;
+			return _sizeFiles + _sizeSubTrees;
 		}
 
 		public long getSizeTotalNoLimit() {
-			return _sizeFilesNoLimit+_sizeSubTreesNoLimit;
+			return _sizeFilesNoLimit + _sizeSubTreesNoLimit;
 		}
 
 		public long getSizeFiles() {
@@ -55,22 +59,26 @@ public final class ContainerSizeEstimator {
 		public long getSizeSubTreesNoLimit() {
 			return _sizeSubTreesNoLimit;
 		}
+
 	}
 
-	private ContainerSizeEstimator() {}
+	private ContainerSizeEstimator() {
+	}
 
-	public static ContainerSize getSubTreeSize(HashMap<String, Object> metadata, long maxItemSize, long maxContainerSize, int maxDeep) {
+	public static ContainerSize getSubTreeSize(HashMap<String, Object> metadata, long maxItemSize,
+			long maxContainerSize, int maxDeep) {
 		ContainerSize result = new ContainerSize();
 		getSubTreeSize(metadata, result, maxItemSize, maxContainerSize, maxDeep);
 		return result;
 	}
 
-	private static void getSubTreeSize(HashMap<String, Object> metadata, ContainerSize result, long maxItemSize, long maxContainerSize,int maxDeep) {
+	private static void getSubTreeSize(HashMap<String, Object> metadata, ContainerSize result, long maxItemSize,
+			long maxContainerSize, int maxDeep) {
 		// files
-		for(Map.Entry<String,Object> entry:metadata.entrySet()) {
+		for (Map.Entry<String, Object> entry : metadata.entrySet()) {
 			Object o = entry.getValue();
 			if (o instanceof ManifestElementNew) {
-				ManifestElementNew me = (ManifestElementNew)o;
+				ManifestElementNew me = (ManifestElementNew) o;
 				long itemsize = me.getSize();
 				if (itemsize > -1) {
 					result._sizeFilesNoLimit += getContainerItemSize(me.getSize());
@@ -78,7 +86,7 @@ public final class ContainerSizeEstimator {
 					// FIXME 128 picked out of the air! Look up the format.
 					result._sizeFilesNoLimit += 128 + me.getName().length();
 					if (itemsize > maxItemSize)
-						result._sizeFiles += 512;  // spare for redirect
+						result._sizeFiles += 512; // spare for redirect
 					else {
 						result._sizeFiles += getContainerItemSize(me.getSize());
 						// Add some bytes for .metadata element.
@@ -86,8 +94,10 @@ public final class ContainerSizeEstimator {
 						result._sizeFilesNoLimit += 128 + me.getName().length();
 						// FIXME The tar file will need the full name????
 					}
-					if (result._sizeFiles > maxContainerSize) break;
-				} else {
+					if (result._sizeFiles > maxContainerSize)
+						break;
+				}
+				else {
 					// Redirect.
 					result._sizeFiles += 512;
 					result._sizeFilesNoLimit += 512;
@@ -96,17 +106,18 @@ public final class ContainerSizeEstimator {
 		}
 		// sub dirs
 		if (maxDeep > 0) {
-			for(Map.Entry<String,Object> entry:metadata.entrySet()) {
+			for (Map.Entry<String, Object> entry : metadata.entrySet()) {
 				Object o = entry.getValue();
 				if (o instanceof HashMap) {
 					result._sizeSubTrees += 512;
 					@SuppressWarnings("unchecked")
 					HashMap<String, Object> hm = (HashMap<String, Object>) o;
 					ContainerSize tempResult = new ContainerSize();
-					getSubTreeSize(hm, tempResult, maxItemSize, (maxContainerSize-result._sizeSubTrees), maxDeep-1);
+					getSubTreeSize(hm, tempResult, maxItemSize, (maxContainerSize - result._sizeSubTrees), maxDeep - 1);
 					result._sizeSubTrees += tempResult.getSizeTotal();
 					result._sizeSubTreesNoLimit += tempResult.getSizeTotalNoLimit();
-					if (result._sizeSubTrees > maxContainerSize) break;
+					if (result._sizeSubTrees > maxContainerSize)
+						break;
 				}
 			}
 		}
@@ -125,4 +136,5 @@ public final class ContainerSizeEstimator {
 	public static long tarItemSize(long size) {
 		return 512 + (((size + 511) / 512) * 512);
 	}
+
 }

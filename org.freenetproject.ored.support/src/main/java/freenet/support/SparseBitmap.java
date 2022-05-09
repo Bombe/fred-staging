@@ -8,6 +8,7 @@ import java.util.NavigableSet;
 import java.util.TreeSet;
 
 public class SparseBitmap implements Iterable<int[]> {
+
 	// Ranges ordered by start time. Invariant: ranges do not overlap and do not touch.
 	private final TreeSet<Range> ranges;
 
@@ -18,7 +19,7 @@ public class SparseBitmap implements Iterable<int[]> {
 	public SparseBitmap(SparseBitmap original) {
 		ranges = new TreeSet<Range>(new RangeComparator());
 
-		for(int[] range : original) {
+		for (int[] range : original) {
 			add(range[0], range[1]);
 		}
 	}
@@ -27,7 +28,7 @@ public class SparseBitmap implements Iterable<int[]> {
 	 * Marks the slots between start and end (inclusive) as present.
 	 */
 	public void add(int start, int end) {
-		if(start > end) {
+		if (start > end) {
 			throw new IllegalArgumentException("Tried adding bad range. Start: " + start + ", end: " + end);
 		}
 		NavigableSet<Range> toReplace = overlaps(start, end, true);
@@ -53,7 +54,7 @@ public class SparseBitmap implements Iterable<int[]> {
 	 * Checks whether all slots between start and end (inclusive) are present.
 	 */
 	public boolean contains(int start, int end) {
-		if(start > end) {
+		if (start > end) {
 			throw new IllegalArgumentException("Tried checking bad range. Start: " + start + ", end: " + end);
 		}
 
@@ -67,7 +68,7 @@ public class SparseBitmap implements Iterable<int[]> {
 	 * Marks all slots between start and end (inclusive) as not present.
 	 */
 	public void remove(int start, int end) {
-		if(start > end) {
+		if (start > end) {
 			throw new IllegalArgumentException("Removing bad range. Start: " + start + ", end: " + end);
 		}
 
@@ -79,19 +80,21 @@ public class SparseBitmap implements Iterable<int[]> {
 
 			if (range.start < start) {
 				if (range.end <= end) {
-					//Overlaps beginning
+					// Overlaps beginning
 					toAdd.add(new Range(range.start, start - 1));
-				} else if (range.end > end) {
-					//Overlaps entire range
+				}
+				else if (range.end > end) {
+					// Overlaps entire range
 					toAdd.add(new Range(range.start, start - 1));
 					toAdd.add(new Range(end + 1, range.end));
 				}
-			} else {
+			}
+			else {
 				if (range.end > end) {
 					// Overlaps end
 					toAdd.add(new Range(end + 1, range.end));
 				}
-				//Else it is equal or inside
+				// Else it is equal or inside
 			}
 			it.remove();
 		}
@@ -111,8 +114,9 @@ public class SparseBitmap implements Iterable<int[]> {
 	@Override
 	public String toString() {
 		StringBuffer s = new StringBuffer();
-		for(int[] range : this) {
-			if(s.length() != 0) s.append(", ");
+		for (int[] range : this) {
+			if (s.length() != 0)
+				s.append(", ");
 			s.append(range[0] + "->" + range[1]);
 		}
 		return s.toString();
@@ -133,6 +137,7 @@ public class SparseBitmap implements Iterable<int[]> {
 	}
 
 	private static class SparseBitmapIterator implements Iterator<int[]> {
+
 		Iterator<Range> it;
 
 		public SparseBitmapIterator(SparseBitmap map) {
@@ -147,18 +152,21 @@ public class SparseBitmap implements Iterable<int[]> {
 		@Override
 		public int[] next() {
 			Range r = it.next();
-			return new int[] {r.start, r.end};
+			return new int[] { r.start, r.end };
 		}
 
 		@Override
 		public void remove() {
 			it.remove();
 		}
+
 	}
 
 	private static class Range {
+
 		final int start; // inclusive
-		final int end;   // inclusive
+
+		final int end; // inclusive
 
 		public Range(int start, int end) {
 			this.start = start;
@@ -167,18 +175,23 @@ public class SparseBitmap implements Iterable<int[]> {
 
 		@Override
 		public String toString() {
-			return "Range:"+start+"->"+end;
+			return "Range:" + start + "->" + end;
 		}
+
 	}
 
 	private static class RangeComparator implements Comparator<Range> {
+
 		@Override
 		public int compare(Range r1, Range r2) {
 			return r1.start - r2.start;
 		}
+
 	}
 
-	/** @return The number of slots between start and end that are not marked as present */
+	/**
+	 * @return The number of slots between start and end that are not marked as present
+	 */
 	public int notOverlapping(int start, int end) {
 		int count = end - start + 1;
 		for (Range range : overlaps(start, end, false)) {
@@ -196,4 +209,5 @@ public class SparseBitmap implements Iterable<int[]> {
 		}
 		return count;
 	}
+
 }

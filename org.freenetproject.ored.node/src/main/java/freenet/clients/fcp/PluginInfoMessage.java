@@ -12,18 +12,23 @@ import freenet.support.SimpleFieldSet;
  *
  */
 public class PluginInfoMessage extends FCPMessage {
-	
+
 	static final String NAME = "PluginInfo";
-	
+
 	private final String identifier;
-	
+
 	private final boolean detailed;
 
 	private final String classname;
+
 	private final String originuri;
+
 	private final long started;
+
 	private final boolean isTalkable;
+
 	private final long longVersion;
+
 	private final String version;
 
 	PluginInfoMessage(PluginInfoWrapper pi, String identifier, boolean detail) {
@@ -32,8 +37,10 @@ public class PluginInfoMessage extends FCPMessage {
 		classname = pi.getPluginClassName();
 		originuri = pi.getFilename();
 		started = pi.getStarted();
-		// isFCPPlugin() is the deprecated old plugin FCP API, isFCPServerPlugin() the new one.
-		// Plugins may implement only the old, or the new, or both. As the on-network format is
+		// isFCPPlugin() is the deprecated old plugin FCP API, isFCPServerPlugin() the new
+		// one.
+		// Plugins may implement only the old, or the new, or both. As the on-network
+		// format is
 		// backwards compatible, we report them as talkable if any is implemented.
 		isTalkable = pi.isFCPPlugin() || pi.isFCPServerPlugin();
 		longVersion = pi.getPluginLongVersion();
@@ -43,7 +50,7 @@ public class PluginInfoMessage extends FCPMessage {
 	@Override
 	public SimpleFieldSet getFieldSet() {
 		SimpleFieldSet sfs = new SimpleFieldSet(true);
-		if(identifier != null) // is optional on these two only
+		if (identifier != null) // is optional on these two only
 			sfs.putSingle("Identifier", identifier);
 		sfs.putSingle("PluginName", classname);
 		sfs.put("IsTalkable", isTalkable);
@@ -53,7 +60,7 @@ public class PluginInfoMessage extends FCPMessage {
 		if (detailed) {
 			sfs.putSingle("OriginUri", originuri);
 			sfs.put("Started", started);
-			//sfs.putSingle("TempFilename", tempfilename);
+			// sfs.putSingle("TempFilename", tempfilename);
 		}
 		return sfs;
 	}
@@ -65,7 +72,8 @@ public class PluginInfoMessage extends FCPMessage {
 
 	@Override
 	public void run(FCPConnectionHandler handler, Node node) throws MessageInvalidException {
-		throw new MessageInvalidException(ProtocolErrorMessage.INVALID_MESSAGE, NAME + " goes from server to client not the other way around", null, false);
+		throw new MessageInvalidException(ProtocolErrorMessage.INVALID_MESSAGE,
+				NAME + " goes from server to client not the other way around", null, false);
 	}
 
 }

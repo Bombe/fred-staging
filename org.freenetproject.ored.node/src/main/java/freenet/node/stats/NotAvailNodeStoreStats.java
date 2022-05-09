@@ -11,6 +11,7 @@ import freenet.support.node.stats.StatsNotAvailableException;
  * @author nikotyan
  */
 public class NotAvailNodeStoreStats implements StoreLocationStats {
+
 	@Override
 	public double avgLocation() throws StatsNotAvailableException {
 		throw new StatsNotAvailableException();
@@ -35,4 +36,5 @@ public class NotAvailNodeStoreStats implements StoreLocationStats {
 	public double distanceStats() throws StatsNotAvailableException {
 		throw new StatsNotAvailableException();
 	}
+
 }

@@ -12,10 +12,11 @@ import freenet.node.OutgoingPacketMangler;
 /**
  * @author amphibian
  *
- * Everything that is needed to send a message, including the Peer.
- * Implemented by PeerNode, for example.
+ * Everything that is needed to send a message, including the Peer. Implemented by
+ * PeerNode, for example.
  */
 public interface PeerContext {
+
 	// Largely opaque interface for now
 	Peer getPeer();
 
@@ -31,15 +32,22 @@ public interface PeerContext {
 	/** Peer version, if this is supported, else -1 */
 	int getVersionNumber();
 
-	/** Send a message to the node 
-	 * @return */
+	/**
+	 * Send a message to the node
+	 * @return
+	 */
 	public MessageItem sendAsync(Message msg, AsyncMessageCallback cb, ByteCounter ctr) throws NotConnectedException;
 
-	/** Get the current boot ID. This is a random number that changes every time the node starts up. */
+	/**
+	 * Get the current boot ID. This is a random number that changes every time the node
+	 * starts up.
+	 */
 	public long getBootID();
 
-	/** Get the PacketThrottle for the node's current address for the standard packet size (if the
-	 * address changes then we get a new throttle). */
+	/**
+	 * Get the PacketThrottle for the node's current address for the standard packet size
+	 * (if the address changes then we get a new throttle).
+	 */
 	public PacketThrottle getThrottle();
 
 	/** Get the SocketHandler which handles incoming packets from this node */
@@ -48,8 +56,10 @@ public interface PeerContext {
 	/** Get the OutgoingPacketMangler which encrypts outgoing packets to this node */
 	OutgoingPacketMangler getOutgoingMangler();
 
-	/** Get a WeakReference to this context. Hopefully there is only one of these for the whole object; they are quite
-	 * expensive. */
+	/**
+	 * Get a WeakReference to this context. Hopefully there is only one of these for the
+	 * whole object; they are quite expensive.
+	 */
 	WeakReference<? extends PeerContext> getWeakRef();
 
 	/** Compact toString() */
@@ -63,4 +73,5 @@ public interface PeerContext {
 	void reportThrottledPacketSendTime(long time, boolean realTime);
 
 	int getThrottleWindowSize();
+
 }

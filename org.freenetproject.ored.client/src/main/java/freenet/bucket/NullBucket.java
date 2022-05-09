@@ -2,6 +2,7 @@
  * Public License, version 2 (or at your option any later version). See
  * http://www.gnu.org/ for further details of the GPL. */
 package freenet.bucket;
+
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,52 +17,62 @@ import freenet.support.io.NullOutputStream;
 
 public class NullBucket implements Bucket, Serializable, RandomAccessBucket {
 
-    private static final long serialVersionUID = 1L;
-    public static final OutputStream nullOut = new NullOutputStream();
-    public static final InputStream  nullIn  = new NullInputStream();
+	private static final long serialVersionUID = 1L;
 
-    public final long length;
-    
-    public NullBucket() {
-        this(0);
-    }
+	public static final OutputStream nullOut = new NullOutputStream();
 
-    public NullBucket(long length) {
-        this.length = length;
-    }
-    
-    /**
-     * Returns an OutputStream that is used to put data in this Bucket.
-     **/
-    @Override
-    public OutputStream getOutputStream() { return nullOut; }
+	public static final InputStream nullIn = new NullInputStream();
 
-    @Override
-    public OutputStream getOutputStreamUnbuffered() { return nullOut; }
+	public final long length;
 
-    /**
-     * Returns an InputStream that reads data from this Bucket. If there is
-     * no data in this bucket, null is returned.
-     **/
-    @Override
-    public InputStream getInputStream() { return nullIn; }
+	public NullBucket() {
+		this(0);
+	}
 
-    @Override
-    public InputStream getInputStreamUnbuffered() { return nullIn; }
+	public NullBucket(long length) {
+		this.length = length;
+	}
 
-    /**
-     * Returns the amount of data currently in this bucket.
-     **/
-    @Override
-    public long size() {
-        return length;
-    }
+	/**
+	 * Returns an OutputStream that is used to put data in this Bucket.
+	 **/
+	@Override
+	public OutputStream getOutputStream() {
+		return nullOut;
+	}
 
-    /** Returns the name of this NullBucket. */
-    @Override
-    public String getName() {
-    	return "President George W. NullBucket";
-    }
+	@Override
+	public OutputStream getOutputStreamUnbuffered() {
+		return nullOut;
+	}
+
+	/**
+	 * Returns an InputStream that reads data from this Bucket. If there is no data in
+	 * this bucket, null is returned.
+	 **/
+	@Override
+	public InputStream getInputStream() {
+		return nullIn;
+	}
+
+	@Override
+	public InputStream getInputStreamUnbuffered() {
+		return nullIn;
+	}
+
+	/**
+	 * Returns the amount of data currently in this bucket.
+	 **/
+	@Override
+	public long size() {
+		return length;
+	}
+
+	/** Returns the name of this NullBucket. */
+	@Override
+	public String getName() {
+		return "President George W. NullBucket";
+	}
 
 	@Override
 	public boolean isReadOnly() {
@@ -83,19 +94,19 @@ public class NullBucket implements Bucket, Serializable, RandomAccessBucket {
 		return new NullBucket();
 	}
 
-    @Override
-    public void onResume(ClientContext context) {
-        // Do nothing.
-    }
+	@Override
+	public void onResume(ClientContext context) {
+		// Do nothing.
+	}
 
-    @Override
-    public void storeTo(DataOutputStream dos) throws IOException {
-        throw new UnsupportedOperationException();
-    }
+	@Override
+	public void storeTo(DataOutputStream dos) throws IOException {
+		throw new UnsupportedOperationException();
+	}
 
-    @Override
-    public LockableRandomAccessBuffer toRandomAccessBuffer() throws IOException {
-        return new NullRandomAccessBuffer(length);
-    }
+	@Override
+	public LockableRandomAccessBuffer toRandomAccessBuffer() throws IOException {
+		return new NullRandomAccessBuffer(length);
+	}
+
 }
-

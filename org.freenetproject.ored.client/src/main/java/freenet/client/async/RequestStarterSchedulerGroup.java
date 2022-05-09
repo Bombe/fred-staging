@@ -1,21 +1,23 @@
 package freenet.client.async;
 
 public interface RequestStarterSchedulerGroup {
-    ClientRequestScheduler getChkFetchSchedulerBulk();
 
-    ClientRequestScheduler getChkPutSchedulerBulk();
+	ClientRequestScheduler getChkFetchSchedulerBulk();
 
-    ClientRequestScheduler getSskFetchSchedulerBulk();
+	ClientRequestScheduler getChkPutSchedulerBulk();
 
-    ClientRequestScheduler getSskPutSchedulerBulk();
+	ClientRequestScheduler getSskFetchSchedulerBulk();
 
-    ClientRequestScheduler getChkFetchSchedulerRT();
+	ClientRequestScheduler getSskPutSchedulerBulk();
 
-    ClientRequestScheduler getChkPutSchedulerRT();
+	ClientRequestScheduler getChkFetchSchedulerRT();
 
-    ClientRequestScheduler getSskFetchSchedulerRT();
+	ClientRequestScheduler getChkPutSchedulerRT();
 
-    ClientRequestScheduler getSskPutSchedulerRT();
+	ClientRequestScheduler getSskFetchSchedulerRT();
 
-    void setGlobalSalt(byte[] salt);
+	ClientRequestScheduler getSskPutSchedulerRT();
+
+	void setGlobalSalt(byte[] salt);
+
 }

@@ -6,12 +6,16 @@ import java.util.Set;
 import freenet.nodelogger.Logger;
 
 public class PeerLocation {
-	
+
 	/** Current location in the keyspace, or -1 if it is unknown */
 	private double currentLocation;
-	/** Current sorted array of locations of our peer's peers. Must not be modified,
-	 may only be replaced entirely. */
+
+	/**
+	 * Current sorted array of locations of our peer's peers. Must not be modified, may
+	 * only be replaced entirely.
+	 */
 	private double[] currentPeersLocation;
+
 	/** Time the location was set */
 	private long locSetTime;
 
@@ -19,16 +23,16 @@ public class PeerLocation {
 		currentLocation = Location.getLocation(locationString);
 		locSetTime = System.currentTimeMillis();
 	}
-	
+
 	public synchronized String toString() {
 		return Double.toString(currentLocation);
 	}
 
 	/** Should only be called in the constructor */
 	public void setPeerLocations(String[] peerLocationsString) {
-		if(peerLocationsString != null) {
+		if (peerLocationsString != null) {
 			double[] peerLocations = new double[peerLocationsString.length];
-			for(int i = 0; i < peerLocationsString.length; i++)
+			for (int i = 0; i < peerLocationsString.length; i++)
 				peerLocations[i] = Location.getLocation(peerLocationsString[i]);
 			updateLocation(currentLocation, peerLocations);
 		}
@@ -38,7 +42,10 @@ public class PeerLocation {
 		return currentLocation;
 	}
 
-	/** Returns an array copy of locations of our peer's peers, or null if we don't have them. */
+	/**
+	 * Returns an array copy of locations of our peer's peers, or null if we don't have
+	 * them.
+	 */
 	public synchronized double[] getPeersLocationArray() {
 		if (currentPeersLocation == null) {
 			return null;
@@ -55,13 +62,14 @@ public class PeerLocation {
 	}
 
 	public synchronized int getDegree() {
-		if (currentPeersLocation == null) return 0;
+		if (currentPeersLocation == null)
+			return 0;
 		return currentPeersLocation.length;
 	}
 
 	boolean updateLocation(double newLoc, double[] newLocs) {
 		if (!Location.isValid(newLoc)) {
-			Logger.error(this, "Invalid location update for " + this+ " ("+newLoc+')', new Exception("error"));
+			Logger.error(this, "Invalid location update for " + this + " (" + newLoc + ')', new Exception("error"));
 			// Ignore it
 			return false;
 		}
@@ -76,7 +84,7 @@ public class PeerLocation {
 			}
 			newPeersLocation[i] = loc;
 		}
-		
+
 		Arrays.sort(newPeersLocation);
 		boolean anythingChanged = false;
 
@@ -104,7 +112,7 @@ public class PeerLocation {
 
 	synchronized double setLocation(double newLoc) {
 		double oldLoc = currentLocation;
-		if(!Location.equals(newLoc, currentLocation)) {
+		if (!Location.equals(newLoc, currentLocation)) {
 			currentLocation = newLoc;
 			locSetTime = System.currentTimeMillis();
 		}
@@ -112,9 +120,8 @@ public class PeerLocation {
 	}
 
 	/**
-	 * Finds the position of the first element in the sorted list greater than the given element,
-	 * or -1 if none.
-	 * This is a binary search of logarithmic complexity.
+	 * Finds the position of the first element in the sorted list greater than the given
+	 * element, or -1 if none. This is a binary search of logarithmic complexity.
 	 */
 	private static int findFirstGreater(final double[] elems, final double x) {
 		int low = 0;
@@ -127,7 +134,8 @@ public class PeerLocation {
 			mid = low + (high - low) / 2;
 			if (elems[mid] > x) {
 				high = mid;
-			} else {
+			}
+			else {
 				low = mid + 1;
 			}
 		}
@@ -135,11 +143,11 @@ public class PeerLocation {
 	}
 
 	/**
-	 * Finds the position of the closest location in the sorted list of locations.
-	 * This is a binary search of logarithmic complexity.
+	 * Finds the position of the closest location in the sorted list of locations. This is
+	 * a binary search of logarithmic complexity.
 	 */
 	static int findClosestLocation(final double[] locs, final double l) {
-		assert(locs.length > 0);
+		assert (locs.length > 0);
 		if (locs.length == 1) {
 			return 0;
 		}
@@ -151,7 +159,8 @@ public class PeerLocation {
 			// Closest location must be either smallest or greatest location.
 			left = locs.length - 1;
 			right = 0;
-		} else {
+		}
+		else {
 			left = firstGreater - 1;
 			right = firstGreater;
 		}
@@ -162,8 +171,8 @@ public class PeerLocation {
 	}
 
 	/**
-	 * Finds the closest non-excluded peer in O(log n + m) time, where n is the number of peers and
-	 * m the number of exclusions.
+	 * Finds the closest non-excluded peer in O(log n + m) time, where n is the number of
+	 * peers and m the number of exclusions.
 	 * @param exclude the set of locations to exclude, may be null
 	 * @return the closest non-excluded peer's location, or NaN if none is found
 	 */
@@ -193,7 +202,8 @@ public class PeerLocation {
 				}
 				left = (left == 0) ? (locs.length - 1) : (left - 1);
 				leftDist = Location.distance(l, locs[left]);
-			} else {
+			}
+			else {
 				final double loc = locs[right];
 				if (!exclude.contains(loc)) {
 					return loc;
@@ -208,4 +218,5 @@ public class PeerLocation {
 		}
 		return Double.NaN;
 	}
+
 }

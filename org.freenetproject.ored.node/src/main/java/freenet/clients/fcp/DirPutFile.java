@@ -14,24 +14,25 @@ import freenet.support.Logger.LogLevel;
 import freenet.support.client.DefaultMIMETypes;
 
 /**
- * A request to upload a file to a manifest.
- * A ClientPutComplexDir will contain many of these.
+ * A request to upload a file to a manifest. A ClientPutComplexDir will contain many of
+ * these.
  */
 abstract class DirPutFile {
 
 	final String name;
+
 	ClientMetadata meta;
 
-        private static volatile boolean logMINOR;
+	private static volatile boolean logMINOR;
 	static {
-		Logger.registerLogThresholdCallback(new LogThresholdCallback(){
+		Logger.registerLogThresholdCallback(new LogThresholdCallback() {
 			@Override
-			public void shouldUpdate(){
+			public void shouldUpdate() {
 				logMINOR = Logger.shouldLog(LogLevel.MINOR, this);
 			}
 		});
 	}
-	
+
 	protected DirPutFile(String name, String mimeType) {
 		this.name = name;
 		meta = new ClientMetadata(mimeType);
@@ -45,23 +46,31 @@ abstract class DirPutFile {
 	/**
 	 * Create a DirPutFile from a SimpleFieldSet.
 	 */
-	public static DirPutFile create(SimpleFieldSet subset, String identifier, boolean global, BucketFactory bf) throws MessageInvalidException {
+	public static DirPutFile create(SimpleFieldSet subset, String identifier, boolean global, BucketFactory bf)
+			throws MessageInvalidException {
 		String name = subset.get("Name");
-		if(name == null)
-			throw new MessageInvalidException(ProtocolErrorMessage.MISSING_FIELD, "Missing field Name", identifier, global);
+		if (name == null)
+			throw new MessageInvalidException(ProtocolErrorMessage.MISSING_FIELD, "Missing field Name", identifier,
+					global);
 		String contentTypeOverride = subset.get("Metadata.ContentType");
-		if(contentTypeOverride != null && (!contentTypeOverride.equals("")) && !DefaultMIMETypes.isPlausibleMIMEType(contentTypeOverride)) {
-			throw new MessageInvalidException(ProtocolErrorMessage.BAD_MIME_TYPE, "Bad MIME type in Metadata.ContentType", identifier, global);
+		if (contentTypeOverride != null && (!contentTypeOverride.equals(""))
+				&& !DefaultMIMETypes.isPlausibleMIMEType(contentTypeOverride)) {
+			throw new MessageInvalidException(ProtocolErrorMessage.BAD_MIME_TYPE,
+					"Bad MIME type in Metadata.ContentType", identifier, global);
 		}
 		String type = subset.get("UploadFrom");
-		if((type == null) || type.equalsIgnoreCase("direct")) {
+		if ((type == null) || type.equalsIgnoreCase("direct")) {
 			return DirectDirPutFile.create(name, contentTypeOverride, subset, identifier, global, bf);
-		} else if(type.equalsIgnoreCase("disk")) {
+		}
+		else if (type.equalsIgnoreCase("disk")) {
 			return DiskDirPutFile.create(name, contentTypeOverride, subset, identifier, global);
-		} else if(type.equalsIgnoreCase("redirect")) {
+		}
+		else if (type.equalsIgnoreCase("redirect")) {
 			return RedirectDirPutFile.create(name, contentTypeOverride, subset, identifier, global);
-		} else {
-			throw new MessageInvalidException(ProtocolErrorMessage.INVALID_FIELD, "Unsupported or unknown UploadFrom: "+type, identifier, global);
+		}
+		else {
+			throw new MessageInvalidException(ProtocolErrorMessage.INVALID_FIELD,
+					"Unsupported or unknown UploadFrom: " + type, identifier, global);
 		}
 	}
 
@@ -78,9 +87,10 @@ abstract class DirPutFile {
 	public ManifestElementNew getElement() {
 		String n = name;
 		int idx = n.lastIndexOf('/');
-		if(idx != -1) n = n.substring(idx+1);
-		if(logMINOR)
-			Logger.minor(this, "Element name: "+name+" -> "+n);
+		if (idx != -1)
+			n = n.substring(idx + 1);
+		if (logMINOR)
+			Logger.minor(this, "Element name: " + name + " -> " + n);
 		return new ManifestElementNew(n, getData(), getMIMEType(), getData().size());
 	}
 

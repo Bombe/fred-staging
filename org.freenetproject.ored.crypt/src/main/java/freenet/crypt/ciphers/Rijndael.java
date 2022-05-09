@@ -14,30 +14,31 @@ import freenet.crypt.UnsupportedCipherException;
 import freenet.cryptlogger.Logger;
 
 /*
-  This code is part of the Java Adaptive Network Client by Ian Clarke. 
+  This code is part of the Java Adaptive Network Client by Ian Clarke.
   It is distributed under the GNU Public Licence (GPL) version 2.  See
   http://www.gnu.org/ for further details of the GPL.
  */
 
 /**
- * Interfaces with the Rijndael AES candidate to implement the Rijndael
- * algorithm
+ * Interfaces with the Rijndael AES candidate to implement the Rijndael algorithm
  */
 public class Rijndael implements BlockCipher {
+
 	private Object sessionKey;
+
 	private final int keysize, blocksize;
 
 	public static final Provider AesCtrProvider = getAesCtrProvider();
-	
+
 	public static String getProviderName() {
 		return AesCtrProvider != null ? AesCtrProvider.getName() : null;
 	}
-	
-	static private long benchmark(Cipher cipher, SecretKeySpec key, IvParameterSpec IV) throws GeneralSecurityException
-	{
+
+	static private long benchmark(Cipher cipher, SecretKeySpec key, IvParameterSpec IV)
+			throws GeneralSecurityException {
 		long times = Long.MAX_VALUE;
 		byte[] input = new byte[1024];
-		byte[] output = new byte[input.length*32];
+		byte[] output = new byte[input.length * 32];
 		cipher.init(Cipher.ENCRYPT_MODE, key, IV);
 		// warm-up
 		for (int i = 0; i < 32; i++) {
@@ -49,7 +50,7 @@ public class Rijndael implements BlockCipher {
 			cipher.init(Cipher.ENCRYPT_MODE, key, IV);
 			for (int j = 0; j < 4; j++) {
 				int ofs = 0;
-				for (int k = 0; k < 32; k ++) {
+				for (int k = 0; k < 32; k++) {
 					ofs += cipher.update(input, 0, input.length, output, ofs);
 				}
 				cipher.doFinal(output, ofs);
@@ -61,8 +62,10 @@ public class Rijndael implements BlockCipher {
 		return times;
 	}
 
-	/** @return null if JCA is crippled (restricted to 128-bit) so we need 
-	 * to use this class. */
+	/**
+	 * @return null if JCA is crippled (restricted to 128-bit) so we need to use this
+	 * class.
+	 */
 	private static Provider getAesCtrProvider() {
 		try {
 			final String algo = "AES/CTR/NOPADDING";
@@ -97,11 +100,13 @@ public class Rijndael implements BlockCipher {
 							c = bcastle_cipher;
 						}
 					}
-				} catch(GeneralSecurityException e) {
+				}
+				catch (GeneralSecurityException e) {
 					// ignore
 					Logger.warning(clazz, algo + "@" + bcastle + " benchmark failed", e);
 
-				} catch(Throwable e) {
+				}
+				catch (Throwable e) {
 					// ignore
 					Logger.error(clazz, algo + "@" + bcastle + " benchmark failed", e);
 				}
@@ -109,15 +114,17 @@ public class Rijndael implements BlockCipher {
 			c = Cipher.getInstance(algo, provider);
 			c.init(Cipher.ENCRYPT_MODE, k, IV);
 			c.doFinal(plaintext);
-			Logger.normal(Rijndael.class, "Using JCA: provider "+provider);
-			System.out.println("Using JCA cipher provider: "+provider);
+			Logger.normal(Rijndael.class, "Using JCA: provider " + provider);
+			System.out.println("Using JCA cipher provider: " + provider);
 			return provider;
-		} catch (GeneralSecurityException e) {
-			Logger.warning(Rijndael.class, "Not using JCA as it is crippled (can't use 256-bit keys). Will use built-in encryption. ", e);
+		}
+		catch (GeneralSecurityException e) {
+			Logger.warning(Rijndael.class,
+					"Not using JCA as it is crippled (can't use 256-bit keys). Will use built-in encryption. ", e);
 			return null;
 		}
 	}
-	
+
 	/**
 	 * Create a Rijndael instance.
 	 * @param keysize The key size.
@@ -125,20 +132,17 @@ public class Rijndael implements BlockCipher {
 	 * @throws UnsupportedCipherException
 	 */
 	public Rijndael(int keysize, int blocksize) throws UnsupportedCipherException {
-		if (! ((keysize == 128) ||
-				(keysize == 192) ||
-				(keysize == 256)))
+		if (!((keysize == 128) || (keysize == 192) || (keysize == 256)))
 			throw new UnsupportedCipherException("Invalid keysize");
-		if (! ((blocksize == 128) ||
-				(blocksize == 256)))
+		if (!((blocksize == 128) || (blocksize == 256)))
 			throw new UnsupportedCipherException("Invalid blocksize");
-		this.keysize=keysize;
-		this.blocksize=blocksize;
+		this.keysize = keysize;
+		this.blocksize = blocksize;
 	}
 
-	// for Util.getCipherByName..  and yes, screw you too, java
+	// for Util.getCipherByName.. and yes, screw you too, java
 	public Rijndael() {
-		this.keysize   = 128;
+		this.keysize = 128;
 		this.blocksize = 128;
 	}
 
@@ -155,26 +159,28 @@ public class Rijndael implements BlockCipher {
 	@Override
 	public final void initialize(byte[] key) {
 		try {
-			byte[] nkey=new byte[keysize>>3];
+			byte[] nkey = new byte[keysize >> 3];
 			System.arraycopy(key, 0, nkey, 0, nkey.length);
-			sessionKey=Rijndael_Algorithm.makeKey(nkey, blocksize/8);
-		} catch (InvalidKeyException e) {
+			sessionKey = Rijndael_Algorithm.makeKey(nkey, blocksize / 8);
+		}
+		catch (InvalidKeyException e) {
 			e.printStackTrace();
-			Logger.error(this,"Invalid key");
+			Logger.error(this, "Invalid key");
 		}
 	}
 
 	@Override
 	public synchronized final void encipher(byte[] block, byte[] result) {
-		if(block.length != blocksize/8)
+		if (block.length != blocksize / 8)
 			throw new IllegalArgumentException();
-		Rijndael_Algorithm.blockEncrypt(block, result, 0, sessionKey, blocksize/8);
+		Rijndael_Algorithm.blockEncrypt(block, result, 0, sessionKey, blocksize / 8);
 	}
 
 	@Override
 	public synchronized final void decipher(byte[] block, byte[] result) {
-		if(block.length != blocksize/8)
+		if (block.length != blocksize / 8)
 			throw new IllegalArgumentException();
-		Rijndael_Algorithm.blockDecrypt(block, result, 0, sessionKey, blocksize/8);
+		Rijndael_Algorithm.blockDecrypt(block, result, 0, sessionKey, blocksize / 8);
 	}
+
 }

@@ -8,6 +8,7 @@ import java.io.IOException;
 public class CompressionOutputSizeException extends IOException {
 
 	private static final long serialVersionUID = -1;
+
 	public final long estimatedSize;
 
 	CompressionOutputSizeException() {
@@ -18,4 +19,5 @@ public class CompressionOutputSizeException extends IOException {
 		super("The output was too big for the buffer; estimated size: " + sz);
 		estimatedSize = sz;
 	}
+
 }

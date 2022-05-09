@@ -15,16 +15,21 @@ import freenet.lockablebuffer.LockableRandomAccessBuffer;
 
 /**
  * A bucket that stores data in the memory.
- * 
+ *
  * FIXME: No synchronization, should there be?
- * 
+ *
  * @author oskar
  */
 public class ArrayBucket implements Bucket, Serializable, RandomAccessBucket {
-    private static final long serialVersionUID = 1L;
-    private volatile byte[] data;
+
+	private static final long serialVersionUID = 1L;
+
+	private volatile byte[] data;
+
 	private String name;
+
 	private boolean readOnly;
+
 	private boolean freed;
 
 	public ArrayBucket() {
@@ -43,14 +48,17 @@ public class ArrayBucket implements Bucket, Serializable, RandomAccessBucket {
 
 	@Override
 	public OutputStream getOutputStream() throws IOException {
-		if(readOnly) throw new IOException("Read only");
-		if(freed) throw new IOException("Already freed");
+		if (readOnly)
+			throw new IOException("Read only");
+		if (freed)
+			throw new IOException("Already freed");
 		return new ArrayBucketOutputStream();
 	}
-	
+
 	@Override
 	public InputStream getInputStream() throws IOException {
-        if(freed) throw new IOException("Already freed");
+		if (freed)
+			throw new IOException("Already freed");
 		return new ByteArrayInputStream(data);
 	}
 
@@ -70,20 +78,24 @@ public class ArrayBucket implements Bucket, Serializable, RandomAccessBucket {
 	}
 
 	private class ArrayBucketOutputStream extends ByteArrayOutputStream {
+
 		private boolean hasBeenClosed = false;
-		
+
 		public ArrayBucketOutputStream() {
 			super();
 		}
 
 		@Override
 		public synchronized void close() throws IOException {
-			if(hasBeenClosed) return;
+			if (hasBeenClosed)
+				return;
 			data = super.toByteArray();
-			if(readOnly) throw new IOException("Read only");
+			if (readOnly)
+				throw new IOException("Read only");
 			// FIXME maybe we should throw on write instead? :)
 			hasBeenClosed = true;
 		}
+
 	}
 
 	@Override
@@ -98,15 +110,16 @@ public class ArrayBucket implements Bucket, Serializable, RandomAccessBucket {
 
 	@Override
 	public void free() {
-	    freed = true;
+		freed = true;
 		data = null;
 		// Not much else we can do.
 	}
 
 	public byte[] toByteArray() throws IOException {
-	    if(freed) throw new IOException("Already freed");
+		if (freed)
+			throw new IOException("Already freed");
 		long sz = size();
-		int size = (int)sz;
+		int size = (int) sz;
 		return Arrays.copyOf(data, size);
 	}
 
@@ -115,31 +128,32 @@ public class ArrayBucket implements Bucket, Serializable, RandomAccessBucket {
 		return null;
 	}
 
-    @Override
-    public void onResume(ClientContext context) {
-        // Do nothing.
-    }
+	@Override
+	public void onResume(ClientContext context) {
+		// Do nothing.
+	}
 
-    @Override
-    public void storeTo(DataOutputStream dos) {
-        // Should not be used for persistent requests.
-        throw new UnsupportedOperationException();
-    }
+	@Override
+	public void storeTo(DataOutputStream dos) {
+		// Should not be used for persistent requests.
+		throw new UnsupportedOperationException();
+	}
 
-    @Override
-    public LockableRandomAccessBuffer toRandomAccessBuffer() {
-        readOnly = true;
-        LockableRandomAccessBuffer raf = new ByteArrayRandomAccessBuffer(data, 0, data.length, true);
-        return raf;
-    }
+	@Override
+	public LockableRandomAccessBuffer toRandomAccessBuffer() {
+		readOnly = true;
+		LockableRandomAccessBuffer raf = new ByteArrayRandomAccessBuffer(data, 0, data.length, true);
+		return raf;
+	}
 
-    @Override
-    public InputStream getInputStreamUnbuffered() throws IOException {
-        return getInputStream();
-    }
+	@Override
+	public InputStream getInputStreamUnbuffered() throws IOException {
+		return getInputStream();
+	}
 
-    @Override
-    public OutputStream getOutputStreamUnbuffered() throws IOException {
-        return getOutputStream();
-    }
+	@Override
+	public OutputStream getOutputStreamUnbuffered() throws IOException {
+		return getOutputStream();
+	}
+
 }

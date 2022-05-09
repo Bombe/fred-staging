@@ -6,8 +6,9 @@ package freenet.config;
 import freenet.l10n.NodeL10n;
 
 public class BooleanOption extends Option<Boolean> {
-	public BooleanOption(SubConfig conf, String optionName, boolean defaultValue, int sortOrder, 
-			boolean expert, boolean forceWrite, String shortDesc, String longDesc, BooleanCallback cb) {
+
+	public BooleanOption(SubConfig conf, String optionName, boolean defaultValue, int sortOrder, boolean expert,
+			boolean forceWrite, String shortDesc, String longDesc, BooleanCallback cb) {
 		super(conf, optionName, cb, sortOrder, expert, forceWrite, shortDesc, longDesc, Option.DataType.BOOLEAN);
 		this.defaultValue = defaultValue;
 		this.currentValue = defaultValue;
@@ -15,11 +16,13 @@ public class BooleanOption extends Option<Boolean> {
 
 	@Override
 	public Boolean parseString(String val) throws InvalidConfigValueException {
-		if(val.equalsIgnoreCase("true") || val.equalsIgnoreCase("yes")) {
+		if (val.equalsIgnoreCase("true") || val.equalsIgnoreCase("yes")) {
 			return true;
-		} else if(val.equalsIgnoreCase("false") || val.equalsIgnoreCase("no")) {
+		}
+		else if (val.equalsIgnoreCase("false") || val.equalsIgnoreCase("no")) {
 			return false;
-		} else
+		}
+		else
 			throw new OptionFormatException(NodeL10n.getBase().getString("BooleanOption.parseError", "val", val));
 	}
 
@@ -27,4 +30,5 @@ public class BooleanOption extends Option<Boolean> {
 	protected String toString(Boolean val) {
 		return val.toString();
 	}
+
 }

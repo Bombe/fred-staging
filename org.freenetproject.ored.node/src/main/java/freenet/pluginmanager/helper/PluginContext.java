@@ -12,9 +12,13 @@ import freenet.pluginmanager.PluginRespirator;
 public class PluginContext {
 
 	public final PluginRespirator pluginRespirator;
+
 	public final NodeClientCore clientCore;
+
 	public final PageMaker pageMaker;
+
 	public final HighLevelSimpleClient hlsc;
+
 	public final Node node;
 
 	public PluginContext(PluginRespirator pluginRespirator2) {
@@ -24,4 +28,5 @@ public class PluginContext {
 		this.hlsc = pluginRespirator.getHLSimpleClient();
 		this.node = pluginRespirator.getNode();
 	}
+
 }

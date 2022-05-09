@@ -27,15 +27,18 @@ import freenet.support.io.Closer;
 import freenet.support.io.FileUtil;
 
 public class PluginDownLoaderOfficialHTTPS extends PluginDownLoaderURL {
+
 	private static final String certurlNew = "freenet/clients/http/staticfiles/globalsign.pem";
+
 	private static final String[] certURLs = new String[] { certurlNew };
+
 	public static final String certfileOld = "startssl.pem";
+
 	private static final String certfile = "sslcerts.pem";
 
 	@Override
 	public URL checkSource(String source) throws PluginNotFoundException {
-		return super.checkSource("https://downloads.freenetproject.org/latest/" +
-		source + ".jar");
+		return super.checkSource("https://downloads.freenetproject.org/latest/" + source + ".jar");
 	}
 
 	@Override
@@ -46,27 +49,29 @@ public class PluginDownLoaderOfficialHTTPS extends PluginDownLoaderURL {
 	@Override
 	String getSHA1sum() throws PluginNotFoundException {
 		try {
-			URL sha1url = new URL(getSource().toString()+".sha1");
+			URL sha1url = new URL(getSource().toString() + ".sha1");
 			URLConnection urlConnection = sha1url.openConnection();
 			urlConnection.setUseCaches(false);
 			urlConnection.setAllowUserInteraction(false);
-			
+
 			InputStream is = openConnectionCheckRedirects(urlConnection);
 			ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		
+
 			byte[] buffer = new byte[1024];
 			int read;
-		
+
 			while ((read = is.read(buffer)) != -1) {
 				bos.write(buffer, 0, read);
 			}
-			
+
 			return new String(bos.toByteArray(), "ISO-8859-1").split(" ")[0];
-	
-		} catch (MalformedURLException e) {
-			throw new PluginNotFoundException("impossible: "+e,e);
-		} catch (IOException e) {
-			throw new PluginNotFoundException("Error while fetching sha1 for plugin: "+e,e);
+
+		}
+		catch (MalformedURLException e) {
+			throw new PluginNotFoundException("impossible: " + e, e);
+		}
+		catch (IOException e) {
+			throw new PluginNotFoundException("Error while fetching sha1 for plugin: " + e, e);
 		}
 	}
 
@@ -78,7 +83,7 @@ public class PluginDownLoaderOfficialHTTPS extends PluginDownLoaderURL {
 		try {
 			TMP_KEYSTORE = File.createTempFile("keystore", ".tmp");
 			TMP_KEYSTORE.deleteOnExit();
-			
+
 			KeyStore ks = KeyStore.getInstance("JKS");
 			ks.load(null, new char[0]);
 
@@ -87,54 +92,60 @@ public class PluginDownLoaderOfficialHTTPS extends PluginDownLoaderURL {
 			CertificateFactory cf = CertificateFactory.getInstance("X.509");
 			Collection<? extends Certificate> c = cf.generateCertificates(is);
 			Iterator<? extends Certificate> it = c.iterator();
-			while(it.hasNext()) {
+			while (it.hasNext()) {
 				Certificate cert = it.next();
 				ks.setCertificateEntry(cert.getPublicKey().toString(), cert);
 			}
 			FileOutputStream tmpFOS = new FileOutputStream(TMP_KEYSTORE);
 			try {
 				ks.store(tmpFOS, new char[0]);
-			} finally {
+			}
+			finally {
 				Closer.close(tmpFOS);
 			}
 			System.out.println("The CA has been imported into the trustStore");
-		} catch(Exception e) {
+		}
+		catch (Exception e) {
 			System.err.println("Error while handling the CA :" + e.getMessage());
-			throw new IOException("Error while handling the CA : "+e);
-		} finally {
+			throw new IOException("Error while handling the CA : " + e);
+		}
+		finally {
 			Closer.close(fis);
 		}
 
 		System.setProperty("javax.net.ssl.trustStore", TMP_KEYSTORE.toString());
-		
+
 		return super.getInputStream(progress);
 	}
 
 	private InputStream getCert() throws IOException {
-		
+
 		// normal the file should be here,
 		// left by installer or update script
 		File certFile = new File(certfile).getAbsoluteFile();
-		
+
 		if (certFile.exists()) {
 			return new FileInputStream(certFile);
 		}
-		
+
 		Bucket bucket;
 		OutputStream os = null;
-		
+
 		try {
 			try {
 				bucket = new FileBucket(certFile, false, false, false, false);
 				os = bucket.getOutputStream();
 				writeCerts(os);
 				// If this fails, we need the whole fetch to fail.
-				os.close(); os = null; 
-			} finally {
+				os.close();
+				os = null;
+			}
+			finally {
 				Closer.close(os);
 			}
 			return bucket.getInputStream();
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			// We don't have access to TempBucketFactory here.
 			// But the certs should be small, so just keep them in memory.
 			bucket = new ArrayBucket();
@@ -149,24 +160,27 @@ public class PluginDownLoaderOfficialHTTPS extends PluginDownLoaderURL {
 		// try to create pem file
 		ClassLoader loader = ClassLoader.getSystemClassLoader();
 		InputStream in = null;
-		for(String certurl : certURLs) {
+		for (String certurl : certURLs) {
 			try {
 				in = loader.getResourceAsStream(certurl);
 				if (in != null) {
 					FileUtil.copy(in, os, -1);
-				} else {
+				}
+				else {
 					throw new IOException("Could not find certificates in fred source nor find certificates file");
 				}
-			} finally {
+			}
+			finally {
 				if (in != null) {
 					in.close();
 				}
 			}
 		}
 	}
-	
-	/** For the benefit mainly of the Windows updater script.
-	 * It uses startssl.pem */
+
+	/**
+	 * For the benefit mainly of the Windows updater script. It uses startssl.pem
+	 */
 	public static void writeCertsTo(File file) throws IOException {
 		FileOutputStream fos = new FileOutputStream(file);
 		writeCerts(fos);
@@ -176,5 +190,5 @@ public class PluginDownLoaderOfficialHTTPS extends PluginDownLoaderURL {
 	public boolean isOfficialPluginLoader() {
 		return true;
 	}
-	
+
 }

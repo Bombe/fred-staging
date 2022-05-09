@@ -10,8 +10,8 @@ import java.io.FileNotFoundException;
 import java.io.OutputStream;
 import java.util.Arrays;
 
-
 public class BMPFilterTest extends TestCase {
+
 	/** File of size less than 54 bytes */
 	public void testTooShortImage() throws IOException {
 		Bucket input = resourceToBucket("/filter/bmp/small.bmp");
@@ -60,7 +60,9 @@ public class BMPFilterTest extends TestCase {
 		filterImage(input, DataFilterException.class);
 	}
 
-	/** Invalid image data size (i.e. not satisfying fileSize = headerSize + imagedatasize) */
+	/**
+	 * Invalid image data size (i.e. not satisfying fileSize = headerSize + imagedatasize)
+	 */
 	public void testInvalidImageDataSize() throws IOException {
 		Bucket input = resourceToBucket("/filter/bmp/eight.bmp");
 		filterImage(input, DataFilterException.class);
@@ -83,9 +85,10 @@ public class BMPFilterTest extends TestCase {
 		Bucket input = resourceToBucket("/filter/bmp/ok.bmp");
 		Bucket output = filterImage(input, null);
 
-		//Filter should return the original
+		// Filter should return the original
 		assertEquals("Input and output should be the same length", input.size(), output.size());
-		assertTrue("Input and output are not identical", Arrays.equals(BucketTools.toByteArray(input), BucketTools.toByteArray(output)));
+		assertTrue("Input and output are not identical",
+				Arrays.equals(BucketTools.toByteArray(input), BucketTools.toByteArray(output)));
 	}
 
 	/** Checks that the image size calculation works for images with padding */
@@ -93,9 +96,10 @@ public class BMPFilterTest extends TestCase {
 		Bucket input = resourceToBucket("/filter/bmp/sizeCalculationWithPadding.bmp");
 		Bucket output = filterImage(input, null);
 
-		//Filter should return the original
+		// Filter should return the original
 		assertEquals("Input and output should be the same length", input.size(), output.size());
-		assertTrue("Input and output are not identical", Arrays.equals(BucketTools.toByteArray(input), BucketTools.toByteArray(output)));
+		assertTrue("Input and output are not identical",
+				Arrays.equals(BucketTools.toByteArray(input), BucketTools.toByteArray(output)));
 	}
 
 	/** Checks that the image size calculation works for images without padding */
@@ -103,9 +107,10 @@ public class BMPFilterTest extends TestCase {
 		Bucket input = resourceToBucket("/filter/bmp/sizeCalculationWithoutPadding.bmp");
 		Bucket output = filterImage(input, null);
 
-		//Filter should return the original
+		// Filter should return the original
 		assertEquals("Input and output should be the same length", input.size(), output.size());
-		assertTrue("Input and output are not identical", Arrays.equals(BucketTools.toByteArray(input), BucketTools.toByteArray(output)));
+		assertTrue("Input and output are not identical",
+				Arrays.equals(BucketTools.toByteArray(input), BucketTools.toByteArray(output)));
 	}
 
 	private Bucket filterImage(Bucket input, Class<? extends Exception> expected) {
@@ -117,21 +122,23 @@ public class BMPFilterTest extends TestCase {
 		try {
 			inStream = input.getInputStream();
 			outStream = output.getOutputStream();
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			e.printStackTrace();
 			fail("Caugth unexpected IOException: " + e);
-			return null; //Convince the compiler that we won't continue
+			return null; // Convince the compiler that we won't continue
 		}
 
 		try {
 			objBMPFilter.readFilter(inStream, outStream, "", null, null, null);
 
-			if(expected != null) {
+			if (expected != null) {
 				fail("Filter didn't throw expected exception");
 			}
-		} catch (Exception e) {
-			if((expected == null) || (!expected.equals(e.getClass()))) {
-				//Exception is not the one we expected
+		}
+		catch (Exception e) {
+			if ((expected == null) || (!expected.equals(e.getClass()))) {
+				// Exception is not the one we expected
 				e.printStackTrace();
 				fail("Caugth unexpected exception: " + e.getClass() + ": " + e.getMessage());
 			}
@@ -140,10 +147,11 @@ public class BMPFilterTest extends TestCase {
 		try {
 			inStream.close();
 			outStream.close();
-		} catch(IOException e) {
+		}
+		catch (IOException e) {
 			e.printStackTrace();
 			fail("Caugth unexpected IOException: " + e);
-			return null; //Convince the compiler that we won't continue
+			return null; // Convince the compiler that we won't continue
 		}
 
 		return output;
@@ -151,9 +159,11 @@ public class BMPFilterTest extends TestCase {
 
 	private Bucket resourceToBucket(String filename) throws IOException {
 		InputStream is = getClass().getResourceAsStream(filename);
-		if (is == null) throw new FileNotFoundException();
+		if (is == null)
+			throw new FileNotFoundException();
 		Bucket ab = new ArrayBucket();
 		BucketTools.copyFrom(ab, is, Long.MAX_VALUE);
 		return ab;
 	}
+
 }

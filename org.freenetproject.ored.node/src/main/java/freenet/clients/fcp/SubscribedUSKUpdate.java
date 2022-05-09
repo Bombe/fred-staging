@@ -10,13 +10,17 @@ import freenet.support.SimpleFieldSet;
 public class SubscribedUSKUpdate extends FCPMessage {
 
 	final String identifier;
+
 	final long edition;
+
 	final USK key;
+
 	final boolean newKnownGood;
+
 	final boolean newSlotToo;
-	
+
 	static final String name = "SubscribedUSKUpdate";
-	
+
 	public SubscribedUSKUpdate(String identifier, long l, USK key, boolean newKnownGood, boolean newSlotToo) {
 		this.identifier = identifier;
 		this.edition = l;
@@ -42,9 +46,9 @@ public class SubscribedUSKUpdate extends FCPMessage {
 	}
 
 	@Override
-	public void run(FCPConnectionHandler handler, Node node)
-			throws MessageInvalidException {
-		throw new MessageInvalidException(ProtocolErrorMessage.INVALID_MESSAGE, "SubscribedUSKUpdate goes from server to client not the other way around", identifier, false);
+	public void run(FCPConnectionHandler handler, Node node) throws MessageInvalidException {
+		throw new MessageInvalidException(ProtocolErrorMessage.INVALID_MESSAGE,
+				"SubscribedUSKUpdate goes from server to client not the other way around", identifier, false);
 	}
 
 }

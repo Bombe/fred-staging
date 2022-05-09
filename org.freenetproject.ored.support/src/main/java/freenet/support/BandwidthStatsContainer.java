@@ -7,24 +7,30 @@ import java.io.Serializable;
 
 /**
  * Contains bandwidth statistics.
- * 
+ *
  * @author Artefact2
  */
 public class BandwidthStatsContainer implements Serializable {
-    private static final long serialVersionUID = 1L;
-    public long creationTime = 0;
+
+	private static final long serialVersionUID = 1L;
+
+	public long creationTime = 0;
+
 	public long totalBytesOut = 0;
+
 	public long totalBytesIn = 0;
 
 	@Override
 	public boolean equals(Object o) {
-		if(o == null) return false;
-	if(o.getClass() == BandwidthStatsContainer.class) {
-		BandwidthStatsContainer oB = (BandwidthStatsContainer) o;
-		return (oB.creationTime == this.creationTime) &&
-			(oB.totalBytesIn == this.totalBytesIn) &&
-			(oB.totalBytesOut == this.totalBytesOut);
-		} else return false;
+		if (o == null)
+			return false;
+		if (o.getClass() == BandwidthStatsContainer.class) {
+			BandwidthStatsContainer oB = (BandwidthStatsContainer) o;
+			return (oB.creationTime == this.creationTime) && (oB.totalBytesIn == this.totalBytesIn)
+					&& (oB.totalBytesOut == this.totalBytesOut);
+		}
+		else
+			return false;
 	}
 
 	@Override
@@ -36,8 +42,9 @@ public class BandwidthStatsContainer implements Serializable {
 		return hash;
 	}
 
-    public void addFrom(BandwidthStatsContainer latestBW) {
-        this.totalBytesIn += latestBW.totalBytesIn;
-        this.totalBytesOut += latestBW.totalBytesOut;
-    }
+	public void addFrom(BandwidthStatsContainer latestBW) {
+		this.totalBytesIn += latestBW.totalBytesIn;
+		this.totalBytesOut += latestBW.totalBytesOut;
+	}
+
 }

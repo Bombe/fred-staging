@@ -6,6 +6,7 @@ import freenet.support.SimpleFieldSet;
 public abstract class N2NFeedMessage extends FeedMessage {
 
 	protected final String sourceNodeName;
+
 	protected final long composed, sent, received;
 
 	public N2NFeedMessage(String header, String shortText, String text, short priorityClass, long updatedTime,
@@ -32,8 +33,8 @@ public abstract class N2NFeedMessage extends FeedMessage {
 
 	@Override
 	public void run(FCPConnectionHandler handler, Node node) throws MessageInvalidException {
-		throw new MessageInvalidException(ProtocolErrorMessage.INVALID_MESSAGE, getName()
-				+ " goes from server to client not the other way around", null, false);
+		throw new MessageInvalidException(ProtocolErrorMessage.INVALID_MESSAGE,
+				getName() + " goes from server to client not the other way around", null, false);
 	}
 
 }

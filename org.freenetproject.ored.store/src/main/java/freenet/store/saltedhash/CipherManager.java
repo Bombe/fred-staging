@@ -20,12 +20,13 @@ import freenet.storelogger.Logger;
 
 /**
  * Cipher Manager
- * 
+ *
  * Manage all kind of digestion and encryption in store
- * 
+ *
  * @author sdiz
  */
 public class CipherManager {
+
 	/**
 	 * The actual salt. 16 bytes.
 	 */
@@ -44,7 +45,6 @@ public class CipherManager {
 
 	/**
 	 * Get salt
-	 * 
 	 * @return salt
 	 */
 	byte[] getDiskSalt() {
@@ -64,7 +64,6 @@ public class CipherManager {
 
 	/**
 	 * Get digested routing key
-	 * 
 	 * @param plainKey
 	 * @return
 	 */
@@ -89,7 +88,8 @@ public class CipherManager {
 			}
 
 			return hashedRoutingKey;
-		} finally {
+		}
+		finally {
 			SHA256.returnMessageDigest(digest);
 		}
 	}
@@ -114,9 +114,9 @@ public class CipherManager {
 
 	/**
 	 * Verify and decrypt this entry
-	 * 
 	 * @param routingKey
-	 * @return <code>true</code> if the <code>routeKey</code> match and the entry is decrypted.
+	 * @return <code>true</code> if the <code>routeKey</code> match and the entry is
+	 * decrypted.
 	 */
 	boolean decrypt(SaltedHashFreenetStore<?>.Entry entry, byte[] routingKey) {
 		assert entry.header != null;
@@ -135,7 +135,8 @@ public class CipherManager {
 			if (!Arrays.equals(entry.plainRoutingKey, routingKey)) {
 				return false;
 			}
-		} else {
+		}
+		else {
 			// we do not know the plain key, let's check the digest
 			if (!Arrays.equals(entry.digestedRoutingKey, getDigestedKey(routingKey)))
 				return false;
@@ -166,7 +167,8 @@ public class CipherManager {
 			aes.initialize(key);
 
 			return PCFBMode.create(aes, iv2);
-		} catch (UnsupportedCipherException e) {
+		}
+		catch (UnsupportedCipherException e) {
 			Logger.error(this, "Rijndael not supported!", e);
 			throw new Error("Rijndael not supported!", e);
 		}
@@ -176,4 +178,5 @@ public class CipherManager {
 		MasterKeys.clear(salt);
 		MasterKeys.clear(diskSalt);
 	}
+
 }

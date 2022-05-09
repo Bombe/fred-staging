@@ -17,7 +17,7 @@ import freenet.http.HTTPRequest;
 /** This toadlet is used to let the client write to the logs */
 public class LogWritebackToadlet extends Toadlet {
 
-	private static volatile boolean	logMINOR;
+	private static volatile boolean logMINOR;
 
 	static {
 		Logger.registerClass(LogWritebackToadlet.class);
@@ -27,12 +27,14 @@ public class LogWritebackToadlet extends Toadlet {
 		super(client);
 	}
 
-	public void handleMethodGET(URI uri, HTTPRequest req, ToadletContext ctx) throws ToadletContextClosedException, IOException, RedirectException {
+	public void handleMethodGET(URI uri, HTTPRequest req, ToadletContext ctx)
+			throws ToadletContextClosedException, IOException, RedirectException {
 		if (logMINOR) {
 			try {
 				Logger.minor(this, "GWT:" + URLDecoder.decode(req.getParam("msg"), false));
-			} catch (URLEncodedFormatException e) {
-				Logger.error(this, "Invalid GWT:"+req.getParam("msg"));
+			}
+			catch (URLEncodedFormatException e) {
+				Logger.error(this, "Invalid GWT:" + req.getParam("msg"));
 			}
 		}
 		writeHTMLReply(ctx, 200, "OK", UpdaterConstants.SUCCESS);

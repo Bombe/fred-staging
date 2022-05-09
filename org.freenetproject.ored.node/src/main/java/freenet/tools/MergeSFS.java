@@ -14,7 +14,7 @@ public class MergeSFS {
 
 	/**
 	 * @param args
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	public static void main(String[] args) throws IOException {
 		if (args.length < 2 || args.length > 3) {
@@ -34,7 +34,8 @@ public class MergeSFS {
 		final OutputStream os;
 		if (args.length == 3 && args[2].equals("--stdout")) {
 			os = System.out;
-		} else {
+		}
+		else {
 			os = new FileOutputStream(f1);
 		}
 		Writer w = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));

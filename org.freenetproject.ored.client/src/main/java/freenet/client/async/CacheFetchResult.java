@@ -5,7 +5,7 @@ import freenet.client.ClientMetadata;
 import freenet.client.FetchResult;
 
 public class CacheFetchResult extends FetchResult {
-	
+
 	public final boolean alreadyFiltered;
 
 	public CacheFetchResult(ClientMetadata dm, Bucket fetched, boolean alreadyFiltered) {

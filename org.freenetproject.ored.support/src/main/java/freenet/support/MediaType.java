@@ -25,17 +25,15 @@ import java.util.Map.Entry;
 import freenet.support.client.DefaultMIMETypes;
 
 /**
- * A media type denotes the content type of a document. A media consists of a
- * top-level type, a subtype, and an optional list of key-value pairs. An
- * example would be “audio/ogg” or “text/html; charset=utf-8.”
+ * A media type denotes the content type of a document. A media consists of a top-level
+ * type, a subtype, and an optional list of key-value pairs. An example would be
+ * “audio/ogg” or “text/html; charset=utf-8.”
  * <p>
- * {@link MediaType}s are immutable. The setter methods (e.g.
- * {@link #setType(String)} and {@link #setSubtype(String)}) return new
- * {@link MediaType} objects with the requested part changed and all other parts
- * copied.
+ * {@link MediaType}s are immutable. The setter methods (e.g. {@link #setType(String)} and
+ * {@link #setSubtype(String)}) return new {@link MediaType} objects with the requested
+ * part changed and all other parts copied.
  * <p>
- * Media types are defined in <a href="http://www.ietf.org/rfc/rfc2046.txt">RFC
- * 2046</a>.
+ * Media types are defined in <a href="http://www.ietf.org/rfc/rfc2046.txt">RFC 2046</a>.
  *
  * @author <a href="mailto:bombe@pterodactylus.net">David ‘Bombe’ Roden</a>
  */
@@ -52,22 +50,17 @@ public class MediaType {
 
 	/**
 	 * Creates a new media type by parsing the given string.
-	 *
-	 * @param mediaType
-	 *            The media type to parse
-	 * @throws NullPointerException
-	 *             if {@code mediaType} is {@code null}
-	 * @throws MalformedURLException
-	 *             if {@code mediaType} is incorrectly formatted, i.e. does not
-	 *             contain a slash, or a parameter does not contain an equals
-	 *             sign
+	 * @param mediaType The media type to parse
+	 * @throws NullPointerException if {@code mediaType} is {@code null}
+	 * @throws MalformedURLException if {@code mediaType} is incorrectly formatted, i.e.
+	 * does not contain a slash, or a parameter does not contain an equals sign
 	 */
 	public MediaType(String mediaType) throws NullPointerException, MalformedURLException {
 		if (mediaType == null) {
 			throw new NullPointerException("contentType must not be null");
 		}
-		if(!DefaultMIMETypes.isPlausibleMIMEType(mediaType))
-		    throw new MalformedURLException("Doesn't look like a MIME type");
+		if (!DefaultMIMETypes.isPlausibleMIMEType(mediaType))
+			throw new MalformedURLException("Doesn't look like a MIME type");
 		int slash = mediaType.indexOf('/');
 		if (slash == -1) {
 			throw new MalformedURLException("mediaType does not contain ‘/’!");
@@ -87,25 +80,20 @@ public class MediaType {
 			}
 			String name = parameter.substring(0, equals).trim().toLowerCase();
 			String value = parameter.substring(equals + 1).trim();
-			if(value.startsWith("\"") && value.endsWith("\""))
-			    value = value.substring(1, value.length()-1).trim();
+			if (value.startsWith("\"") && value.endsWith("\""))
+				value = value.substring(1, value.length() - 1).trim();
 			this.parameters.put(name, value);
 		}
 	}
 
 	/**
 	 * Creates a new media type.
-	 *
-	 * @param type
-	 *            The top-level type
-	 * @param subtype
-	 *            The subtype
-	 * @param parameters
-	 *            The parameters in key-value pairs, in the order {@code key1},
-	 *            {@code value1}, {@code key2}, {@code value2}, …
-	 * @throws IllegalArgumentException
-	 *             if an invalid number of parameters is given (i.e. the number
-	 *             of parameters is odd)
+	 * @param type The top-level type
+	 * @param subtype The subtype
+	 * @param parameters The parameters in key-value pairs, in the order {@code key1},
+	 * {@code value1}, {@code key2}, {@code value2}, …
+	 * @throws IllegalArgumentException if an invalid number of parameters is given (i.e.
+	 * the number of parameters is odd)
 	 */
 	public MediaType(String type, String subtype, String... parameters) throws IllegalArgumentException {
 		if ((parameters.length & 1) != 0) {
@@ -120,13 +108,9 @@ public class MediaType {
 
 	/**
 	 * Creates a new media type.
-	 *
-	 * @param type
-	 *            The top-level type
-	 * @param subtype
-	 *            The subtype
-	 * @param parameters
-	 *            The parameters of the media type
+	 * @param type The top-level type
+	 * @param subtype The subtype
+	 * @param parameters The parameters of the media type
 	 */
 	public MediaType(String type, String subtype, Map<String, String> parameters) {
 		this.type = type;
@@ -140,7 +124,6 @@ public class MediaType {
 
 	/**
 	 * Returns the top-level type of this media type.
-	 *
 	 * @return The top-level type
 	 */
 	public String getType() {
@@ -148,11 +131,9 @@ public class MediaType {
 	}
 
 	/**
-	 * Creates a new media type that has the same subtype and parameters as this
-	 * media type and the given type as top-level type.
-	 *
-	 * @param type
-	 *            The top-level type of the new media type
+	 * Creates a new media type that has the same subtype and parameters as this media
+	 * type and the given type as top-level type.
+	 * @param type The top-level type of the new media type
 	 * @return The new media type
 	 */
 	public MediaType setType(String type) {
@@ -161,7 +142,6 @@ public class MediaType {
 
 	/**
 	 * Returns the subtype of this media type.
-	 *
 	 * @return The subtype
 	 */
 	public String getSubtype() {
@@ -169,11 +149,9 @@ public class MediaType {
 	}
 
 	/**
-	 * Creates a new media type that has the same top-level type and parameters
-	 * as this media type and the given subtype as subtype.
-	 *
-	 * @param subtype
-	 *            The subtype of the new media type
+	 * Creates a new media type that has the same top-level type and parameters as this
+	 * media type and the given subtype as subtype.
+	 * @param subtype The subtype of the new media type
 	 * @return The new media type
 	 */
 	public MediaType setSubtype(String subtype) {
@@ -182,30 +160,25 @@ public class MediaType {
 
 	/**
 	 * Returns the value of the parameter with the given name.
-	 *
-	 * @param name
-	 *            The name of the parameter
-	 * @return The value of the parameter (or {@code null} if the media type
-	 *         does not have a parameter with the given name)
+	 * @param name The name of the parameter
+	 * @return The value of the parameter (or {@code null} if the media type does not have
+	 * a parameter with the given name)
 	 */
 	public String getParameter(String name) {
 		return parameters.get(name.toLowerCase());
 	}
 
 	/**
-	 * Creates a new media type that has the same top-level type, subtype, and
-	 * parameters as this media type but has the parameter with the given name
-	 * changed to the given value.
-	 *
-	 * @param name
-	 *            The name of the parameter to change
-	 * @param value
-	 *            The new value of the parameter. Null = delete parameter.
+	 * Creates a new media type that has the same top-level type, subtype, and parameters
+	 * as this media type but has the parameter with the given name changed to the given
+	 * value.
+	 * @param name The name of the parameter to change
+	 * @param value The new value of the parameter. Null = delete parameter.
 	 * @return The new media type
 	 */
 	public MediaType setParameter(String name, String value) {
 		MediaType newMediaType = new MediaType(type, subtype, parameters);
-		if(value == null)
+		if (value == null)
 			newMediaType.parameters.remove(name.toLowerCase());
 		else
 			newMediaType.parameters.put(name.toLowerCase(), value);
@@ -213,12 +186,9 @@ public class MediaType {
 	}
 
 	/**
-	 * Creates a new media type that has the same top-level type, subtype, and
-	 * parameters as this media type but has the parameter with the given name
-	 * removed.
-	 *
-	 * @param name
-	 *            The name of the parameter to remove
+	 * Creates a new media type that has the same top-level type, subtype, and parameters
+	 * as this media type but has the parameter with the given name removed.
+	 * @param name The name of the parameter to remove
 	 * @return The new media type
 	 */
 	public MediaType removeParameter(String name) {
@@ -252,32 +222,36 @@ public class MediaType {
 
 	public static String getCharsetRobust(String expectedMimeType) {
 		try {
-			if(expectedMimeType == null) return null;
+			if (expectedMimeType == null)
+				return null;
 			MediaType type = new MediaType(expectedMimeType);
 			return type.getParameter("charset");
-		} catch (MalformedURLException e) {
+		}
+		catch (MalformedURLException e) {
 			return null;
-		} catch (Throwable t) {
+		}
+		catch (Throwable t) {
 			// Could be malicious, hence "Robust".
 			return null;
 		}
 	}
-	
+
 	public static String getCharsetRobustOrUTF(String expectedMimeType) {
 		String charset = getCharsetRobust(expectedMimeType);
-		if(charset == null) return "UTF-8";
+		if (charset == null)
+			return "UTF-8";
 		return charset;
 	}
 
-    public LinkedHashMap<String, String> getParameters() {
-        LinkedHashMap<String, String> map = new LinkedHashMap<String, String>();
-        map.putAll(parameters);
-        return map;
-    }
+	public LinkedHashMap<String, String> getParameters() {
+		LinkedHashMap<String, String> map = new LinkedHashMap<String, String>();
+		map.putAll(parameters);
+		return map;
+	}
 
-    /** Get the base type without any parameters */
-    public String getPlainType() {
-        return type + '/' + subtype;
-    }
+	/** Get the base type without any parameters */
+	public String getPlainType() {
+		return type + '/' + subtype;
+	}
 
 }

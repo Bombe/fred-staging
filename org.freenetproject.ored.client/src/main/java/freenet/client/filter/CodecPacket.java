@@ -7,6 +7,7 @@ package freenet.client.filter;
 import java.util.Arrays;
 
 public class CodecPacket {
+
 	protected byte[] payload = null;
 
 	CodecPacket(byte[] payload) {
@@ -27,13 +28,16 @@ public class CodecPacket {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) return true;
-		if (obj == null) return false;
-		if (!(obj instanceof CodecPacket)) return false;
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (!(obj instanceof CodecPacket))
+			return false;
 		CodecPacket other = (CodecPacket) obj;
-		if (!Arrays.equals(payload, other.payload)) return false;
+		if (!Arrays.equals(payload, other.payload))
+			return false;
 		return true;
 	}
 
-	
 }

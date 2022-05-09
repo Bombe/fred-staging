@@ -13,49 +13,54 @@ import freenet.crypt.ciphers.Rijndael;
 import freenet.clientlogger.Logger;
 
 public class ClientSSKBlock implements ClientKeyBlock {
-	
+
 	static final int DATA_DECRYPT_KEY_LENGTH = 32;
-	
+
 	static public final int MAX_DECOMPRESSED_DATA_LENGTH = 32768;
-	
+
 	private final SSKBlock block;
+
 	/** Is metadata. Set on decode. */
 	private boolean isMetadata;
+
 	/** Has decoded? */
 	private boolean decoded;
+
 	/** Client-key. This contains the decryption key etc. */
 	private final ClientSSK key;
 
 	/** Compression algorithm from last time tried to decompress. */
 	private short compressionAlgorithm = -1;
-	
+
 	public ClientSSKBlock(byte[] data, byte[] headers, ClientSSK key, boolean dontVerify) throws SSKVerifyException {
 		block = new SSKBlock(data, headers, (NodeSSK) key.getNodeKey(true), dontVerify);
 		this.key = key;
 	}
-	
+
 	public static ClientSSKBlock construct(SSKBlock block, ClientSSK key) throws SSKVerifyException {
 		// Constructor expects clientkey to have the pubkey.
 		// In the case of binary blobs, the block may have it instead.
-		if(key.getPubKey() == null)
+		if (key.getPubKey() == null)
 			key.setPublicKey(block.getPubKey());
 		return new ClientSSKBlock(block.data, block.headers, key, false);
 	}
-	
+
 	/**
 	 * Decode the data.
 	 */
 	@Override
-	public Bucket decode(BucketFactory factory, int maxLength, boolean dontDecompress) throws KeyDecodeException, IOException {
+	public Bucket decode(BucketFactory factory, int maxLength, boolean dontDecompress)
+			throws KeyDecodeException, IOException {
 		/* We know the signature is valid because it is checked in the constructor. */
 		/* We also know e(h(docname)) is valid */
 		byte[] decryptedHeaders = new byte[SSKBlock.ENCRYPTED_HEADERS_LENGTH];
 		System.arraycopy(block.headers, block.headersOffset, decryptedHeaders, 0, SSKBlock.ENCRYPTED_HEADERS_LENGTH);
 		Rijndael aes;
 		try {
-			Logger.minor(this, "cryptoAlgorithm="+key.cryptoAlgorithm+" for "+getClientKey().getURI());
-			aes = new Rijndael(256,256);
-		} catch (UnsupportedCipherException e) {
+			Logger.minor(this, "cryptoAlgorithm=" + key.cryptoAlgorithm + " for " + getClientKey().getURI());
+			aes = new Rijndael(256, 256);
+		}
+		catch (UnsupportedCipherException e) {
 			throw new Error(e);
 		}
 		aes.initialize(key.cryptoKey);
@@ -70,36 +75,38 @@ public class ClientSSKBlock implements ClientKeyBlock {
 		pcfb.reset(dataDecryptKey);
 		pcfb.blockDecipher(dataOutput, 0, dataOutput.length);
 		// 2 bytes - data length
-		int dataLength = ((decryptedHeaders[DATA_DECRYPT_KEY_LENGTH] & 0xff) << 8) +
-			(decryptedHeaders[DATA_DECRYPT_KEY_LENGTH+1] & 0xff);
+		int dataLength = ((decryptedHeaders[DATA_DECRYPT_KEY_LENGTH] & 0xff) << 8)
+				+ (decryptedHeaders[DATA_DECRYPT_KEY_LENGTH + 1] & 0xff);
 		// Metadata flag is top bit
-		if((dataLength & 32768) != 0) {
+		if ((dataLength & 32768) != 0) {
 			dataLength = dataLength & ~32768;
 			isMetadata = true;
 		}
-		if(dataLength > dataOutput.length) {
-			throw new SSKDecodeException("Data length: "+dataLength+" but data.length="+dataOutput.length);
+		if (dataLength > dataOutput.length) {
+			throw new SSKDecodeException("Data length: " + dataLength + " but data.length=" + dataOutput.length);
 		}
-		
-        compressionAlgorithm = (short)(((decryptedHeaders[DATA_DECRYPT_KEY_LENGTH+2] & 0xff) << 8) + (decryptedHeaders[DATA_DECRYPT_KEY_LENGTH+3] & 0xff));
-        decoded = true;
-        
-        if(dontDecompress) {
-        	if(compressionAlgorithm == (short)-1)
-        		return BucketTools.makeImmutableBucket(factory, dataOutput, dataLength);
-        	else if(dataLength < 2)
-        		throw new SSKDecodeException("Data length is less than 2 yet compressed!");
-        	else
-        		return BucketTools.makeImmutableBucket(factory, dataOutput, 2, dataLength - 2);
-        }
 
-        Bucket b = Key.decompress(compressionAlgorithm >= 0, dataOutput, dataLength, factory, Math.min(MAX_DECOMPRESSED_DATA_LENGTH, maxLength), compressionAlgorithm, true);
-        return b;
+		compressionAlgorithm = (short) (((decryptedHeaders[DATA_DECRYPT_KEY_LENGTH + 2] & 0xff) << 8)
+				+ (decryptedHeaders[DATA_DECRYPT_KEY_LENGTH + 3] & 0xff));
+		decoded = true;
+
+		if (dontDecompress) {
+			if (compressionAlgorithm == (short) -1)
+				return BucketTools.makeImmutableBucket(factory, dataOutput, dataLength);
+			else if (dataLength < 2)
+				throw new SSKDecodeException("Data length is less than 2 yet compressed!");
+			else
+				return BucketTools.makeImmutableBucket(factory, dataOutput, 2, dataLength - 2);
+		}
+
+		Bucket b = Key.decompress(compressionAlgorithm >= 0, dataOutput, dataLength, factory,
+				Math.min(MAX_DECOMPRESSED_DATA_LENGTH, maxLength), compressionAlgorithm, true);
+		return b;
 	}
 
 	@Override
 	public boolean isMetadata() {
-		if(!decoded)
+		if (!decoded)
 			throw new IllegalStateException("Cannot read isMetadata before decoded");
 		return isMetadata;
 	}
@@ -112,21 +119,22 @@ public class ClientSSKBlock implements ClientKeyBlock {
 	public short getCompressionCodec() {
 		return compressionAlgorithm;
 	}
-	
+
 	@Override
 	public byte[] memoryDecode() throws KeyDecodeException {
 		return memoryDecode(false);
 	}
-	
-    /**
-     * Decode into RAM, if short.
-     * @throws KeyDecodeException 
-     */
+
+	/**
+	 * Decode into RAM, if short.
+	 * @throws KeyDecodeException
+	 */
 	public byte[] memoryDecode(boolean dontDecompress) throws KeyDecodeException {
 		try {
-			ArrayBucket a = (ArrayBucket) decode(new ArrayBucketFactory(), 32*1024, dontDecompress);
+			ArrayBucket a = (ArrayBucket) decode(new ArrayBucketFactory(), 32 * 1024, dontDecompress);
 			return BucketTools.toByteArray(a); // FIXME
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			throw new Error(e);
 		}
 	}
@@ -136,12 +144,17 @@ public class ClientSSKBlock implements ClientKeyBlock {
 		return block.hashCode() ^ key.hashCode();
 	}
 
-	/** Return true if this is the same block as the other ClientSSKBlock, *and* it is the same key */
+	/**
+	 * Return true if this is the same block as the other ClientSSKBlock, *and* it is the
+	 * same key
+	 */
 	@Override
 	public boolean equals(Object o) {
-		if(!(o instanceof ClientSSKBlock)) return false;
+		if (!(o instanceof ClientSSKBlock))
+			return false;
 		ClientSSKBlock block = (ClientSSKBlock) o;
-		if(!key.equals(block.key)) return false;
+		if (!key.equals(block.key))
+			return false;
 		return this.block.equals(block.block);
 	}
 
@@ -154,5 +167,5 @@ public class ClientSSKBlock implements ClientKeyBlock {
 	public Key getKey() {
 		return block.getKey();
 	}
-	
+
 }

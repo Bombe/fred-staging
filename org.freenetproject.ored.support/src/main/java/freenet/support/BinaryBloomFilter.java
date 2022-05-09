@@ -16,11 +16,10 @@ import java.nio.channels.FileChannel.MapMode;
  * @author sdiz
  */
 public class BinaryBloomFilter extends BloomFilter {
+
 	/**
 	 * Constructor
-	 * 
-	 * @param length
-	 *            length in bits
+	 * @param length length in bits
 	 */
 	protected BinaryBloomFilter(int length, int k) {
 		super(length, k);
@@ -29,11 +28,8 @@ public class BinaryBloomFilter extends BloomFilter {
 
 	/**
 	 * Constructor
-	 * 
-	 * @param file
-	 *            disk file
-	 * @param length
-	 *            length in bits
+	 * @param file disk file
+	 * @param length length in bits
 	 * @throws IOException
 	 */
 	protected BinaryBloomFilter(File file, int length, int k) throws IOException {
@@ -47,7 +43,8 @@ public class BinaryBloomFilter extends BloomFilter {
 			raf.setLength(length / 8);
 			channel = raf.getChannel();
 			filter = channel.map(MapMode.READ_WRITE, 0, length / 8).load();
-		} finally {
+		}
+		finally {
 			Closer.close(raf);
 			Closer.close(channel);
 		}
@@ -87,9 +84,11 @@ public class BinaryBloomFilter extends BloomFilter {
 			File tempFile = File.createTempFile("bloom-", ".tmp");
 			tempFile.deleteOnExit();
 			forkedFilter = new BinaryBloomFilter(tempFile, length, k);
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			forkedFilter = new BinaryBloomFilter(length, k);
-		} finally {
+		}
+		finally {
 			lock.writeLock().unlock();
 		}
 	}

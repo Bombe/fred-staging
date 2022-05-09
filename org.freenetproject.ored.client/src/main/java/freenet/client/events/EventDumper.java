@@ -11,8 +11,9 @@ import freenet.client.async.ClientContext;
 public class EventDumper implements ClientEventListener {
 
 	final Writer w;
+
 	final boolean removeWithProducer;
-	
+
 	public EventDumper(Writer writer, boolean removeWithProducer) {
 		this.w = writer;
 		this.removeWithProducer = removeWithProducer;
@@ -21,8 +22,9 @@ public class EventDumper implements ClientEventListener {
 	@Override
 	public void receive(ClientEvent ce, ClientContext context) {
 		try {
-			w.write(ce.getDescription()+"\n");
-		} catch (IOException e) {
+			w.write(ce.getDescription() + "\n");
+		}
+		catch (IOException e) {
 			// Ignore.
 		}
 	}

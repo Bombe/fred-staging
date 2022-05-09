@@ -11,9 +11,11 @@ import freenet.crypt.RandomSource;
 import freenet.support.io.FilenameGenerator;
 
 public class PaddedEphemerallyEncryptedBucketTest extends BucketTestBase {
+
 	private RandomSource strongPRNG = new DummyRandomSource(12345);
+
 	private Random weakPRNG = new DummyRandomSource(54321);
-	
+
 	@Override
 	protected Bucket makeBucket(long size) throws IOException {
 		BucketFilenameGenerator filenameGenerator = new BucketFilenameGenerator(weakPRNG, false, null, "junit");
@@ -25,4 +27,5 @@ public class PaddedEphemerallyEncryptedBucketTest extends BucketTestBase {
 	protected void freeBucket(Bucket bucket) throws IOException {
 		bucket.free();
 	}
+
 }

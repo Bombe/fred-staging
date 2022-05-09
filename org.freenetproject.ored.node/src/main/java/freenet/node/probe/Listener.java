@@ -4,13 +4,15 @@ package freenet.node.probe;
  * Listener for the different types of probe results.
  */
 public interface Listener {
+
 	/**
 	 * An error occurred.
 	 * @param error type: What error occurred. Can be one of Probe.ProbeError.
-	 * @param code Code byte value. If the error is an UNKNOWN or UNRECOGNIZED_TYPE which occurred locally this
-	 *             contains the unrecognized code from the message. Otherwise it is null.
-	 * @param local True if the error occurred locally and was not prompted by an error relayed from a remote node.
-	 *              False if the error was relayed from a remote node.
+	 * @param code Code byte value. If the error is an UNKNOWN or UNRECOGNIZED_TYPE which
+	 * occurred locally this contains the unrecognized code from the message. Otherwise it
+	 * is null.
+	 * @param local True if the error occurred locally and was not prompted by an error
+	 * relayed from a remote node. False if the error was relayed from a remote node.
 	 */
 	void onError(Error error, Byte code, boolean local);
 
@@ -21,7 +23,8 @@ public interface Listener {
 
 	/**
 	 * Output bandwidth limit result.
-	 * @param outputBandwidth endpoint's reported output bandwidth limit in KiB per second.
+	 * @param outputBandwidth endpoint's reported output bandwidth limit in KiB per
+	 * second.
 	 */
 	void onOutputBandwidth(float outputBandwidth);
 
@@ -52,25 +55,27 @@ public interface Listener {
 
 	/**
 	 * Store size result.
-	 * @param storeSize endpoint's reported store size in GiB multiplied by Gaussian noise.
+	 * @param storeSize endpoint's reported store size in GiB multiplied by Gaussian
+	 * noise.
 	 */
 	void onStoreSize(float storeSize);
 
 	/**
 	 * Uptime result.
-	 * @param uptimePercentage endpoint's reported percentage uptime in the last requested period; either
-	 *                         48 hour or 7 days.
+	 * @param uptimePercentage endpoint's reported percentage uptime in the last requested
+	 * period; either 48 hour or 7 days.
 	 */
 	void onUptime(float uptimePercentage);
 
 	/**
 	 * Reject stats.
-	 * @param stats Array of 4 bytes, with the percentage rejections for (bulk only): CHK request, 
-	 * SSK request, CHK insert, SSK insert. Negative value = insufficient data. Positive value = 
-	 * percentage rejected.	
+	 * @param stats Array of 4 bytes, with the percentage rejections for (bulk only): CHK
+	 * request, SSK request, CHK insert, SSK insert. Negative value = insufficient data.
+	 * Positive value = percentage rejected.
 	 */
 	void onRejectStats(byte[] stats);
 
 	/** Capacity usage and approximate bandwidth class */
 	void onOverallBulkOutputCapacity(byte bandwidthClassForCapacityUsage, float capacityUsage);
+
 }

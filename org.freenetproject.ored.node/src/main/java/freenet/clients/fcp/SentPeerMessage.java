@@ -8,6 +8,7 @@ public class SentPeerMessage extends FCPMessage {
 	public static final String NAME = "SentPeer";
 
 	public final String identifier;
+
 	public final int nodeStatus;
 
 	public SentPeerMessage(String identifier, int nodeStatus) {
@@ -20,7 +21,7 @@ public class SentPeerMessage extends FCPMessage {
 		SimpleFieldSet fs = new SimpleFieldSet(true);
 		fs.putSingle("Identifier", identifier);
 		fs.put("NodeStatus", nodeStatus);
-		//TODO Textual description of the node status?
+		// TODO Textual description of the node status?
 		return fs;
 	}
 
@@ -31,8 +32,8 @@ public class SentPeerMessage extends FCPMessage {
 
 	@Override
 	public void run(FCPConnectionHandler handler, Node node) throws MessageInvalidException {
-		throw new MessageInvalidException(ProtocolErrorMessage.INVALID_MESSAGE, getName()
-				+ " goes from server to client not the other way around", identifier, false);
+		throw new MessageInvalidException(ProtocolErrorMessage.INVALID_MESSAGE,
+				getName() + " goes from server to client not the other way around", identifier, false);
 	}
 
 }

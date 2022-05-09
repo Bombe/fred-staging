@@ -28,12 +28,18 @@ import freenet.support.node.UserAlert;
  * Collection of UserAlert's.
  */
 public class UserAlertManager implements Comparator<FCPUserAlert>, UserAlertRegister {
+
 	// No point keeping them sorted as some alerts can change priority.
 	private final Set<FCPUserAlert> alerts;
+
 	private final NodeClientCore core;
+
 	private final Set<FCPConnectionHandler> subscribers;
+
 	private final Map<UserEvent.Type, UserEvent> events;
+
 	private final Set<UserEvent.Type> unregisteredEventTypes;
+
 	private long lastUpdated;
 
 	public UserAlertManager(NodeClientCore core) {
@@ -46,9 +52,9 @@ public class UserAlertManager implements Comparator<FCPUserAlert>, UserAlertRegi
 	}
 
 	public void register(UserAlert alert) {
-		if(alert instanceof UserEvent)
+		if (alert instanceof UserEvent)
 			register((UserEvent) alert);
-		if(alert instanceof FCPUserAlert) {
+		if (alert instanceof FCPUserAlert) {
 			synchronized (alerts) {
 				if (!alerts.contains(alert)) {
 					alerts.add((FCPUserAlert) alert);
@@ -61,8 +67,8 @@ public class UserAlertManager implements Comparator<FCPUserAlert>, UserAlertRegi
 
 	public void register(UserEvent event) {
 		// The event is ignored if it has been indefinitely unregistered
-		synchronized(unregisteredEventTypes) {
-			if(unregisteredEventTypes.contains(event.getEventType()))
+		synchronized (unregisteredEventTypes) {
+			if (unregisteredEventTypes.contains(event.getEventType()))
 				return;
 		}
 		// Only the latest event is displayed as an alert
@@ -92,46 +98,46 @@ public class UserAlertManager implements Comparator<FCPUserAlert>, UserAlertRegi
 	}
 
 	public void unregister(FCPUserAlert alert) {
-		if(alert == null) return;
-		if(alert instanceof UserEvent)
-			unregister(((UserEvent)alert).getEventType());
+		if (alert == null)
+			return;
+		if (alert instanceof UserEvent)
+			unregister(((UserEvent) alert).getEventType());
 		synchronized (alerts) {
 			alerts.remove(alert);
 		}
 	}
 
 	public void unregister(UserEvent.Type eventType) {
-		if(eventType.unregisterIndefinitely())
+		if (eventType.unregisterIndefinitely())
 			synchronized (unregisteredEventTypes) {
 				unregisteredEventTypes.add(eventType);
 			}
 		synchronized (events) {
 			UserEvent latestEvent;
 			latestEvent = events.remove(eventType);
-			if(latestEvent != null)
-				synchronized(alerts) {
+			if (latestEvent != null)
+				synchronized (alerts) {
 					alerts.remove(latestEvent);
 				}
 		}
 	}
 
 	/**
-	 * Tries to find the user alert with the given hash code and dismisses it,
-	 * if found.
-	 * 
+	 * Tries to find the user alert with the given hash code and dismisses it, if found.
+	 *
 	 * @see #unregister(FCPUserAlert)
-	 * @param alertHashCode
-	 *            The hash code of the user alert to dismiss
+	 * @param alertHashCode The hash code of the user alert to dismiss
 	 */
 	public void dismissAlert(int alertHashCode) {
 		FCPUserAlert[] userAlerts = getAlerts();
-		for (FCPUserAlert userAlert: userAlerts) {
+		for (FCPUserAlert userAlert : userAlerts) {
 			if (userAlert.hashCode() == alertHashCode) {
 				if (userAlert.userCanDismiss()) {
 					if (userAlert.shouldUnregisterOnDismiss()) {
 						userAlert.onDismiss();
 						unregister(userAlert);
-					} else {
+					}
+					else {
 						userAlert.isValid(false);
 					}
 				}
@@ -150,31 +156,44 @@ public class UserAlertManager implements Comparator<FCPUserAlert>, UserAlertRegi
 
 	@Override
 	public int compare(FCPUserAlert a0, FCPUserAlert a1) {
-		if(a0 == a1) return 0; // common case, also we should be consistent with == even with proxyuseralert's
+		if (a0 == a1)
+			return 0; // common case, also we should be consistent with == even with
+						// proxyuseralert's
 		short prio0 = a0.getPriorityClass();
 		short prio1 = a1.getPriorityClass();
-		if(prio0 - prio1 == 0) {
+		if (prio0 - prio1 == 0) {
 			boolean isEvent0 = a0.isEventNotification();
 			boolean isEvent1 = a1.isEventNotification();
-			if(isEvent0 && !isEvent1) return 1;
-			if((!isEvent0) && isEvent1) return -1;
+			if (isEvent0 && !isEvent1)
+				return 1;
+			if ((!isEvent0) && isEvent1)
+				return -1;
 			// First go by class
 			int classHash0 = a0.getClass().hashCode();
 			int classHash1 = a1.getClass().hashCode();
-			if(classHash0 > classHash1) return 1;
-			else if(classHash0 < classHash1) return -1;
+			if (classHash0 > classHash1)
+				return 1;
+			else if (classHash0 < classHash1)
+				return -1;
 			// Then go by time (newest first)
-			if(a0.getUpdatedTime() < a1.getUpdatedTime()) return 1;
-			else if(a0.getUpdatedTime() > a1.getUpdatedTime()) return -1;
+			if (a0.getUpdatedTime() < a1.getUpdatedTime())
+				return 1;
+			else if (a0.getUpdatedTime() > a1.getUpdatedTime())
+				return -1;
 			// And finally by object hashCode
 			int hash0 = a0.hashCode();
 			int hash1 = a1.hashCode();
-			if(hash0 > hash1) return 1;
-			if(hash1 > hash0) return -1;
+			if (hash0 > hash1)
+				return 1;
+			if (hash1 > hash0)
+				return -1;
 			return 0;
-		} else {
-			if(prio0 > prio1) return 1;
-			else return -1;
+		}
+		else {
+			if (prio0 > prio1)
+				return 1;
+			else
+				return -1;
 		}
 	}
 
@@ -188,21 +207,23 @@ public class UserAlertManager implements Comparator<FCPUserAlert>, UserAlertRegi
 	public HTMLNode createAlerts(boolean showOnlyErrors) {
 		HTMLNode alertsNode = new HTMLNode("div");
 		int totalNumber = 0;
-		for (FCPUserAlert alert: getAlerts()) {
-			if(showOnlyErrors && alert.getPriorityClass() > FCPUserAlert.ERROR)
+		for (FCPUserAlert alert : getAlerts()) {
+			if (showOnlyErrors && alert.getPriorityClass() > FCPUserAlert.ERROR)
 				continue;
 			if (!alert.isValid())
 				continue;
 			totalNumber++;
 			alertsNode.addChild("a", "name", alert.anchor());
-			if(showOnlyErrors) {
+			if (showOnlyErrors) {
 				// Paranoia. Don't break the web interface no matter what.
 				try {
 					alertsNode.addChild(renderAlert(alert));
-				} catch (Throwable t) {
-					Logger.error(this, "FAILED TO RENDER ALERT: "+alert+" : "+t, t);
 				}
-			} else {
+				catch (Throwable t) {
+					Logger.error(this, "FAILED TO RENDER ALERT: " + alert + " : " + t, t);
+				}
+			}
+			else {
 				// Alerts toadlet itself can error, that's OK.
 				alertsNode.addChild(renderAlert(alert));
 			}
@@ -212,18 +233,16 @@ public class UserAlertManager implements Comparator<FCPUserAlert>, UserAlertRegi
 		}
 		return alertsNode;
 	}
-	
+
 	/**
 	 * Renders the given alert and returns the rendered HTML node.
-	 * 
-	 * @param userAlert
-	 *            The user alert to render
+	 * @param userAlert The user alert to render
 	 * @return The rendered HTML node
 	 */
 	public HTMLNode renderAlert(FCPUserAlert userAlert) {
 		HTMLNode userAlertNode = null;
 		short level = userAlert.getPriorityClass();
-		userAlertNode = new HTMLNode("div", "class", "infobox infobox-"+getAlertLevelName(level));
+		userAlertNode = new HTMLNode("div", "class", "infobox infobox-" + getAlertLevelName(level));
 
 		userAlertNode.addChild("div", "class", "infobox-header", userAlert.getTitle());
 		HTMLNode alertContentNode = userAlertNode.addChild("div", "class", "infobox-content");
@@ -236,15 +255,19 @@ public class UserAlertManager implements Comparator<FCPUserAlert>, UserAlertRegi
 	public HTMLNode renderDismissButton(FCPUserAlert userAlert, String redirectToAfterDisable) {
 		HTMLNode result = new HTMLNode("div");
 		if (userAlert.userCanDismiss()) {
-			HTMLNode dismissFormNode = result.addChild("form", new String[] { "action", "method" }, new String[] { "/alerts/", "post" }).addChild("div");
-			dismissFormNode.addChild("input", new String[] { "type", "name", "value" }, new String[] { "hidden", "disable", String.valueOf(userAlert.hashCode()) });
-			dismissFormNode.addChild("input", new String[] { "type", "name", "value" }, new String[] { "hidden", "formPassword", core.formPassword });
-			dismissFormNode.addChild("input", new String[] { "type", "name", "value" }, new String[] { "submit", "dismiss-user-alert", userAlert.dismissButtonText() });
-			
+			HTMLNode dismissFormNode = result
+					.addChild("form", new String[] { "action", "method" }, new String[] { "/alerts/", "post" })
+					.addChild("div");
+			dismissFormNode.addChild("input", new String[] { "type", "name", "value" },
+					new String[] { "hidden", "disable", String.valueOf(userAlert.hashCode()) });
+			dismissFormNode.addChild("input", new String[] { "type", "name", "value" },
+					new String[] { "hidden", "formPassword", core.formPassword });
+			dismissFormNode.addChild("input", new String[] { "type", "name", "value" },
+					new String[] { "submit", "dismiss-user-alert", userAlert.dismissButtonText() });
+
 			if (redirectToAfterDisable != null) {
-				dismissFormNode.addChild("input",
-					new String[] { "type", "name", "value" },
-					new String[] { "hidden", "redirectToAfterDisable", redirectToAfterDisable });
+				dismissFormNode.addChild("input", new String[] { "type", "name", "value" },
+						new String[] { "hidden", "redirectToAfterDisable", redirectToAfterDisable });
 			}
 		}
 		return result;
@@ -260,7 +283,7 @@ public class UserAlertManager implements Comparator<FCPUserAlert>, UserAlertRegi
 		else if (level <= FCPUserAlert.MINOR)
 			return "minor";
 		else {
-			Logger.error(this, "Unknown alert level: "+level, new Exception("debug"));
+			Logger.error(this, "Unknown alert level: " + level, new Exception("debug"));
 			return "error";
 		}
 	}
@@ -270,7 +293,7 @@ public class UserAlertManager implements Comparator<FCPUserAlert>, UserAlertRegi
 		// a summary of alerts. With a status bar, we only show full errors here.
 		return createAlerts(true);
 	}
-	
+
 	static final HTMLNode ALERTS_LINK = new HTMLNode("a", "href", "/alerts/").setReadOnly();
 
 	/**
@@ -283,7 +306,7 @@ public class UserAlertManager implements Comparator<FCPUserAlert>, UserAlertRegi
 		int numberOfWarning = 0;
 		int numberOfMinor = 0;
 		int totalNumber = 0;
-		for (FCPUserAlert alert: getAlerts()) {
+		for (FCPUserAlert alert : getAlerts()) {
 			if (!alert.isValid())
 				continue;
 			short level = alert.getPriorityClass();
@@ -300,15 +323,15 @@ public class UserAlertManager implements Comparator<FCPUserAlert>, UserAlertRegi
 			totalNumber++;
 		}
 
-		if(numberOfMinor == 0 && numberOfWarning == 0 && oneLine)
+		if (numberOfMinor == 0 && numberOfWarning == 0 && oneLine)
 			return null;
 
 		if (totalNumber == 0)
 			return new HTMLNode("#", "");
 
 		boolean separatorNeeded = false;
-		String separator = oneLine?", ":" | ";
-		int messageTypes=0;
+		String separator = oneLine ? ", " : " | ";
+		int messageTypes = 0;
 		StringBuilder alertSummaryString = new StringBuilder(1024);
 		if (numberOfCriticalError != 0 && !oneLine) {
 			alertSummaryString.append(l10n("criticalErrorCountLabel")).append(' ').append(numberOfCriticalError);
@@ -325,9 +348,11 @@ public class UserAlertManager implements Comparator<FCPUserAlert>, UserAlertRegi
 		if (numberOfWarning != 0) {
 			if (separatorNeeded)
 				alertSummaryString.append(separator);
-			if(oneLine) {
-			alertSummaryString.append(numberOfWarning).append(' ').append(l10n("warningCountLabel").replace(":", ""));
-			} else {
+			if (oneLine) {
+				alertSummaryString.append(numberOfWarning).append(' ')
+						.append(l10n("warningCountLabel").replace(":", ""));
+			}
+			else {
 				alertSummaryString.append(l10n("warningCountLabel")).append(' ').append(numberOfWarning);
 			}
 			separatorNeeded = true;
@@ -336,9 +361,10 @@ public class UserAlertManager implements Comparator<FCPUserAlert>, UserAlertRegi
 		if (numberOfMinor != 0) {
 			if (separatorNeeded)
 				alertSummaryString.append(separator);
-			if(oneLine) {
+			if (oneLine) {
 				alertSummaryString.append(numberOfMinor).append(' ').append(l10n("minorCountLabel").replace(":", ""));
-			} else {
+			}
+			else {
 				alertSummaryString.append(l10n("minorCountLabel")).append(' ').append(numberOfMinor);
 			}
 			separatorNeeded = true;
@@ -351,7 +377,7 @@ public class UserAlertManager implements Comparator<FCPUserAlert>, UserAlertRegi
 		}
 		HTMLNode summaryBox = null;
 
-		String classes = oneLine?"alerts-line contains-":"infobox infobox-";
+		String classes = oneLine ? "alerts-line contains-" : "infobox infobox-";
 
 		if (highestLevel <= FCPUserAlert.CRITICAL_ERROR && !oneLine)
 			summaryBox = new HTMLNode("div", "class", classes + "error");
@@ -363,26 +389,31 @@ public class UserAlertManager implements Comparator<FCPUserAlert>, UserAlertRegi
 			summaryBox = new HTMLNode("div", "class", classes + "information");
 		summaryBox.addChild("div", "class", "infobox-header", l10n("alertsTitle"));
 		HTMLNode summaryContent = summaryBox.addChild("div", "class", "infobox-content");
-		if(!oneLine) {
+		if (!oneLine) {
 			summaryContent.addChild("#", alertSummaryString.toString() + separator + " ");
 			NodeL10n.getBase().addL10nSubstitution(summaryContent, "UserAlertManager.alertsOnAlertsPage",
-				new String[] { "link" }, new HTMLNode[] { ALERTS_LINK });
-		} else {
-			summaryContent.addChild("a", "href", "/alerts/", NodeL10n.getBase().getString("StatusBar.alerts") + " " + alertSummaryString.toString());
+					new String[] { "link" }, new HTMLNode[] { ALERTS_LINK });
+		}
+		else {
+			summaryContent.addChild("a", "href", "/alerts/",
+					NodeL10n.getBase().getString("StatusBar.alerts") + " " + alertSummaryString.toString());
 		}
 		summaryBox.addAttribute("id", "messages-summary-box");
 		return summaryBox;
 	}
 
 	private String l10n(String key) {
-		return NodeL10n.getBase().getString("UserAlertManager."+key);
+		return NodeL10n.getBase().getString("UserAlertManager." + key);
 	}
 
 	public void dumpEvents(HashSet<String> toDump) {
-		// An iterator might be faster, but we don't want to call methods on the alert within the lock.
-		for(FCPUserAlert alert: getAlerts()) {
-			if(!alert.isEventNotification()) continue;
-			if(!toDump.contains(alert.anchor())) continue;
+		// An iterator might be faster, but we don't want to call methods on the alert
+		// within the lock.
+		for (FCPUserAlert alert : getAlerts()) {
+			if (!alert.isEventNotification())
+				continue;
+			if (!toDump.contains(alert.anchor()))
+				continue;
 			unregister(alert);
 			alert.onDismiss();
 		}
@@ -396,7 +427,7 @@ public class UserAlertManager implements Comparator<FCPUserAlert>, UserAlertRegi
 			@Override
 			public void run() {
 				for (FCPUserAlert alert : getAlerts())
-					if(alert.isValid())
+					if (alert.isValid())
 						subscriber.send(alert.getFCPMessage());
 			}
 		}, "UserAlertManager callback executor");
@@ -407,11 +438,11 @@ public class UserAlertManager implements Comparator<FCPUserAlert>, UserAlertRegi
 		subscribers.remove(subscriber);
 	}
 
-	//Formats a Unix timestamp according to RFC 3339
+	// Formats a Unix timestamp according to RFC 3339
 	private String formatTime(long time) {
 		final Format format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
 		String date = format.format(new Date(time));
-		//Z doesn't include a colon between the hour and the minutes
+		// Z doesn't include a colon between the hour and the minutes
 		return date.substring(0, 22) + ":" + date.substring(22);
 	}
 
@@ -430,7 +461,7 @@ public class UserAlertManager implements Comparator<FCPUserAlert>, UserAlertRegi
 		sb.append("  <id>urn:node:").append(Base64.encode(core.node.getDarknetPubKeyHash())).append("</id>\n");
 		sb.append("  <logo>").append("/favicon.ico").append("</logo>\n");
 		FCPUserAlert[] alerts = getAlerts();
-		for(int i = alerts.length - 1; i >= 0; i--) {
+		for (int i = alerts.length - 1; i >= 0; i--) {
 			FCPUserAlert alert = alerts[i];
 			if (alert.isValid()) {
 				sb.append("\n");
@@ -447,4 +478,5 @@ public class UserAlertManager implements Comparator<FCPUserAlert>, UserAlertRegi
 		sb.append("\n</feed>\n");
 		return sb.toString();
 	}
+
 }

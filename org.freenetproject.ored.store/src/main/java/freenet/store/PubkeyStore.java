@@ -18,30 +18,35 @@ public class PubkeyStore extends StoreCallback<StoreDSAPublicKey> {
 	}
 
 	@Override
-	public StoreDSAPublicKey construct(byte[] data, byte[] headers, byte[] routingKey,
-								  byte[] fullKey, boolean canReadClientCache, boolean canReadSlashdotCache, BlockMetadata meta, StoreDSAPublicKey ignored) throws KeyVerifyException {
-		if(data == null) throw new PubkeyVerifyException("Need data to construct pubkey");
+	public StoreDSAPublicKey construct(byte[] data, byte[] headers, byte[] routingKey, byte[] fullKey,
+			boolean canReadClientCache, boolean canReadSlashdotCache, BlockMetadata meta, StoreDSAPublicKey ignored)
+			throws KeyVerifyException {
+		if (data == null)
+			throw new PubkeyVerifyException("Need data to construct pubkey");
 		try {
 			return StoreDSAPublicKey.create(data);
-		} catch (CryptFormatException e) {
+		}
+		catch (CryptFormatException e) {
 			throw new PubkeyVerifyException(e);
 		}
 	}
 
-	public DSAPublicKey fetch(byte[] hash, boolean dontPromote, boolean ignoreOldBlocks, BlockMetadata meta) throws IOException {
+	public DSAPublicKey fetch(byte[] hash, boolean dontPromote, boolean ignoreOldBlocks, BlockMetadata meta)
+			throws IOException {
 		return store.fetch(hash, null, dontPromote, false, false, ignoreOldBlocks, meta);
 	}
-	
+
 	final private static byte[] empty = new byte[0];
-	
+
 	public void put(byte[] hash, StoreDSAPublicKey key, boolean isOldBlock) throws IOException {
 		try {
 			store.put(key, key.asPaddedBytes(), empty, false, isOldBlock);
-		} catch (KeyCollisionException e) {
-			Logger.error(this, "Impossible for PubkeyStore: "+e, e);
+		}
+		catch (KeyCollisionException e) {
+			Logger.error(this, "Impossible for PubkeyStore: " + e, e);
 		}
 	}
-	
+
 	@Override
 	public int dataLength() {
 		return DSAPublicKey.PADDED_SIZE;
@@ -76,4 +81,5 @@ public class PubkeyStore extends StoreCallback<StoreDSAPublicKey> {
 	public byte[] routingKeyFromFullKey(byte[] keyBuf) {
 		return keyBuf;
 	}
+
 }

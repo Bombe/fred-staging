@@ -32,7 +32,7 @@ public class Inet4AddressMatcherTest extends TestCase {
 		assertEquals(true, matcher.matches(InetAddress.getByName("192.168.1.2")));
 		assertEquals(false, matcher.matches(InetAddress.getByName("127.0.0.1")));
 		assertEquals(false, matcher.matches(InetAddress.getByName("0.0.0.0")));
-		
+
 		matcher = new Inet4AddressMatcher("192.168.1.2/8");
 		assertEquals(true, matcher.matches(InetAddress.getByName("192.168.1.1")));
 		assertEquals(true, matcher.matches(InetAddress.getByName("192.168.1.2")));
@@ -51,7 +51,7 @@ public class Inet4AddressMatcherTest extends TestCase {
 		assertEquals(false, matcher.matches(InetAddress.getByName("192.168.2.1")));
 		assertEquals(false, matcher.matches(InetAddress.getByName("192.16.2.1")));
 		assertEquals(false, matcher.matches(InetAddress.getByName("127.0.0.1")));
-		
+
 		matcher = new Inet4AddressMatcher("127.0.0.1/8");
 		assertEquals(true, matcher.matches(InetAddress.getByName("127.0.0.1")));
 		assertEquals(true, matcher.matches(InetAddress.getByName("127.23.42.64")));

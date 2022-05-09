@@ -6,11 +6,11 @@ package freenet.pluginmanager;
 import freenet.clients.http.PageMaker.THEME;
 
 /**
- * Interface that has to be implemented for plugins that wants to use
- * nodes html look (css theme) but not PageMaker.<br /> 
- * 
+ * Interface that has to be implemented for plugins that wants to use nodes html look (css
+ * theme) but not PageMaker.<br />
+ *
  * Very geek'ish and not recommended. Use PageMaker instead. {see FredPluginL10n}
- *  
+ *
  * @author saces
  *
  */

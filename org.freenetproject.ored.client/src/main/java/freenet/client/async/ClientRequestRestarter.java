@@ -10,6 +10,8 @@ import java.io.IOException;
 
 @FunctionalInterface
 public interface ClientRequestRestarter {
-    ClientRequest restartFrom(DataInputStream dis, RequestIdentifier reqID,
-                              ClientContext context, ChecksumChecker checker) throws StorageFormatException, IOException, ResumeFailedException;
+
+	ClientRequest restartFrom(DataInputStream dis, RequestIdentifier reqID, ClientContext context,
+			ChecksumChecker checker) throws StorageFormatException, IOException, ResumeFailedException;
+
 }

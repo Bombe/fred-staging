@@ -16,18 +16,27 @@ import freenet.support.HTMLNode;
 
 // Node To Node Text Message User Alert
 public class N2NTMUserAlert extends BaseNodeUserAlert {
+
 	private final WeakReference<PeerNode> peerRef;
+
 	private final String messageText;
+
 	private final int fileNumber;
+
 	private final long composedTime;
+
 	private final long sentTime;
+
 	private final long receivedTime;
+
 	private final long msgid;
+
 	private String sourceNodeName;
+
 	private String sourcePeer;
 
 	public N2NTMUserAlert(DarknetPeerNode sourcePeerNode, String message, int fileNumber, long composedTime,
-                          long sentTime, long receivedTime, long msgid) {
+			long sentTime, long receivedTime, long msgid) {
 		super(true, null, null, null, null, MINOR, true, null, true, null);
 		this.messageText = message;
 		this.fileNumber = fileNumber;
@@ -42,7 +51,7 @@ public class N2NTMUserAlert extends BaseNodeUserAlert {
 
 	public N2NTMUserAlert(DarknetPeerNode sourcePeerNode, String message, int fileNumber, long composedTime,
 			long sentTime, long receivedTime) {
-                this(sourcePeerNode, message, fileNumber, composedTime, sentTime, receivedTime, -1);
+		this(sourcePeerNode, message, fileNumber, composedTime, sentTime, receivedTime, -1);
 	}
 
 	@Override
@@ -145,7 +154,7 @@ public class N2NTMUserAlert extends BaseNodeUserAlert {
 	@Override
 	public boolean isValid() {
 		DarknetPeerNode pn = (DarknetPeerNode) peerRef.get();
-		if(pn != null) {
+		if (pn != null) {
 			sourceNodeName = pn.getName();
 			sourcePeer = pn.getPeer().toString();
 		}

@@ -7,11 +7,13 @@ import freenet.support.node.stats.StatsNotAvailableException;
 import freenet.support.node.stats.StoreAccessStats;
 
 /**
- * This interface represents the data we can publish on our stats page for a given instance of a data store.
+ * This interface represents the data we can publish on our stats page for a given
+ * instance of a data store.
  *
  * @author nikotyan
  */
 public interface DataStoreStats {
+
 	long keys();
 
 	long capacity();
@@ -29,9 +31,9 @@ public interface DataStoreStats {
 	double avgDist() throws StatsNotAvailableException;
 
 	double distanceStats() throws StatsNotAvailableException;
-	
+
 	StoreAccessStats getSessionAccessStats();
-	
+
 	StoreAccessStats getTotalAccessStats() throws StatsNotAvailableException;
 
 }

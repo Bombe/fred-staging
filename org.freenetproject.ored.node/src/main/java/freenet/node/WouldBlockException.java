@@ -10,29 +10,31 @@ import freenet.support.Logger.LogLevel;
  */
 public class WouldBlockException extends IncomingPacketFilterException {
 
-    private static final long serialVersionUID = -1;
-    private static volatile boolean logDEBUG;
+	private static final long serialVersionUID = -1;
 
-    static {
-        Logger.registerLogThresholdCallback(new LogThresholdCallback() {
+	private static volatile boolean logDEBUG;
 
-            @Override
-            public void shouldUpdate() {
-                logDEBUG = Logger.shouldLog(LogLevel.DEBUG, this);
-            }
-        });
-    }
+	static {
+		Logger.registerLogThresholdCallback(new LogThresholdCallback() {
 
-    public WouldBlockException(String string) {
-        super(string);
-    }
+			@Override
+			public void shouldUpdate() {
+				logDEBUG = Logger.shouldLog(LogLevel.DEBUG, this);
+			}
+		});
+	}
 
-    public WouldBlockException() {
-        super();
-    }
+	public WouldBlockException(String string) {
+		super(string);
+	}
 
-    @Override
-    protected boolean shouldFillInStackTrace() {
-        return logDEBUG;
-    }
+	public WouldBlockException() {
+		super();
+	}
+
+	@Override
+	protected boolean shouldFillInStackTrace() {
+		return logDEBUG;
+	}
+
 }

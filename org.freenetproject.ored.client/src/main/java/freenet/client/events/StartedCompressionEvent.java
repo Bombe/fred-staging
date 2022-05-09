@@ -11,16 +11,16 @@ import freenet.compress.Compressor.COMPRESSOR_TYPE;
 public class StartedCompressionEvent implements ClientEvent {
 
 	public final COMPRESSOR_TYPE codec;
-	
+
 	public StartedCompressionEvent(COMPRESSOR_TYPE codec) {
 		this.codec = codec;
 	}
-	
+
 	final static int code = 0x08;
-	
+
 	@Override
 	public String getDescription() {
-		return "Started compression attempt with "+codec.name;
+		return "Started compression attempt with " + codec.name;
 	}
 
 	@Override

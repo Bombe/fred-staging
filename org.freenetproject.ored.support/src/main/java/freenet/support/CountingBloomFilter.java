@@ -16,18 +16,16 @@ import java.nio.channels.FileChannel.MapMode;
  * @author sdiz
  */
 public class CountingBloomFilter extends BloomFilter {
-	
+
 	private boolean warnOnRemoveFromEmpty;
-	
+
 	public void setWarnOnRemoveFromEmpty() {
 		warnOnRemoveFromEmpty = true;
 	}
-	
+
 	/**
 	 * Constructor
-	 * 
-	 * @param length
-	 *            length in bits
+	 * @param length length in bits
 	 */
 	public CountingBloomFilter(int length, int k) {
 		super(length, k);
@@ -36,11 +34,8 @@ public class CountingBloomFilter extends BloomFilter {
 
 	/**
 	 * Constructor
-	 * 
-	 * @param file
-	 *            disk file
-	 * @param length
-	 *            length in bits
+	 * @param file disk file
+	 * @param length length in bits
 	 * @throws IOException
 	 */
 	protected CountingBloomFilter(File file, int length, int k) throws IOException {
@@ -55,7 +50,8 @@ public class CountingBloomFilter extends BloomFilter {
 			raf.setLength(fileLength);
 			channel = raf.getChannel();
 			filter = channel.map(MapMode.READ_WRITE, 0, fileLength).load();
-		} finally {
+		}
+		finally {
 			Closer.close(raf);
 			Closer.close(channel);
 		}
@@ -63,7 +59,7 @@ public class CountingBloomFilter extends BloomFilter {
 
 	public CountingBloomFilter(int length, int k, byte[] buffer) {
 		super(length, k);
-		assert(buffer.length == length / 4);
+		assert (buffer.length == length / 4);
 		filter = ByteBuffer.wrap(buffer);
 	}
 
@@ -95,8 +91,10 @@ public class CountingBloomFilter extends BloomFilter {
 		byte v = (byte) ((b >>> offset % 4 * 2) & 3);
 
 		if (v == 0 && warnOnRemoveFromEmpty)
-			Logger.error(this, "Unsetting bit but already unset - probable double remove, can cause false negatives, is very bad!", new Exception("error"));
-		
+			Logger.error(this,
+					"Unsetting bit but already unset - probable double remove, can cause false negatives, is very bad!",
+					new Exception("error"));
+
 		if (v == 0 || v == 3)
 			return; // overflow / underflow
 
@@ -113,9 +111,11 @@ public class CountingBloomFilter extends BloomFilter {
 			File tempFile = File.createTempFile("bloom-", ".tmp");
 			tempFile.deleteOnExit();
 			forkedFilter = new CountingBloomFilter(tempFile, length, k);
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			forkedFilter = new CountingBloomFilter(length, k);
-		} finally {
+		}
+		finally {
 			lock.writeLock().unlock();
 		}
 	}

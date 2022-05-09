@@ -7,43 +7,44 @@ import freenet.support.io.PersistentFileTracker;
 import java.io.File;
 
 public class TrivialPersistentFileTracker implements PersistentFileTracker {
-    
-    final File dir;
-    final FilenameGenerator fg;
 
-    public TrivialPersistentFileTracker(File dir, FilenameGenerator fg) {
-        this.dir = dir;
-        this.fg = fg;
-    }
+	final File dir;
 
-    @Override
-    public void register(File file) {
-        // Ignore.
-    }
+	final FilenameGenerator fg;
 
-    @Override
-    public void delayedFree(DelayedFree bucket, long commitID) {
-        bucket.realFree();
-    }
+	public TrivialPersistentFileTracker(File dir, FilenameGenerator fg) {
+		this.dir = dir;
+		this.fg = fg;
+	}
 
-    @Override
-    public File getDir() {
-        return dir;
-    }
+	@Override
+	public void register(File file) {
+		// Ignore.
+	}
 
-    @Override
-    public FilenameGenerator getGenerator() {
-        return fg;
-    }
+	@Override
+	public void delayedFree(DelayedFree bucket, long commitID) {
+		bucket.realFree();
+	}
 
-    @Override
-    public boolean checkDiskSpace(File file, int toWrite, int bufferSize) {
-        return true;
-    }
+	@Override
+	public File getDir() {
+		return dir;
+	}
 
-    @Override
-    public long commitID() {
-        return 1;
-    }
+	@Override
+	public FilenameGenerator getGenerator() {
+		return fg;
+	}
+
+	@Override
+	public boolean checkDiskSpace(File file, int toWrite, int bufferSize) {
+		return true;
+	}
+
+	@Override
+	public long commitID() {
+		return 1;
+	}
 
 }

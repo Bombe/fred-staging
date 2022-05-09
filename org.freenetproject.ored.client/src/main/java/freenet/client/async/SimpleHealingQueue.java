@@ -20,18 +20,22 @@ import freenet.clientlogger.Logger;
 import freenet.support.Logger.LogLevel;
 
 public class SimpleHealingQueue extends BaseClientPutter implements HealingQueue, PutCompletionCallback {
+
 	private static final long serialVersionUID = -2884613086588264043L;
 
 	final int maxRunning;
+
 	int counter;
+
 	InsertContext ctx;
+
 	final Map<Bucket, SingleBlockInserter> runningInserters;
 
-        private static volatile boolean logMINOR;
+	private static volatile boolean logMINOR;
 	static {
-		Logger.registerLogThresholdCallback(new LogThresholdCallback(){
+		Logger.registerLogThresholdCallback(new LogThresholdCallback() {
 			@Override
-			public void shouldUpdate(){
+			public void shouldUpdate() {
 				logMINOR = Logger.shouldLog(LogLevel.MINOR, this);
 			}
 		});
@@ -49,33 +53,36 @@ public class SimpleHealingQueue extends BaseClientPutter implements HealingQueue
 	public boolean innerQueue(Bucket data, byte[] cryptoKey, byte cryptoAlgorithm, ClientContext context) {
 		SingleBlockInserter sbi;
 		int ctr;
-		synchronized(this) {
+		synchronized (this) {
 			ctr = counter++;
-			if(runningInserters.size() > maxRunning) return false;
+			if (runningInserters.size() > maxRunning)
+				return false;
 			try {
-				sbi = new SingleBlockInserter(this, data, (short)-1,
-							FreenetURI.EMPTY_CHK_URI, ctx, realTimeFlag, this, false,
-							CHKBlock.DATA_LENGTH, ctr, false, false, data, context, false, true, 0, cryptoAlgorithm, cryptoKey);
-			} catch (Throwable e) {
-				Logger.error(this, "Caught trying to insert healing block: "+e, e);
+				sbi = new SingleBlockInserter(this, data, (short) -1, FreenetURI.EMPTY_CHK_URI, ctx, realTimeFlag, this,
+						false, CHKBlock.DATA_LENGTH, ctr, false, false, data, context, false, true, 0, cryptoAlgorithm,
+						cryptoKey);
+			}
+			catch (Throwable e) {
+				Logger.error(this, "Caught trying to insert healing block: " + e, e);
 				return false;
 			}
 			runningInserters.put(data, sbi);
 		}
 		try {
 			sbi.schedule(context);
-			if(logMINOR)
-				Logger.minor(this, "Started healing insert "+ctr+" for "+data);
+			if (logMINOR)
+				Logger.minor(this, "Started healing insert " + ctr + " for " + data);
 			return true;
-		} catch (Throwable e) {
-			Logger.error(this, "Caught trying to insert healing block: "+e, e);
+		}
+		catch (Throwable e) {
+			Logger.error(this, "Caught trying to insert healing block: " + e, e);
 			return false;
 		}
 	}
 
 	@Override
 	public void queue(Bucket data, byte[] cryptoKey, byte cryptoAlgorithm, ClientContext context) {
-		if(!innerQueue(data, cryptoKey, cryptoAlgorithm, context))
+		if (!innerQueue(data, cryptoKey, cryptoAlgorithm, context))
 			data.free();
 	}
 
@@ -96,25 +103,27 @@ public class SimpleHealingQueue extends BaseClientPutter implements HealingQueue
 
 	@Override
 	public void onSuccess(ClientPutState state, ClientContext context) {
-		SingleBlockInserter sbi = (SingleBlockInserter)state;
+		SingleBlockInserter sbi = (SingleBlockInserter) state;
 		Bucket data = (Bucket) sbi.getToken();
-		synchronized(this) {
+		synchronized (this) {
 			runningInserters.remove(data);
 		}
-		if(logMINOR)
-			Logger.minor(this, "Successfully inserted healing block: "+sbi.getURINoEncode()+" for "+data+" ("+sbi.token+ ')');
+		if (logMINOR)
+			Logger.minor(this, "Successfully inserted healing block: " + sbi.getURINoEncode() + " for " + data + " ("
+					+ sbi.token + ')');
 		data.free();
 	}
 
 	@Override
 	public void onFailure(InsertException e, ClientPutState state, ClientContext context) {
-		SingleBlockInserter sbi = (SingleBlockInserter)state;
+		SingleBlockInserter sbi = (SingleBlockInserter) state;
 		Bucket data = (Bucket) sbi.getToken();
-		synchronized(this) {
+		synchronized (this) {
 			runningInserters.remove(data);
 		}
-		if(logMINOR)
-			Logger.minor(this, "Failed to insert healing block: "+sbi.getURINoEncode()+" : "+e+" for "+data+" ("+sbi.token+ ')', e);
+		if (logMINOR)
+			Logger.minor(this, "Failed to insert healing block: " + sbi.getURINoEncode() + " : " + e + " for " + data
+					+ " (" + sbi.token + ')', e);
 		data.free();
 	}
 
@@ -126,13 +135,14 @@ public class SimpleHealingQueue extends BaseClientPutter implements HealingQueue
 	@Override
 	public void onTransition(ClientPutState oldState, ClientPutState newState, ClientContext context) {
 		// Should never happen
-		Logger.error(this, "impossible: onTransition on SimpleHealingQueue from "+oldState+" to "+newState, new Exception("debug"));
+		Logger.error(this, "impossible: onTransition on SimpleHealingQueue from " + oldState + " to " + newState,
+				new Exception("debug"));
 	}
 
 	@Override
 	public void onMetadata(Metadata m, ClientPutState state, ClientContext context) {
 		// Should never happen
-		Logger.error(this, "Got metadata on SimpleHealingQueue from "+state+": "+m, new Exception("debug"));
+		Logger.error(this, "Got metadata on SimpleHealingQueue from " + state + ": " + m, new Exception("debug"));
 	}
 
 	@Override
@@ -166,19 +176,19 @@ public class SimpleHealingQueue extends BaseClientPutter implements HealingQueue
 	}
 
 	@Override
-	public void onMetadata(Bucket meta, ClientPutState state,
-			ClientContext context) {
+	public void onMetadata(Bucket meta, ClientPutState state, ClientContext context) {
 		Logger.error(this, "onMetadata() in SimpleHealingQueue - impossible", new Exception("error"));
 		meta.free();
 	}
 
-    @Override
-    public void innerOnResume(ClientContext context) {
-        // Do nothing. Not persisted.
-    }
+	@Override
+	public void innerOnResume(ClientContext context) {
+		// Do nothing. Not persisted.
+	}
 
-    @Override
-    protected ClientBaseCallback getCallback() {
-        return null;
-    }
+	@Override
+	protected ClientBaseCallback getCallback() {
+		return null;
+	}
+
 }

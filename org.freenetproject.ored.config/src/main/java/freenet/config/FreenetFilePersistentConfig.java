@@ -12,24 +12,29 @@ public class FreenetFilePersistentConfig extends FilePersistentConfig {
 	final protected static String DEFAULT_HEADER = "This file is overwritten whenever Freenet shuts down, so only edit it when the node is not running.";
 
 	private volatile boolean isWritingConfig = false;
+
 	private volatile boolean hasNodeStarted = false;
 
 	private Ticker ticker;
+
 	public final Runnable thread = new Runnable() {
 		@Override
 		public void run() {
 			synchronized (this) {
-				while(!hasNodeStarted){
+				while (!hasNodeStarted) {
 					try {
 						wait(1000);
-					} catch (InterruptedException e) {}
+					}
+					catch (InterruptedException e) {
+					}
 				}
 			}
 
 			try {
 				innerStore();
-			} catch (IOException e) {
-				String err = "Cannot store config: "+e;
+			}
+			catch (IOException e) {
+				String err = "Cannot store config: " + e;
 				Logger.error(this, err, e);
 				System.err.println(err);
 				e.printStackTrace();
@@ -46,22 +51,23 @@ public class FreenetFilePersistentConfig extends FilePersistentConfig {
 
 	public static FreenetFilePersistentConfig constructFreenetFilePersistentConfig(File f) throws IOException {
 		File filename = f;
-		File tempFilename = new File(f.getPath()+".tmp");
+		File tempFilename = new File(f.getPath() + ".tmp");
 		return new FreenetFilePersistentConfig(load(filename, tempFilename), filename, tempFilename);
 	}
 
 	@Override
 	public void store() {
-	    // FIXME how to do this without duplicating code and making finishedInit visible?
-		synchronized(this) {
-	        if(!finishedInit) {
-	            writeOnFinished = true;
-	            return;
-	        }
+		// FIXME how to do this without duplicating code and making finishedInit visible?
+		synchronized (this) {
+			if (!finishedInit) {
+				writeOnFinished = true;
+				return;
+			}
 		}
-		synchronized(storeSync) {
-			if(isWritingConfig || ticker == null){
-				Logger.normal(this, "Already writing the config file to disk or the node object hasn't been set : refusing to proceed");
+		synchronized (storeSync) {
+			if (isWritingConfig || ticker == null) {
+				Logger.normal(this,
+						"Already writing the config file to disk or the node object hasn't been set : refusing to proceed");
 				return;
 			}
 			isWritingConfig = true;
@@ -71,15 +77,17 @@ public class FreenetFilePersistentConfig extends FilePersistentConfig {
 	}
 
 	public void finishedInit(Ticker ticker) {
-        this.ticker = ticker;
+		this.ticker = ticker;
 		super.finishedInit();
 	}
 
 	public void setHasNodeStarted() {
 		synchronized (this) {
-			if(hasNodeStarted) Logger.error(this, "It has already been called! that shouldn't happen!");
+			if (hasNodeStarted)
+				Logger.error(this, "It has already been called! that shouldn't happen!");
 			this.hasNodeStarted = true;
 			notifyAll();
 		}
 	}
+
 }

@@ -41,51 +41,51 @@ import freenet.support.Logger.LogLevel;
  * A first time wizard aimed to ease the configuration of the node.
  */
 public class FirstTimeWizardToadlet extends Toadlet {
+
 	private final NodeClientCore core;
+
 	private final EnumMap<WIZARD_STEP, Step> steps;
+
 	private final MISC stepMISC;
+
 	private final SECURITY_NETWORK stepSECURITY_NETWORK;
+
 	private final SECURITY_PHYSICAL stepSECURITY_PHYSICAL;
 
-        private static volatile boolean logMINOR;
+	private static volatile boolean logMINOR;
 	static {
-		Logger.registerLogThresholdCallback(new LogThresholdCallback(){
+		Logger.registerLogThresholdCallback(new LogThresholdCallback() {
 			@Override
-			public void shouldUpdate(){
+			public void shouldUpdate() {
 				logMINOR = Logger.shouldLog(LogLevel.MINOR, this);
 			}
 		});
 	}
 
 	public enum WIZARD_STEP {
-		WELCOME,
-		BROWSER_WARNING,
-		MISC,
-		OPENNET,
-		SECURITY_NETWORK,
-		SECURITY_PHYSICAL,
-		NAME_SELECTION,
-		DATASTORE_SIZE,
-		BANDWIDTH,
-		BANDWIDTH_MONTHLY,
-		BANDWIDTH_RATE,
-		COMPLETE //Redirects to front page
+
+		WELCOME, BROWSER_WARNING, MISC, OPENNET, SECURITY_NETWORK, SECURITY_PHYSICAL, NAME_SELECTION, DATASTORE_SIZE, BANDWIDTH, BANDWIDTH_MONTHLY, BANDWIDTH_RATE, COMPLETE // Redirects
+																																												// to
+																																												// front
+																																												// page
+
 	}
 
 	public enum WIZARD_PRESET {
-		LOW,
-		HIGH
+
+		LOW, HIGH
+
 	}
 
 	FirstTimeWizardToadlet(HighLevelSimpleClient client, Node node, NodeClientCore core) {
-		//Generic Toadlet-related initialization.
+		// Generic Toadlet-related initialization.
 		super(client);
 		this.core = core;
 		Config config = node.config;
 
 		addWizardConfiguration(config);
 
-		//Add step handlers that aren't set by presets
+		// Add step handlers that aren't set by presets
 		steps = new EnumMap<WIZARD_STEP, Step>(WIZARD_STEP.class);
 		steps.put(WIZARD_STEP.WELCOME, new WELCOME(config));
 		steps.put(WIZARD_STEP.BROWSER_WARNING, new BROWSER_WARNING());
@@ -96,7 +96,7 @@ public class FirstTimeWizardToadlet extends Toadlet {
 		steps.put(WIZARD_STEP.BANDWIDTH_MONTHLY, new BANDWIDTH_MONTHLY(core, config));
 		steps.put(WIZARD_STEP.BANDWIDTH_RATE, new BANDWIDTH_RATE(core, config));
 
-		//Add step handlers that are set by presets
+		// Add step handlers that are set by presets
 		stepMISC = new MISC(core, config);
 		steps.put(WIZARD_STEP.MISC, stepMISC);
 
@@ -111,8 +111,11 @@ public class FirstTimeWizardToadlet extends Toadlet {
 
 	private void addWizardConfiguration(Config configuration) {
 		SubConfig wizardConfiguration = new SubConfig("firstTimeWizard", configuration);
-		wizardConfiguration.register("loadUPnPPlugin", true, 0, true, false, "FirstTimeWizardToadlet.loadUPnPPlugin", "FirstTimeWizardToadlet.loadUPnPPluginLong", createLoadUPnPPluginCallback());
-		wizardConfiguration.register("enableAutoUpdater", true, 1, true, false, "FirstTimeWizardToadlet.enableAutoUpdater", "FirstTimeWizardToadlet.enableAutoUpdaterLong", createEnableAutoUpdaterCallback());
+		wizardConfiguration.register("loadUPnPPlugin", true, 0, true, false, "FirstTimeWizardToadlet.loadUPnPPlugin",
+				"FirstTimeWizardToadlet.loadUPnPPluginLong", createLoadUPnPPluginCallback());
+		wizardConfiguration.register("enableAutoUpdater", true, 1, true, false,
+				"FirstTimeWizardToadlet.enableAutoUpdater", "FirstTimeWizardToadlet.enableAutoUpdaterLong",
+				createEnableAutoUpdaterCallback());
 		loadUPnPPlugin = wizardConfiguration.getBoolean("loadUPnPPlugin");
 		enableAutoUpdater = wizardConfiguration.getBoolean("enableAutoUpdater");
 		wizardConfiguration.finishedInitialization();
@@ -150,49 +153,60 @@ public class FirstTimeWizardToadlet extends Toadlet {
 		};
 	}
 
-	public void handleMethodGET(URI uri, HTTPRequest request, ToadletContext ctx) throws ToadletContextClosedException, IOException {
-        if(!ctx.checkFullAccess(this))
-            return;
+	public void handleMethodGET(URI uri, HTTPRequest request, ToadletContext ctx)
+			throws ToadletContextClosedException, IOException {
+		if (!ctx.checkFullAccess(this))
+			return;
 
-		//Read the current step from the URL parameter, defaulting to the welcome page if unset or invalid..
+		// Read the current step from the URL parameter, defaulting to the welcome page if
+		// unset or invalid..
 		WIZARD_STEP currentStep;
 		try {
 			currentStep = WIZARD_STEP.valueOf(request.getParam("step", WIZARD_STEP.WELCOME.toString()));
-		} catch (IllegalArgumentException e) {
+		}
+		catch (IllegalArgumentException e) {
 			currentStep = WIZARD_STEP.WELCOME;
 		}
 
 		PersistFields persistFields = new PersistFields(request);
 
-		//Skip the browser warning page if using Chrome in incognito mode
-		if (currentStep == WIZARD_STEP.BROWSER_WARNING &&
-				request.isChrome() && request.isIncognito()) {
+		// Skip the browser warning page if using Chrome in incognito mode
+		if (currentStep == WIZARD_STEP.BROWSER_WARNING && request.isChrome() && request.isIncognito()) {
 			super.writeTemporaryRedirect(ctx, "Skipping unneeded warning",
-			        persistFields.appendTo(TOADLET_URL+"?step=MISC"));
+					persistFields.appendTo(TOADLET_URL + "?step=MISC"));
 			return;
-		} else if (currentStep == WIZARD_STEP.MISC && persistFields.isUsingPreset()) {
-			/*If using a preset, skip the miscellaneous page as both high and low security set those settings.
-			 * This overrides the persistence fields.*/
-			StringBuilder redirectBase = new StringBuilder(TOADLET_URL+"?step=");
+		}
+		else if (currentStep == WIZARD_STEP.MISC && persistFields.isUsingPreset()) {
+			/*
+			 * If using a preset, skip the miscellaneous page as both high and low
+			 * security set those settings. This overrides the persistence fields.
+			 */
+			StringBuilder redirectBase = new StringBuilder(TOADLET_URL + "?step=");
 			if (persistFields.preset == WIZARD_PRESET.HIGH) {
-				redirectBase.append("SECURITY_NETWORK&preset=HIGH&confirm=true&opennet=false&security-levels.networkThreatLevel=HIGH");
-			} else /*if (persistFields.preset == WIZARD_PRESET.LOW)*/ {
+				redirectBase.append(
+						"SECURITY_NETWORK&preset=HIGH&confirm=true&opennet=false&security-levels.networkThreatLevel=HIGH");
+			}
+			else /* if (persistFields.preset == WIZARD_PRESET.LOW) */ {
 				redirectBase.append("DATASTORE_SIZE&preset=LOW&opennet=true");
 			}
-			//addPersistFields() is not used here because the fields are overridden.
+			// addPersistFields() is not used here because the fields are overridden.
 			super.writeTemporaryRedirect(ctx, "Skipping to next necessary step", redirectBase.toString());
 			return;
-		} else if (currentStep == WIZARD_STEP.SECURITY_NETWORK && !request.isParameterSet("opennet")) {
-			//If opennet isn't defined when attempting to set network security level, ask again.
+		}
+		else if (currentStep == WIZARD_STEP.SECURITY_NETWORK && !request.isParameterSet("opennet")) {
+			// If opennet isn't defined when attempting to set network security level, ask
+			// again.
 			super.writeTemporaryRedirect(ctx, "Need opennet choice",
-			        persistFields.appendTo(TOADLET_URL+"?step=OPENNET"));
+					persistFields.appendTo(TOADLET_URL + "?step=OPENNET"));
 			return;
-		} else if (currentStep == WIZARD_STEP.NAME_SELECTION && core.node.isOpennetEnabled()) {
-			//Skip node name selection if not in darknet mode.
+		}
+		else if (currentStep == WIZARD_STEP.NAME_SELECTION && core.node.isOpennetEnabled()) {
+			// Skip node name selection if not in darknet mode.
 			super.writeTemporaryRedirect(ctx, "Skip name selection",
-			        persistFields.appendTo(stepURL(WIZARD_STEP.DATASTORE_SIZE.name())));
+					persistFields.appendTo(stepURL(WIZARD_STEP.DATASTORE_SIZE.name())));
 			return;
-		} else if (currentStep == WIZARD_STEP.COMPLETE) {
+		}
+		else if (currentStep == WIZARD_STEP.COMPLETE) {
 			super.writeTemporaryRedirect(ctx, "Wizard complete", WelcomeToadlet.PATH);
 			return;
 		}
@@ -210,43 +224,50 @@ public class FirstTimeWizardToadlet extends Toadlet {
 		return logMINOR;
 	}
 
-	public void handleMethodPOST(URI uri, HTTPRequest request, ToadletContext ctx) throws ToadletContextClosedException, IOException {
-        if(!ctx.checkFullAccess(this))
-            return;
+	public void handleMethodPOST(URI uri, HTTPRequest request, ToadletContext ctx)
+			throws ToadletContextClosedException, IOException {
+		if (!ctx.checkFullAccess(this))
+			return;
 
 		WIZARD_STEP currentStep;
 		try {
-			//Attempt to parse the current step, defaulting to WELCOME if unspecified or invalid.
+			// Attempt to parse the current step, defaulting to WELCOME if unspecified or
+			// invalid.
 			String currentValue = request.getPartAsStringFailsafe("step", 20);
 			currentStep = currentValue.isEmpty() ? WIZARD_STEP.WELCOME : WIZARD_STEP.valueOf(currentValue);
-		} catch (IllegalArgumentException e) {
-			//Failed to parse enum value, default to welcome.
-			//TODO: Should this be an error page instead?
+		}
+		catch (IllegalArgumentException e) {
+			// Failed to parse enum value, default to welcome.
+			// TODO: Should this be an error page instead?
 			currentStep = WIZARD_STEP.WELCOME;
 		}
 
 		PersistFields persistFields = new PersistFields(request);
 		String redirectTarget;
 
-		if (currentStep.equals(WIZARD_STEP.WELCOME) &&
-		        (request.isPartSet("presetLow") || request.isPartSet("presetHigh") || request.isPartSet("presetNone"))) {
+		if (currentStep.equals(WIZARD_STEP.WELCOME) && (request.isPartSet("presetLow")
+				|| request.isPartSet("presetHigh") || request.isPartSet("presetNone"))) {
 
-			/*Apply presets and UPnP is enabled first to allow it time to load (and thus enable
-			  autodetection) before hitting the bandwidth page. This also effectively sets the preset field.*/
-			StringBuilder redirectTo = new StringBuilder(TOADLET_URL+"?step=BROWSER_WARNING&incognito=");
+			/*
+			 * Apply presets and UPnP is enabled first to allow it time to load (and thus
+			 * enable autodetection) before hitting the bandwidth page. This also
+			 * effectively sets the preset field.
+			 */
+			StringBuilder redirectTo = new StringBuilder(TOADLET_URL + "?step=BROWSER_WARNING&incognito=");
 			redirectTo.append(request.getPartAsStringFailsafe("incognito", 5));
 
-			//Translate button name to preset value on the query string.
+			// Translate button name to preset value on the query string.
 			if (request.isPartSet("presetLow")) {
-				//Low security preset
+				// Low security preset
 				stepMISC.setUPnP(loadUPnPPlugin);
 				stepMISC.setAutoUpdate(enableAutoUpdater);
 				redirectTo.append("&preset=LOW&opennet=true");
 				stepSECURITY_NETWORK.setThreatLevel(SecurityLevels.NETWORK_THREAT_LEVEL.LOW);
 				stepSECURITY_PHYSICAL.setThreatLevel(SecurityLevels.PHYSICAL_THREAT_LEVEL.NORMAL,
-				        stepSECURITY_PHYSICAL.getCurrentLevel());
-			} else if (request.isPartSet("presetHigh")) {
-				//High security preset
+						stepSECURITY_PHYSICAL.getCurrentLevel());
+			}
+			else if (request.isPartSet("presetHigh")) {
+				// High security preset
 				stepMISC.setUPnP(loadUPnPPlugin);
 				stepMISC.setAutoUpdate(enableAutoUpdater);
 				redirectTo.append("&preset=HIGH&opennet=false");
@@ -254,55 +275,58 @@ public class FirstTimeWizardToadlet extends Toadlet {
 
 			super.writeTemporaryRedirect(ctx, "Wizard set preset", redirectTo.toString());
 			return;
-		} else if (request.isPartSet("back")) {
-			//User chose back, return to previous page.
+		}
+		else if (request.isPartSet("back")) {
+			// User chose back, return to previous page.
 			redirectTarget = getPreviousStep(currentStep, persistFields.preset).name();
-		} else {
+		}
+		else {
 			try {
 				redirectTarget = steps.get(currentStep).postStep(request);
 
-				//Opennet step can change the persisted value for opennet.
+				// Opennet step can change the persisted value for opennet.
 				if (currentStep == WIZARD_STEP.OPENNET) {
 					try {
-						HTTPRequest newRequest = new ToadletHTTPRequest(new URI(
-						        stepURL(redirectTarget)), "GET");
-						//Only continue if a value for opennet has been selected.
+						HTTPRequest newRequest = new ToadletHTTPRequest(new URI(stepURL(redirectTarget)), "GET");
+						// Only continue if a value for opennet has been selected.
 						if (newRequest.isPartSet("opennet")) {
 							redirectTarget = WIZARD_STEP.SECURITY_NETWORK.name();
 							persistFields = new PersistFields(persistFields.preset, newRequest);
 						}
-					} catch (URISyntaxException e) {
-						Logger.error(this, "Unexpected invalid query string from OPENNET step! "+e, e);
+					}
+					catch (URISyntaxException e) {
+						Logger.error(this, "Unexpected invalid query string from OPENNET step! " + e, e);
 						redirectTarget = WIZARD_STEP.WELCOME.name();
 					}
 				}
-			} catch (IOException e) {
+			}
+			catch (IOException e) {
 				String title;
 				if (e.getMessage().equals("cantWriteNewMasterKeysFile")) {
-					//Recognized as being unable to write to the master keys file.
+					// Recognized as being unable to write to the master keys file.
 					title = NodeL10n.getBase().getString("SecurityLevels.cantWriteNewMasterKeysFileTitle");
-				} else {
-					//Some other error.
+				}
+				else {
+					// Some other error.
 					title = NodeL10n.getBase().getString("Toadlet.internalErrorPleaseReport");
 				}
 
-				//Very loud error message, with descriptive title and header if possible.
-				StringBuilder msg = new StringBuilder("<html><head><title>").append(title).
-				        append("</title></head><body><h1>").append(title).append("</h1><pre>");
+				// Very loud error message, with descriptive title and header if possible.
+				StringBuilder msg = new StringBuilder("<html><head><title>").append(title)
+						.append("</title></head><body><h1>").append(title).append("</h1><pre>");
 
-				//Print stack trace.
+				// Print stack trace.
 				StringWriter sw = new StringWriter();
 				PrintWriter pw = new PrintWriter(sw);
 				e.printStackTrace(pw);
 				pw.flush();
 				msg.append(sw.toString()).append("</pre>");
 
-				//Include internal exception if one exists.
+				// Include internal exception if one exists.
 				Throwable internal = e.getCause();
 				if (internal != null) {
-					msg.append("<h1>").
-					        append(NodeL10n.getBase().getString("Toadlet.internalErrorPleaseReport")).
-					        append("</h1>").append("<pre>");
+					msg.append("<h1>").append(NodeL10n.getBase().getString("Toadlet.internalErrorPleaseReport"))
+							.append("</h1>").append("<pre>");
 
 					sw = new StringWriter();
 					pw = new PrintWriter(sw);
@@ -319,60 +343,64 @@ public class FirstTimeWizardToadlet extends Toadlet {
 	}
 
 	private String stepURL(String step) {
-		return TOADLET_URL+"?step="+step;
+		return TOADLET_URL + "?step=" + step;
 	}
 
-	//FIXME: There really has to be a better way to find the previous step, but with an enum there's no decrement.
-	//FIXME: Would a set work better than an enum?
+	// FIXME: There really has to be a better way to find the previous step, but with an
+	// enum there's no decrement.
+	// FIXME: Would a set work better than an enum?
 	public static WIZARD_STEP getPreviousStep(WIZARD_STEP currentStep, WIZARD_PRESET preset) {
 
-		//Might be obvious, but still: No breaks needed in cases because their only contents are returns.
+		// Might be obvious, but still: No breaks needed in cases because their only
+		// contents are returns.
 
-		//First pages for the presets
+		// First pages for the presets
 		if (preset == WIZARD_PRESET.HIGH) {
 			switch (currentStep) {
-				case SECURITY_NETWORK:
-				case SECURITY_PHYSICAL:
-					//Go back to the beginning from the warning or the physical security page.
-					return WIZARD_STEP.WELCOME;
-				default:
-					//do nothing
-			}
-		} else  if (preset == WIZARD_PRESET.LOW) {
-			switch (currentStep) {
-				case DATASTORE_SIZE:
-					//Go back to the beginning from the datastore page.
-					return WIZARD_STEP.WELCOME;
-				default:
-					//do nothing
-			}
-		}
-
-		//Otherwise normal order.
-		switch (currentStep) {
-			case MISC:
-			case BROWSER_WARNING:
-				return WIZARD_STEP.WELCOME;
-			case OPENNET:
-				return WIZARD_STEP.MISC;
 			case SECURITY_NETWORK:
-				return WIZARD_STEP.OPENNET;
 			case SECURITY_PHYSICAL:
-				return WIZARD_STEP.SECURITY_NETWORK;
-			case NAME_SELECTION:
-				return WIZARD_STEP.SECURITY_PHYSICAL;
-			case DATASTORE_SIZE:
-				return WIZARD_STEP.NAME_SELECTION;
-			case BANDWIDTH:
-				return WIZARD_STEP.DATASTORE_SIZE;
-			case BANDWIDTH_MONTHLY:
-			case BANDWIDTH_RATE:
-				return WIZARD_STEP.BANDWIDTH;
+				// Go back to the beginning from the warning or the physical security
+				// page.
+				return WIZARD_STEP.WELCOME;
 			default:
-				//do nothing
+				// do nothing
+			}
+		}
+		else if (preset == WIZARD_PRESET.LOW) {
+			switch (currentStep) {
+			case DATASTORE_SIZE:
+				// Go back to the beginning from the datastore page.
+				return WIZARD_STEP.WELCOME;
+			default:
+				// do nothing
+			}
 		}
 
-		//Should be matched by this point, unknown step.
+		// Otherwise normal order.
+		switch (currentStep) {
+		case MISC:
+		case BROWSER_WARNING:
+			return WIZARD_STEP.WELCOME;
+		case OPENNET:
+			return WIZARD_STEP.MISC;
+		case SECURITY_NETWORK:
+			return WIZARD_STEP.OPENNET;
+		case SECURITY_PHYSICAL:
+			return WIZARD_STEP.SECURITY_NETWORK;
+		case NAME_SELECTION:
+			return WIZARD_STEP.SECURITY_PHYSICAL;
+		case DATASTORE_SIZE:
+			return WIZARD_STEP.NAME_SELECTION;
+		case BANDWIDTH:
+			return WIZARD_STEP.DATASTORE_SIZE;
+		case BANDWIDTH_MONTHLY:
+		case BANDWIDTH_RATE:
+			return WIZARD_STEP.BANDWIDTH;
+		default:
+			// do nothing
+		}
+
+		// Should be matched by this point, unknown step.
 		return WIZARD_STEP.WELCOME;
 	}
 
@@ -380,4 +408,5 @@ public class FirstTimeWizardToadlet extends Toadlet {
 	public String path() {
 		return TOADLET_URL;
 	}
+
 }

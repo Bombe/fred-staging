@@ -1,5 +1,5 @@
 /*
- * freenet0.7 - 
+ * freenet0.7 -
  * Copyright (C) 2006 David Roden
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,9 +24,9 @@ import java.net.InetAddress;
 import junit.framework.TestCase;
 
 /**
- * Test case for the {@link freenet.io.Inet6AddressMatcher} class. Contains some
- * very basic tests. Feel free to add more complicated tests!
- * 
+ * Test case for the {@link freenet.io.Inet6AddressMatcher} class. Contains some very
+ * basic tests. Feel free to add more complicated tests!
+ *
  * @author David Roden &lt;droden@gmail.com&gt;
  * @version $Id: Inet6AddressMatcherTest.java 10490 2006-09-20 00:07:46Z toad $
  */

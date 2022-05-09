@@ -4,5 +4,5 @@ package freenet.bucket;
 public interface NotPersistentBucket extends Bucket {
 
 	// No methods
-	
+
 }

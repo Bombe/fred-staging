@@ -8,21 +8,20 @@ import freenet.l10n.NodeL10n;
 import freenet.support.HTMLNode;
 
 public class RevocationKeyFoundUserAlert extends BaseNodeUserAlert {
-	public RevocationKeyFoundUserAlert(String msg, boolean disabledNotBlown){
-		super(false,
-				getTitle(disabledNotBlown),
-				getText(disabledNotBlown, msg),
-				getText(disabledNotBlown, msg),
-				getHTML(disabledNotBlown, msg), 
-				FCPUserAlert.CRITICAL_ERROR, true, null, false, null);
+
+	public RevocationKeyFoundUserAlert(String msg, boolean disabledNotBlown) {
+		super(false, getTitle(disabledNotBlown), getText(disabledNotBlown, msg), getText(disabledNotBlown, msg),
+				getHTML(disabledNotBlown, msg), FCPUserAlert.CRITICAL_ERROR, true, null, false, null);
 	}
-	
+
 	private static HTMLNode getHTML(boolean disabledNotBlown, String msg) {
 		HTMLNode div = new HTMLNode("div");
-		if(disabledNotBlown) {
+		if (disabledNotBlown) {
 			div.addChild("p", NodeL10n.getBase().getString("RevocationKeyFoundUserAlert.textDisabled"));
-			div.addChild("p", NodeL10n.getBase().getString("RevocationKeyFoundUserAlert.textDisabledDetail", "message", msg));
-		} else {
+			div.addChild("p",
+					NodeL10n.getBase().getString("RevocationKeyFoundUserAlert.textDisabledDetail", "message", msg));
+		}
+		else {
 			div.addChild("p", NodeL10n.getBase().getString("RevocationKeyFoundUserAlert.text"));
 			div.addChild("p", NodeL10n.getBase().getString("RevocationKeyFoundUserAlert.textDetail", "message", msg));
 		}
@@ -30,25 +29,26 @@ public class RevocationKeyFoundUserAlert extends BaseNodeUserAlert {
 	}
 
 	private static String getText(boolean disabledNotBlown, String msg) {
-		if(disabledNotBlown) {
-			return NodeL10n.getBase().getString("RevocationKeyFoundUserAlert.textDisabled") + " " +
-				NodeL10n.getBase().getString("RevocationKeyFoundUserAlert.textDisabledDetail", "message", msg);
-		} else {
-			return NodeL10n.getBase().getString("RevocationKeyFoundUserAlert.text") + " " +
-				NodeL10n.getBase().getString("RevocationKeyFoundUserAlert.textDetail", "message", msg);
+		if (disabledNotBlown) {
+			return NodeL10n.getBase().getString("RevocationKeyFoundUserAlert.textDisabled") + " "
+					+ NodeL10n.getBase().getString("RevocationKeyFoundUserAlert.textDisabledDetail", "message", msg);
+		}
+		else {
+			return NodeL10n.getBase().getString("RevocationKeyFoundUserAlert.text") + " "
+					+ NodeL10n.getBase().getString("RevocationKeyFoundUserAlert.textDetail", "message", msg);
 		}
 	}
 
 	private static String getTitle(boolean disabledNotBlown) {
-		if(disabledNotBlown)
+		if (disabledNotBlown)
 			return NodeL10n.getBase().getString("RevocationKeyFoundUserAlert.titleDisabled");
 		else
 			return NodeL10n.getBase().getString("RevocationKeyFoundUserAlert.title");
 	}
 
 	@Override
-	public void isValid(boolean b){
+	public void isValid(boolean b) {
 		// We ignore it : it's ALWAYS valid !
 	}
-	
+
 }

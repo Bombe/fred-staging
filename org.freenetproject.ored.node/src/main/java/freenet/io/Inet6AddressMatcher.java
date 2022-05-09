@@ -28,6 +28,7 @@ import freenet.support.transport.ip.AddressIdentifier.AddressType;
  * @version $Id$
  */
 public class Inet6AddressMatcher implements AddressMatcher {
+
 	public AddressType getAddressType() {
 		return AddressType.IPv6;
 	}
@@ -36,8 +37,9 @@ public class Inet6AddressMatcher implements AddressMatcher {
 	static {
 		Arrays.fill(FULL_MASK, (byte) 0xff);
 	}
-	
+
 	private byte[] address;
+
 	private byte[] netmask;
 
 	public Inet6AddressMatcher(String pattern) {
@@ -46,7 +48,8 @@ public class Inet6AddressMatcher implements AddressMatcher {
 			String netmaskString = pattern.substring(pattern.indexOf('/') + 1).trim();
 			if (netmaskString.indexOf(':') != -1) {
 				netmask = convertToBytes(netmaskString);
-			} else {
+			}
+			else {
 				netmask = new byte[16];
 				int bits = Integer.parseInt(netmaskString);
 				if (bits > 128 || bits < 0)
@@ -56,8 +59,10 @@ public class Inet6AddressMatcher implements AddressMatcher {
 					bits = Math.max(bits - 8, 0);
 				}
 			}
-			if(Arrays.equals(netmask, FULL_MASK)) netmask = FULL_MASK;
-		} else {
+			if (Arrays.equals(netmask, FULL_MASK))
+				netmask = FULL_MASK;
+		}
+		else {
 			address = convertToBytes(pattern);
 			netmask = FULL_MASK;
 		}
@@ -84,7 +89,8 @@ public class Inet6AddressMatcher implements AddressMatcher {
 
 	@Override
 	public boolean matches(InetAddress address) {
-		if (!(address instanceof Inet6Address)) return false;
+		if (!(address instanceof Inet6Address))
+			return false;
 		byte[] addressBytes = address.getAddress();
 		for (int index = 0; index < 16; index++) {
 			if ((addressBytes[index] & netmask[index]) != (this.address[index] & netmask[index])) {
@@ -100,17 +106,18 @@ public class Inet6AddressMatcher implements AddressMatcher {
 
 	@Override
 	public String getHumanRepresentation() {
-		if(netmask == FULL_MASK)
+		if (netmask == FULL_MASK)
 			return convertToString(address);
 		else
-			return convertToString(address)+'/'+convertToString(netmask);
+			return convertToString(address) + '/' + convertToString(netmask);
 	}
 
 	private String convertToString(byte[] addr) {
-		StringBuilder sb = new StringBuilder(4*8+7);
-		for(int i=0;i<8;i++) {
-			if(i != 0) sb.append(':');
-			int token = ((addr[i*2] & 0xff) << 8) + (addr[i*2+1] & 0xff);
+		StringBuilder sb = new StringBuilder(4 * 8 + 7);
+		for (int i = 0; i < 8; i++) {
+			if (i != 0)
+				sb.append(':');
+			int token = ((addr[i * 2] & 0xff) << 8) + (addr[i * 2 + 1] & 0xff);
 			sb.append(Integer.toHexString(token));
 		}
 		return sb.toString();

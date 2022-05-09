@@ -13,9 +13,11 @@ import freenet.pluginmanager.FredPluginL10n;
 public class WebInterface {
 
 	private final Vector<WebInterfaceToadlet> _toadlets;
+
 	private final Vector<String> _categories;
 
 	private final ToadletContainer _container;
+
 	private final PageMaker _pageMaker;
 
 	public WebInterface(final PluginContext context) {
@@ -46,6 +48,7 @@ public class WebInterface {
 	}
 
 	public void registerInvisible(Toadlet toadlet) {
-		_container.register(toadlet , null, toadlet.path(), true, false);
+		_container.register(toadlet, null, toadlet.path(), true, false);
 	}
+
 }

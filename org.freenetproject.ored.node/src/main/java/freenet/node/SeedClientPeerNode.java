@@ -13,11 +13,13 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 
 /**
  * Seed node's representation of a client node connecting in order to announce.
+ *
  * @author toad
  */
 public class SeedClientPeerNode extends PeerNode {
 
-	public SeedClientPeerNode(SimpleFieldSet fs, Node node2, NodeCrypto crypto) throws FSParseException, PeerParseException, ReferenceSignatureVerificationException, PeerTooOldException {
+	public SeedClientPeerNode(SimpleFieldSet fs, Node node2, NodeCrypto crypto)
+			throws FSParseException, PeerParseException, ReferenceSignatureVerificationException, PeerTooOldException {
 		super(fs, node2, crypto, false);
 	}
 
@@ -43,24 +45,28 @@ public class SeedClientPeerNode extends PeerNode {
 
 	@Override
 	public boolean isRealConnection() {
-		return false; // We may be connected to the same node as a seed and as a regular connection.
+		return false; // We may be connected to the same node as a seed and as a regular
+						// connection.
 	}
 
 	@Override
 	public boolean equals(Object o) {
-		if(o == this) return true;
+		if (o == this)
+			return true;
 		// Only equal to seednode of its own type.
 		// Different to an OpennetPeerNode with the same identity!
-		if(o instanceof SeedClientPeerNode) {
+		if (o instanceof SeedClientPeerNode) {
 			return super.equals(o);
-		} else return false;
+		}
+		else
+			return false;
 	}
-	
+
 	@Override
 	public void onSuccess(boolean insert, boolean ssk) {
 		// Ignore
 	}
-	
+
 	@Override
 	public boolean isRoutingCompatible() {
 		return false;
@@ -75,7 +81,7 @@ public class SeedClientPeerNode extends PeerNode {
 	public boolean recordStatus() {
 		return false;
 	}
-	
+
 	@Override
 	public boolean handshakeUnknownInitiator() {
 		return true;
@@ -85,7 +91,7 @@ public class SeedClientPeerNode extends PeerNode {
 	public int handshakeSetupType() {
 		return FNPPacketMangler.SETUP_OPENNET_SEEDNODE;
 	}
-	
+
 	@Override
 	public boolean shouldSendHandshake() {
 		return false;
@@ -102,28 +108,29 @@ public class SeedClientPeerNode extends PeerNode {
 	protected boolean ignoreLastGoodVersion() {
 		return true;
 	}
-	
+
 	@Override
 	void startARKFetcher() {
 		// Do not start an ARK fetcher.
 	}
-	
+
 	@Override
 	public boolean shouldDisconnectAndRemoveNow() {
-		if(!isConnected()) {
+		if (!isConnected()) {
 			// SeedClientPeerNode's always start off unverified.
 			// If it doesn't manage to connect in 60 seconds, dump it.
 			// However, we don't want to be dumped *before* we connect,
 			// so we need to check that first.
 			// Synchronize to avoid messy races.
-			synchronized(this) {
-				if(timeLastConnectionCompleted() > 0 &&
-						System.currentTimeMillis() - lastReceivedPacketTime() > SECONDS.toMillis(60))
-				return true;
+			synchronized (this) {
+				if (timeLastConnectionCompleted() > 0
+						&& System.currentTimeMillis() - lastReceivedPacketTime() > SECONDS.toMillis(60))
+					return true;
 			}
-		} else {
+		}
+		else {
 			// Disconnect after an hour in any event.
-			if(System.currentTimeMillis() - timeLastConnectionCompleted() > HOURS.toMillis(1))
+			if (System.currentTimeMillis() - timeLastConnectionCompleted() > HOURS.toMillis(1))
 				return true;
 		}
 		return false;
@@ -138,7 +145,7 @@ public class SeedClientPeerNode extends PeerNode {
 	protected boolean shouldExportPeerAddedTime() {
 		return true; // For diagnostic purposes only.
 	}
-	
+
 	@Override
 	protected void maybeClearPeerAddedTimeOnRestart(long now) {
 		// Do nothing.
@@ -149,16 +156,16 @@ public class SeedClientPeerNode extends PeerNode {
 		// Disconnect.
 		forceDisconnect();
 	}
-	
+
 	@Override
 	public boolean shallWeRouteAccordingToOurPeersLocation(int htl) {
 		return false; // Irrelevant
 	}
-	
+
 	@Override
 	protected void onConnect() {
 		OpennetManager om = node.getOpennet();
-		if(om != null)
+		if (om != null)
 			om.seedTracker.onConnectSeed(this);
 		super.onConnect();
 	}
@@ -168,19 +175,19 @@ public class SeedClientPeerNode extends PeerNode {
 		return true;
 	}
 
-    @Override
-    public boolean isOpennetForNoderef() {
-        return true;
-    }
+	@Override
+	public boolean isOpennetForNoderef() {
+		return true;
+	}
 
-    @Override
-    protected void writePeers() {
-        // Do not write peers as seed clients are not in the peers list and are not saved.
-    }
+	@Override
+	protected void writePeers() {
+		// Do not write peers as seed clients are not in the peers list and are not saved.
+	}
 
-    @Override
-    protected boolean fromAnonymousInitiator() {
-        return true;
-    }
+	@Override
+	protected boolean fromAnonymousInitiator() {
+		return true;
+	}
 
 }

@@ -4,11 +4,10 @@
 package freenet.support;
 
 /**
- * @author Iakin
- * A LoggerHook implementation that just passes any supplied log messages on to /dev/null 
+ * @author Iakin A LoggerHook implementation that just passes any supplied log messages on
+ * to /dev/null
  */
-public class VoidLogger extends Logger
-{
+public class VoidLogger extends Logger {
 
 	@Override
 	public void log(Object o, Class<?> source, String message, Throwable e, LogLevel priority) {
@@ -70,8 +69,11 @@ public class VoidLogger extends Logger
 	}
 
 	@Override
-	public final void instanceRegisterLogThresholdCallback(LogThresholdCallback ltc) {}
-	
+	public final void instanceRegisterLogThresholdCallback(LogThresholdCallback ltc) {
+	}
+
 	@Override
-	public final void instanceUnregisterLogThresholdCallback(LogThresholdCallback ltc) {}
+	public final void instanceUnregisterLogThresholdCallback(LogThresholdCallback ltc) {
+	}
+
 }

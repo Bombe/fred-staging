@@ -11,9 +11,13 @@ import freenet.compress.Compressor;
 public class FinishedCompressionMessage extends FCPMessage {
 
 	final String identifier;
+
 	final boolean global;
+
 	final int codec;
+
 	final long origSize;
+
 	final long compressedSize;
 
 	public FinishedCompressionMessage(String identifier, boolean global, FinishedCompressionEvent event) {
@@ -29,8 +33,8 @@ public class FinishedCompressionMessage extends FCPMessage {
 		SimpleFieldSet fs = new SimpleFieldSet(true);
 		fs.putSingle("Identifier", identifier);
 		fs.put("Codec", codec);
-		if(codec != -1)
-			fs.putSingle("Codec.Name", Compressor.COMPRESSOR_TYPE.getCompressorByMetadataID((short)codec).name());
+		if (codec != -1)
+			fs.putSingle("Codec.Name", Compressor.COMPRESSOR_TYPE.getCompressorByMetadataID((short) codec).name());
 		else
 			fs.putSingle("Codec.Name", "NONE");
 		fs.put("OriginalSize", origSize);
@@ -46,7 +50,8 @@ public class FinishedCompressionMessage extends FCPMessage {
 
 	@Override
 	public void run(FCPConnectionHandler handler, Node node) throws MessageInvalidException {
-		throw new MessageInvalidException(ProtocolErrorMessage.INVALID_MESSAGE, "FinishedCompression goes from server to client not the other way around", identifier, global);
+		throw new MessageInvalidException(ProtocolErrorMessage.INVALID_MESSAGE,
+				"FinishedCompression goes from server to client not the other way around", identifier, global);
 	}
 
 }

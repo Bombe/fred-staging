@@ -9,7 +9,7 @@ public class InvalidCompressedDataException extends IOException {
 	public InvalidCompressedDataException() {
 		super();
 	}
-	
+
 	public InvalidCompressedDataException(String msg) {
 		super(msg);
 	}

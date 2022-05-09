@@ -21,13 +21,21 @@ public abstract class AbstractFCPHandler {
 	}
 
 	public static class FCPException extends Exception {
+
 		private static final long serialVersionUID = 1L;
+
 		public static final int UNKNOWN_ERROR = -1;
+
 		public static final int OK = 0;
+
 		public static final int MISSING_IDENTIFIER = 1;
+
 		public static final int MISSING_COMMAND = 2;
+
 		public static final int NO_SUCH_COMMAND = 3;
+
 		public static final int UNSUPPORTED_OPERATION = 4;
+
 		public static final int INTERNAL_ERROR = 5;
 
 		final int code;
@@ -36,6 +44,7 @@ public abstract class AbstractFCPHandler {
 			super(message);
 			code = eCode;
 		}
+
 	}
 
 	protected final PluginContext pluginContext;
@@ -44,7 +53,8 @@ public abstract class AbstractFCPHandler {
 		this.pluginContext = pluginContext2;
 	}
 
-	public final void handle(PluginReplySender replysender, SimpleFieldSet params, Bucket data, int accesstype) throws PluginNotFoundException {
+	public final void handle(PluginReplySender replysender, SimpleFieldSet params, Bucket data, int accesstype)
+			throws PluginNotFoundException {
 
 		if (logDEBUG) {
 			Logger.debug(this, "Got Message: " + params.toOrderedString());
@@ -73,18 +83,20 @@ public abstract class AbstractFCPHandler {
 		}
 		try {
 			handle(replysender, command, identifier, params, data, accesstype);
-		} catch (FCPException e) {
+		}
+		catch (FCPException e) {
 			sendError(replysender, identifier, e);
-		} catch (UnsupportedOperationException uoe) {
+		}
+		catch (UnsupportedOperationException uoe) {
 			sendError(replysender, FCPException.UNSUPPORTED_OPERATION, identifier, uoe.toString());
 		}
 	}
 
-	protected abstract void handle(PluginReplySender replysender, String command,
-			String identifier, SimpleFieldSet params, Bucket data,
-			int accesstype) throws FCPException, PluginNotFoundException;
+	protected abstract void handle(PluginReplySender replysender, String command, String identifier,
+			SimpleFieldSet params, Bucket data, int accesstype) throws FCPException, PluginNotFoundException;
 
-	public static void sendErrorWithTrace(PluginReplySender replysender, String identifier, Exception error) throws PluginNotFoundException {
+	public static void sendErrorWithTrace(PluginReplySender replysender, String identifier, Exception error)
+			throws PluginNotFoundException {
 		StringWriter sw = new StringWriter();
 		PrintWriter pw = new PrintWriter(sw);
 		error.printStackTrace(pw);
@@ -93,15 +105,18 @@ public abstract class AbstractFCPHandler {
 		sendError(replysender, FCPException.INTERNAL_ERROR, identifier, error.getLocalizedMessage());
 	}
 
-	public static void sendError(PluginReplySender replysender, String identifier, FCPException error) throws PluginNotFoundException {
+	public static void sendError(PluginReplySender replysender, String identifier, FCPException error)
+			throws PluginNotFoundException {
 		sendError(replysender, error.code, identifier, error.getLocalizedMessage());
 	}
 
-	public static void sendError(PluginReplySender replysender, int code, String identifier, String description) throws PluginNotFoundException {
+	public static void sendError(PluginReplySender replysender, int code, String identifier, String description)
+			throws PluginNotFoundException {
 		sendError(replysender, code, identifier, description, null);
 	}
 
-	public static void sendError(PluginReplySender replysender, int code, String identifier, String description, byte[] data) throws PluginNotFoundException {
+	public static void sendError(PluginReplySender replysender, int code, String identifier, String description,
+			byte[] data) throws PluginNotFoundException {
 		SimpleFieldSet sfs = new SimpleFieldSet(true);
 		sfs.putOverwrite("Status", "Error");
 		sfs.put("Code", code);
@@ -114,7 +129,8 @@ public abstract class AbstractFCPHandler {
 		sendError(replysender, -1, identifier, "Not implemented", null);
 	}
 
-	public static void sendSuccess(PluginReplySender replysender, String identifier, String description) throws PluginNotFoundException {
+	public static void sendSuccess(PluginReplySender replysender, String identifier, String description)
+			throws PluginNotFoundException {
 		SimpleFieldSet sfs = new SimpleFieldSet(true);
 		sfs.putOverwrite("Status", "Success");
 		sfs.put("Code", 0);
@@ -123,11 +139,13 @@ public abstract class AbstractFCPHandler {
 		replysender.send(sfs);
 	}
 
-	public static void sendProgress(PluginReplySender replysender,  String identifier, String description) throws PluginNotFoundException {
+	public static void sendProgress(PluginReplySender replysender, String identifier, String description)
+			throws PluginNotFoundException {
 		SimpleFieldSet sfs = new SimpleFieldSet(true);
 		sfs.putSingle("Status", "Progress");
 		sfs.putSingle("Identifier", identifier);
 		sfs.putSingle("Description", description);
 		replysender.send(sfs);
 	}
+
 }

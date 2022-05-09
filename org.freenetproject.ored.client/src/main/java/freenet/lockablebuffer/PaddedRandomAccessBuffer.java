@@ -14,101 +14,105 @@ import freenet.support.io.ResumeFailedException;
 import freenet.support.io.StorageFormatException;
 
 public class PaddedRandomAccessBuffer implements LockableRandomAccessBuffer, Serializable {
-    
-    private static final long serialVersionUID = 1L;
-    final LockableRandomAccessBuffer raf;
-    final long realSize;
 
-    public PaddedRandomAccessBuffer(LockableRandomAccessBuffer raf, long realSize) {
-        this.raf = raf;
-        this.realSize = realSize;
-    }
+	private static final long serialVersionUID = 1L;
 
-    @Override
-    public long size() {
-        return realSize;
-    }
+	final LockableRandomAccessBuffer raf;
 
-    @Override
-    public void pread(long fileOffset, byte[] buf, int bufOffset, int length) throws IOException {
-        if(fileOffset + length > realSize)
-            throw new IOException("Length limit exceeded");
-        raf.pread(fileOffset, buf, bufOffset, length);
-    }
+	final long realSize;
 
-    @Override
-    public void pwrite(long fileOffset, byte[] buf, int bufOffset, int length) throws IOException {
-        if(fileOffset + length > realSize)
-            throw new IOException("Length limit exceeded");
-        raf.pwrite(fileOffset, buf, bufOffset, length);
-    }
+	public PaddedRandomAccessBuffer(LockableRandomAccessBuffer raf, long realSize) {
+		this.raf = raf;
+		this.realSize = realSize;
+	}
 
-    @Override
-    public void close() {
-        raf.close();
-    }
+	@Override
+	public long size() {
+		return realSize;
+	}
 
-    @Override
-    public void free() {
-        raf.free();
-    }
+	@Override
+	public void pread(long fileOffset, byte[] buf, int bufOffset, int length) throws IOException {
+		if (fileOffset + length > realSize)
+			throw new IOException("Length limit exceeded");
+		raf.pread(fileOffset, buf, bufOffset, length);
+	}
 
-    @Override
-    public RAFLock lockOpen() throws IOException {
-        return raf.lockOpen();
-    }
+	@Override
+	public void pwrite(long fileOffset, byte[] buf, int bufOffset, int length) throws IOException {
+		if (fileOffset + length > realSize)
+			throw new IOException("Length limit exceeded");
+		raf.pwrite(fileOffset, buf, bufOffset, length);
+	}
 
-    @Override
-    public void onResume(ClientContext context) throws ResumeFailedException {
-        raf.onResume(context);
-    }
-    
-    public static final int MAGIC = 0x1eaaf330;
+	@Override
+	public void close() {
+		raf.close();
+	}
 
-    @Override
-    public void storeTo(DataOutputStream dos) throws IOException {
-        dos.writeInt(MAGIC);
-        dos.writeLong(realSize);
-        raf.storeTo(dos);
-    }
-    
-    public PaddedRandomAccessBuffer(DataInputStream dis, BucketFilenameGenerator fg,
-                                    PersistentFileTracker persistentFileTracker, MasterSecret masterSecret) throws ResumeFailedException, IOException, StorageFormatException {
-        realSize = dis.readLong();
-        if(realSize < 0) throw new StorageFormatException("Negative length");
-        raf = BucketTools.restoreRAFFrom(dis, fg, persistentFileTracker, masterSecret);
-        if(realSize > raf.size())
-            throw new ResumeFailedException("Padded file is smaller than expected length");
-    }
+	@Override
+	public void free() {
+		raf.free();
+	}
 
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + raf.hashCode();
-        result = prime * result + (int) (realSize ^ (realSize >>> 32));
-        return result;
-    }
+	@Override
+	public RAFLock lockOpen() throws IOException {
+		return raf.lockOpen();
+	}
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        PaddedRandomAccessBuffer other = (PaddedRandomAccessBuffer) obj;
-        if (!raf.equals(other.raf)) {
-            return false;
-        }
-        if (realSize != other.realSize) {
-            return false;
-        }
-        return true;
-    }
+	@Override
+	public void onResume(ClientContext context) throws ResumeFailedException {
+		raf.onResume(context);
+	}
+
+	public static final int MAGIC = 0x1eaaf330;
+
+	@Override
+	public void storeTo(DataOutputStream dos) throws IOException {
+		dos.writeInt(MAGIC);
+		dos.writeLong(realSize);
+		raf.storeTo(dos);
+	}
+
+	public PaddedRandomAccessBuffer(DataInputStream dis, BucketFilenameGenerator fg,
+			PersistentFileTracker persistentFileTracker, MasterSecret masterSecret)
+			throws ResumeFailedException, IOException, StorageFormatException {
+		realSize = dis.readLong();
+		if (realSize < 0)
+			throw new StorageFormatException("Negative length");
+		raf = BucketTools.restoreRAFFrom(dis, fg, persistentFileTracker, masterSecret);
+		if (realSize > raf.size())
+			throw new ResumeFailedException("Padded file is smaller than expected length");
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + raf.hashCode();
+		result = prime * result + (int) (realSize ^ (realSize >>> 32));
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		PaddedRandomAccessBuffer other = (PaddedRandomAccessBuffer) obj;
+		if (!raf.equals(other.raf)) {
+			return false;
+		}
+		if (realSize != other.realSize) {
+			return false;
+		}
+		return true;
+	}
 
 }

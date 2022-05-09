@@ -14,9 +14,10 @@ import freenet.support.HTMLNode;
 public class LocalFileN2NMToadlet extends LocalFileBrowserToadlet {
 
 	public static final String PATH = "/n2nm-browse/";
+
 	public static final String POST_TO = "/send_n2ntm/";
 
-	public LocalFileN2NMToadlet (NodeClientCore core, HighLevelSimpleClient highLevelSimpleClient) {
+	public LocalFileN2NMToadlet(NodeClientCore core, HighLevelSimpleClient highLevelSimpleClient) {
 		super(core, highLevelSimpleClient);
 	}
 
@@ -44,11 +45,12 @@ public class LocalFileN2NMToadlet extends LocalFileBrowserToadlet {
 	protected void createSelectDirectoryButton(HTMLNode fileRow, String path, HTMLNode persistence) {
 	}
 
-    @Override
-	protected Hashtable<String, String> persistenceFields (Hashtable<String, String> set) {
+	@Override
+	protected Hashtable<String, String> persistenceFields(Hashtable<String, String> set) {
 		Hashtable<String, String> fieldPairs = new Hashtable<String, String>();
 		String message = set.get("message");
-		if (message != null) fieldPairs.put("message", message);
+		if (message != null)
+			fieldPairs.put("message", message);
 		Set<String> keys = set.keySet();
 		for (String key : keys) {
 			if (key.startsWith("node_")) {
@@ -57,4 +59,5 @@ public class LocalFileN2NMToadlet extends LocalFileBrowserToadlet {
 		}
 		return fieldPairs;
 	}
+
 }

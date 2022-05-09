@@ -5,11 +5,11 @@ import freenet.support.HTMLNode;
 
 public class ToadletL10nAdapter {
 
-    BaseL10n base;
+	BaseL10n base;
 
-    public ToadletL10nAdapter(BaseL10n base) {
-        this.base = base;
-    }
+	public ToadletL10nAdapter(BaseL10n base) {
+		this.base = base;
+	}
 
 	/**
 	 * Get a localized string and put it in a HTMLNode for the translation page.
@@ -30,17 +30,18 @@ public class ToadletL10nAdapter {
 	public HTMLNode getHTMLNode(String key, String[] patterns, String[] values) {
 		String value = this.base.getString(key, true);
 		if (value != null) {
-			if(patterns != null)
+			if (patterns != null)
 				return new HTMLNode("#", this.base.getString(key, patterns, values));
 			else
 				return new HTMLNode("#", value);
 		}
 		HTMLNode translationField = new HTMLNode("span", "class", "translate_it");
-		if(patterns != null)
+		if (patterns != null)
 			translationField.addChild("#", this.base.getDefaultString(key, patterns, values));
 		else
 			translationField.addChild("#", this.base.getDefaultString(key));
-		translationField.addChild("a", "href", TranslationToadlet.TOADLET_URL + "?translate=" + key).addChild("small", " (translate it in your native language!)");
+		translationField.addChild("a", "href", TranslationToadlet.TOADLET_URL + "?translate=" + key).addChild("small",
+				" (translate it in your native language!)");
 
 		return translationField;
 	}

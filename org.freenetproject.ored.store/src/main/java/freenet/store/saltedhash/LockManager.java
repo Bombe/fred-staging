@@ -15,15 +15,19 @@ import freenet.support.Logger.LogLevel;
 
 /**
  * Lock Manager
- * 
+ *
  * Handle locking/unlocking of individual offsets.
- * 
+ *
  * @author sdiz
  */
 public class LockManager {
+
 	private static boolean logDEBUG;
+
 	private volatile boolean shutdown;
+
 	private Lock entryLock = new ReentrantLock();
+
 	private Map<Long, Condition> lockMap = new HashMap<Long, Condition>();
 
 	LockManager() {
@@ -32,9 +36,9 @@ public class LockManager {
 
 	/**
 	 * Lock the entry
-	 * 
-	 * This lock is <strong>not</strong> re-entrance. No threads except Cleaner should hold more
-	 * then one lock at a time (or deadlock may occur).
+	 *
+	 * This lock is <strong>not</strong> re-entrance. No threads except Cleaner should
+	 * hold more then one lock at a time (or deadlock may occur).
 	 */
 	Condition lockEntry(long offset) {
 		if (logDEBUG)
@@ -53,13 +57,16 @@ public class LockManager {
 						lockCond.await(10, TimeUnit.SECONDS); // 10s for checking shutdown
 					else
 						break;
-				} while (true);
+				}
+				while (true);
 				condition = entryLock.newCondition();
 				lockMap.put(offset, condition);
-			} finally {
+			}
+			finally {
 				entryLock.unlock();
 			}
-		} catch (InterruptedException e) {
+		}
+		catch (InterruptedException e) {
 			Logger.error(this, "lock interrupted", e);
 			return null;
 		}
@@ -81,7 +88,8 @@ public class LockManager {
 			Condition cond = lockMap.remove(offset);
 			assert cond == condition;
 			cond.signal();
-		} finally {
+		}
+		finally {
 			entryLock.unlock();
 		}
 	}
@@ -97,8 +105,10 @@ public class LockManager {
 				Condition cond = lockMap.values().iterator().next();
 				cond.awaitUninterruptibly();
 			}
-		} finally {
+		}
+		finally {
 			entryLock.unlock();
 		}
 	}
+
 }

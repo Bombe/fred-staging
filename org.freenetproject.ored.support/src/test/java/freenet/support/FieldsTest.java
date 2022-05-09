@@ -15,7 +15,7 @@ import junit.framework.TestCase;
  */
 public class FieldsTest extends TestCase {
 
-	public void testHexToLong(){
+	public void testHexToLong() {
 
 		long l1 = Fields.hexToLong("0");
 		assertEquals(l1, 0);
@@ -48,7 +48,7 @@ public class FieldsTest extends TestCase {
 			l1 = Fields.hexToLong("abcdef123456789aa"); // 17 chars
 			fail();
 		}
-		catch(NumberFormatException e){
+		catch (NumberFormatException e) {
 			// expect this
 		}
 
@@ -56,7 +56,7 @@ public class FieldsTest extends TestCase {
 			l1 = Fields.hexToLong("DeADC0dER"); // invalid char
 			fail();
 		}
-		catch(NumberFormatException e){
+		catch (NumberFormatException e) {
 			// expect this
 		}
 
@@ -73,7 +73,7 @@ public class FieldsTest extends TestCase {
 			l1 = Fields.hexToLong(longAsString);
 			fail();
 		}
-		catch(NumberFormatException e) {
+		catch (NumberFormatException e) {
 			// expect this
 		}
 	}
@@ -108,7 +108,7 @@ public class FieldsTest extends TestCase {
 			i1 = Fields.hexToInt("0123456789abcdef0"); // 17 chars
 			fail();
 		}
-		catch(NumberFormatException e){
+		catch (NumberFormatException e) {
 			// expect this
 		}
 
@@ -116,7 +116,7 @@ public class FieldsTest extends TestCase {
 			i1 = Fields.hexToInt("C0dER"); // invalid char
 			fail();
 		}
-		catch(NumberFormatException e){
+		catch (NumberFormatException e) {
 			// expect this
 		}
 
@@ -133,7 +133,7 @@ public class FieldsTest extends TestCase {
 			i1 = Fields.hexToInt(integerAsString);
 			fail();
 		}
-		catch(NumberFormatException e) {
+		catch (NumberFormatException e) {
 			// expect this
 		}
 	}
@@ -148,7 +148,7 @@ public class FieldsTest extends TestCase {
 			Fields.stringToBool("Free Tibet");
 			fail();
 		}
-		catch(NumberFormatException e) {
+		catch (NumberFormatException e) {
 			// expect this
 		}
 
@@ -156,7 +156,7 @@ public class FieldsTest extends TestCase {
 			Fields.stringToBool(null);
 			fail();
 		}
-		catch(NumberFormatException e) {
+		catch (NumberFormatException e) {
 			// expect this
 		}
 	}
@@ -177,15 +177,15 @@ public class FieldsTest extends TestCase {
 	}
 
 	public void testCommaListFromString() {
-		String[] expected = new String[] {"one", "two", "three", "four"};
+		String[] expected = new String[] { "one", "two", "three", "four" };
 		String[] actual = Fields.commaList("one,two,     three    ,  four");
 
-		for(int i = 0; i < expected.length; i++) {
+		for (int i = 0; i < expected.length; i++) {
 			assertEquals(expected[i], actual[i]);
 		}
 
 		// null
-		assertNull(Fields.commaList((String)null));
+		assertNull(Fields.commaList((String) null));
 
 		// no items
 		expected = new String[] {};
@@ -242,22 +242,22 @@ public class FieldsTest extends TestCase {
 		int[] longs = new int[] {};
 		doRoundTripIntsArrayToBytesArray(longs);
 
-		longs = new int[] {Integer.MIN_VALUE};
+		longs = new int[] { Integer.MIN_VALUE };
 		doRoundTripIntsArrayToBytesArray(longs);
 
-		longs = new int[] {0, Integer.MAX_VALUE, Integer.MIN_VALUE};
+		longs = new int[] { 0, Integer.MAX_VALUE, Integer.MIN_VALUE };
 		doRoundTripIntsArrayToBytesArray(longs);
 
-		longs = new int[] {33685760, 51511577};
+		longs = new int[] { 33685760, 51511577 };
 		doRoundTripIntsArrayToBytesArray(longs);
 	}
 
 	private void doRoundTripIntsArrayToBytesArray(int[] ints) {
 		byte[] bytes = Fields.intsToBytes(ints);
-		assert(bytes.length == ints.length * 4);
+		assert (bytes.length == ints.length * 4);
 
 		int[] outLongs = Fields.bytesToInts(bytes);
-		for(int i = 0; i < ints.length; i++) {
+		for (int i = 0; i < ints.length; i++) {
 			assertTrue(outLongs[i] == ints[i]);
 		}
 		assertEquals(outLongs.length, ints.length);
@@ -269,7 +269,7 @@ public class FieldsTest extends TestCase {
 			Fields.bytesToLongs(bytes, 0, bytes.length);
 			fail();
 		}
-		catch(IllegalArgumentException e){
+		catch (IllegalArgumentException e) {
 			// expect this
 		}
 	}
@@ -284,15 +284,15 @@ public class FieldsTest extends TestCase {
 		doTestRoundTripBytesArrayToInt(bytes);
 
 		bytes = new byte[] {};
-		try{
+		try {
 			doTestRoundTripBytesArrayToInt(bytes);
 			fail();
 		}
-		catch(IllegalArgumentException e) {
-			//expect this
+		catch (IllegalArgumentException e) {
+			// expect this
 		}
 
-		bytes = new byte[] {1, 1, 1, 1};
+		bytes = new byte[] { 1, 1, 1, 1 };
 		doTestRoundTripBytesArrayToInt(bytes);
 	}
 
@@ -300,7 +300,7 @@ public class FieldsTest extends TestCase {
 
 		int outLong = Fields.bytesToInt(inBytes, 0);
 		byte[] outBytes = Fields.intToBytes(outLong);
-		for(int i = 0; i < inBytes.length; i++) {
+		for (int i = 0; i < inBytes.length; i++) {
 			assertEquals(outBytes[i], inBytes[i]);
 		}
 		assertEquals(outBytes.length, inBytes.length);
@@ -310,22 +310,22 @@ public class FieldsTest extends TestCase {
 		long[] longs = new long[] {};
 		doRoundTripLongsArrayToBytesArray(longs);
 
-		longs = new long[] {Long.MIN_VALUE};
+		longs = new long[] { Long.MIN_VALUE };
 		doRoundTripLongsArrayToBytesArray(longs);
 
-		longs = new long[] {0L, Long.MAX_VALUE, Long.MIN_VALUE};
+		longs = new long[] { 0L, Long.MAX_VALUE, Long.MIN_VALUE };
 		doRoundTripLongsArrayToBytesArray(longs);
 
-		longs = new long[] {3733393793879837L};
+		longs = new long[] { 3733393793879837L };
 		doRoundTripLongsArrayToBytesArray(longs);
 	}
 
 	private void doRoundTripLongsArrayToBytesArray(long[] longs) {
 		byte[] bytes = Fields.longsToBytes(longs);
-		assert(bytes.length == longs.length * 8);
+		assert (bytes.length == longs.length * 8);
 
 		long[] outLongs = Fields.bytesToLongs(bytes);
-		for(int i = 0; i < longs.length; i++) {
+		for (int i = 0; i < longs.length; i++) {
 			assertTrue(outLongs[i] == longs[i]);
 		}
 		assertEquals(outLongs.length, longs.length);
@@ -337,7 +337,7 @@ public class FieldsTest extends TestCase {
 			Fields.bytesToLongs(bytes, 0, bytes.length);
 			fail();
 		}
-		catch(IllegalArgumentException e){
+		catch (IllegalArgumentException e) {
 			// expect this
 		}
 	}
@@ -352,15 +352,15 @@ public class FieldsTest extends TestCase {
 		doTestRoundTripBytesArrayToLong(bytes);
 
 		bytes = new byte[] {};
-		try{
+		try {
 			doTestRoundTripBytesArrayToLong(bytes);
 			fail();
 		}
-		catch(IllegalArgumentException e) {
-			//expect this
+		catch (IllegalArgumentException e) {
+			// expect this
 		}
 
-		bytes = new byte[] {1, 1, 1, 1, 1, 1, 1, 1};
+		bytes = new byte[] { 1, 1, 1, 1, 1, 1, 1, 1 };
 		doTestRoundTripBytesArrayToLong(bytes);
 
 	}
@@ -369,7 +369,7 @@ public class FieldsTest extends TestCase {
 
 		long outLong = Fields.bytesToLong(inBytes);
 		byte[] outBytes = Fields.longToBytes(outLong);
-		for(int i = 0; i < inBytes.length; i++) {
+		for (int i = 0; i < inBytes.length; i++) {
 			assertEquals(outBytes[i], inBytes[i]);
 		}
 		assertEquals(outBytes.length, inBytes.length);
@@ -387,7 +387,7 @@ public class FieldsTest extends TestCase {
 		assertEquals("a\n", Fields.trimLines("\na\n"));
 		assertEquals("a\nb\n", Fields.trimLines("a\nb"));
 	}
-	
+
 	public void testGetDigits() {
 		assertEquals(1, Fields.getDigits("1.0", 0, true));
 		assertEquals(0, Fields.getDigits("1.0", 0, false));
@@ -396,39 +396,39 @@ public class FieldsTest extends TestCase {
 		assertEquals(1, Fields.getDigits("1.0", 2, true));
 		assertEquals(0, Fields.getDigits("1.0", 2, false));
 		Random r = new Random(88888);
-		for(int i=0;i<1024;i++) {
-			int digits = r.nextInt(20)+1;
-			int nonDigits = r.nextInt(20)+1;
-			int digits2 = r.nextInt(20)+1;
+		for (int i = 0; i < 1024; i++) {
+			int digits = r.nextInt(20) + 1;
+			int nonDigits = r.nextInt(20) + 1;
+			int digits2 = r.nextInt(20) + 1;
 			String s = generateDigits(r, digits) + generateNonDigits(r, nonDigits) + generateDigits(r, digits2);
 			assertEquals(0, Fields.getDigits(s, 0, false));
 			assertEquals(digits, Fields.getDigits(s, 0, true));
 			assertEquals(nonDigits, Fields.getDigits(s, digits, false));
 			assertEquals(0, Fields.getDigits(s, digits, true));
-			assertEquals(digits2, Fields.getDigits(s, digits+nonDigits, true));
-			assertEquals(0, Fields.getDigits(s, digits+nonDigits, false));
+			assertEquals(digits2, Fields.getDigits(s, digits + nonDigits, true));
+			assertEquals(0, Fields.getDigits(s, digits + nonDigits, false));
 		}
 	}
 
 	private String generateDigits(Random r, int count) {
 		StringBuffer sb = new StringBuffer(count);
-		for(int i=0;i<count;i++) {
+		for (int i = 0; i < count; i++) {
 			char c = '0';
 			c += r.nextInt(10);
 			sb.append(c);
 		}
 		return sb.toString();
 	}
-	
+
 	private String generateNonDigits(Random r, int count) {
 		final String ALPHABET = "abcdefghijklmnopqrstuvwxyz";
-		final String NONDIGITS = "./\\_=+:"+ALPHABET+ALPHABET.toUpperCase();
+		final String NONDIGITS = "./\\_=+:" + ALPHABET + ALPHABET.toUpperCase();
 		StringBuffer sb = new StringBuffer(count);
-		for(int i=0;i<count;i++)
+		for (int i = 0; i < count; i++)
 			sb.append(NONDIGITS.charAt(r.nextInt(NONDIGITS.length())));
 		return sb.toString();
 	}
-	
+
 	public void testCompareVersion() {
 		checkCompareVersionLessThan("1.0", "1.1");
 		checkCompareVersionLessThan("1.0", "1.01");
@@ -446,8 +446,8 @@ public class FieldsTest extends TestCase {
 	private void checkCompareVersionLessThan(String a, String b) {
 		checkCompareVersionEquals(a, a);
 		checkCompareVersionEquals(b, b);
-		assert(Fields.compareVersion(a, b) < 0);
-		assert(Fields.compareVersion(b, a) > 0);
+		assert (Fields.compareVersion(a, b) < 0);
+		assert (Fields.compareVersion(b, a) > 0);
 	}
 
 	private void checkCompareVersionEquals(String a, String b) {

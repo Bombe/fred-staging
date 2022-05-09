@@ -17,11 +17,12 @@ public class CodeTest extends TestCase {
 	public static FECMath fecMath = new FECMath(8);
 
 	public static final int KK = 192;
+
 	public static final int PACKET_SIZE = 4096;
 
 	/**
-	 * Creates k packets of size sz of random data, encodes them, and tries to decode. Index
-	 * contains the permutation entry.
+	 * Creates k packets of size sz of random data, encodes them, and tries to decode.
+	 * Index contains the permutation entry.
 	 */
 	private static final void encodeDecode(FECCode encode, FECCode decode, int index[]) {
 		byte[] src = new byte[KK * PACKET_SIZE];
@@ -44,7 +45,8 @@ public class CodeTest extends TestCase {
 	}
 
 	public void testBenchmark() {
-		if(!TestProperty.BENCHMARK) return;
+		if (!TestProperty.BENCHMARK)
+			return;
 
 		int lim = fecMath.gfSize + 1;
 		FECCode maybeNative = FECCodeFactory.getDefault().createFECCode(KK, lim);
@@ -67,7 +69,7 @@ public class CodeTest extends TestCase {
 		}
 
 		int[] indexBackup = new int[index.length];
-		System.arraycopy(index,0,indexBackup,0,index.length);
+		System.arraycopy(index, 0, indexBackup, 0, index.length);
 
 		System.out.println("Getting ready for benchmarking encode()");
 		long t1 = System.currentTimeMillis();
@@ -93,8 +95,10 @@ public class CodeTest extends TestCase {
 
 		System.out.println(maybeNative);
 		System.out.println(pureCode);
-		System.out.println("Native code took "+dNativeEncode+"ms whereas java's code took "+dPureEncode+"ms to encode()");
-		System.out.println("Native code took "+dNativeDecode+"ms whereas java's code took "+dPureDecode+"ms to decode()");
+		System.out.println(
+				"Native code took " + dNativeEncode + "ms whereas java's code took " + dPureEncode + "ms to encode()");
+		System.out.println(
+				"Native code took " + dNativeDecode + "ms whereas java's code took " + dPureDecode + "ms to decode()");
 	}
 
 	public void testSimpleRev() {
@@ -139,4 +143,5 @@ public class CodeTest extends TestCase {
 			encodeDecode(code2, code, index);
 		}
 	}
+
 }

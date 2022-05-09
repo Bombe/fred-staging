@@ -7,15 +7,16 @@ import freenet.bucket.Bucket;
 import freenet.support.SimpleFieldSet;
 
 /**
- * Interface that has to be implemented for plugins that wants talk to
- * other plugins that implements FredPluginFCP
- *  
+ * Interface that has to be implemented for plugins that wants talk to other plugins that
+ * implements FredPluginFCP
+ *
  * @author saces
- * @deprecated Use {@link FredPluginFCPMessageHandler.ClientSideFCPMessageHandler} instead.
+ * @deprecated Use {@link FredPluginFCPMessageHandler.ClientSideFCPMessageHandler}
+ * instead.
  */
 @Deprecated
 public interface FredPluginTalker {
-	
+
 	/**
 	 * @param pluginname - reply from
 	 * @param indentifier - identifer from your call
@@ -23,5 +24,5 @@ public interface FredPluginTalker {
 	 * @param data a bucket of data passed back, can be null
 	 */
 	void onReply(String pluginname, String indentifier, SimpleFieldSet params, Bucket data);
-	
+
 }

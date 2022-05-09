@@ -10,10 +10,11 @@ import freenet.compress.Compressor.COMPRESSOR_TYPE;
 public class StartedCompressionMessage extends FCPMessage {
 
 	final String identifier;
+
 	final boolean global;
-	
+
 	final COMPRESSOR_TYPE codec;
-	
+
 	public StartedCompressionMessage(String identifier, boolean global, COMPRESSOR_TYPE codec) {
 		this.identifier = identifier;
 		this.codec = codec;
@@ -35,9 +36,9 @@ public class StartedCompressionMessage extends FCPMessage {
 	}
 
 	@Override
-	public void run(FCPConnectionHandler handler, Node node)
-			throws MessageInvalidException {
-		throw new MessageInvalidException(ProtocolErrorMessage.INVALID_MESSAGE, "StartedCompression goes from server to client not the other way around", identifier, global);
+	public void run(FCPConnectionHandler handler, Node node) throws MessageInvalidException {
+		throw new MessageInvalidException(ProtocolErrorMessage.INVALID_MESSAGE,
+				"StartedCompression goes from server to client not the other way around", identifier, global);
 	}
 
 }

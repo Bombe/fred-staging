@@ -9,8 +9,9 @@ import freenet.support.SimpleFieldSet;
 import freenet.support.Logger.LogLevel;
 
 public class ThrottleWindowManager {
+
 	private static volatile boolean logMINOR;
-	
+
 	static {
 		Logger.registerLogThresholdCallback(new LogThresholdCallback() {
 			@Override
@@ -21,20 +22,23 @@ public class ThrottleWindowManager {
 	}
 
 	static final float PACKET_DROP_DECREASE_MULTIPLE = 0.97f;
-	static final float PACKET_TRANSMIT_INCREMENT = (4 * (1 - (PACKET_DROP_DECREASE_MULTIPLE * PACKET_DROP_DECREASE_MULTIPLE))) / 3;
+	static final float PACKET_TRANSMIT_INCREMENT = (4
+			* (1 - (PACKET_DROP_DECREASE_MULTIPLE * PACKET_DROP_DECREASE_MULTIPLE))) / 3;
 
 	private long _totalPackets = 0, _droppedPackets = 0;
+
 	private double _simulatedWindowSize = 2;
-	
+
 	private final Node node;
-	
+
 	public ThrottleWindowManager(double def, SimpleFieldSet fs, Node node) {
 		this.node = node;
-		if(fs != null) {
+		if (fs != null) {
 			_totalPackets = fs.getInt("TotalPackets", 0);
 			_droppedPackets = fs.getInt("DroppedPackets", 0);
 			_simulatedWindowSize = fs.getDouble("SimulatedWindowSize", def);
-		} else {
+		}
+		else {
 			_simulatedWindowSize = def;
 		}
 	}
@@ -50,22 +54,21 @@ public class ThrottleWindowManager {
 		_droppedPackets++;
 		_totalPackets++;
 		_simulatedWindowSize *= PACKET_DROP_DECREASE_MULTIPLE;
-        if(logMINOR)
-        	Logger.minor(this, "request rejected overload: "+this);
+		if (logMINOR)
+			Logger.minor(this, "request rejected overload: " + this);
 	}
 
 	public synchronized void requestCompleted() {
-        _totalPackets++;
-        _simulatedWindowSize += (PACKET_TRANSMIT_INCREMENT / _simulatedWindowSize);
-        if(logMINOR)
-        	Logger.minor(this, "requestCompleted on "+this);
+		_totalPackets++;
+		_simulatedWindowSize += (PACKET_TRANSMIT_INCREMENT / _simulatedWindowSize);
+		if (logMINOR)
+			Logger.minor(this, "requestCompleted on " + this);
 	}
 
 	@Override
 	public synchronized String toString() {
-		return  super.toString()+" w: "
-				+ _simulatedWindowSize + ", d:"
-				+ (((float) _droppedPackets / (float) _totalPackets)) + '=' +_droppedPackets+ '/' +_totalPackets;
+		return super.toString() + " w: " + _simulatedWindowSize + ", d:"
+				+ (((float) _droppedPackets / (float) _totalPackets)) + '=' + _droppedPackets + '/' + _totalPackets;
 	}
 
 	public SimpleFieldSet exportFieldSet(boolean shortLived) {
@@ -80,4 +83,5 @@ public class ThrottleWindowManager {
 	public double realCurrentValue() {
 		return _simulatedWindowSize;
 	}
+
 }

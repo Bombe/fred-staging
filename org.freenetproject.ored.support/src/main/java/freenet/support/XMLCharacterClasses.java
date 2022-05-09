@@ -1,16 +1,16 @@
 /*
  * freenet - XMLCharacterClasses.java Copyright © 2007 David Roden
- * 
+ *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation; either version 2 of the License, or (at your option) any later
  * version.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
  * Place - Suite 330, Boston, MA 02111-1307, USA.
@@ -21,13 +21,13 @@ package freenet.support;
 import java.util.regex.Matcher;
 
 /**
- * This class contains various character classes from the <a
- * href="http://www.w3.org/TR/REC-xml/">XML 1.0 specification, 4th edition</a>.
- * 
- * The constants in this class are written in a form that allows easy conclusion
- * in a {@link Matcher} pattern within square parantheses (<code>'['</code>
- * and <code>']'</code>).
- * 
+ * This class contains various character classes from the
+ * <a href="http://www.w3.org/TR/REC-xml/">XML 1.0 specification, 4th edition</a>.
+ *
+ * The constants in this class are written in a form that allows easy conclusion in a
+ * {@link Matcher} pattern within square parantheses (<code>'['</code> and
+ * <code>']'</code>).
+ *
  * @author David Roden &lt;bombe@freenetproject.org&gt;
  * @version $Id$
  */
@@ -52,8 +52,8 @@ public interface XMLCharacterClasses {
 	public static final String LETTER = BASE_CHAR + IDEOGRAPHIC;
 
 	/**
-	 * [4] NameChar - due to regex rules this must be the first expression
-	 * within square parantheses
+	 * [4] NameChar - due to regex rules this must be the first expression within square
+	 * parantheses
 	 */
 	public static final String NAME_CHAR = "-" + LETTER + DIGIT + "." + "_" + ":" + COMBINING_CHAR + EXTENDER;
 

@@ -22,7 +22,7 @@ import freenet.support.transport.ip.AddressIdentifier.AddressType;
 
 /**
  * Test case for the {@link AddressIdentifier} class.
- * 
+ *
  * @author David Roden &lt;droden@gmail.com&gt;
  * @version $Id: AddressIdentifierTest.java 10490 2006-09-20 00:07:46Z toad $
  */
@@ -50,7 +50,7 @@ public class AddressIdentifierTest extends TestCase {
 		assertEquals(AddressType.OTHER, AddressIdentifier.getAddressType("1:2:3:4:5:6:7:8:9"));
 		assertEquals(AddressType.OTHER, AddressIdentifier.getAddressType("12345:6:7:8:9"));
 	}
-	
+
 	public void testIsAnISATAPIPv6Address() {
 		assertFalse(AddressIdentifier.isAnISATAPIPv6Address("fe80:0:0:0:203:dff:fe22:420f"));
 		assertFalse(AddressIdentifier.isAnISATAPIPv6Address("fe80:0:5efe:0:203:dff:fe22:420f"));

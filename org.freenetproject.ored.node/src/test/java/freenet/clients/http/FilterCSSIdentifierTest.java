@@ -6,10 +6,11 @@ package freenet.clients.http;
 import junit.framework.TestCase;
 
 /**
- * Tests that valid CSS identifiers without non-ASCII characters or escaped characters are unchanged, and that invalid
- * ones are changed as expected.
+ * Tests that valid CSS identifiers without non-ASCII characters or escaped characters are
+ * unchanged, and that invalid ones are changed as expected.
  */
 public class FilterCSSIdentifierTest extends TestCase {
+
 	public void testKnownValid() {
 		String identifiers[] = { "sample_key-1", "-_", "-k_d", "_testing-key" };
 
@@ -26,4 +27,5 @@ public class FilterCSSIdentifierTest extends TestCase {
 	public void testInvalidChar() {
 		assertEquals("__thing", PageMaker.filterCSSIdentifier("#$thing"));
 	}
+
 }

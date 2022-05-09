@@ -12,9 +12,11 @@ import junit.framework.TestCase;
 import freenet.support.ByteArrayWrapper;
 
 public abstract class BucketTestBase extends TestCase {
+
 	protected byte[] DATA1 = new byte[] { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08 };
+
 	protected byte[] DATA2 = new byte[] { 0x70, (byte) 0x81, (byte) 0x92, (byte) 0xa3, (byte) 0xb4, (byte) 0xc5,
-	        (byte) 0xd6, (byte) 0xe7, (byte) 0xf8 };
+			(byte) 0xd6, (byte) 0xe7, (byte) 0xf8 };
 
 	protected abstract Bucket makeBucket(long size) throws IOException;
 
@@ -26,7 +28,7 @@ public abstract class BucketTestBase extends TestCase {
 			assertEquals("Size-0", 0, bucket.size());
 			OutputStream os = bucket.getOutputStream();
 			os.close();
-			
+
 			// Read byte[]
 			InputStream is = bucket.getInputStream();
 			byte[] data = new byte[10];
@@ -34,7 +36,8 @@ public abstract class BucketTestBase extends TestCase {
 			is.close();
 
 			assertEquals("Read-Empty", -1, read);
-		} finally {
+		}
+		finally {
 			freeBucket(bucket);
 		}
 	}
@@ -62,7 +65,8 @@ public abstract class BucketTestBase extends TestCase {
 			assertEquals("Read-Excess-EOF", -1, read);
 
 			is.close();
-		} finally {
+		}
+		finally {
 			freeBucket(bucket);
 		}
 	}
@@ -99,18 +103,19 @@ public abstract class BucketTestBase extends TestCase {
 			assertEquals("SimpleRead-EOF2", -1, is.read());
 
 			is.close();
-		} finally {
+		}
+		finally {
 			freeBucket(bucket);
 		}
 	}
-	
-	protected boolean canOverwrite = true; 
+
+	protected boolean canOverwrite = true;
 
 	// Write twice -- should overwrite, not append
 	public void testReuse() throws IOException {
 		if (!canOverwrite)
 			return;
-		
+
 		Bucket bucket = makeBucket(Math.max(DATA1.length, DATA2.length));
 		try {
 			// Write
@@ -140,7 +145,8 @@ public abstract class BucketTestBase extends TestCase {
 
 			assertEquals("Read-2-SIZE", DATA2.length, read);
 			assertEquals("Read-2", new ByteArrayWrapper(DATA2), new ByteArrayWrapper(data));
-		} finally {
+		}
+		finally {
 			freeBucket(bucket);
 		}
 	}
@@ -164,7 +170,8 @@ public abstract class BucketTestBase extends TestCase {
 			assertEquals("Write-123", 0xff & (byte) 123, is.read());
 			assertEquals("EOF", -1, is.read());
 			is.close();
-		} finally {
+		}
+		finally {
 			freeBucket(bucket);
 		}
 	}
@@ -198,8 +205,10 @@ public abstract class BucketTestBase extends TestCase {
 			assertEquals("Read-Long-Size", -1, read);
 
 			is.close();
-		} finally {
+		}
+		finally {
 			freeBucket(bucket);
 		}
 	}
+
 }

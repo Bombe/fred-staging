@@ -37,19 +37,20 @@ public class GzipCompressorTest extends TestCase {
 			+ "aksjdhaskjsdhaskjdhaksjdhkajsdhkasdhkqhdioqahdkashdkashdnkashdnaskdhnkasjhdnkasjhdnkasjhdnkasjhdnkasjhdnkashdnkasjhdnkasjhdnkasjhndkasjhdna"
 			+ "djjjjjjjjjjjjjjj3j12j312j312j312j31j23hj123niah1ia3h1iu2b321uiab31ugb312gba38gab23igb12i3ag1b2ig3bi1g3bi1gba3iu12ba3iug1bi3ug1b2i3gab1i2ua3";
 
-	private static final byte[] COMPRESSED_DATA_1 = { 31, -117, 8, 0, 0, 0, 0, 0, 0, 0, -99, -117, 81, 10, -60, 48, 8, 68, -49, -92, -13, -77,
-			-41, 25, 9, 36, 26, -24, 82, 66, -18, 95, -37, -12, -89, -80, 44, -53, 14, -8, 70, 71, 37, -1, -108, -3, 36, -10, 17, -91, 113, -12,
-			24, -53, -110, 87, -44, 121, 38, -99, 39, -10, 86, -4, -67, -77, -107, 28, 111, 108, -117, -7, 81, -38, -39, -57, -118, -66, -39,
-			-25, -43, 86, -18, -119, 37, -98, 66, -120, 6, 30, 21, -118, -106, 41, 54, 103, 19, 39, 18, 83, 13, 42, -45, 105, -112, 89, 19, 90,
-			-115, 120, 85, -102, -62, -85, -119, 58, 88, -59, -44, 43, -52, 101, 33, 15, 124, -118, 94, -106, 59, -57, -68, 46, -112, 79, -30,
-			58, -119, 3, -88, -111, 58, 68, 117, 1, 0, 0 };
+	private static final byte[] COMPRESSED_DATA_1 = { 31, -117, 8, 0, 0, 0, 0, 0, 0, 0, -99, -117, 81, 10, -60, 48, 8,
+			68, -49, -92, -13, -77, -41, 25, 9, 36, 26, -24, 82, 66, -18, 95, -37, -12, -89, -80, 44, -53, 14, -8, 70,
+			71, 37, -1, -108, -3, 36, -10, 17, -91, 113, -12, 24, -53, -110, 87, -44, 121, 38, -99, 39, -10, 86, -4,
+			-67, -77, -107, 28, 111, 108, -117, -7, 81, -38, -39, -57, -118, -66, -39, -25, -43, 86, -18, -119, 37, -98,
+			66, -120, 6, 30, 21, -118, -106, 41, 54, 103, 19, 39, 18, 83, 13, 42, -45, 105, -112, 89, 19, 90, -115, 120,
+			85, -102, -62, -85, -119, 58, 88, -59, -44, 43, -52, 101, 33, 15, 124, -118, 94, -106, 59, -57, -68, 46,
+			-112, 79, -30, 58, -119, 3, -88, -111, 58, 68, 117, 1, 0, 0 };
 
 	/**
 	 * test GZIP compressor's identity and functionality
 	 */
 	public void testGzipCompressor() throws IOException {
 		Compressor.COMPRESSOR_TYPE gzipCompressor = Compressor.COMPRESSOR_TYPE.GZIP;
-		Compressor compressorZero = Compressor.COMPRESSOR_TYPE.getCompressorByMetadataID((short)0);
+		Compressor compressorZero = Compressor.COMPRESSOR_TYPE.getCompressorByMetadataID((short) 0);
 
 		// check GZIP is the first compressor
 		assertEquals(gzipCompressor, compressorZero);
@@ -85,7 +86,7 @@ public class GzipCompressorTest extends TestCase {
 	public void testByteArrayDecompress() throws IOException {
 		// build 5k array
 		byte[] originalUncompressedData = new byte[5 * 1024];
-		for(int i = 0; i < originalUncompressedData.length; i++) {
+		for (int i = 0; i < originalUncompressedData.length; i++) {
 			originalUncompressedData[i] = 1;
 		}
 
@@ -94,7 +95,8 @@ public class GzipCompressorTest extends TestCase {
 
 		int writtenBytes = 0;
 
-		writtenBytes = Compressor.COMPRESSOR_TYPE.GZIP.decompress(compressedData, 0, compressedData.length, outUncompressedData);
+		writtenBytes = Compressor.COMPRESSOR_TYPE.GZIP.decompress(compressedData, 0, compressedData.length,
+				outUncompressedData);
 
 		assertEquals(writtenBytes, originalUncompressedData.length);
 		assertEquals(originalUncompressedData.length, outUncompressedData.length);
@@ -113,18 +115,19 @@ public class GzipCompressorTest extends TestCase {
 
 		try {
 			Compressor.COMPRESSOR_TYPE.GZIP.compress(inBucket, factory, 32, 32);
-		} catch (CompressionOutputSizeException e) {
+		}
+		catch (CompressionOutputSizeException e) {
 			// expect this
 			return;
 		}
 		// TODO LOW codec doesn't actually enforce size limit
-		//fail("did not throw expected CompressionOutputSizeException");
+		// fail("did not throw expected CompressionOutputSizeException");
 	}
 
 	public void testDecompressException() throws IOException {
 		// build 5k array
 		byte[] uncompressedData = new byte[5 * 1024];
-		for(int i = 0; i < uncompressedData.length; i++) {
+		for (int i = 0; i < uncompressedData.length; i++) {
 			uncompressedData[i] = 1;
 		}
 
@@ -140,10 +143,12 @@ public class GzipCompressorTest extends TestCase {
 			Compressor.COMPRESSOR_TYPE.GZIP.decompress(decompressorInput, decompressorOutput, 4096 + 10, 4096 + 20);
 			decompressorInput.close();
 			decompressorOutput.close();
-		} catch (CompressionOutputSizeException e) {
+		}
+		catch (CompressionOutputSizeException e) {
 			// expect this
 			return;
-		} finally {
+		}
+		finally {
 			Closer.close(decompressorInput);
 			Closer.close(decompressorOutput);
 			inBucket.free();
@@ -162,7 +167,8 @@ public class GzipCompressorTest extends TestCase {
 		try {
 			decompressorInput.close();
 			decompressorOutput.close();
-		} finally {
+		}
+		finally {
 			Closer.close(decompressorInput);
 			Closer.close(decompressorOutput);
 		}
@@ -186,4 +192,5 @@ public class GzipCompressorTest extends TestCase {
 
 		return outBuf;
 	}
+
 }

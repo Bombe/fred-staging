@@ -31,20 +31,26 @@ import freenet.support.io.FileUtil;
  * Push / Pull test over long period of time
  *
  * Pushes N CHK's and records both their insert time and their CHKs.
- * 
- * Pulls CHK's for (2^n)-1 days ago, from 0 to 8, but obviously only if
- * there is a CHK for the given date in the log.
+ *
+ * Pulls CHK's for (2^n)-1 days ago, from 0 to 8, but obviously only if there is a CHK for
+ * the given date in the log.
  */
 public class LongTermPushPullCHKTest extends LongTermTest {
+
 	private static final int TEST_SIZE = 64 * 1024;
 
 	private static final int EXIT_NO_SEEDNODES = 257;
+
 	private static final int EXIT_FAILED_TARGET = 258;
+
 	private static final int EXIT_THREW_SOMETHING = 261;
 
 	private static final int DARKNET_PORT1 = 5010;
+
 	private static final int OPENNET_PORT1 = 5011;
+
 	private static final int DARKNET_PORT2 = 5012;
+
 	private static final int OPENNET_PORT2 = 5013;
 
 	private static final int MAX_N = 8;
@@ -84,8 +90,8 @@ public class LongTermPushPullCHKTest extends LongTermTest {
 
 			// Create one node
 			node = NodeStarter.createTestNode(DARKNET_PORT1, OPENNET_PORT1, dir.getPath(), false, Node.DEFAULT_MAX_HTL,
-			        0, random, new PooledExecutor(), 1000, 4 * 1024 * 1024, true, true, true, true, true, true, true,
-			        12 * 1024, true, true, false, false, null);
+					0, random, new PooledExecutor(), 1000, 4 * 1024 * 1024, true, true, true, true, true, true, true,
+					12 * 1024, true, true, false, false, null);
 			Logger.getChain().setThreshold(LogLevel.ERROR);
 
 			// Start it
@@ -95,16 +101,16 @@ public class LongTermPushPullCHKTest extends LongTermTest {
 				exitCode = EXIT_FAILED_TARGET;
 				return;
 			}
-				
+
 			long t2 = System.currentTimeMillis();
 			System.out.println("SEED-TIME:" + (t2 - t1));
 			csvLine.add(String.valueOf(t2 - t1));
-			
+
 			FreenetURI todaysInsert = null;
 
 			// PUSH N+1 BLOCKS
 			for (int i = 0; i <= MAX_N; i++) {
-			    RandomAccessBucket data = randomData(node);
+				RandomAccessBucket data = randomData(node);
 				HighLevelSimpleClient client = node.clientCore.makeClient((short) 0, false, false);
 				System.out.println("PUSHING " + i);
 
@@ -112,13 +118,15 @@ public class LongTermPushPullCHKTest extends LongTermTest {
 					InsertBlock block = new InsertBlock(data, new ClientMetadata(), FreenetURI.EMPTY_CHK_URI);
 					t1 = System.currentTimeMillis();
 					FreenetURI uri = client.insert(block, false, null);
-					if(i == 0) todaysInsert = uri;
+					if (i == 0)
+						todaysInsert = uri;
 					t2 = System.currentTimeMillis();
 
-					System.out.println("PUSH-TIME-" + i + ":" + (t2 - t1)+" for "+uri);
+					System.out.println("PUSH-TIME-" + i + ":" + (t2 - t1) + " for " + uri);
 					csvLine.add(String.valueOf(t2 - t1));
 					csvLine.add(uri.toASCIIString());
-				} catch (InsertException e) {
+				}
+				catch (InsertException e) {
 					e.printStackTrace();
 					csvLine.add("N/A");
 					csvLine.add("N/A");
@@ -135,9 +143,9 @@ public class LongTermPushPullCHKTest extends LongTermTest {
 			fis = new FileInputStream(seednodes);
 			FileUtil.writeTo(fis, new File(innerDir2, "seednodes.fref"));
 			fis.close();
-			node2 = NodeStarter.createTestNode(DARKNET_PORT2, OPENNET_PORT2, dir.getPath(), false,
-			        Node.DEFAULT_MAX_HTL, 0, random, new PooledExecutor(), 1000, 5 * 1024 * 1024, true, true, true,
-			        true, true, true, true, 12 * 1024, false, true, false, false, null);
+			node2 = NodeStarter.createTestNode(DARKNET_PORT2, OPENNET_PORT2, dir.getPath(), false, Node.DEFAULT_MAX_HTL,
+					0, random, new PooledExecutor(), 1000, 5 * 1024 * 1024, true, true, true, true, true, true, true,
+					12 * 1024, false, true, false, false, null);
 			node2.start(true);
 
 			t1 = System.currentTimeMillis();
@@ -156,17 +164,18 @@ public class LongTermPushPullCHKTest extends LongTermTest {
 				targetDate.add(Calendar.DAY_OF_MONTH, -((1 << i) - 1));
 
 				FreenetURI uri = null;
-				
-				if(i == 0) uri = todaysInsert;
+
+				if (i == 0)
+					uri = todaysInsert;
 				else {
 					uri = getHistoricURI(uid, i, targetDate);
 				}
-				
-				if(uri == null) {
-					System.out.println("SKIPPING PULL FOR "+i);
+
+				if (uri == null) {
+					System.out.println("SKIPPING PULL FOR " + i);
 					continue;
 				}
-				
+
 				System.out.println("PULLING " + uri);
 
 				try {
@@ -176,26 +185,31 @@ public class LongTermPushPullCHKTest extends LongTermTest {
 
 					System.out.println("PULL-TIME-" + i + ":" + (t2 - t1));
 					csvLine.add(String.valueOf(t2 - t1));
-				} catch (FetchException e) {
+				}
+				catch (FetchException e) {
 					if (e.getMode() != FetchExceptionMode.ALL_DATA_NOT_FOUND
-					        && e.getMode() != FetchExceptionMode.DATA_NOT_FOUND)
+							&& e.getMode() != FetchExceptionMode.DATA_NOT_FOUND)
 						e.printStackTrace();
 					csvLine.add(FetchException.getShortMessage(e.getMode()));
 				}
 			}
-		} catch (Throwable t) {
+		}
+		catch (Throwable t) {
 			t.printStackTrace();
 			exitCode = EXIT_THREW_SOMETHING;
-		} finally {
+		}
+		finally {
 			try {
 				if (node != null)
 					node.park();
-			} catch (Throwable t1) {
+			}
+			catch (Throwable t1) {
 			}
 			try {
 				if (node2 != null)
 					node2.park();
-			} catch (Throwable t1) {
+			}
+			catch (Throwable t1) {
 			}
 
 			File file = new File(uid + ".csv");
@@ -213,34 +227,40 @@ public class LongTermPushPullCHKTest extends LongTermTest {
 			BufferedReader br = new BufferedReader(isr);
 			String line = null;
 			String dateString = dateFormat.format(targetDate.getTime());
-			while((line = br.readLine()) != null) {
+			while ((line = br.readLine()) != null) {
 				String[] split = line.split("!");
-				if(split.length == 0) continue;
-				if(!dateString.equals(split[0])) continue;
+				if (split.length == 0)
+					continue;
+				if (!dateString.equals(split[0]))
+					continue;
 				int fieldnum = 3 + i * 2;
-				if(line.length() >= fieldnum) continue; // Possible ran twice???
+				if (line.length() >= fieldnum)
+					continue; // Possible ran twice???
 				return new FreenetURI(split[fieldnum]);
 			}
 			return null;
-		} finally {
+		}
+		finally {
 			fis.close();
 		}
 	}
 
 	private static RandomAccessBucket randomData(Node node) throws IOException {
-	    RandomAccessBucket data = node.clientCore.tempBucketFactory.makeBucket(TEST_SIZE);
+		RandomAccessBucket data = node.clientCore.tempBucketFactory.makeBucket(TEST_SIZE);
 		OutputStream os = data.getOutputStream();
 		try {
-		byte[] buf = new byte[4096];
-		for (long written = 0; written < TEST_SIZE;) {
-			node.fastWeakRandom.nextBytes(buf);
-			int toWrite = (int) Math.min(TEST_SIZE - written, buf.length);
-			os.write(buf, 0, toWrite);
-			written += toWrite;
+			byte[] buf = new byte[4096];
+			for (long written = 0; written < TEST_SIZE;) {
+				node.fastWeakRandom.nextBytes(buf);
+				int toWrite = (int) Math.min(TEST_SIZE - written, buf.length);
+				os.write(buf, 0, toWrite);
+				written += toWrite;
+			}
 		}
-		} finally {
-		os.close();
+		finally {
+			os.close();
 		}
 		return data;
 	}
+
 }

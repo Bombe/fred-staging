@@ -6,7 +6,7 @@ package freenet.client.request;
 import freenet.client.async.ClientContext;
 
 public interface RandomGrabArrayItemExclusionList {
-	
+
 	/**
 	 * Whether this item can be returned right now.
 	 */

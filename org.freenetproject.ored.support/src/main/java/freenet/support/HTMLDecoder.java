@@ -7,15 +7,15 @@ package freenet.support;
 import java.util.Map;
 
 /**
- * Description: Utility for converting character references e.g.: &lt; &gt;
- * &quot; &#229; &#1048; &#x6C34;
- * 
+ * Description: Utility for converting character references e.g.: &lt; &gt; &quot; &#229;
+ * &#1048; &#x6C34;
+ *
  * @author Yves Lempereur (avian)
  */
 public class HTMLDecoder {
 
 	static Map<String, Character> charTable = HTMLEntities.decodeMap;
-	
+
 	public static String decode(String s) {
 		String t;
 		Character ch;
@@ -30,7 +30,8 @@ public class HTMLDecoder {
 				tmpPos = curPos;
 				if (tmpPos < maxPos) {
 					char d = s.charAt(tmpPos++);
-					if (d == '#') { // REDFLAG: FIXME: We might want to prevent control characters from beeing created here...
+					if (d == '#') { // REDFLAG: FIXME: We might want to prevent control
+									// characters from beeing created here...
 						if (tmpPos < maxPos) {
 							d = s.charAt(tmpPos++);
 							if ((d == 'x') || (d == 'X')) {
@@ -41,21 +42,15 @@ public class HTMLDecoder {
 											d = s.charAt(tmpPos++);
 											if (!isHexDigit(d)) {
 												if (d == ';') {
-													t =
-														s.substring(
-															curPos + 2,
-															tmpPos - 1);
+													t = s.substring(curPos + 2, tmpPos - 1);
 													try {
-														i =
-															Integer.parseInt(
-																t,
-																16);
-														if ((i >= 0)
-															&& (i < 65536)) {
+														i = Integer.parseInt(t, 16);
+														if ((i >= 0) && (i < 65536)) {
 															c = (char) i;
 															curPos = tmpPos;
 														}
-													} catch (NumberFormatException e) {
+													}
+													catch (NumberFormatException e) {
 													}
 												}
 												break;
@@ -63,22 +58,21 @@ public class HTMLDecoder {
 										}
 									}
 								}
-							} else if (isDigit(d)) {
+							}
+							else if (isDigit(d)) {
 								while (tmpPos < maxPos) {
 									d = s.charAt(tmpPos++);
 									if (!isDigit(d)) {
 										if (d == ';') {
-											t =
-												s.substring(
-													curPos + 1,
-													tmpPos - 1);
+											t = s.substring(curPos + 1, tmpPos - 1);
 											try {
 												i = Integer.parseInt(t);
 												if ((i >= 0) && (i < 65536)) {
 													c = (char) i;
 													curPos = tmpPos;
 												}
-											} catch (NumberFormatException e) {
+											}
+											catch (NumberFormatException e) {
 											}
 										}
 										break;
@@ -86,7 +80,8 @@ public class HTMLDecoder {
 								}
 							}
 						}
-					} else if (isLetter(d)) {
+					}
+					else if (isLetter(d)) {
 						while (tmpPos < maxPos) {
 							d = s.charAt(tmpPos++);
 							if (!isLetterOrDigit(d)) {
@@ -138,7 +133,7 @@ public class HTMLDecoder {
 			if (isWhitespace(c)) {
 				while ((curPos < maxPos) && isWhitespace(s.charAt(curPos))) {
 					curPos++;
-                }
+				}
 				c = '\u0020';
 			}
 			sb.append(c);
@@ -148,19 +143,19 @@ public class HTMLDecoder {
 
 	// HTML is very particular about what constitutes white space.
 	public static boolean isWhitespace(char ch) {
-		return 
-			//space
-		    (ch == '\u0020')
-			//Mac newline
-		    || (ch == '\r')
-		    //Unix newline
-			|| (ch == '\n')		
-			//tab
-			|| (ch == '\u0009')
-			//Control
-			|| (ch == '\u000c')
-			//zero width space
-			|| (ch == '\u200b');
+		return
+		// space
+		(ch == '\u0020')
+				// Mac newline
+				|| (ch == '\r')
+				// Unix newline
+				|| (ch == '\n')
+				// tab
+				|| (ch == '\u0009')
+				// Control
+				|| (ch == '\u000c')
+				// zero width space
+				|| (ch == '\u200b');
 	}
 
 }

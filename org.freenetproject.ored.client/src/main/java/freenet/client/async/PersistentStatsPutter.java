@@ -9,20 +9,25 @@ import freenet.support.BandwidthStatsContainer;
 import freenet.support.UptimeContainer;
 
 /**
- * Add/alter the containers contained in the database, so that
- * the upload/download statistics persist.
- * 
+ * Add/alter the containers contained in the database, so that the upload/download
+ * statistics persist.
+ *
  * @author Artefact2
  */
 public class PersistentStatsPutter implements Serializable {
-    private static final long serialVersionUID = 1L;
 
-    public static final int OFFSET = 60000;
+	private static final long serialVersionUID = 1L;
+
+	public static final int OFFSET = 60000;
 
 	private long latestNodeBytesOut = 0;
+
 	private long latestNodeBytesIn = 0;
+
 	private long latestUptimeVal = 0;
+
 	private BandwidthStatsContainer latestBW = new BandwidthStatsContainer();
+
 	private UptimeContainer latestUptime = new UptimeContainer();
 
 	public BandwidthStatsContainer getLatestBWData() {
@@ -49,9 +54,9 @@ public class PersistentStatsPutter implements Serializable {
 		this.latestUptimeVal = uptime;
 	}
 
-    public void addFrom(PersistentStatsPutter stored) {
-        this.latestBW.addFrom(stored.latestBW);
-        this.latestUptime.addFrom(stored.latestUptime);
-    }
+	public void addFrom(PersistentStatsPutter stored) {
+		this.latestBW.addFrom(stored.latestBW);
+		this.latestUptime.addFrom(stored.latestUptime);
+	}
 
 }

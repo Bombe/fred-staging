@@ -9,26 +9,28 @@ import freenet.support.Fields;
 
 /** Integer config variable */
 public class IntOption extends Option<Integer> {
+
 	private final Dimension dimension;
 
 	public IntOption(SubConfig conf, String optionName, String defaultValueString, int sortOrder, boolean expert,
-					 boolean forceWrite, String shortDesc, String longDesc, IntCallback cb, Dimension dimension) {
-		this(conf, optionName, parseString(defaultValueString, dimension), sortOrder, expert, forceWrite,
-				shortDesc, longDesc, cb, dimension);
+			boolean forceWrite, String shortDesc, String longDesc, IntCallback cb, Dimension dimension) {
+		this(conf, optionName, parseString(defaultValueString, dimension), sortOrder, expert, forceWrite, shortDesc,
+				longDesc, cb, dimension);
 	}
 
 	/**
-	 * @deprecated Replaced by {@link #IntOption(SubConfig, String, String, int, boolean, boolean, String, String, IntCallback, Dimension)}
+	 * @deprecated Replaced by
+	 * {@link #IntOption(SubConfig, String, String, int, boolean, boolean, String, String, IntCallback, Dimension)}
 	 */
 	@Deprecated
 	public IntOption(SubConfig conf, String optionName, String defaultValueString, int sortOrder, boolean expert,
-	        boolean forceWrite, String shortDesc, String longDesc, IntCallback cb, boolean isSize) {
+			boolean forceWrite, String shortDesc, String longDesc, IntCallback cb, boolean isSize) {
 		this(conf, optionName, defaultValueString, sortOrder, expert, forceWrite, shortDesc, longDesc, cb,
 				isSize ? Dimension.SIZE : Dimension.NOT);
 	}
 
 	public IntOption(SubConfig conf, String optionName, Integer defaultValue, int sortOrder, boolean expert,
-					 boolean forceWrite, String shortDesc, String longDesc, IntCallback cb, Dimension dimension) {
+			boolean forceWrite, String shortDesc, String longDesc, IntCallback cb, Dimension dimension) {
 		super(conf, optionName, cb, sortOrder, expert, forceWrite, shortDesc, longDesc, Option.DataType.NUMBER);
 		this.defaultValue = defaultValue;
 		this.currentValue = defaultValue;
@@ -36,11 +38,12 @@ public class IntOption extends Option<Integer> {
 	}
 
 	/**
-	 * @deprecated Replaced by {@link #IntOption(SubConfig, String, Integer, int, boolean, boolean, String, String, IntCallback, Dimension)}
+	 * @deprecated Replaced by
+	 * {@link #IntOption(SubConfig, String, Integer, int, boolean, boolean, String, String, IntCallback, Dimension)}
 	 */
 	@Deprecated
 	public IntOption(SubConfig conf, String optionName, Integer defaultValue, int sortOrder, boolean expert,
-					 boolean forceWrite, String shortDesc, String longDesc, IntCallback cb, boolean isSize) {
+			boolean forceWrite, String shortDesc, String longDesc, IntCallback cb, boolean isSize) {
 		this(conf, optionName, defaultValue, sortOrder, expert, forceWrite, shortDesc, longDesc, cb,
 				isSize ? Dimension.SIZE : Dimension.NOT);
 	}
@@ -49,7 +52,8 @@ public class IntOption extends Option<Integer> {
 	protected Integer parseString(String val) throws InvalidConfigValueException {
 		try {
 			return parseString(val, dimension);
-		} catch (NumberFormatException e) {
+		}
+		catch (NumberFormatException e) {
 			throw new InvalidConfigValueException(l10n("parseError", "val", val));
 		}
 	}
@@ -58,7 +62,8 @@ public class IntOption extends Option<Integer> {
 	private static Integer parseString(String val, Dimension dimension) throws NumberFormatException {
 		try {
 			return Fields.parseInt(val, dimension);
-		} catch (NumberFormatException e) {
+		}
+		catch (NumberFormatException e) {
 			return Fields.parseInt(val, Dimension.NOT);
 		}
 	}
@@ -76,4 +81,5 @@ public class IntOption extends Option<Integer> {
 	protected String toString(Integer val) {
 		return Fields.intToString(val, Dimension.NOT);
 	}
+
 }

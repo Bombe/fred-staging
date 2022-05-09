@@ -14,23 +14,30 @@ import freenet.support.Logger.LogLevel;
 import freenet.support.io.NativeThread;
 
 /**
- * Pooled Executor implementation. Create a thread when we need one, let them die
- * after 5 minutes of inactivity.
+ * Pooled Executor implementation. Create a thread when we need one, let them die after 5
+ * minutes of inactivity.
+ *
  * @author toad
  */
 public class PooledExecutor implements Executor {
 
 	/** All threads running or waiting */
 	private final int[] runningThreads = new int[NativeThread.JAVA_PRIORITY_RANGE + 1];
+
 	/** Threads waiting for a job */
 	@SuppressWarnings("unchecked")
-	private final ArrayList<MyThread>[] waitingThreads =
-		(ArrayList<MyThread>[])new ArrayList<?>[runningThreads.length];
+	private final ArrayList<MyThread>[] waitingThreads = (ArrayList<MyThread>[]) new ArrayList<?>[runningThreads.length];
+
 	private volatile int waitingThreadsCount;
+
 	AtomicLong[] threadCounter = new AtomicLong[runningThreads.length];
+
 	private long jobCount;
+
 	private long jobMisses;
+
 	private static boolean logMINOR;
+
 	// Ticker thread that runs at maximum priority.
 	private Ticker ticker;
 
@@ -39,13 +46,14 @@ public class PooledExecutor implements Executor {
 	}
 
 	public PooledExecutor() {
-		for(int i = 0; i < runningThreads.length; i++) {
+		for (int i = 0; i < runningThreads.length; i++) {
 			/* runningThreads[i] = 0; */
 			waitingThreads[i] = new ArrayList<MyThread>();
 			threadCounter[i] = new AtomicLong();
 		}
 		waitingThreadsCount = 0;
 	}
+
 	/** Maximum time a thread will wait for a job */
 	static final long TIMEOUT = MINUTES.toMillis(1);
 
@@ -66,30 +74,33 @@ public class PooledExecutor implements Executor {
 	@Override
 	public void execute(Runnable runnable, String jobName, boolean fromTicker) {
 		int prio = NativeThread.NORM_PRIORITY;
-		if(runnable instanceof PrioRunnable)
+		if (runnable instanceof PrioRunnable)
 			prio = ((PrioRunnable) runnable).getPriority();
 
-		if(logMINOR)
+		if (logMINOR)
 			Logger.minor(this, "Executing " + runnable + " as " + jobName + " at prio " + prio);
-		if(prio < NativeThread.MIN_PRIORITY || prio > NativeThread.MAX_PRIORITY)
+		if (prio < NativeThread.MIN_PRIORITY || prio > NativeThread.MAX_PRIORITY)
 			throw new IllegalArgumentException("Unreconized priority level : " + prio + '!');
 
 		Job job = new Job(runnable, jobName);
-		while(true) {
+		while (true) {
 			MyThread t = null;
 			boolean miss = false;
-			synchronized(this) {
+			synchronized (this) {
 				jobCount++;
-				if(!waitingThreads[prio - 1].isEmpty()) {
+				if (!waitingThreads[prio - 1].isEmpty()) {
 					t = waitingThreads[prio - 1].remove(waitingThreads[prio - 1].size() - 1);
 					if (t != null)
 						waitingThreadsCount--;
-					if(logMINOR)
+					if (logMINOR)
 						Logger.minor(this, "Reusing thread " + t);
-				} else {
+				}
+				else {
 					// Must create new thread
-					if(ticker != null && (!fromTicker) && NativeThread.usingNativeCode() && prio > Thread.currentThread().getPriority()) {
-						// Get the ticker to create a thread for it with the right priority, since we can't.
+					if (ticker != null && (!fromTicker) && NativeThread.usingNativeCode()
+							&& prio > Thread.currentThread().getPriority()) {
+						// Get the ticker to create a thread for it with the right
+						// priority, since we can't.
 						ticker.queueTimedJob(runnable, jobName, 0, true, false);
 						return;
 					}
@@ -101,15 +112,17 @@ public class PooledExecutor implements Executor {
 			if (miss) {
 				long threadNo = threadCounter[prio - 1].getAndIncrement();
 				// Will be coalesced by thread count listings if we use "@" or "for"
-				t = new MyThread("Pooled thread awaiting work @" + threadNo+" for prio "+prio, job, threadNo, prio, !fromTicker);
+				t = new MyThread("Pooled thread awaiting work @" + threadNo + " for prio " + prio, job, threadNo, prio,
+						!fromTicker);
 				t.setDaemon(true);
 
-				synchronized(this) {
+				synchronized (this) {
 					runningThreads[prio - 1]++;
 					jobMisses++;
 
-					if(logMINOR)
-						Logger.minor(this, "Jobs: " + jobMisses + " misses of " + jobCount + " starting urgently " + jobName);
+					if (logMINOR)
+						Logger.minor(this,
+								"Jobs: " + jobMisses + " misses of " + jobCount + " starting urgently " + jobName);
 				}
 
 				t.start();
@@ -117,10 +130,10 @@ public class PooledExecutor implements Executor {
 			}
 
 			// use existing thread
-			synchronized(t) {
-				if(!t.alive)
+			synchronized (t) {
+				if (!t.alive)
 					continue;
-				if(t.nextJob != null)
+				if (t.nextJob != null)
 					continue;
 				t.nextJob = job;
 
@@ -130,9 +143,10 @@ public class PooledExecutor implements Executor {
 				t.notifyAll();
 			}
 
-			if(logMINOR)
-				synchronized(this) {
-					Logger.minor(this, "Not starting: Jobs: " + jobMisses + " misses of " + jobCount + " starting urgently " + jobName);
+			if (logMINOR)
+				synchronized (this) {
+					Logger.minor(this, "Not starting: Jobs: " + jobMisses + " misses of " + jobCount
+							+ " starting urgently " + jobName);
 				}
 			return;
 		}
@@ -141,7 +155,7 @@ public class PooledExecutor implements Executor {
 	@Override
 	public synchronized int[] runningThreads() {
 		int[] result = new int[runningThreads.length];
-		for(int i = 0; i < result.length; i++)
+		for (int i = 0; i < result.length; i++)
 			result[i] = runningThreads[i] - waitingThreads[i].size();
 		return result;
 	}
@@ -149,7 +163,7 @@ public class PooledExecutor implements Executor {
 	@Override
 	public synchronized int[] waitingThreads() {
 		int[] result = new int[waitingThreads.length];
-		for(int i = 0; i < result.length; i++)
+		for (int i = 0; i < result.length; i++)
 			result[i] = waitingThreads[i].size();
 		return result;
 	}
@@ -160,8 +174,11 @@ public class PooledExecutor implements Executor {
 	}
 
 	private static class Job {
+
 		private final Runnable runnable;
+
 		private final String name;
+
 		private final int id;
 
 		Job(Runnable runnable, String name) {
@@ -173,14 +190,21 @@ public class PooledExecutor implements Executor {
 		public int getId() {
 			return id;
 		}
+
 	}
 
 	public class MyThread extends NativeThread {
+
 		final String defaultName;
+
 		volatile boolean alive = true;
+
 		Job nextJob;
+
 		Job job;
+
 		final long threadNo;
+
 		private boolean removed = false;
 
 		public MyThread(String defaultName, Job firstJob, long threadCounter, int prio, boolean dontCheckRenice) {
@@ -189,15 +213,16 @@ public class PooledExecutor implements Executor {
 			threadNo = threadCounter;
 			nextJob = firstJob;
 		}
-		
+
 		@Override
 		public void realRun() {
 			int nativePriority = getNativePriority();
 			try {
 				innerRun(nativePriority);
-			} finally {
-				if(!removed) {
-					synchronized(PooledExecutor.this) {
+			}
+			finally {
+				if (!removed) {
+					synchronized (PooledExecutor.this) {
 						runningThreads[nativePriority - 1]--;
 					}
 				}
@@ -207,45 +232,47 @@ public class PooledExecutor implements Executor {
 		public int getJobId() {
 			return job != null ? job.id : nextJob != null ? nextJob.id : 0;
 		}
-		
+
 		private void innerRun(int nativePriority) {
 			long ranJobs = 0;
-			while(true) {
-				synchronized(this) {
+			while (true) {
+				synchronized (this) {
 					job = nextJob;
 					nextJob = null;
 				}
 
-				if(job == null) {
-					synchronized(PooledExecutor.this) {
+				if (job == null) {
+					synchronized (PooledExecutor.this) {
 						waitingThreads[nativePriority - 1].add(this);
 						waitingThreadsCount++;
 					}
-					synchronized(this) {
-						if(nextJob == null) {
+					synchronized (this) {
+						if (nextJob == null) {
 							this.setName(defaultName);
 							try {
 								wait(TIMEOUT);
-							} catch(InterruptedException e) {
+							}
+							catch (InterruptedException e) {
 								// Ignore
 							}
 						}
 					}
-					synchronized(PooledExecutor.this) {
+					synchronized (PooledExecutor.this) {
 						if (waitingThreads[nativePriority - 1].remove(this))
 							waitingThreadsCount--;
 
-						synchronized(this) {
+						synchronized (this) {
 							job = nextJob;
 							nextJob = null;
-							// FIXME Fortify thinks this is double-checked locking. IMHO this is a false alarm.
-							if(job == null)
+							// FIXME Fortify thinks this is double-checked locking. IMHO
+							// this is a false alarm.
+							if (job == null)
 								alive = false;
 						}
 
-						if(!alive) {
+						if (!alive) {
 							runningThreads[nativePriority - 1]--;
-							if(logMINOR)
+							if (logMINOR)
 								Logger.minor(this, "Exiting having executed " + ranJobs + " jobs : " + this);
 							removed = true;
 							return;
@@ -257,11 +284,14 @@ public class PooledExecutor implements Executor {
 				try {
 					setName(job.name + "(" + threadNo + ")");
 					job.runnable.run();
-				} catch(Throwable t) {
+				}
+				catch (Throwable t) {
 					Logger.error(this, "Caught " + t + " running job " + job, t);
 				}
 				ranJobs++;
 			}
 		}
+
 	}
+
 }

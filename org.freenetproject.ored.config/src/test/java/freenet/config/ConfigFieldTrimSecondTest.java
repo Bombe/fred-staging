@@ -3,12 +3,14 @@ package freenet.config;
 import junit.framework.TestCase;
 
 /**
- * Tests parsing of bandwidth limits optionally specified with some indicator of "(bits) per second."
+ * Tests parsing of bandwidth limits optionally specified with some indicator of "(bits)
+ * per second."
  */
 public class ConfigFieldTrimSecondTest extends TestCase {
 
 	/**
-	 * Bandwidth limit input with and without various "per second" specifiers and SI / IEC units.
+	 * Bandwidth limit input with and without various "per second" specifiers and SI / IEC
+	 * units.
 	 */
 	private static final String[] input = { "50 KiB/s", "1.5 MiB/sec", "128 kbps", "20 KiB", "5800" };
 
@@ -27,4 +29,5 @@ public class ConfigFieldTrimSecondTest extends TestCase {
 			assertEquals(parsed, output[i]);
 		}
 	}
+
 }

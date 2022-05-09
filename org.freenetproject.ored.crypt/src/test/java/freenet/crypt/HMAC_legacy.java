@@ -10,17 +10,19 @@ import java.security.NoSuchAlgorithmException;
 import freenet.support.HexUtil;
 
 /**
- * Implements the HMAC Keyed Message Authentication function, as described
- * in the draft FIPS standard.
+ * Implements the HMAC Keyed Message Authentication function, as described in the draft
+ * FIPS standard.
  */
 public class HMAC_legacy {
 
 	protected static final int B = 64;
+
 	protected static byte[] ipad = new byte[B];
+
 	protected static byte[] opad = new byte[B];
 
 	static {
-		for(int i = 0; i < B; i++) {
+		for (int i = 0; i < B; i++) {
 			ipad[i] = (byte) 0x36;
 			opad[i] = (byte) 0x5c;
 		}
@@ -41,14 +43,14 @@ public class HMAC_legacy {
 	public byte[] mac(byte[] K, byte[] text, int macbytes) {
 		byte[] K0 = null;
 
-		if(K.length == B) // Step 1
+		if (K.length == B) // Step 1
 			K0 = K;
 		else {
 			// Step 2
-			if(K.length > B)
+			if (K.length > B)
 				K0 = K = Util.hashBytes(d, K);
 
-			if(K.length < B) { // Step 3
+			if (K.length < B) { // Step 3
 				K0 = new byte[B];
 				System.arraycopy(K, 0, K0, 0, K.length);
 			}
@@ -71,7 +73,7 @@ public class HMAC_legacy {
 		IS1 = d.digest();
 
 		// Step 10
-		if(macbytes == IS1.length)
+		if (macbytes == IS1.length)
 			return IS1;
 		else {
 			byte[] rv = new byte[macbytes];
@@ -84,7 +86,8 @@ public class HMAC_legacy {
 		HMAC_legacy s = null;
 		try {
 			s = new HMAC_legacy(MessageDigest.getInstance("SHA1"));
-		} catch(NoSuchAlgorithmException e) {
+		}
+		catch (NoSuchAlgorithmException e) {
 			throw new RuntimeException(e);
 		}
 		byte[] key = new byte[20];
@@ -92,33 +95,33 @@ public class HMAC_legacy {
 		byte[] text;
 		text = "Hi There".getBytes("UTF-8");
 
-		for(int i = 0; i < key.length; i++)
+		for (int i = 0; i < key.length; i++)
 			key[i] = (byte) 0x0b;
 
 		byte[] mv = s.mac(key, text, 20);
 		System.out.println(HexUtil.bytesToHex(mv, 0, mv.length));
 
 		System.err.println("20xaa, 50xdd:");
-		for(int i = 0; i < key.length; i++)
+		for (int i = 0; i < key.length; i++)
 			key[i] = (byte) 0xaa;
 		text = new byte[50];
-		for(int i = 0; i < text.length; i++)
+		for (int i = 0; i < text.length; i++)
 			text[i] = (byte) 0xdd;
 		mv = s.mac(key, text, 20);
 		System.out.println(HexUtil.bytesToHex(mv, 0, mv.length));
 
 		key = new byte[25];
 		System.err.println("25x[i+1], 50xcd:");
-		for(int i = 0; i < key.length; i++)
+		for (int i = 0; i < key.length; i++)
 			key[i] = (byte) (i + 1);
-		for(int i = 0; i < text.length; i++)
+		for (int i = 0; i < text.length; i++)
 			text[i] = (byte) 0xcd;
 		mv = s.mac(key, text, 20);
 		System.out.println(HexUtil.bytesToHex(mv, 0, mv.length));
 
 		key = new byte[20];
 		System.err.println("20x0c, 'Test With Truncation':");
-		for(int i = 0; i < key.length; i++)
+		for (int i = 0; i < key.length; i++)
 			key[i] = (byte) 0x0c;
 		text = "Test With Truncation".getBytes("UTF-8");
 		mv = s.mac(key, text, 20);
@@ -134,8 +137,9 @@ public class HMAC_legacy {
 			sha256 = SHA256.getMessageDigest();
 			HMAC_legacy hash = new HMAC_legacy(sha256);
 			return hash.mac(K, text, macbytes);
-		} finally {
-			if(sha256 != null)
+		}
+		finally {
+			if (sha256 != null)
 				SHA256.returnMessageDigest(sha256);
 		}
 	}
@@ -146,9 +150,11 @@ public class HMAC_legacy {
 			sha256 = SHA256.getMessageDigest();
 			HMAC_legacy hash = new HMAC_legacy(sha256);
 			return hash.verify(K, text, mac);
-		} finally {
-			if(sha256 != null)
+		}
+		finally {
+			if (sha256 != null)
 				SHA256.returnMessageDigest(sha256);
 		}
 	}
+
 }

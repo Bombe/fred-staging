@@ -11,15 +11,18 @@ import junit.framework.Assert;
 import junit.framework.TestCase;
 
 public class OggPageTest extends TestCase {
+
 	public void testStripNonsenseInterruption() throws IOException {
 		InputStream badData = getClass().getResourceAsStream("/filter/ogg/nonsensical_interruption.ogg");
 		ByteArrayOutputStream filteredDataStream = new ByteArrayOutputStream();
 		DataOutputStream output = new DataOutputStream(filteredDataStream);
 		DataInputStream input = new DataInputStream(badData);
 		OggPage page = OggPage.readPage(input);
-		if(page.headerValid()) output.write(page.toArray());
+		if (page.headerValid())
+			output.write(page.toArray());
 		page = OggPage.readPage(input);
-		if(page.headerValid()) output.write(page.toArray());
+		if (page.headerValid())
+			output.write(page.toArray());
 		byte[] filteredData = filteredDataStream.toByteArray();
 		output.close();
 		input.close();
@@ -29,9 +32,11 @@ public class OggPageTest extends TestCase {
 		ByteArrayOutputStream expectedDataStream = new ByteArrayOutputStream();
 		output = new DataOutputStream(expectedDataStream);
 		page = OggPage.readPage(input);
-		if(page.headerValid()) output.write(page.toArray());
+		if (page.headerValid())
+			output.write(page.toArray());
 		page = OggPage.readPage(input);
-		if(page.headerValid()) output.write(page.toArray());
+		if (page.headerValid())
+			output.write(page.toArray());
 		byte[] expectedData = expectedDataStream.toByteArray();
 		output.close();
 		input.close();
@@ -52,4 +57,5 @@ public class OggPageTest extends TestCase {
 		Assert.assertFalse(page.headerValid());
 		input.close();
 	}
+
 }

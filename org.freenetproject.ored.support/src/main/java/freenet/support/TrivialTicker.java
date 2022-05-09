@@ -8,143 +8,153 @@ import freenet.support.node.FastRunnable;
 
 /**
  * Ticker implemented using Timer's.
- * 
- * If deploying this to replace PacketSender, be careful to handle priority changes properly.
- * Hopefully that can be achieved simply by creating at max priority during startup.
- * 
+ *
+ * If deploying this to replace PacketSender, be careful to handle priority changes
+ * properly. Hopefully that can be achieved simply by creating at max priority during
+ * startup.
+ *
  * @author Matthew Toseland <toad@amphibian.dyndns.org> (0xE43DA450)
  *
  */
 public class TrivialTicker implements Ticker {
 
 	private final Timer timer = new Timer(true);
-	
+
 	private final Executor executor;
-	
+
 	private final Hashtable<Runnable, TimerTask> jobs = new Hashtable<Runnable, TimerTask>();
-	
+
 	private boolean running = true;
-	
+
 	public TrivialTicker(Executor executor) {
 		this.executor = executor;
 	}
-	
+
 	@Override
 	public void queueTimedJob(final Runnable job, long offset) {
 		TimerTask t = new TimerTask() {
 			@Override
 			public void run() {
-				synchronized(TrivialTicker.this) {
-					jobs.remove(job); // We must do this before job.run() in case the job re-schedules itself.
+				synchronized (TrivialTicker.this) {
+					jobs.remove(job); // We must do this before job.run() in case the job
+										// re-schedules itself.
 				}
-				
-				if(job instanceof FastRunnable) {
+
+				if (job instanceof FastRunnable) {
 					job.run();
-				} else {
-					executor.execute(job, "Delayed task: "+job);
+				}
+				else {
+					executor.execute(job, "Delayed task: " + job);
 				}
 			}
 		};
-		
-		synchronized(this) {
-			if(!running)
+
+		synchronized (this) {
+			if (!running)
 				return;
-		
+
 			timer.schedule(t, offset);
 			jobs.put(job, t);
 		}
 	}
 
 	@Override
-	public void queueTimedJob(final Runnable job, final String name, long offset,
-			boolean runOnTickerAnyway, boolean noDupes) {
+	public void queueTimedJob(final Runnable job, final String name, long offset, boolean runOnTickerAnyway,
+			boolean noDupes) {
 		TimerTask t = new TimerTask() {
 
 			@Override
 			public void run() {
-				synchronized(TrivialTicker.this) {
-					jobs.remove(job); // We must do this before job.run() in case the job re-schedules itself.
+				synchronized (TrivialTicker.this) {
+					jobs.remove(job); // We must do this before job.run() in case the job
+										// re-schedules itself.
 				}
-				
-				if(job instanceof FastRunnable) {
+
+				if (job instanceof FastRunnable) {
 					job.run();
-				} else {
+				}
+				else {
 					executor.execute(job, name);
 				}
 			}
-			
+
 		};
-		
-		synchronized(this) {
-			if(!running)
+
+		synchronized (this) {
+			if (!running)
 				return;
-			
-			if(noDupes && jobs.containsKey(job))
+
+			if (noDupes && jobs.containsKey(job))
 				return;
-			
+
 			timer.schedule(t, offset);
 			jobs.put(job, t);
 		}
 	}
-	
+
 	public void cancelTimedJob(final Runnable job) {
 		removeQueuedJob(job);
 	}
-	
+
 	@Override
 	public void removeQueuedJob(final Runnable job) {
-		synchronized(this) {
-			if(!running)
+		synchronized (this) {
+			if (!running)
 				return;
-			
+
 			TimerTask t = jobs.remove(job);
-			if(t != null) {
+			if (t != null) {
 				t.cancel();
 			}
 		}
 	}
-	
+
 	/**
-	 * Changes the offset of a already-queued job.
-	 * If the given job was not queued yet it will be queued nevertheless.
+	 * Changes the offset of a already-queued job. If the given job was not queued yet it
+	 * will be queued nevertheless.
 	 */
 	public void rescheduleTimedJob(final Runnable job, final String name, long newOffset) {
-		synchronized(this) {
+		synchronized (this) {
 			removeQueuedJob(job);
-			queueTimedJob(job, name, newOffset, false, false); // Don't dupe-check, we are synchronized
+			queueTimedJob(job, name, newOffset, false, false); // Don't dupe-check, we are
+																// synchronized
 		}
 	}
-	
+
 	private Thread shutdownThread = null;
-	
+
 	public void shutdown() {
-		synchronized(this) {
+		synchronized (this) {
 			running = false;
-			
+
 			timer.schedule(new TimerTask() {
 
 				@Override
 				public void run() {
-					// According to the JavaDoc of cancel(), calling it inside a TimerTask guarantees that the task is the last one which is run.
+					// According to the JavaDoc of cancel(), calling it inside a TimerTask
+					// guarantees that the task is the last one which is run.
 					timer.cancel();
-					synchronized(TrivialTicker.this) {
+					synchronized (TrivialTicker.this) {
 						shutdownThread = Thread.currentThread();
 						TrivialTicker.this.notifyAll();
 					}
 				}
-				
+
 			}, 0);
-			
-			while(shutdownThread == null) {
+
+			while (shutdownThread == null) {
 				try {
 					wait();
-				} catch (InterruptedException e) { } // Valid to happen due to spurious wakeups
+				}
+				catch (InterruptedException e) {
+				} // Valid to happen due to spurious wakeups
 			}
-			
-			while(shutdownThread.isAlive()) { // Ignore InterruptedExceptions
+
+			while (shutdownThread.isAlive()) { // Ignore InterruptedExceptions
 				try {
 					shutdownThread.join();
-				} catch (InterruptedException e) { 
+				}
+				catch (InterruptedException e) {
 					Logger.error(this, "Got an unexpected InterruptedException", e);
 				}
 			}
@@ -156,11 +166,10 @@ public class TrivialTicker implements Ticker {
 		return executor;
 	}
 
-    @Override
-    public void queueTimedJobAbsolute(Runnable runner, String name, long time,
-            boolean runOnTickerAnyway, boolean noDupes) {
-        queueTimedJobAbsolute(runner, name, time - System.currentTimeMillis(), 
-                runOnTickerAnyway, noDupes);
-    }
+	@Override
+	public void queueTimedJobAbsolute(Runnable runner, String name, long time, boolean runOnTickerAnyway,
+			boolean noDupes) {
+		queueTimedJobAbsolute(runner, name, time - System.currentTimeMillis(), runOnTickerAnyway, noDupes);
+	}
 
 }

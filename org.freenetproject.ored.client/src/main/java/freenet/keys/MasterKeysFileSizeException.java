@@ -18,7 +18,7 @@ public class MasterKeysFileSizeException extends Exception {
 	}
 
 	public String sizeToString() {
-		return tooBig? "big" : "small";
+		return tooBig ? "big" : "small";
 	}
 
 }

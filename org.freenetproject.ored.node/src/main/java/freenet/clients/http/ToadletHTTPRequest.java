@@ -10,10 +10,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 /**
- * Used for passing all HTTP request information to the FredPlugin that handles
- * the request. It parses the query string and has several methods for accessing
- * the request parameter values.
- * 
+ * Used for passing all HTTP request information to the FredPlugin that handles the
+ * request. It parses the query string and has several methods for accessing the request
+ * parameter values.
+ *
  * @author nacktschneck
  */
 public class ToadletHTTPRequest extends SimpleHTTPRequest {
@@ -26,10 +26,8 @@ public class ToadletHTTPRequest extends SimpleHTTPRequest {
 		super(path, encodedQueryString, method);
 	}
 
-
 	/**
 	 * Creates a new HTTPRequest for the given URI and data.
-	 *
 	 * @param uri The URI being requested
 	 * @param d The data
 	 * @param ctx The toadlet context (for headers and bucket factory)
@@ -38,4 +36,5 @@ public class ToadletHTTPRequest extends SimpleHTTPRequest {
 	public ToadletHTTPRequest(URI uri, Bucket d, ToadletContext ctx, String method) {
 		super(uri, ctx.getHeaders(), d, ctx.getBucketFactory(), method);
 	}
+
 }

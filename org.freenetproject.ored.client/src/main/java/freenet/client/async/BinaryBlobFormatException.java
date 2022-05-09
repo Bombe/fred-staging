@@ -5,7 +5,7 @@ import freenet.keys.KeyVerifyException;
 public class BinaryBlobFormatException extends Exception {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 1L;
 

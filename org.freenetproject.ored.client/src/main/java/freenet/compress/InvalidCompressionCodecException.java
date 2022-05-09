@@ -4,8 +4,7 @@
 package freenet.compress;
 
 /**
- * The given codec identifier was invalid (number out of range, or misstyped
- * name)
+ * The given codec identifier was invalid (number out of range, or misstyped name)
  */
 public class InvalidCompressionCodecException extends Exception {
 

@@ -14,12 +14,13 @@ import freenet.nodelogger.Logger;
 import freenet.http.HTTPRequest;
 
 /**
- * This toadlet allows the client to notify the server about page leaving. All of it's data is then erased, it's elements disposed, and notifications removed. It needs the
+ * This toadlet allows the client to notify the server about page leaving. All of it's
+ * data is then erased, it's elements disposed, and notifications removed. It needs the
  * requestId parameter.
  */
 public class PushLeavingToadlet extends Toadlet {
 
-	private static volatile boolean	logMINOR;
+	private static volatile boolean logMINOR;
 
 	static {
 		Logger.registerClass(PushLeavingToadlet.class);
@@ -29,7 +30,8 @@ public class PushLeavingToadlet extends Toadlet {
 		super(client);
 	}
 
-	public void handleMethodGET(URI uri, HTTPRequest req, ToadletContext ctx) throws ToadletContextClosedException, IOException, RedirectException {
+	public void handleMethodGET(URI uri, HTTPRequest req, ToadletContext ctx)
+			throws ToadletContextClosedException, IOException, RedirectException {
 		String requestId = req.getParam("requestId");
 		boolean deleted = ((SimpleToadletServer) ctx.getContainer()).pushDataManager.leaving(requestId);
 		if (logMINOR) {

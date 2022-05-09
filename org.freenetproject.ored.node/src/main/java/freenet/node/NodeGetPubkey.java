@@ -16,25 +16,30 @@ import freenet.support.LRUMap;
 import freenet.nodelogger.Logger;
 
 public class NodeGetPubkey implements GetPubkey {
+
 	private static volatile boolean logMINOR;
 
 	static {
 		Logger.registerClass(NodeGetPubkey.class);
 	}
-	
+
 	// Debugging stuff
 	private static final boolean USE_RAM_PUBKEYS_CACHE = true;
+
 	private static final int MAX_MEMORY_CACHED_PUBKEYS = 1000;
-	
+
 	private final LRUMap<ByteArrayWrapper, DSAPublicKey> cachedPubKeys;
 
 	private PubkeyStore pubKeyDatastore;
+
 	private PubkeyStore pubKeyDatacache;
+
 	private PubkeyStore pubKeyClientcache;
+
 	private PubkeyStore pubKeySlashdotcache;
-	
+
 	private final Node node;
-	
+
 	NodeGetPubkey(Node node) {
 		cachedPubKeys = LRUMap.createSafeMap(ByteArrayWrapper.FAST_COMPARATOR);
 		this.node = node;
@@ -45,13 +50,17 @@ public class NodeGetPubkey implements GetPubkey {
 		this.pubKeyDatacache = pubKeyDatacache;
 	}
 
-	/* (non-Javadoc)
-	 * @see freenet.node.GetPubkey#getKey(byte[], boolean, boolean, freenet.store.BlockMetadata)
+	/*
+	 * (non-Javadoc)
+	 *
+	 * @see freenet.node.GetPubkey#getKey(byte[], boolean, boolean,
+	 * freenet.store.BlockMetadata)
 	 */
 	@Override
 	public DSAPublicKey getKey(byte[] hash, boolean canReadClientCache, boolean forULPR, BlockMetadata meta) {
 		boolean ignoreOldBlocks = !node.getWriteLocalToDatastore();
-		if(canReadClientCache) ignoreOldBlocks = false;
+		if (canReadClientCache)
+			ignoreOldBlocks = false;
 		ByteArrayWrapper w = new ByteArrayWrapper(hash);
 		if (logMINOR)
 			Logger.minor(this, "Getting pubkey: " + HexUtil.bytesToHex(hash));
@@ -69,38 +78,42 @@ public class NodeGetPubkey implements GetPubkey {
 		}
 		try {
 			DSAPublicKey key = null;
-			if(pubKeyClientcache != null && canReadClientCache)
+			if (pubKeyClientcache != null && canReadClientCache)
 				key = pubKeyClientcache.fetch(hash, false, false, meta);
-			if(node.oldPKClientCache != null && canReadClientCache && key == null) {
+			if (node.oldPKClientCache != null && canReadClientCache && key == null) {
 				PubkeyStore pks = node.oldPKClientCache;
-				if(pks != null) key = pks.fetch(hash, false, false, meta);
-				if(key != null && logMINOR)
-					Logger.minor(this, "Got "+HexUtil.bytesToHex(hash)+" from old client cache");
+				if (pks != null)
+					key = pks.fetch(hash, false, false, meta);
+				if (key != null && logMINOR)
+					Logger.minor(this, "Got " + HexUtil.bytesToHex(hash) + " from old client cache");
 			}
-			// We can *read* from the datastore even if nearby, but we cannot promote in that case.
-			if(key == null) {
+			// We can *read* from the datastore even if nearby, but we cannot promote in
+			// that case.
+			if (key == null) {
 				key = pubKeyDatastore.fetch(hash, false, ignoreOldBlocks, meta);
-				if(key != null && logMINOR)
-					Logger.minor(this, "Got "+HexUtil.bytesToHex(hash)+" from store");
+				if (key != null && logMINOR)
+					Logger.minor(this, "Got " + HexUtil.bytesToHex(hash) + " from store");
 			}
-			if(key == null) {
+			if (key == null) {
 				PubkeyStore pks = node.oldPK;
-				if(pks != null) key = pks.fetch(hash, false, ignoreOldBlocks, meta);
-				if(key != null && logMINOR)
-					Logger.minor(this, "Got "+HexUtil.bytesToHex(hash)+" from old store");
+				if (pks != null)
+					key = pks.fetch(hash, false, ignoreOldBlocks, meta);
+				if (key != null && logMINOR)
+					Logger.minor(this, "Got " + HexUtil.bytesToHex(hash) + " from old store");
 			}
 			if (key == null) {
 				key = pubKeyDatacache.fetch(hash, false, ignoreOldBlocks, meta);
-				if(key != null && logMINOR)
-					Logger.minor(this, "Got "+HexUtil.bytesToHex(hash)+" from cache");
+				if (key != null && logMINOR)
+					Logger.minor(this, "Got " + HexUtil.bytesToHex(hash) + " from cache");
 			}
-			if(key == null) {
+			if (key == null) {
 				PubkeyStore pks = node.oldPKCache;
-				if(pks != null) key = pks.fetch(hash, false, ignoreOldBlocks, meta);
-				if(key != null && logMINOR)
-					Logger.minor(this, "Got "+HexUtil.bytesToHex(hash)+" from old cache");
+				if (pks != null)
+					key = pks.fetch(hash, false, ignoreOldBlocks, meta);
+				if (key != null && logMINOR)
+					Logger.minor(this, "Got " + HexUtil.bytesToHex(hash) + " from old cache");
 			}
-			if(key == null && pubKeySlashdotcache != null && forULPR) {
+			if (key == null && pubKeySlashdotcache != null && forULPR) {
 				key = pubKeySlashdotcache.fetch(hash, false, ignoreOldBlocks, meta);
 				if (logMINOR)
 					Logger.minor(this, "Got " + HexUtil.bytesToHex(hash) + " from slashdot cache");
@@ -110,18 +123,23 @@ public class NodeGetPubkey implements GetPubkey {
 				cacheKey(hash, key, false, false, false, false, false);
 			}
 			return key;
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			// FIXME deal with disk full, access perms etc; tell user about it.
 			Logger.error(this, "Error accessing pubkey store: " + e, e);
 			return null;
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see freenet.node.GetPubkey#cacheKey(byte[], freenet.crypt.DSAPublicKey, boolean, boolean, boolean, boolean, boolean)
+	/*
+	 * (non-Javadoc)
+	 *
+	 * @see freenet.node.GetPubkey#cacheKey(byte[], freenet.crypt.DSAPublicKey, boolean,
+	 * boolean, boolean, boolean, boolean)
 	 */
 	@Override
-	public void cacheKey(byte[] hash, DSAPublicKey key, boolean deep, boolean canWriteClientCache, boolean canWriteDatastore, boolean forULPR, boolean writeLocalToDatastore) {
+	public void cacheKey(byte[] hash, DSAPublicKey key, boolean deep, boolean canWriteClientCache,
+			boolean canWriteDatastore, boolean forULPR, boolean writeLocalToDatastore) {
 		if (logMINOR)
 			Logger.minor(this, "Cache key: " + HexUtil.bytesToHex(hash) + " : " + key);
 		ByteArrayWrapper w = new ByteArrayWrapper(hash);
@@ -135,22 +153,24 @@ public class NodeGetPubkey implements GetPubkey {
 		}
 		try {
 			if (canWriteClientCache && !(canWriteDatastore || writeLocalToDatastore)) {
-				if(pubKeyClientcache != null) {
+				if (pubKeyClientcache != null) {
 					pubKeyClientcache.put(hash, (StoreDSAPublicKey) key, false);
 				}
 			}
 			if (forULPR && !(canWriteDatastore || writeLocalToDatastore)) {
-				if(pubKeySlashdotcache!= null) {
+				if (pubKeySlashdotcache != null) {
 					pubKeySlashdotcache.put(hash, (StoreDSAPublicKey) key, false);
 				}
 			}
 			// Cannot write to the store or cache if request started nearby.
-			if(!(canWriteDatastore || writeLocalToDatastore)) return;
+			if (!(canWriteDatastore || writeLocalToDatastore))
+				return;
 			if (deep) {
 				pubKeyDatastore.put(hash, (StoreDSAPublicKey) key, !canWriteDatastore);
 			}
 			pubKeyDatacache.put(hash, (StoreDSAPublicKey) key, !canWriteDatastore);
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			// FIXME deal with disk full, access perms etc; tell user about it.
 			Logger.error(this, "Error accessing pubkey store: " + e, e);
 		}
@@ -159,8 +179,9 @@ public class NodeGetPubkey implements GetPubkey {
 	public void setLocalDataStore(PubkeyStore pubKeyClientcache) {
 		this.pubKeyClientcache = pubKeyClientcache;
 	}
-	
+
 	public void setLocalSlashdotcache(PubkeyStore pubKeySlashdotcache) {
 		this.pubKeySlashdotcache = pubKeySlashdotcache;
 	}
+
 }

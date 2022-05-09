@@ -4,7 +4,7 @@ import freenet.l10n.NodeL10n;
 
 public class UnsupportedCharsetInFilterException extends UnsafeContentTypeException {
 
-    final private static long serialVersionUID = 3775454822229213420L;
+	final private static long serialVersionUID = 3775454822229213420L;
 
 	final String charset;
 
@@ -28,11 +28,11 @@ public class UnsupportedCharsetInFilterException extends UnsafeContentTypeExcept
 	}
 
 	public String l10n(String message) {
-		return NodeL10n.getBase().getString("UnsupportedCharsetInFilterException."+message);
+		return NodeL10n.getBase().getString("UnsupportedCharsetInFilterException." + message);
 	}
 
 	public String l10n(String message, String key, String value) {
-		return NodeL10n.getBase().getString("UnsupportedCharsetInFilterException."+message, key, value);
+		return NodeL10n.getBase().getString("UnsupportedCharsetInFilterException." + message, key, value);
 	}
 
 }

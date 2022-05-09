@@ -8,11 +8,15 @@ import freenet.keys.NodeSSK;
 import freenet.clientlogger.Logger;
 
 public class SingleKeyListener implements KeyListener {
-	
+
 	private final Key key;
+
 	private final BaseSingleFileFetcher fetcher;
+
 	private boolean done;
+
 	private short prio;
+
 	private final boolean persistent;
 
 	public SingleKeyListener(Key key, BaseSingleFileFetcher fetcher, short prio, boolean persistent) {
@@ -24,14 +28,18 @@ public class SingleKeyListener implements KeyListener {
 
 	@Override
 	public long countKeys() {
-		if(done) return 0;
-		else return 1;
+		if (done)
+			return 0;
+		else
+			return 1;
 	}
 
 	@Override
 	public short definitelyWantKey(Key key, byte[] saltedKey, ClientContext context) {
-		if(!key.equals(this.key)) return -1;
-		else return prio;
+		if (!key.equals(this.key))
+			return -1;
+		else
+			return prio;
 	}
 
 	@Override
@@ -46,20 +54,23 @@ public class SingleKeyListener implements KeyListener {
 
 	@Override
 	public SendableGet[] getRequestsForKey(Key key, byte[] saltedKey, ClientContext context) {
-		if(!key.equals(this.key)) return null;
+		if (!key.equals(this.key))
+			return null;
 		return new SendableGet[] { fetcher };
 	}
 
 	@Override
 	public boolean handleBlock(Key key, byte[] saltedKey, KeyBlock found, ClientContext context) {
-		if(!key.equals(this.key)) return false;
+		if (!key.equals(this.key))
+			return false;
 		try {
 			fetcher.onGotKey(key, found, context);
-		} catch (Throwable t) {
-			Logger.error(this, "Failed: "+t, t);
+		}
+		catch (Throwable t) {
+			Logger.error(this, "Failed: " + t, t);
 			fetcher.onFailure(new LowLevelGetException(LowLevelGetException.INTERNAL_ERROR), null, context);
 		}
-		synchronized(this) {
+		synchronized (this) {
 			done = true;
 		}
 		return true;
@@ -72,7 +83,8 @@ public class SingleKeyListener implements KeyListener {
 
 	@Override
 	public boolean probablyWantKey(Key key, byte[] saltedKey) {
-		if(done) return false;
+		if (done)
+			return false;
 		return key.equals(this.key);
 	}
 

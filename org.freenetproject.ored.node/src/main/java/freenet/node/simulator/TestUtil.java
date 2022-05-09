@@ -3,6 +3,7 @@ package freenet.node.simulator;
 import freenet.node.Node;
 
 public class TestUtil {
+
 	static boolean waitForNodes(Node node) throws InterruptedException {
 		int targetPeers = node.getOpennet().getAnnouncementThreshold();
 		// Wait until we have 10 connected nodes...
@@ -15,7 +16,7 @@ public class TestUtil {
 			int opennetPeers = node.peers.countValidPeers();
 			int opennetConns = node.peers.countConnectedOpennetPeers();
 			System.err.println("" + seconds + " : seeds: " + seeds + ", connected: " + seedConns + " opennet: peers: "
-			        + opennetPeers + ", connected: " + opennetConns);
+					+ opennetPeers + ", connected: " + opennetConns);
 			seconds++;
 			if (opennetConns >= targetPeers) {
 				success = true;
@@ -26,4 +27,5 @@ public class TestUtil {
 			System.err.println("Failed to reach target peers count " + targetPeers + " in 10 minutes.");
 		return success;
 	}
+
 }

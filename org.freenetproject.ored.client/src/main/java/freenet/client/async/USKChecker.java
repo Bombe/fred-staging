@@ -16,48 +16,50 @@ import freenet.support.Logger.LogLevel;
 
 /**
  * Checks a single USK slot.
- * 
+ *
  * Not persistent, used by USKFetcher.
  */
 @SuppressWarnings("serial")
 class USKChecker extends BaseSingleFileFetcher {
 
 	final USKCheckerCallback cb;
+
 	private int dnfs;
-	
+
 	private long cooldownWakeupTime;
 
-        private static volatile boolean logMINOR;
+	private static volatile boolean logMINOR;
 	static {
-		Logger.registerLogThresholdCallback(new LogThresholdCallback(){
+		Logger.registerLogThresholdCallback(new LogThresholdCallback() {
 			@Override
-			public void shouldUpdate(){
+			public void shouldUpdate() {
 				logMINOR = Logger.shouldLog(LogLevel.MINOR, this);
 			}
 		});
 	}
 
-	USKChecker(USKCheckerCallback cb, ClientKey key, int maxRetries, FetchContext ctx, ClientRequester parent, boolean realTimeFlag) {
+	USKChecker(USKCheckerCallback cb, ClientKey key, int maxRetries, FetchContext ctx, ClientRequester parent,
+			boolean realTimeFlag) {
 		super(key, maxRetries, ctx, parent, false, realTimeFlag);
 		this.cb = cb;
-        if(logMINOR)
-            Logger.minor(USKChecker.class, "Created USKChecker for "+key+" : "+this);
+		if (logMINOR)
+			Logger.minor(USKChecker.class, "Created USKChecker for " + key + " : " + this);
 	}
-	
+
 	@Override
 	public void onSuccess(ClientKeyBlock block, boolean fromStore, Object token, ClientContext context) {
 		// No need to check from here since USKFetcher will be told anyway.
-		cb.onSuccess((ClientSSKBlock)block, context);
+		cb.onSuccess((ClientSSKBlock) block, context);
 	}
 
 	@Override
 	public void onFailure(LowLevelException e, SendableRequestItem token, ClientContext context) {
-	    if(logMINOR)
-	        Logger.minor(this, "onFailure: "+e+" for "+this);
+		if (logMINOR)
+			Logger.minor(this, "onFailure: " + e + " for " + this);
 		// Firstly, can we retry?
 		boolean canRetry;
 		LowLevelGetException ge = (LowLevelGetException) e;
-		switch(ge.code) {
+		switch (ge.code) {
 		case LowLevelGetException.CANCELLED:
 		case LowLevelGetException.DECODE_FAILED:
 			// Cannot retry
@@ -78,23 +80,25 @@ class USKChecker extends BaseSingleFileFetcher {
 			canRetry = true;
 			break;
 		default:
-			Logger.error(this, "Unknown low-level fetch error code: "+ge.code, new Exception("error"));
+			Logger.error(this, "Unknown low-level fetch error code: " + ge.code, new Exception("error"));
 			canRetry = true;
 		}
 
-		if(canRetry && retry(context)) return;
-		
+		if (canRetry && retry(context))
+			return;
+
 		// Ran out of retries.
 		unregisterAll(context);
-		if(ge.code == LowLevelGetException.CANCELLED){
+		if (ge.code == LowLevelGetException.CANCELLED) {
 			cb.onCancelled(context);
 			return;
-		}else if(ge.code == LowLevelGetException.DECODE_FAILED){
+		}
+		else if (ge.code == LowLevelGetException.DECODE_FAILED) {
 			cb.onFatalAuthorError(context);
 			return;
 		}
 		// Rest are non-fatal. If have DNFs, DNF, else network error.
-		if(dnfs > 0)
+		if (dnfs > 0)
 			cb.onDNF(context);
 		else
 			cb.onNetworkError(context);
@@ -102,14 +106,14 @@ class USKChecker extends BaseSingleFileFetcher {
 
 	@Override
 	public String toString() {
-		return "USKChecker for "+key.getURI()+" for "+cb;
+		return "USKChecker for " + key.getURI() + " for " + cb;
 	}
 
 	@Override
 	public short getPriorityClass() {
 		return cb.getPriority();
 	}
-	
+
 	@Override
 	protected void onEnterFiniteCooldown(ClientContext context) {
 		cb.onEnterFiniteCooldown(context);
@@ -128,9 +132,9 @@ class USKChecker extends BaseSingleFileFetcher {
 		onFailure(new LowLevelGetException(LowLevelGetException.DECODE_FAILED), token, context);
 	}
 
-    @Override
-    protected ClientGetState getClientGetState() {
-        return null;
-    }
+	@Override
+	protected ClientGetState getClientGetState() {
+		return null;
+	}
 
 }

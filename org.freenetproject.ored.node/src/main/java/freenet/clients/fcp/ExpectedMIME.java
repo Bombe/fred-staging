@@ -6,15 +6,17 @@ import freenet.support.SimpleFieldSet;
 public class ExpectedMIME extends FCPMessage {
 
 	final String identifier;
+
 	final boolean global;
+
 	final String expectedMIME;
-	
+
 	ExpectedMIME(String identifier, boolean global, String expectedMIME) {
 		this.identifier = identifier;
 		this.global = global;
 		this.expectedMIME = expectedMIME;
 	}
-	
+
 	@Override
 	public SimpleFieldSet getFieldSet() {
 		SimpleFieldSet fs = new SimpleFieldSet(false);
@@ -30,8 +32,7 @@ public class ExpectedMIME extends FCPMessage {
 	}
 
 	@Override
-	public void run(FCPConnectionHandler handler, Node node)
-			throws MessageInvalidException {
+	public void run(FCPConnectionHandler handler, Node node) throws MessageInvalidException {
 		// Not supported
 	}
 

@@ -8,21 +8,25 @@ import freenet.support.SimpleFieldSet;
 public abstract class SendPeerMessage extends DataCarryingMessage {
 
 	protected final String identifier;
+
 	protected final String nodeIdentifier;
+
 	private final long dataLength;
 
 	public SendPeerMessage(SimpleFieldSet fs) throws MessageInvalidException {
 		identifier = fs.get("Identifier");
 		nodeIdentifier = fs.get("NodeIdentifier");
 		String dataLengthString = fs.get("DataLength");
-		if(dataLengthString != null)
+		if (dataLengthString != null)
 			try {
-				//May throw NumberFormatException
+				// May throw NumberFormatException
 				dataLength = Long.parseLong(dataLengthString, 10);
-				if(dataLength < 0)
+				if (dataLength < 0)
 					throw new Exception();
-			} catch (Exception e) {
-				throw new MessageInvalidException(ProtocolErrorMessage.INVALID_FIELD, "Invalid DataLength field", identifier, false);
+			}
+			catch (Exception e) {
+				throw new MessageInvalidException(ProtocolErrorMessage.INVALID_FIELD, "Invalid DataLength field",
+						identifier, false);
 			}
 		else
 			dataLength = -1;
@@ -33,7 +37,7 @@ public abstract class SendPeerMessage extends DataCarryingMessage {
 		SimpleFieldSet fs = new SimpleFieldSet(true);
 		fs.putSingle("Identifier", identifier);
 		fs.putSingle("NodeIdentifier", nodeIdentifier);
-		if(dataLength >= 0)
+		if (dataLength >= 0)
 			fs.put("DataLength", dataLength);
 		return fs;
 	}
@@ -44,10 +48,12 @@ public abstract class SendPeerMessage extends DataCarryingMessage {
 		if (pn == null) {
 			FCPMessage msg = new UnknownNodeIdentifierMessage(nodeIdentifier, identifier);
 			handler.send(msg);
-		} else if (!(pn instanceof DarknetPeerNode)) {
+		}
+		else if (!(pn instanceof DarknetPeerNode)) {
 			throw new MessageInvalidException(ProtocolErrorMessage.DARKNET_ONLY,
 					getName() + " only available for darknet peers", identifier, false);
-		} else {
+		}
+		else {
 			int nodeStatus = handleFeed(((DarknetPeerNode) pn));
 			handler.send(new SentPeerMessage(identifier, nodeStatus));
 		}
@@ -69,5 +75,5 @@ public abstract class SendPeerMessage extends DataCarryingMessage {
 	long dataLength() {
 		return dataLength;
 	}
-	
+
 }

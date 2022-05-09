@@ -13,78 +13,97 @@ import freenet.support.Logger.LogLevel;
 
 public class SplitfileProgressEvent implements ClientEvent {
 
-    private static volatile boolean logMINOR;
+	private static volatile boolean logMINOR;
 
 	static {
-		Logger.registerLogThresholdCallback(new LogThresholdCallback(){
+		Logger.registerLogThresholdCallback(new LogThresholdCallback() {
 			@Override
-			public void shouldUpdate(){
+			public void shouldUpdate() {
 				logMINOR = Logger.shouldLog(LogLevel.MINOR, this);
 			}
 		});
 	}
 
 	public final static int CODE = 0x07;
-	
+
 	public final int totalBlocks;
+
 	public final int succeedBlocks;
+
 	/** @see ClientRequester#latestSuccess */
 	public final Date latestSuccess;
+
 	public final int failedBlocks;
+
 	public final int fatallyFailedBlocks;
+
 	/** @see ClientRequester#latestFailure */
 	public final Date latestFailure;
+
 	public final int minSuccessFetchBlocks;
+
 	public int minSuccessfulBlocks;
+
 	public final boolean finalizedTotal;
-	
-	public SplitfileProgressEvent(int totalBlocks, int succeedBlocks, Date latestSuccess, 
-			int failedBlocks, int fatallyFailedBlocks, Date latestFailure, int minSuccessfulBlocks,
-			int minSuccessFetchBlocks, boolean finalizedTotal) {
+
+	public SplitfileProgressEvent(int totalBlocks, int succeedBlocks, Date latestSuccess, int failedBlocks,
+			int fatallyFailedBlocks, Date latestFailure, int minSuccessfulBlocks, int minSuccessFetchBlocks,
+			boolean finalizedTotal) {
 		this.totalBlocks = totalBlocks;
 		this.succeedBlocks = succeedBlocks;
 		// clone() because Date is mutable.
-		this.latestSuccess = latestSuccess != null ? (Date)latestSuccess.clone() : null; 
+		this.latestSuccess = latestSuccess != null ? (Date) latestSuccess.clone() : null;
 		this.failedBlocks = failedBlocks;
 		this.fatallyFailedBlocks = fatallyFailedBlocks;
 		// clone() because Date is mutable.
-		this.latestFailure = latestFailure != null ? (Date)latestFailure.clone() : null;
+		this.latestFailure = latestFailure != null ? (Date) latestFailure.clone() : null;
 		this.minSuccessfulBlocks = minSuccessfulBlocks;
 		this.finalizedTotal = finalizedTotal;
 		this.minSuccessFetchBlocks = minSuccessFetchBlocks;
-		if(logMINOR)
-			Logger.minor(this, "Created SplitfileProgressEvent: total="+totalBlocks+" succeed="+succeedBlocks+" failed="+failedBlocks+" fatally="+fatallyFailedBlocks+" min success="+minSuccessfulBlocks+" finalized="+finalizedTotal);
-	}
-	
-	protected SplitfileProgressEvent() {
-	    // For serialization.
-	    totalBlocks = 0;
-	    succeedBlocks = 0;
-	    // See ClientRequester.getLatestSuccess() for why this defaults to current time.
-	    latestSuccess = CurrentTimeUTC.get();
-	    failedBlocks = 0;
-	    fatallyFailedBlocks = 0;
-	    latestFailure = null;
-	    minSuccessFetchBlocks = 0;
-	    finalizedTotal = false;
+		if (logMINOR)
+			Logger.minor(this,
+					"Created SplitfileProgressEvent: total=" + totalBlocks + " succeed=" + succeedBlocks + " failed="
+							+ failedBlocks + " fatally=" + fatallyFailedBlocks + " min success=" + minSuccessfulBlocks
+							+ " finalized=" + finalizedTotal);
 	}
 
-	/** TODO: Developer's tools: Include {@link #latestSuccess} and {@link #latestFailure}. */
+	protected SplitfileProgressEvent() {
+		// For serialization.
+		totalBlocks = 0;
+		succeedBlocks = 0;
+		// See ClientRequester.getLatestSuccess() for why this defaults to current time.
+		latestSuccess = CurrentTimeUTC.get();
+		failedBlocks = 0;
+		fatallyFailedBlocks = 0;
+		latestFailure = null;
+		minSuccessFetchBlocks = 0;
+		finalizedTotal = false;
+	}
+
+	/**
+	 * TODO: Developer's tools: Include {@link #latestSuccess} and {@link #latestFailure}.
+	 */
 	@Override
 	public String getDescription() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("Completed ");
-		if((minSuccessfulBlocks == 0) && (succeedBlocks == 0))
+		if ((minSuccessfulBlocks == 0) && (succeedBlocks == 0))
 			minSuccessfulBlocks = 1;
-		if(minSuccessfulBlocks == 0) {
-			if(LogLevel.MINOR.matchesThreshold(Logger.globalGetThresholdNew()))
-				Logger.error(this, "minSuccessfulBlocks=0, succeedBlocks="+succeedBlocks+", totalBlocks="+totalBlocks+
-						", failedBlocks="+failedBlocks+", fatallyFailedBlocks="+fatallyFailedBlocks+", finalizedTotal="+finalizedTotal, new Exception("debug"));
+		if (minSuccessfulBlocks == 0) {
+			if (LogLevel.MINOR.matchesThreshold(Logger.globalGetThresholdNew()))
+				Logger.error(this,
+						"minSuccessfulBlocks=0, succeedBlocks=" + succeedBlocks + ", totalBlocks=" + totalBlocks
+								+ ", failedBlocks=" + failedBlocks + ", fatallyFailedBlocks=" + fatallyFailedBlocks
+								+ ", finalizedTotal=" + finalizedTotal,
+						new Exception("debug"));
 			else
-				Logger.error(this, "minSuccessfulBlocks=0, succeedBlocks="+succeedBlocks+", totalBlocks="+totalBlocks+
-						", failedBlocks="+failedBlocks+", fatallyFailedBlocks="+fatallyFailedBlocks+", finalizedTotal="+finalizedTotal);
-		} else {
-			sb.append((100*(succeedBlocks)/minSuccessfulBlocks));
+				Logger.error(this,
+						"minSuccessfulBlocks=0, succeedBlocks=" + succeedBlocks + ", totalBlocks=" + totalBlocks
+								+ ", failedBlocks=" + failedBlocks + ", fatallyFailedBlocks=" + fatallyFailedBlocks
+								+ ", finalizedTotal=" + finalizedTotal);
+		}
+		else {
+			sb.append((100 * (succeedBlocks) / minSuccessfulBlocks));
 			sb.append('%');
 		}
 		sb.append(' ');

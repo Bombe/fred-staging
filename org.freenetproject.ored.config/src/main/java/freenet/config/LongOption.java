@@ -8,16 +8,17 @@ import freenet.support.Fields;
 
 /** Long config variable */
 public class LongOption extends Option<Long> {
+
 	protected final boolean isSize;
 
 	public LongOption(SubConfig conf, String optionName, String defaultValueString, int sortOrder, boolean expert,
-	        boolean forceWrite, String shortDesc, String longDesc, LongCallback cb, boolean isSize) {
-		this(conf, optionName, Fields.parseLong(defaultValueString), sortOrder, expert, forceWrite, shortDesc,
-		        longDesc, cb, isSize);
+			boolean forceWrite, String shortDesc, String longDesc, LongCallback cb, boolean isSize) {
+		this(conf, optionName, Fields.parseLong(defaultValueString), sortOrder, expert, forceWrite, shortDesc, longDesc,
+				cb, isSize);
 	}
-	
+
 	public LongOption(SubConfig conf, String optionName, Long defaultValue, int sortOrder, boolean expert,
-	        boolean forceWrite, String shortDesc, String longDesc, LongCallback cb, boolean isSize) {
+			boolean forceWrite, String shortDesc, String longDesc, LongCallback cb, boolean isSize) {
 		super(conf, optionName, cb, sortOrder, expert, forceWrite, shortDesc, longDesc, Option.DataType.NUMBER);
 		this.defaultValue = defaultValue;
 		this.currentValue = defaultValue;
@@ -29,12 +30,13 @@ public class LongOption extends Option<Long> {
 		Long x;
 		try {
 			x = Fields.parseLong(val);
-		} catch (NumberFormatException e) {
+		}
+		catch (NumberFormatException e) {
 			throw new InvalidConfigValueException(l10n("parseError", "val", val));
 		}
 		return x;
 	}
-	
+
 	private String l10n(String key, String pattern, String value) {
 		return NodeL10n.getBase().getString("LongOption." + key, pattern, value);
 	}
@@ -48,4 +50,5 @@ public class LongOption extends Option<Long> {
 	protected String toString(Long val) {
 		return Fields.longToString(val, false);
 	}
+
 }

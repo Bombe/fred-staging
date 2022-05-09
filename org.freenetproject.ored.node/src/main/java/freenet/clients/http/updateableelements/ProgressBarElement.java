@@ -18,16 +18,21 @@ import freenet.support.HTMLNode;
 public class ProgressBarElement extends BaseUpdateableElement {
 
 	/** The tracker that the Fetcher can be acquired */
-	private final FProxyFetchTracker		tracker;
-	/** The URI of the download this progress bar shows */
-	private final FreenetURI				key;
-	/** The maxSize */
-	private final long					maxSize;
-	/** The FetchListener that gets notified when the download progresses */
-	private final NotifierFetchListener	fetchListener;
-	private final FetchContext		fctx;
+	private final FProxyFetchTracker tracker;
 
-	public ProgressBarElement(FProxyFetchTracker tracker, FreenetURI key, FetchContext fctx, long maxSize, ToadletContext ctx, boolean pushed) {
+	/** The URI of the download this progress bar shows */
+	private final FreenetURI key;
+
+	/** The maxSize */
+	private final long maxSize;
+
+	/** The FetchListener that gets notified when the download progresses */
+	private final NotifierFetchListener fetchListener;
+
+	private final FetchContext fctx;
+
+	public ProgressBarElement(FProxyFetchTracker tracker, FreenetURI key, FetchContext fctx, long maxSize,
+			ToadletContext ctx, boolean pushed) {
 		// This is a <div>
 		super("div", "class", "progressbar", ctx);
 		this.tracker = tracker;
@@ -35,7 +40,7 @@ public class ProgressBarElement extends BaseUpdateableElement {
 		this.fctx = fctx;
 		this.maxSize = maxSize;
 		init(pushed);
-		if(!pushed) {
+		if (!pushed) {
 			fetchListener = null;
 			return;
 		}
@@ -53,32 +58,44 @@ public class ProgressBarElement extends BaseUpdateableElement {
 		FProxyFetchResult fr = waiter == null ? null : waiter.getResult();
 		if (fr == null) {
 			addChild("div", "No fetcher found");
-		} else {
+		}
+		else {
 			if (fr.isFinished() || fr.hasData() || fr.failed != null) {
 				// If finished then we just send a FINISHED text. It will reload the page
 				setContent(UpdaterConstants.FINISHED);
-			} else {
+			}
+			else {
 				int total = fr.requiredBlocks;
 				int fetchedPercent = (int) (fr.fetchedBlocks / (double) total * 100);
 				int failedPercent = (int) (fr.failedBlocks / (double) total * 100);
 				int fatallyFailedPercent = (int) (fr.fatallyFailedBlocks / (double) total * 100);
 				HTMLNode progressBar = addChild("div", "class", "progressbar");
-				progressBar.addChild("div", new String[] { "class", "style" }, new String[] { "progressbar-done", "width: " + fetchedPercent + "%;" });
-				
+				progressBar.addChild("div", new String[] { "class", "style" },
+						new String[] { "progressbar-done", "width: " + fetchedPercent + "%;" });
+
 				if (fr.failedBlocks > 0)
-					progressBar.addChild("div", new String[] { "class", "style" }, new String[] { "progressbar-failed", "width: " + failedPercent + "%;" });
+					progressBar.addChild("div", new String[] { "class", "style" },
+							new String[] { "progressbar-failed", "width: " + failedPercent + "%;" });
 				if (fr.fatallyFailedBlocks > 0)
-					progressBar.addChild("div", new String[] { "class", "style" }, new String[] { "progressbar-failed2", "width: " + fatallyFailedPercent + "%;" });
-				
+					progressBar.addChild("div", new String[] { "class", "style" },
+							new String[] { "progressbar-failed2", "width: " + fatallyFailedPercent + "%;" });
+
 				NumberFormat nf = NumberFormat.getInstance();
 				nf.setMaximumFractionDigits(1);
-				String prefix = '('+Integer.toString(fr.fetchedBlocks) + "/ " + Integer.toString(total)+"): ";
+				String prefix = '(' + Integer.toString(fr.fetchedBlocks) + "/ " + Integer.toString(total) + "): ";
 				if (fr.finalizedBlocks) {
-					progressBar.addChild("div", new String[] { "class", "title" }, new String[] { "progress_fraction_finalized", prefix + NodeL10n.getBase().getString("QueueToadlet.progressbarAccurate") }, nf.format((int) ((fr.fetchedBlocks / (double) total) * 1000) / 10.0) + '%');
-				} else {
-					String text = nf.format((int) ((fr.fetchedBlocks / (double) total) * 1000) / 10.0)+ '%';
-					text = "" + fr.fetchedBlocks + " ("+text+"??)";
-					progressBar.addChild("div", new String[] { "class", "title" }, new String[] { "progress_fraction_not_finalized", prefix + NodeL10n.getBase().getString("QueueToadlet.progressbarNotAccurate") }, text);
+					progressBar.addChild("div", new String[] { "class", "title" },
+							new String[] { "progress_fraction_finalized",
+									prefix + NodeL10n.getBase().getString("QueueToadlet.progressbarAccurate") },
+							nf.format((int) ((fr.fetchedBlocks / (double) total) * 1000) / 10.0) + '%');
+				}
+				else {
+					String text = nf.format((int) ((fr.fetchedBlocks / (double) total) * 1000) / 10.0) + '%';
+					text = "" + fr.fetchedBlocks + " (" + text + "??)";
+					progressBar.addChild("div", new String[] { "class", "title" },
+							new String[] { "progress_fraction_not_finalized",
+									prefix + NodeL10n.getBase().getString("QueueToadlet.progressbarNotAccurate") },
+							text);
 				}
 			}
 		}

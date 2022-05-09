@@ -6,10 +6,12 @@ package freenet.clients.fcp;
 import freenet.node.Node;
 import freenet.support.SimpleFieldSet;
 
-public class ShutdownMessage extends FCPMessage{
+public class ShutdownMessage extends FCPMessage {
+
 	public final static String NAME = "Shutdown";
+
 	// No point having an Identifier really...?
-	
+
 	public ShutdownMessage() throws MessageInvalidException {
 	}
 
@@ -25,10 +27,12 @@ public class ShutdownMessage extends FCPMessage{
 
 	@Override
 	public void run(FCPConnectionHandler handler, Node node) throws MessageInvalidException {
-		if(!handler.hasFullAccess()) {
-			throw new MessageInvalidException(ProtocolErrorMessage.ACCESS_DENIED, "Shutdown requires full access", null, false);
+		if (!handler.hasFullAccess()) {
+			throw new MessageInvalidException(ProtocolErrorMessage.ACCESS_DENIED, "Shutdown requires full access", null,
+					false);
 		}
-		FCPMessage msg = new ProtocolErrorMessage(ProtocolErrorMessage.SHUTTING_DOWN,true,"The node is shutting down","Node",false);
+		FCPMessage msg = new ProtocolErrorMessage(ProtocolErrorMessage.SHUTTING_DOWN, true, "The node is shutting down",
+				"Node", false);
 		handler.send(msg);
 		node.exit("Received FCP shutdown message");
 	}

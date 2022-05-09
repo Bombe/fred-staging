@@ -19,10 +19,11 @@ import freenet.support.io.ResumeFailedException;
  * Wrapper for a backgrounded USKFetcher.
  */
 public class USKFetcherWrapper extends BaseClientGetter {
+
 	private static final long serialVersionUID = -6416069493740293035L;
 
 	final USK usk;
-	
+
 	public USKFetcherWrapper(USK usk, short prio, final RequestClient client) {
 		super(prio, client);
 		this.usk = usk;
@@ -44,7 +45,8 @@ public class USKFetcherWrapper extends BaseClientGetter {
 	}
 
 	@Override
-	public void onSuccess(StreamGenerator streamGenerator, ClientMetadata clientMetadata, List<? extends Compressor> decompressors, ClientGetState state, ClientContext context) {
+	public void onSuccess(StreamGenerator streamGenerator, ClientMetadata clientMetadata,
+			List<? extends Compressor> decompressors, ClientGetState state, ClientContext context) {
 		// Ignore; we don't do anything with it because we are running in the background.
 	}
 
@@ -65,7 +67,7 @@ public class USKFetcherWrapper extends BaseClientGetter {
 
 	@Override
 	public String toString() {
-		return super.toString()+ ':' +usk;
+		return super.toString() + ':' + usk;
 	}
 
 	@Override
@@ -99,7 +101,8 @@ public class USKFetcherWrapper extends BaseClientGetter {
 	}
 
 	@Override
-	public void onSplitfileCompatibilityMode(CompatibilityMode min, CompatibilityMode max, byte[] splitfileKey, boolean compressed, boolean bottomLayer, boolean definitiveAnyway, ClientContext context) {
+	public void onSplitfileCompatibilityMode(CompatibilityMode min, CompatibilityMode max, byte[] splitfileKey,
+			boolean compressed, boolean bottomLayer, boolean definitiveAnyway, ClientContext context) {
 		// Ignore
 	}
 
@@ -108,13 +111,14 @@ public class USKFetcherWrapper extends BaseClientGetter {
 		// Ignore
 	}
 
-    @Override
-    public void innerOnResume(ClientContext context) throws ResumeFailedException {
-        super.innerOnResume(context);
-    }
+	@Override
+	public void innerOnResume(ClientContext context) throws ResumeFailedException {
+		super.innerOnResume(context);
+	}
 
-    @Override
-    protected ClientBaseCallback getCallback() {
-        return null;
-    }
+	@Override
+	protected ClientBaseCallback getCallback() {
+		return null;
+	}
+
 }

@@ -5,16 +5,18 @@ import freenet.http.HTTPRequest;
 import freenet.support.Fields;
 
 /**
- * Handles fields that should be persisted, making them available through public properties.
- * Able to parse these fields from an HTTPRequest.
+ * Handles fields that should be persisted, making them available through public
+ * properties. Able to parse these fields from an HTTPRequest.
  */
 public class PersistFields {
 
 	public final FirstTimeWizardToadlet.WIZARD_PRESET preset;
+
 	public final boolean opennet;
 
 	/**
-	 * @param request Parsed for persistence fields, checking parameters (GET) first, then parts (POST).
+	 * @param request Parsed for persistence fields, checking parameters (GET) first, then
+	 * parts (POST).
 	 */
 	public PersistFields(HTTPRequest request) {
 		this.preset = parsePreset(request);
@@ -45,13 +47,15 @@ public class PersistFields {
 
 		if (request.hasParameters()) {
 			presetRaw = request.getParam("preset");
-		} else {
+		}
+		else {
 			presetRaw = request.getPartAsStringFailsafe("preset", 4);
 		}
 
 		try {
 			preset = FirstTimeWizardToadlet.WIZARD_PRESET.valueOf(presetRaw);
-		} catch (IllegalArgumentException e) {
+		}
+		catch (IllegalArgumentException e) {
 			preset = null;
 		}
 
@@ -63,7 +67,8 @@ public class PersistFields {
 
 		if (request.hasParameters()) {
 			opennetRaw = request.getParam("opennet", "false");
-		} else {
+		}
+		else {
 			opennetRaw = request.getPartAsStringFailsafe("opennet", 5);
 		}
 
@@ -86,4 +91,5 @@ public class PersistFields {
 		}
 		return url.toString();
 	}
+
 }

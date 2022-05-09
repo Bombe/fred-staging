@@ -25,7 +25,7 @@ public class PluginDownLoaderFile extends PluginDownLoader<File> {
 	@Override
 	String getPluginName(String source) throws PluginNotFoundException {
 		int slashIndex = source.lastIndexOf('/');
-		if(slashIndex == -1)
+		if (slashIndex == -1)
 			slashIndex = source.lastIndexOf('\\');
 		return source.substring(slashIndex + 1);
 	}

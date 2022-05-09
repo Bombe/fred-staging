@@ -4,15 +4,16 @@ import java.io.IOException;
 
 /**
  * Interface to show that we can create a KeyListener callback.
+ *
  * @author Matthew Toseland <toad@amphibian.dyndns.org> (0xE43DA450)
  */
 public interface HasKeyListener {
-	
+
 	/**
-	 * Create a KeyListener, a transient object used to determine which keys we
-	 * want, and to handle any blocks found.
+	 * Create a KeyListener, a transient object used to determine which keys we want, and
+	 * to handle any blocks found.
 	 * @return Null if the HasKeyListener is finished/cancelled/etc.
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	KeyListener makeKeyListener(ClientContext context, boolean onStartup);
 

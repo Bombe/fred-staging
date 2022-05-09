@@ -7,8 +7,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Random;
 
-
 public class TempFileBucketTest extends BucketTestBase {
+
 	private Random weakPRNG = new Random(12345);
 
 	@Override
@@ -29,4 +29,5 @@ public class TempFileBucketTest extends BucketTestBase {
 		bucket.free();
 		assertFalse("TempFile not deleted", file.exists());
 	}
+
 }

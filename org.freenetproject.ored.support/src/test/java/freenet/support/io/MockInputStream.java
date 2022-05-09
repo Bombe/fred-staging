@@ -19,4 +19,5 @@ public class MockInputStream extends InputStream {
 	public int read(byte[] data, int offset, int len) {
 		return len;
 	}
+
 }

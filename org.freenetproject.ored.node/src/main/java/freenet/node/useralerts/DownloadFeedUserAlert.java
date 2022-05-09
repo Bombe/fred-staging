@@ -12,17 +12,25 @@ import freenet.node.PeerNode;
 import freenet.support.HTMLNode;
 
 public class DownloadFeedUserAlert extends BaseNodeUserAlert {
+
 	private final WeakReference<PeerNode> peerRef;
+
 	private final FreenetURI uri;
+
 	private final int fileNumber;
+
 	private final String description;
+
 	private final long composed;
+
 	private final long sent;
+
 	private final long received;
+
 	private String sourceNodeName;
 
-	public DownloadFeedUserAlert(DarknetPeerNode sourcePeerNode,
-                                 String description, int fileNumber, FreenetURI uri, long composed, long sent, long received) {
+	public DownloadFeedUserAlert(DarknetPeerNode sourcePeerNode, String description, int fileNumber, FreenetURI uri,
+			long composed, long sent, long received) {
 		super(true, null, null, null, null, FCPUserAlert.MINOR, true, null, true, null);
 		this.description = description;
 		this.uri = uri;
@@ -43,7 +51,7 @@ public class DownloadFeedUserAlert extends BaseNodeUserAlert {
 	public String getText() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(l10n("fileURI")).append(" ").append(uri).append("\n");
-		if(description != null && description.length() != 0)
+		if (description != null && description.length() != 0)
 			sb.append(l10n("fileDescription")).append(" ").append(description);
 		return sb.toString();
 	}
@@ -88,7 +96,7 @@ public class DownloadFeedUserAlert extends BaseNodeUserAlert {
 	@Override
 	public void onDismiss() {
 		DarknetPeerNode pn = (DarknetPeerNode) peerRef.get();
-		if(pn != null)
+		if (pn != null)
 			pn.deleteExtraPeerDataFile(fileNumber);
 	}
 
@@ -101,8 +109,9 @@ public class DownloadFeedUserAlert extends BaseNodeUserAlert {
 	@Override
 	public boolean isValid() {
 		DarknetPeerNode pn = (DarknetPeerNode) peerRef.get();
-		if(pn != null)
+		if (pn != null)
 			sourceNodeName = pn.getName();
 		return true;
 	}
+
 }

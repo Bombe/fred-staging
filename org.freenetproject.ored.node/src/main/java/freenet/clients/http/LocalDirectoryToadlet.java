@@ -7,16 +7,17 @@ import freenet.support.HTMLNode;
 public abstract class LocalDirectoryToadlet extends LocalFileBrowserToadlet {
 
 	protected final String postTo;
+
 	protected static final String basePath = "/directory-browser";
 
-	public LocalDirectoryToadlet (NodeClientCore core, HighLevelSimpleClient highLevelSimpleClient, String postTo) {
+	public LocalDirectoryToadlet(NodeClientCore core, HighLevelSimpleClient highLevelSimpleClient, String postTo) {
 		super(core, highLevelSimpleClient);
 		this.postTo = postTo;
 	}
 
 	@Override
 	public String path() {
-		return basePath+postTo;
+		return basePath + postTo;
 	}
 
 	public static String basePath() {
@@ -29,6 +30,7 @@ public abstract class LocalDirectoryToadlet extends LocalFileBrowserToadlet {
 	}
 
 	@Override
-	protected void createSelectFileButton (HTMLNode fileRow, String filename, HTMLNode persist) {
+	protected void createSelectFileButton(HTMLNode fileRow, String filename, HTMLNode persist) {
 	}
+
 }

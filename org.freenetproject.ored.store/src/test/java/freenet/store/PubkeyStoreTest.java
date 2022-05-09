@@ -14,7 +14,7 @@ import freenet.support.math.MersenneTwister;
 import junit.framework.TestCase;
 
 public class PubkeyStoreTest extends TestCase {
-	
+
 	public void testSimple() throws IOException {
 		final int keys = 10;
 		PubkeyStore pk = new PubkeyStore();
@@ -22,7 +22,7 @@ public class PubkeyStoreTest extends TestCase {
 		DSAGroup group = Global.DSAgroupBigA;
 		Random random = new MersenneTwister(1010101);
 		HashMap<ByteArrayWrapper, DSAPublicKey> map = new HashMap<ByteArrayWrapper, DSAPublicKey>();
-		for(int i=0;i<keys;i++) {
+		for (int i = 0; i < keys; i++) {
 			DSAPrivateKey privKey = new DSAPrivateKey(group, random);
 			StoreDSAPublicKey key = new StoreDSAPublicKey(group, privKey);
 			byte[] hash = key.asBytesHash();
@@ -32,11 +32,11 @@ public class PubkeyStoreTest extends TestCase {
 			assertTrue(pk.fetch(hash, false, false, null).equals(key));
 		}
 		int x = 0;
-		for(Map.Entry<ByteArrayWrapper, DSAPublicKey> entry : map.entrySet()) {
+		for (Map.Entry<ByteArrayWrapper, DSAPublicKey> entry : map.entrySet()) {
 			x++;
 			assertTrue(pk.fetch(entry.getKey().get(), false, false, null).equals(entry.getValue()));
 		}
-		assert(x == keys);
+		assert (x == keys);
 	}
 
 }

@@ -31,15 +31,18 @@ import freenet.support.Executor;
 
 /**
  * An SSL extension to the {@link NetworkInterface}
+ *
  * @author ET
  */
 public class SSLNetworkInterface extends NetworkInterface {
 
-	public static NetworkInterface create(int port, String bindTo, String allowedHosts, Executor executor, boolean ignoreUnbindableIP6) throws IOException {
+	public static NetworkInterface create(int port, String bindTo, String allowedHosts, Executor executor,
+			boolean ignoreUnbindableIP6) throws IOException {
 		NetworkInterface iface = new SSLNetworkInterface(port, allowedHosts, executor);
 		String[] failedBind = iface.setBindTo(bindTo, ignoreUnbindableIP6);
-		if(failedBind != null) {
-			System.err.println("Could not bind to some of the interfaces specified for port "+port+" : "+Arrays.toString(failedBind));
+		if (failedBind != null) {
+			System.err.println("Could not bind to some of the interfaces specified for port " + port + " : "
+					+ Arrays.toString(failedBind));
 		}
 		return iface;
 	}
@@ -63,8 +66,8 @@ public class SSLNetworkInterface extends NetworkInterface {
 		serverSocket.setWantClientAuth(false);
 
 		List<String> enabledCiphers = new ArrayList<>();
-		for(String cipher : serverSocket.getSupportedCipherSuites()) {
-			if(ALLOWED_CIPHERS.contains(cipher)) {
+		for (String cipher : serverSocket.getSupportedCipherSuites()) {
+			if (ALLOWED_CIPHERS.contains(cipher)) {
 				enabledCiphers.add(cipher);
 			}
 		}
@@ -72,10 +75,10 @@ public class SSLNetworkInterface extends NetworkInterface {
 
 		return serverSocket;
 	}
-	private static final Set<String> ALLOWED_CIPHERS = new HashSet(Arrays.asList(
-			"TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
-			"TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
-			"TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256",
-			"TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256",
-			"TLS_EMPTY_RENEGOTIATION_INFO_SCSV"));
+
+	private static final Set<String> ALLOWED_CIPHERS = new HashSet(
+			Arrays.asList("TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+					"TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256", "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256",
+					"TLS_EMPTY_RENEGOTIATION_INFO_SCSV"));
+
 }

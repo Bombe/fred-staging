@@ -9,10 +9,15 @@ import java.util.Set;
 import junit.framework.TestCase;
 
 public class BloomFilterTest extends TestCase {
+
 	private static final int FILTER_SIZE = 4 * 1024; // MUST be > PASS,
+
 	private static final int PASS = 2048;
+
 	private static final int PASS_REMOVE = 4096;
+
 	private static final int PASS_POS = 256;
+
 	private static final int PASS_FALSE = 8192;
 
 	private final Random rand = new Random(12345);
@@ -56,7 +61,8 @@ public class BloomFilterTest extends TestCase {
 			byte[] b = new byte[32];
 			do {
 				rand.nextBytes(b);
-			} while (baseList.containsKey(new ByteArrayWrapper(b)));
+			}
+			while (baseList.containsKey(new ByteArrayWrapper(b)));
 
 			filter.addKey(b);
 			baseList.put(new ByteArrayWrapper(b), b);
@@ -72,7 +78,8 @@ public class BloomFilterTest extends TestCase {
 			do {
 				rand.nextBytes(b);
 				wrapper = new ByteArrayWrapper(b);
-			} while (newList.containsKey(wrapper));
+			}
+			while (newList.containsKey(wrapper));
 
 			filter.addKey(b);
 			newList.put(wrapper, b);
@@ -102,7 +109,8 @@ public class BloomFilterTest extends TestCase {
 			byte[] b = new byte[32];
 			do {
 				rand.nextBytes(b);
-			} while (list.contains(new ByteArrayWrapper(b)));
+			}
+			while (list.contains(new ByteArrayWrapper(b)));
 
 			filter.addKey(b);
 			list.add(new ByteArrayWrapper(b));
@@ -126,7 +134,7 @@ public class BloomFilterTest extends TestCase {
 		final double actual = (double) fPos / PASS_FALSE;
 		final double limit = p * 1.05 + 1.0 / PASS_FALSE;
 
-		//*-
+		// *-
 		System.out.println("          k = " + K);
 		System.out.println("          q = " + q);
 		System.out.println("          p = " + p);
@@ -149,4 +157,5 @@ public class BloomFilterTest extends TestCase {
 		BloomFilter filter = BloomFilter.createFilter(FILTER_SIZE, K, false);
 		_testFilterFalsePositive(filter);
 	}
+
 }

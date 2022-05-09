@@ -3,7 +3,8 @@
  * http://www.gnu.org/ for further details of the GPL. */
 package freenet.node.diagnostics;
 
-
 public interface NodeDiagnostics {
-    ThreadDiagnostics getThreadDiagnostics();
+
+	ThreadDiagnostics getThreadDiagnostics();
+
 }

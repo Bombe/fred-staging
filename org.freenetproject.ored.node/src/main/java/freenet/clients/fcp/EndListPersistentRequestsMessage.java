@@ -9,6 +9,7 @@ import freenet.support.SimpleFieldSet;
 public class EndListPersistentRequestsMessage extends FCPMessage {
 
 	static final String name = "EndListPersistentRequests";
+
 	private final String listRequestIdentifier;
 
 	public EndListPersistentRequestsMessage(String listRequestIdentifier) {
@@ -28,9 +29,9 @@ public class EndListPersistentRequestsMessage extends FCPMessage {
 	}
 
 	@Override
-	public void run(FCPConnectionHandler handler, Node node)
-			throws MessageInvalidException {
-		throw new MessageInvalidException(ProtocolErrorMessage.INVALID_MESSAGE, "EndListPersistentRequests goes from server to client not the other way around", null, false);
+	public void run(FCPConnectionHandler handler, Node node) throws MessageInvalidException {
+		throw new MessageInvalidException(ProtocolErrorMessage.INVALID_MESSAGE,
+				"EndListPersistentRequests goes from server to client not the other way around", null, false);
 	}
 
 }

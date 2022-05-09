@@ -7,11 +7,17 @@ public abstract class FlacPacket extends CodecPacket {
 	FlacPacket(byte[] payload) {
 		super(payload);
 	}
+
 }
 
 class FlacMetadataBlock extends FlacPacket {
-	enum BlockType {STREAMINFO, PADDING, APPLICATION, SEEKTABLE, VORBIS_COMMENT,
-		CUESHEET, PICTURE, UNKNOWN, INVALID};
+
+	enum BlockType {
+
+		STREAMINFO, PADDING, APPLICATION, SEEKTABLE, VORBIS_COMMENT, CUESHEET, PICTURE, UNKNOWN, INVALID
+
+	};
+
 	private FlacMetadataBlockHeader header = new FlacMetadataBlockHeader();
 
 	FlacMetadataBlock(int header, byte[] payload) {
@@ -34,7 +40,7 @@ class FlacMetadataBlock extends FlacPacket {
 	}
 
 	public BlockType getMetadataBlockType() {
-		switch(header.block_type) {
+		switch (header.block_type) {
 		case 0:
 			return BlockType.STREAMINFO;
 		case 1:
@@ -57,7 +63,7 @@ class FlacMetadataBlock extends FlacPacket {
 	}
 
 	public void setMetadataBlockType(BlockType type) {
-		switch(type) {
+		switch (type) {
 		case STREAMINFO:
 			this.header.block_type = 0;
 			break;
@@ -91,18 +97,23 @@ class FlacMetadataBlock extends FlacPacket {
 	}
 
 	public int getLength() {
-		return 4+header.length;
+		return 4 + header.length;
 	}
 
 	class FlacMetadataBlockHeader {
+
 		boolean lastMetadataBlock;
+
 		byte block_type;
+
 		int length;
 
 		public int toInt() {
 			return ((lastMetadataBlock ? 1 : 0) << 31) | (block_type << 24) | length;
 		}
+
 	}
+
 }
 
 class FlacFrame extends FlacPacket {
@@ -110,4 +121,5 @@ class FlacFrame extends FlacPacket {
 	FlacFrame(byte[] payload) {
 		super(payload);
 	}
+
 }

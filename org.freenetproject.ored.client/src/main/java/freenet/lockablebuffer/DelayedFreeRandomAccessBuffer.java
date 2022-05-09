@@ -12,121 +12,133 @@ import freenet.crypt.MasterSecret;
 import freenet.support.io.*;
 
 public class DelayedFreeRandomAccessBuffer implements LockableRandomAccessBuffer, Serializable, DelayedFree {
-    
-    private static final long serialVersionUID = 1L;
-    final LockableRandomAccessBuffer underlying;
-    private boolean freed;
-    private transient PersistentFileTracker factory;
-    private transient long createdCommitID;
 
-    public DelayedFreeRandomAccessBuffer(LockableRandomAccessBuffer raf, PersistentFileTracker factory) {
-        underlying = raf;
-        this.createdCommitID = factory.commitID();
-        this.factory = factory;
-    }
+	private static final long serialVersionUID = 1L;
 
-    @Override
-    public long size() {
-        return underlying.size();
-    }
+	final LockableRandomAccessBuffer underlying;
 
-    @Override
-    public void pread(long fileOffset, byte[] buf, int bufOffset, int length) throws IOException {
-        synchronized(this) {
-            if(freed) throw new IOException("Already freed");
-        }
-        underlying.pread(fileOffset, buf, bufOffset, length);
-    }
+	private boolean freed;
 
-    @Override
-    public void pwrite(long fileOffset, byte[] buf, int bufOffset, int length) throws IOException {
-        synchronized(this) {
-            if(freed) throw new IOException("Already freed");
-        }
-        underlying.pwrite(fileOffset, buf, bufOffset, length);
-    }
+	private transient PersistentFileTracker factory;
 
-    @Override
-    public void close() {
-        synchronized(this) {
-            if(freed) return;
-        }
-        underlying.close();
-    }
+	private transient long createdCommitID;
 
-    @Override
-    public void free() {
-        synchronized(this) {
-            if(freed) return;
-            freed = true;
-        }
-        this.factory.delayedFree(this, createdCommitID);
-    }
+	public DelayedFreeRandomAccessBuffer(LockableRandomAccessBuffer raf, PersistentFileTracker factory) {
+		underlying = raf;
+		this.createdCommitID = factory.commitID();
+		this.factory = factory;
+	}
 
-    @Override
-    public RAFLock lockOpen() throws IOException {
-        synchronized(this) {
-            if(freed) throw new IOException("Already freed");
-        }
-        return underlying.lockOpen();
-    }
+	@Override
+	public long size() {
+		return underlying.size();
+	}
 
-    @Override
-    public void onResume(ClientContext context) throws ResumeFailedException {
-        this.factory = context.persistentBucketFactory;
-        underlying.onResume(context);
-    }
-    
-    public static final int MAGIC = 0x3fb645de;
+	@Override
+	public void pread(long fileOffset, byte[] buf, int bufOffset, int length) throws IOException {
+		synchronized (this) {
+			if (freed)
+				throw new IOException("Already freed");
+		}
+		underlying.pread(fileOffset, buf, bufOffset, length);
+	}
 
-    @Override
-    public void storeTo(DataOutputStream dos) throws IOException {
-        dos.writeInt(MAGIC);
-        underlying.storeTo(dos);
-    }
-    
-    public DelayedFreeRandomAccessBuffer(DataInputStream dis, BucketFilenameGenerator fg,
-            PersistentFileTracker persistentFileTracker, MasterSecret masterSecret) 
-    throws IOException, StorageFormatException, ResumeFailedException {
-        underlying = BucketTools.restoreRAFFrom(dis, fg, persistentFileTracker, masterSecret);
-        factory = persistentFileTracker;
-    }
-    
-    @Override
-    public boolean toFree() {
-        return freed;
-    }
-    
-    public LockableRandomAccessBuffer getUnderlying() {
-        if(freed) return null;
-        return underlying;
-    }
+	@Override
+	public void pwrite(long fileOffset, byte[] buf, int bufOffset, int length) throws IOException {
+		synchronized (this) {
+			if (freed)
+				throw new IOException("Already freed");
+		}
+		underlying.pwrite(fileOffset, buf, bufOffset, length);
+	}
 
-    @Override
-    public void realFree() {
-        underlying.free();
-    }
+	@Override
+	public void close() {
+		synchronized (this) {
+			if (freed)
+				return;
+		}
+		underlying.close();
+	}
 
-    @Override
-    public int hashCode() {
-        return underlying.hashCode();
-    }
+	@Override
+	public void free() {
+		synchronized (this) {
+			if (freed)
+				return;
+			freed = true;
+		}
+		this.factory.delayedFree(this, createdCommitID);
+	}
 
-    /** Two DelayedFreeBucket's for the same underlying can only happen on resume, in which case
-     * we DO want them to compare as equal. */
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        DelayedFreeRandomAccessBuffer other = (DelayedFreeRandomAccessBuffer) obj;
-        return underlying.equals(other.underlying);
-    }
-    
+	@Override
+	public RAFLock lockOpen() throws IOException {
+		synchronized (this) {
+			if (freed)
+				throw new IOException("Already freed");
+		}
+		return underlying.lockOpen();
+	}
+
+	@Override
+	public void onResume(ClientContext context) throws ResumeFailedException {
+		this.factory = context.persistentBucketFactory;
+		underlying.onResume(context);
+	}
+
+	public static final int MAGIC = 0x3fb645de;
+
+	@Override
+	public void storeTo(DataOutputStream dos) throws IOException {
+		dos.writeInt(MAGIC);
+		underlying.storeTo(dos);
+	}
+
+	public DelayedFreeRandomAccessBuffer(DataInputStream dis, BucketFilenameGenerator fg,
+			PersistentFileTracker persistentFileTracker, MasterSecret masterSecret)
+			throws IOException, StorageFormatException, ResumeFailedException {
+		underlying = BucketTools.restoreRAFFrom(dis, fg, persistentFileTracker, masterSecret);
+		factory = persistentFileTracker;
+	}
+
+	@Override
+	public boolean toFree() {
+		return freed;
+	}
+
+	public LockableRandomAccessBuffer getUnderlying() {
+		if (freed)
+			return null;
+		return underlying;
+	}
+
+	@Override
+	public void realFree() {
+		underlying.free();
+	}
+
+	@Override
+	public int hashCode() {
+		return underlying.hashCode();
+	}
+
+	/**
+	 * Two DelayedFreeBucket's for the same underlying can only happen on resume, in which
+	 * case we DO want them to compare as equal.
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		DelayedFreeRandomAccessBuffer other = (DelayedFreeRandomAccessBuffer) obj;
+		return underlying.equals(other.underlying);
+	}
+
 }

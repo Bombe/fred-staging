@@ -17,10 +17,10 @@ public class SectoredRandomGrabArrayWithInt<T, C extends RemoveRandomWithObject<
 	public int getNumber() {
 		return number;
 	}
-	
+
 	@Override
 	public String toString() {
-		return super.toString() + ":"+number;
+		return super.toString() + ":" + number;
 	}
 
 }

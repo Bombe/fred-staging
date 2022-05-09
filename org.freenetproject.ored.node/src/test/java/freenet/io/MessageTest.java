@@ -13,26 +13,36 @@ import java.util.Arrays;
 public class MessageTest extends TestCase {
 
 	private static final String BOOLEAN = "boolean";
+
 	private static final String BYTE = "byte";
+
 	private static final String SHORT = "short";
+
 	private static final String INT = "int";
+
 	private static final String LONG = "long";
+
 	private static final String DOUBLE = "double";
+
 	private static final String FLOAT = "float";
+
 	private static final String DOUBLE_ARRAY = "double[]";
+
 	private static final String FLOAT_ARRAY = "float[]";
 
-	private static final MessageType test = new MessageType("test", DMT.PRIORITY_LOW) {{
-		addField(BOOLEAN, Boolean.class);
-		addField(BYTE, Byte.class);
-		addField(SHORT, Short.class);
-		addField(INT, Integer.class);
-		addField(LONG, Long.class);
-		addField(DOUBLE, Double.class);
-		addField(FLOAT, Float.class);
-		addField(DOUBLE_ARRAY, double[].class);
-		addField(FLOAT_ARRAY, float[].class);
-	}};
+	private static final MessageType test = new MessageType("test", DMT.PRIORITY_LOW) {
+		{
+			addField(BOOLEAN, Boolean.class);
+			addField(BYTE, Byte.class);
+			addField(SHORT, Short.class);
+			addField(INT, Integer.class);
+			addField(LONG, Long.class);
+			addField(DOUBLE, Double.class);
+			addField(FLOAT, Float.class);
+			addField(DOUBLE_ARRAY, double[].class);
+			addField(FLOAT_ARRAY, float[].class);
+		}
+	};
 
 	/**
 	 * Test that different types can be set and retrieved to and from a Message.
@@ -40,10 +50,10 @@ public class MessageTest extends TestCase {
 	public void test() {
 		Message msg = new Message(test);
 
-		//Values used for testing.
+		// Values used for testing.
 		final boolean booleanVal = true;
-		final byte byteVal = (byte)123;
-		final short shortVal = (short)456;
+		final byte byteVal = (byte) 123;
+		final short shortVal = (short) 456;
 		final int intVal = 78912;
 		final long longVal = 3456789123L;
 		final double doubleVal = Math.PI;
@@ -51,7 +61,7 @@ public class MessageTest extends TestCase {
 		final double[] doubleArrayVal = new double[] { Math.PI, Math.E };
 		final float[] floatArrayVal = new float[] { 1234.5678f, 912345.6789f };
 
-		//Set fields.
+		// Set fields.
 		msg.set(BOOLEAN, booleanVal);
 		msg.set(BYTE, byteVal);
 		msg.set(SHORT, shortVal);
@@ -62,7 +72,7 @@ public class MessageTest extends TestCase {
 		msg.set(DOUBLE_ARRAY, doubleArrayVal);
 		msg.set(FLOAT_ARRAY, floatArrayVal);
 
-		//Read fields.
+		// Read fields.
 		assertEquals(booleanVal, msg.getBoolean(BOOLEAN));
 		assertEquals(byteVal, msg.getByte(BYTE));
 		assertEquals(shortVal, msg.getShort(SHORT));
@@ -73,4 +83,5 @@ public class MessageTest extends TestCase {
 		assertTrue(Arrays.equals(doubleArrayVal, msg.getDoubleArray(DOUBLE_ARRAY)));
 		assertTrue(Arrays.equals(floatArrayVal, msg.getFloatArray(FLOAT_ARRAY)));
 	}
+
 }

@@ -10,18 +10,19 @@ public class EndListPeerNotesMessage extends FCPMessage {
 
 	final String nodeIdentifier;
 	static final String name = "EndListPeerNotes";
+
 	private String identifier;
-	
+
 	public EndListPeerNotesMessage(String id, String identifier) {
 		this.nodeIdentifier = id;
 		this.identifier = identifier;
 	}
-	
+
 	@Override
 	public SimpleFieldSet getFieldSet() {
 		SimpleFieldSet sfs = new SimpleFieldSet(true);
 		sfs.putSingle("NodeIdentifier", nodeIdentifier);
-		if(identifier != null)
+		if (identifier != null)
 			sfs.putSingle("Identifier", identifier);
 		return sfs;
 	}
@@ -32,9 +33,9 @@ public class EndListPeerNotesMessage extends FCPMessage {
 	}
 
 	@Override
-	public void run(FCPConnectionHandler handler, Node node)
-			throws MessageInvalidException {
-		throw new MessageInvalidException(ProtocolErrorMessage.INVALID_MESSAGE, "EndListPeerNotes goes from server to client not the other way around", null, false);
+	public void run(FCPConnectionHandler handler, Node node) throws MessageInvalidException {
+		throw new MessageInvalidException(ProtocolErrorMessage.INVALID_MESSAGE,
+				"EndListPeerNotes goes from server to client not the other way around", null, false);
 	}
 
 }

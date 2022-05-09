@@ -8,6 +8,7 @@ import java.util.Iterator;
 import junit.framework.TestCase;
 
 public class SparseBitmapTest extends TestCase {
+
 	public void testAdd() {
 		SparseBitmap s = new SparseBitmap();
 
@@ -15,7 +16,7 @@ public class SparseBitmapTest extends TestCase {
 		assertTrue("Didn't contain 0->1 after adding range 0->1", s.contains(0, 1));
 		assertFalse("Contained 2 after adding range 0->1", s.contains(2, 2));
 
-		s.add(3,3);
+		s.add(3, 3);
 		assertFalse(s.contains(2, 2));
 		assertTrue(s.contains(3, 3));
 		assertFalse(s.contains(4, 4));
@@ -30,7 +31,9 @@ public class SparseBitmapTest extends TestCase {
 		try {
 			s.add(5, 0);
 			fail("Didn't throw when adding range 5->0");
-		} catch (IllegalArgumentException e) {}
+		}
+		catch (IllegalArgumentException e) {
+		}
 
 		assertTrue(s.contains(0, 5));
 		assertTrue(s.contains(10, 15));
@@ -47,32 +50,32 @@ public class SparseBitmapTest extends TestCase {
 	public void testRemove() {
 		SparseBitmap s = new SparseBitmap();
 
-		s.add(0,4);
+		s.add(0, 4);
 		s.add(10, 14);
 		assertTrue(s.contains(0, 4));
 		assertFalse(s.contains(5, 9));
 		assertTrue(s.contains(10, 14));
 
-		//Remove begining of one range
+		// Remove begining of one range
 		s.remove(10, 11);
 		assertTrue(s.contains(0, 4));
 		assertFalse(s.contains(5, 11));
 		assertTrue(s.contains(12, 14));
 
-		//Remove end of one range
+		// Remove end of one range
 		s.remove(4, 4);
 		assertTrue(s.contains(0, 3));
 		assertFalse(s.contains(4, 11));
 		assertTrue(s.contains(12, 14));
 
-		//Remove empty range
-		s.remove(4,11);
+		// Remove empty range
+		s.remove(4, 11);
 		assertTrue(s.contains(0, 3));
 		assertFalse(s.contains(4, 11));
 		assertTrue(s.contains(12, 14));
 
-		//Remove from two ranges
-		s.remove(3,12);
+		// Remove from two ranges
+		s.remove(3, 12);
 		assertTrue(s.contains(0, 2));
 		assertFalse(s.contains(3, 12));
 		assertTrue(s.contains(13, 14));
@@ -119,8 +122,9 @@ public class SparseBitmapTest extends TestCase {
 		try {
 			s.contains(2, 1);
 			fail();
-		} catch (IllegalArgumentException e) {
-			//Expected
+		}
+		catch (IllegalArgumentException e) {
+			// Expected
 		}
 	}
 
@@ -170,4 +174,5 @@ public class SparseBitmapTest extends TestCase {
 		s.add(1, 2);
 		s.remove(0, 3);
 	}
+
 }

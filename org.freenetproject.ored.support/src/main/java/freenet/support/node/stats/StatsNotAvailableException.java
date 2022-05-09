@@ -24,4 +24,5 @@ public class StatsNotAvailableException extends Exception {
 	public StatsNotAvailableException(Throwable throwable) {
 		super(throwable);
 	}
+
 }

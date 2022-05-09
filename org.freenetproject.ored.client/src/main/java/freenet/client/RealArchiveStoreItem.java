@@ -13,19 +13,21 @@ import freenet.bucket.MultiReaderBucket;
 class RealArchiveStoreItem extends ArchiveStoreItem {
 
 	private final MultiReaderBucket mb;
+
 	private final Bucket bucket;
+
 	private final long spaceUsed;
 
-        private static volatile boolean logMINOR;
+	private static volatile boolean logMINOR;
 	static {
-		Logger.registerLogThresholdCallback(new LogThresholdCallback(){
+		Logger.registerLogThresholdCallback(new LogThresholdCallback() {
 			@Override
-			public void shouldUpdate(){
+			public void shouldUpdate() {
 				logMINOR = Logger.shouldLog(LogLevel.MINOR, this);
 			}
 		});
 	}
-	
+
 	/**
 	 * Create an ArchiveStoreElement from a TempStoreElement.
 	 * @param key2 The key of the archive the file came from.
@@ -33,10 +35,12 @@ class RealArchiveStoreItem extends ArchiveStoreItem {
 	 */
 	RealArchiveStoreItem(ArchiveStoreContext ctx, FreenetURI key2, String realName, Bucket bucket) {
 		super(new ArchiveKey(key2, realName), ctx);
-		if(bucket == null) throw new NullPointerException();
+		if (bucket == null)
+			throw new NullPointerException();
 		mb = new MultiReaderBucket(bucket);
 		this.bucket = mb.getReaderBucket();
-		if(this.bucket == null) throw new NullPointerException();
+		if (this.bucket == null)
+			throw new NullPointerException();
 		this.bucket.setReadOnly();
 		spaceUsed = this.bucket.size();
 	}
@@ -62,13 +66,14 @@ class RealArchiveStoreItem extends ArchiveStoreItem {
 	long spaceUsed() {
 		return spaceUsed;
 	}
-	
+
 	@Override
 	void innerClose() {
-		if(logMINOR)
-			Logger.minor(this, "innerClose(): "+this+" : "+bucket);
-		if(bucket == null) {
-			// This still happens. It is clearly impossible as we check in the constructor and throw if it is null.
+		if (logMINOR)
+			Logger.minor(this, "innerClose(): " + this + " : " + bucket);
+		if (bucket == null) {
+			// This still happens. It is clearly impossible as we check in the constructor
+			// and throw if it is null.
 			// Nonetheless there is little we can do here ...
 			Logger.error(this, "IMPOSSIBLE: BUCKET IS NULL!", new Exception("error"));
 			return;
@@ -85,5 +90,5 @@ class RealArchiveStoreItem extends ArchiveStoreItem {
 	Bucket getReaderBucket() throws ArchiveFailureException {
 		return mb.getReaderBucket();
 	}
-	
+
 }

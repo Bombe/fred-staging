@@ -25,17 +25,20 @@ import freenet.bucket.TempBucketFactory.TempBucket;
 
 public class TempBucketTest extends TestSuite {
 
-    private static final long MIN_DISK_SPACE = 2*1024*1024;
-    
-    static final MasterSecret secret = new MasterSecret();
-    
-    static{
-        Security.addProvider(new BouncyCastleProvider());
-    }
-    
+	private static final long MIN_DISK_SPACE = 2 * 1024 * 1024;
+
+	static final MasterSecret secret = new MasterSecret();
+
+	static {
+		Security.addProvider(new BouncyCastleProvider());
+	}
+
 	public static class TempBucketMigrationTest extends TestCase {
+
 		private Random weakPRNG = new Random(12340);
+
 		private Executor exec = new SerialExecutor(NativeThread.NORM_PRIORITY);
+
 		private BucketFilenameGenerator fg;
 
 		public TempBucketMigrationTest() throws IOException {
@@ -69,7 +72,8 @@ public class TempBucketTest extends TestSuite {
 				b[maxRamBucket] = (TempBucket) tbf.makeBucket(8);
 				assertTrue(b[0].isRAMBucket());
 				assertTrue(b[maxRamBucket].isRAMBucket());
-			} finally {
+			}
+			finally {
 				for (Bucket bb : b)
 					bb.free();
 			}
@@ -91,7 +95,8 @@ public class TempBucketTest extends TestSuite {
 					os.write(new byte[16]);
 				}
 				assertFalse(b.isRAMBucket());
-			} finally {
+			}
+			finally {
 				b.free();
 			}
 		}
@@ -110,15 +115,17 @@ public class TempBucketTest extends TestSuite {
 
 				os.write(new byte[2]);
 				assertFalse(b.isRAMBucket());
-			} finally {
+			}
+			finally {
 				b.free();
 			}
 		}
-		
+
 		// This CAN happen due to memory pressure.
 		public void testConversionWhileReading() throws IOException {
-			TempBucketFactory tbf = new TempBucketFactory(exec, fg, 1024, 65536, weakPRNG, false, MIN_DISK_SPACE, secret);
-			
+			TempBucketFactory tbf = new TempBucketFactory(exec, fg, 1024, 65536, weakPRNG, false, MIN_DISK_SPACE,
+					secret);
+
 			TempBucket bucket = (TempBucket) tbf.makeBucket(64);
 			OutputStream os = bucket.getOutputStreamUnbuffered();
 			os.write(new byte[16]);
@@ -126,16 +133,17 @@ public class TempBucketTest extends TestSuite {
 			bucket.migrateToDisk();
 			byte[] readTo = new byte[16];
 			assertTrue(is.read(readTo, 0, 16) == 16);
-			for(int i=0;i<readTo.length;i++)
+			for (int i = 0; i < readTo.length; i++)
 				assertTrue(readTo[i] == 0);
 			is.close();
 			os.close();
 		}
-		
+
 		// Do a bigger read, verify contents.
 		public void testBigConversionWhileReading() throws IOException {
-			TempBucketFactory tbf = new TempBucketFactory(exec, fg, 4096, 65536, weakPRNG, false, MIN_DISK_SPACE, secret);
-			
+			TempBucketFactory tbf = new TempBucketFactory(exec, fg, 4096, 65536, weakPRNG, false, MIN_DISK_SPACE,
+					secret);
+
 			TempBucket bucket = (TempBucket) tbf.makeBucket(2048);
 			OutputStream os = bucket.getOutputStreamUnbuffered();
 			byte[] data = new byte[2048];
@@ -145,26 +153,31 @@ public class TempBucketTest extends TestSuite {
 			bucket.migrateToDisk();
 			byte[] readTo = new byte[2048];
 			new DataInputStream(is).readFully(readTo);
-			for(int i=0;i<readTo.length;i++)
+			for (int i = 0; i < readTo.length; i++)
 				assertTrue(readTo[i] == data[i]);
 			is.close();
 			os.close();
 		}
-		
+
 	}
 
 	// Private because we only use it as a base class for the actual tests.
 	private static class RealTempBucketTest_ extends BucketTestBase {
+
 		private RandomSource strongPRNG = new DummyRandomSource(12345);
+
 		private Random weakPRNG = new DummyRandomSource(54321);
+
 		private Executor exec = new SerialExecutor(NativeThread.NORM_PRIORITY);
+
 		private BucketFilenameGenerator fg;
 
 		private TempBucketFactory tbf;
 
 		public RealTempBucketTest_(int maxRamSize, int maxTotalRamSize, boolean encrypted) throws IOException {
 			fg = new BucketFilenameGenerator(weakPRNG, false, null, "junit");
-			tbf = new TempBucketFactory(exec, fg, maxRamSize, maxTotalRamSize, weakPRNG, encrypted, MIN_DISK_SPACE, secret);
+			tbf = new TempBucketFactory(exec, fg, maxRamSize, maxTotalRamSize, weakPRNG, encrypted, MIN_DISK_SPACE,
+					secret);
 
 			canOverwrite = false;
 		}
@@ -176,41 +189,52 @@ public class TempBucketTest extends TestSuite {
 
 		@Override
 		protected Bucket makeBucket(long size) throws IOException {
-			return tbf.makeBucket(1); // TempBucket allow resize 
+			return tbf.makeBucket(1); // TempBucket allow resize
 		}
+
 	}
 
 	public static class RealTempBucketTest_8_16_F extends RealTempBucketTest_ {
+
 		public RealTempBucketTest_8_16_F() throws IOException {
 			super(8, 16, false);
 		}
+
 	}
 
 	public static class RealTempBucketTest_64_128_F extends RealTempBucketTest_ {
+
 		public RealTempBucketTest_64_128_F() throws IOException {
 			super(64, 128, false);
 		}
+
 	}
 
 	public static class RealTempBucketTest_64k_128k_F extends RealTempBucketTest_ {
+
 		public RealTempBucketTest_64k_128k_F() throws IOException {
 			super(64 * 1024, 128 * 1024, false);
 		}
+
 	}
 
 	public static class RealTempBucketTest_8_16_T extends RealTempBucketTest_ {
+
 		public RealTempBucketTest_8_16_T() throws IOException {
 			super(8, 16, true);
 		}
+
 	}
 
 	public static class RealTempBucketTest_64k_128k_T extends RealTempBucketTest_ {
+
 		public RealTempBucketTest_64k_128k_T() throws IOException {
 			super(64 * 1024, 128 * 1024, true);
 		}
+
 	}
 
-    public TempBucketTest() {
+	public TempBucketTest() {
 		super("TempBucketTest");
 		addTest(new TestSuite(RealTempBucketTest_8_16_F.class));
 		addTest(new TestSuite(RealTempBucketTest_64_128_F.class));

@@ -17,7 +17,7 @@ public class RssSnifferTest {
 	@Test
 	public void correctTopLevelRssTagIsRecognized() {
 		String topLevelRssTag = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
-				                        + "<rss xmlns:atom=\"http://www.w3.org/2005/Atom\" version=\"2.0\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\">";
+				+ "<rss xmlns:atom=\"http://www.w3.org/2005/Atom\" version=\"2.0\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\">";
 		assertThat(topLevelRssTag, isSniffedAsFeed());
 	}
 

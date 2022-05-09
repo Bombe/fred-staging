@@ -11,17 +11,19 @@ import freenet.node.Node;
 import freenet.support.SimpleFieldSet;
 
 public class GeneratedMetadataMessage extends BaseDataCarryingMessage {
-	
+
 	GeneratedMetadataMessage(String identifier, boolean global, Bucket data) {
 		this.identifier = identifier;
 		this.global = global;
 		this.data = data;
 	}
-	
+
 	private final Bucket data;
+
 	final String identifier;
+
 	final boolean global;
-	
+
 	static final String NAME = "GeneratedMetadata";
 
 	@Override
@@ -55,8 +57,7 @@ public class GeneratedMetadataMessage extends BaseDataCarryingMessage {
 	}
 
 	@Override
-	public void run(FCPConnectionHandler handler, Node node)
-			throws MessageInvalidException {
+	public void run(FCPConnectionHandler handler, Node node) throws MessageInvalidException {
 		throw new UnsupportedOperationException();
 	}
 

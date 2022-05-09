@@ -5,13 +5,13 @@ import freenet.support.HTMLNode;
 import freenet.support.JVMVersion;
 
 /**
- * Informs the user that their current JVM is at EOL and Freenet will stop working with it in a future release.
+ * Informs the user that their current JVM is at EOL and Freenet will stop working with it
+ * in a future release.
  */
 public class JVMVersionAlert extends BaseNodeUserAlert {
 
 	public JVMVersionAlert() {
-        super(true, null, null, null, null, WARNING, true,
-              NodeL10n.getBase().getString("UserAlert.hide"), true, null);
+		super(true, null, null, null, null, WARNING, true, NodeL10n.getBase().getString("UserAlert.hide"), true, null);
 	}
 
 	@Override
@@ -21,10 +21,8 @@ public class JVMVersionAlert extends BaseNodeUserAlert {
 
 	@Override
 	public String getText() {
-		return NodeL10n.getBase().getString("JavaEOLAlert.body",
-		                                    new String[] {"current", "new"},
-		                                    new String[] {JVMVersion.getCurrent(),
-		                                                  JVMVersion.EOL_THRESHOLD});
+		return NodeL10n.getBase().getString("JavaEOLAlert.body", new String[] { "current", "new" },
+				new String[] { JVMVersion.getCurrent(), JVMVersion.EOL_THRESHOLD });
 	}
 
 	@Override
@@ -36,4 +34,5 @@ public class JVMVersionAlert extends BaseNodeUserAlert {
 	public HTMLNode getHTMLText() {
 		return new HTMLNode("div", getText());
 	}
+
 }

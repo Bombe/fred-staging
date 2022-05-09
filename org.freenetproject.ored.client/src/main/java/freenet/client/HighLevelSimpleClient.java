@@ -41,80 +41,99 @@ public interface HighLevelSimpleClient {
 
 	/**
 	 * Blocking fetch of a URI with a configurable max-size.
-	 * @param maxSize The maximum size in bytes of the return data or any intermediary data processed
-	 * to obtain the final output (e.g. containers).
+	 * @param maxSize The maximum size in bytes of the return data or any intermediary
+	 * data processed to obtain the final output (e.g. containers).
 	 */
 	public FetchResult fetch(FreenetURI uri, long maxSize) throws FetchException;
 
 	/**
 	 * Blocking fetch of a URI with a configurable max-size and context object.
-	 * @param context Used mainly for scheduling, we round-robin between request clients within a given
-	 * priority and retry count. Also indicates whether the request is persistent, and if so, can remove it.
+	 * @param context Used mainly for scheduling, we round-robin between request clients
+	 * within a given priority and retry count. Also indicates whether the request is
+	 * persistent, and if so, can remove it.
 	 */
 	public FetchResult fetch(FreenetURI uri, long maxSize, RequestClient context) throws FetchException;
 
 	/**
-	 * Non-blocking fetch of a URI with a configurable max-size (in bytes), context object, callback and context.
-	 * Will return immediately, the callback will be called later.
-	 * @param callback Will be called when the request completes, fails, etc. If the request is persistent
-	 * this will be called on the database thread with a container parameter.
+	 * Non-blocking fetch of a URI with a configurable max-size (in bytes), context
+	 * object, callback and context. Will return immediately, the callback will be called
+	 * later.
+	 * @param callback Will be called when the request completes, fails, etc. If the
+	 * request is persistent this will be called on the database thread with a container
+	 * parameter.
 	 * @param fctx Fetch context so you can customise the search process.
 	 * @return The ClientGetter object, which will have been started already.
 	 */
-	public ClientGetter fetch(FreenetURI uri, ClientGetCallback callback, FetchContext fctx, short prio) throws FetchException;
+	public ClientGetter fetch(FreenetURI uri, ClientGetCallback callback, FetchContext fctx, short prio)
+			throws FetchException;
 
 	/**
-	 * Non-blocking fetch of a URI with a configurable max-size (in bytes), context object, callback and context.
-	 * Will return immediately, the callback will be called later.
-	 * @param callback Will be called when the request completes, fails, etc. If the request is persistent
-	 * this will be called on the database thread with a container parameter.
+	 * Non-blocking fetch of a URI with a configurable max-size (in bytes), context
+	 * object, callback and context. Will return immediately, the callback will be called
+	 * later.
+	 * @param callback Will be called when the request completes, fails, etc. If the
+	 * request is persistent this will be called on the database thread with a container
+	 * parameter.
 	 * @param fctx Fetch context so you can customise the search process.
 	 * @return The ClientGetter object, which will have been started already.
 	 */
-	public ClientGetter fetchFromMetadata(Bucket initialMetadata, ClientGetCallback callback, FetchContext fctx, short prio) throws FetchException;
+	public ClientGetter fetchFromMetadata(Bucket initialMetadata, ClientGetCallback callback, FetchContext fctx,
+			short prio) throws FetchException;
 
 	/**
-	 * Non-blocking fetch of a URI with a configurable max-size (in bytes), context object, callback and context.
-	 * Will return immediately, the callback will be called later.
-	 * @param callback Will be called when the request completes, fails, etc. If the request is persistent
-	 * this will be called on the database thread with a container parameter.
+	 * Non-blocking fetch of a URI with a configurable max-size (in bytes), context
+	 * object, callback and context. Will return immediately, the callback will be called
+	 * later.
+	 * @param callback Will be called when the request completes, fails, etc. If the
+	 * request is persistent this will be called on the database thread with a container
+	 * parameter.
 	 * @param fctx Fetch context so you can customise the search process.
 	 * @param maxSize IGNORED. FIXME DEPRECATE
 	 * @return The ClientGetter object, which will have been started already.
 	 */
-	public ClientGetter fetch(FreenetURI uri, long maxSize, ClientGetCallback callback, FetchContext fctx) throws FetchException;
+	public ClientGetter fetch(FreenetURI uri, long maxSize, ClientGetCallback callback, FetchContext fctx)
+			throws FetchException;
 
 	/**
-	 * Non-blocking fetch of a URI with a configurable max-size (in bytes), context object, callback and context.
-	 * Will return immediately, the callback will be called later.
-	 * @param callback Will be called when the request completes, fails, etc. If the request is persistent
-	 * this will be called on the database thread with a container parameter.
+	 * Non-blocking fetch of a URI with a configurable max-size (in bytes), context
+	 * object, callback and context. Will return immediately, the callback will be called
+	 * later.
+	 * @param callback Will be called when the request completes, fails, etc. If the
+	 * request is persistent this will be called on the database thread with a container
+	 * parameter.
 	 * @param fctx Fetch context so you can customise the search process.
-	 * @param priorityClass What priority to start at. It is much more efficient to specify it here than to change it later.
+	 * @param priorityClass What priority to start at. It is much more efficient to
+	 * specify it here than to change it later.
 	 * @return The ClientGetter object, which will have been started already.
 	 */
-	public ClientGetter fetch(FreenetURI uri, long maxSize, ClientGetCallback callback, FetchContext fctx, short priorityClass) throws FetchException;
+	public ClientGetter fetch(FreenetURI uri, long maxSize, ClientGetCallback callback, FetchContext fctx,
+			short priorityClass) throws FetchException;
 
 	/**
 	 * Blocking insert.
-	 * @param filenameHint If set, insert a single-file manifest containing only this file, under the given filename.
+	 * @param filenameHint If set, insert a single-file manifest containing only this
+	 * file, under the given filename.
 	 * @throws InsertException If there is an error inserting the data
 	 */
 	public FreenetURI insert(InsertBlock insert, boolean getCHKOnly, String filenameHint) throws InsertException;
 
 	/**
 	 * Blocking insert.
-	 * @param filenameHint If set, insert a single-file manifest containing only this file, under the given filename.
+	 * @param filenameHint If set, insert a single-file manifest containing only this
+	 * file, under the given filename.
 	 * @throws InsertException If there is an error inserting the data
 	 */
-	public FreenetURI insert(InsertBlock insert, boolean getCHKOnly, String filenameHint, short priority) throws InsertException;
+	public FreenetURI insert(InsertBlock insert, boolean getCHKOnly, String filenameHint, short priority)
+			throws InsertException;
 
 	/**
 	 * Blocking insert.
-	 * @param filenameHint If set, insert a single-file manifest containing only this file, under the given filename.
+	 * @param filenameHint If set, insert a single-file manifest containing only this
+	 * file, under the given filename.
 	 * @throws InsertException If there is an error inserting the data
 	 */
-	public FreenetURI insert(InsertBlock insert, String filenameHint, short priority, InsertContext ctx) throws InsertException;
+	public FreenetURI insert(InsertBlock insert, String filenameHint, short priority, InsertContext ctx)
+			throws InsertException;
 
 	/**
 	 * Non-blocking insert.
@@ -123,7 +142,8 @@ public interface HighLevelSimpleClient {
 	 * this will be called on the database thread with a container parameter.
 	 * @param ctx Insert context so you can customise the insertion process.
 	 */
-	public ClientPutter insert(InsertBlock insert, String filenameHint, boolean isMetadata, InsertContext ctx, ClientPutCallback cb) throws InsertException;
+	public ClientPutter insert(InsertBlock insert, String filenameHint, boolean isMetadata, InsertContext ctx,
+			ClientPutCallback cb) throws InsertException;
 
 	/**
 	 * Non-blocking insert.
@@ -132,7 +152,8 @@ public interface HighLevelSimpleClient {
 	 * this will be called on the database thread with a container parameter.
 	 * @param ctx Insert context so you can customise the insertion process.
 	 */
-	public ClientPutter insert(InsertBlock insert, String filenameHint, boolean isMetadata, InsertContext ctx, ClientPutCallback cb, short priority) throws InsertException;
+	public ClientPutter insert(InsertBlock insert, String filenameHint, boolean isMetadata, InsertContext ctx,
+			ClientPutCallback cb, short priority) throws InsertException;
 
 	/**
 	 * Blocking insert of a redirect.
@@ -140,37 +161,43 @@ public interface HighLevelSimpleClient {
 	public FreenetURI insertRedirect(FreenetURI insertURI, FreenetURI target) throws InsertException;
 
 	/**
-	 * Blocking insert of multiple files as a manifest (or zip manifest, etc).
-	 * The map can contain either string -> bucket, string -> manifestitem or string -> map, the latter
-	 * indicating subdirs.
+	 * Blocking insert of multiple files as a manifest (or zip manifest, etc). The map can
+	 * contain either string -> bucket, string -> manifestitem or string -> map, the
+	 * latter indicating subdirs.
 	 */
-	public FreenetURI insertManifest(FreenetURI insertURI, HashMap<String, Object> bucketsByName, String defaultName) throws InsertException;
+	public FreenetURI insertManifest(FreenetURI insertURI, HashMap<String, Object> bucketsByName, String defaultName)
+			throws InsertException;
 
 	/**
-	 * Blocking insert of multiple files as a manifest (or zip manifest, etc).
-	 * The map can contain either string -> bucket, string -> manifestitem or string -> map, the latter
-	 * indicating subdirs.
+	 * Blocking insert of multiple files as a manifest (or zip manifest, etc). The map can
+	 * contain either string -> bucket, string -> manifestitem or string -> map, the
+	 * latter indicating subdirs.
 	 */
-	public FreenetURI insertManifest(FreenetURI insertURI, HashMap<String, Object> bucketsByName, String defaultName, short priorityClass) throws InsertException;
+	public FreenetURI insertManifest(FreenetURI insertURI, HashMap<String, Object> bucketsByName, String defaultName,
+			short priorityClass) throws InsertException;
 
 	/**
 	 * Blocking insert of multiple files as a manifest, with a crypto key override.
 	 */
-	public FreenetURI insertManifest(FreenetURI insertURI, HashMap<String, Object> bucketsByName, String defaultName, short priorityClass, byte[] forceCryptoKey) throws InsertException;
+	public FreenetURI insertManifest(FreenetURI insertURI, HashMap<String, Object> bucketsByName, String defaultName,
+			short priorityClass, byte[] forceCryptoKey) throws InsertException;
 
 	/**
-	 * Get the FetchContext so you can customise the search process. Has settings for all sorts of things
-	 * such as how many times to retry each block, whether to follow redirects, whether to open containers,
-	 * etc. IMPORTANT: This is created new for each and every request! Changing settings here will not
-	 * change them on fetch()'es unless you pass the modified FetchContext in to the fetch() call.
+	 * Get the FetchContext so you can customise the search process. Has settings for all
+	 * sorts of things such as how many times to retry each block, whether to follow
+	 * redirects, whether to open containers, etc. IMPORTANT: This is created new for each
+	 * and every request! Changing settings here will not change them on fetch()'es unless
+	 * you pass the modified FetchContext in to the fetch() call.
 	 */
 	public FetchContext getFetchContext();
+
 	public FetchContext getFetchContext(long size);
+
 	public FetchContext getFetchContext(long size, String schemeHostAndPort);
 
 	/**
-	 * Get an InsertContext. Has settings for controlling the insertion process, for example which
-	 * compression algorithms to try.
+	 * Get an InsertContext. Has settings for controlling the insertion process, for
+	 * example which compression algorithms to try.
 	 * @param forceNonPersistent If true, force the request to use the non-persistent
 	 * bucket pool.
 	 */
@@ -182,26 +209,26 @@ public interface HighLevelSimpleClient {
 	public void addEventHook(ClientEventListener listener);
 
 	/**
-	 * Generates a new key pair, consisting of the insert URI at index 0 and the
-	 * request URI at index 1.
-	 *
-	 * @param docName
-	 *            The document name
+	 * Generates a new key pair, consisting of the insert URI at index 0 and the request
+	 * URI at index 1.
+	 * @param docName The document name
 	 * @return An array containing the insert and request URI
 	 */
 	public FreenetURI[] generateKeyPair(String docName);
 
 	/**
-	 * Prefetch a key at a very low priority. If it hasn't been fetched within the timeout,
-	 * kill the fetch.
-	 * @param allowedTypes Kill the request if the MIME type is not one of these types. Normally null.
+	 * Prefetch a key at a very low priority. If it hasn't been fetched within the
+	 * timeout, kill the fetch.
+	 * @param allowedTypes Kill the request if the MIME type is not one of these types.
+	 * Normally null.
 	 */
 	public void prefetch(FreenetURI uri, long timeout, long maxSize, Set<String> allowedTypes);
 
 	/**
 	 * Prefetch a key at the given priority. If it hasn't been fetched within the timeout,
 	 * kill the fetch.
-	 * @param allowedTypes Kill the request if the MIME type is not one of these types. Normally null.
+	 * @param allowedTypes Kill the request if the MIME type is not one of these types.
+	 * Normally null.
 	 */
 	public void prefetch(FreenetURI uri, long timeout, long maxSize, Set<String> allowedTypes, short prio);
 

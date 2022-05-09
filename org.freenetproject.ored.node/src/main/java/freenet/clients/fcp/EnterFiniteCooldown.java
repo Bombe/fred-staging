@@ -3,14 +3,18 @@ package freenet.clients.fcp;
 import freenet.node.Node;
 import freenet.support.SimpleFieldSet;
 
-/** Status message sent when the whole of a request is waiting for a cooldown.
- * Not when it's all running - that would be a different event.
+/**
+ * Status message sent when the whole of a request is waiting for a cooldown. Not when
+ * it's all running - that would be a different event.
+ *
  * @author toad
  */
 public class EnterFiniteCooldown extends FCPMessage {
-	
+
 	final String identifier;
+
 	final boolean global;
+
 	final long wakeupTime;
 
 	EnterFiniteCooldown(String identifier, boolean global, long wakeupTime) {
@@ -18,7 +22,7 @@ public class EnterFiniteCooldown extends FCPMessage {
 		this.global = global;
 		this.wakeupTime = wakeupTime;
 	}
-	
+
 	@Override
 	public SimpleFieldSet getFieldSet() {
 		SimpleFieldSet fs = new SimpleFieldSet(false);
@@ -34,8 +38,7 @@ public class EnterFiniteCooldown extends FCPMessage {
 	}
 
 	@Override
-	public void run(FCPConnectionHandler handler, Node node)
-			throws MessageInvalidException {
+	public void run(FCPConnectionHandler handler, Node node) throws MessageInvalidException {
 		// Not supported
 	}
 

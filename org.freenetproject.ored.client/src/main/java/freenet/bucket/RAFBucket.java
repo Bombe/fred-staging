@@ -13,88 +13,88 @@ import freenet.lockablebuffer.LockableRandomAccessBuffer;
 import freenet.support.io.*;
 
 public class RAFBucket implements Bucket, RandomAccessBucket {
-    
-    private final LockableRandomAccessBuffer underlying;
-    final long size;
 
-    public RAFBucket(LockableRandomAccessBuffer underlying) throws IOException {
-        this.underlying = underlying;
-        size = underlying.size();
-    }
+	private final LockableRandomAccessBuffer underlying;
 
-    @Override
-    public OutputStream getOutputStream() throws IOException {
-        throw new IOException("Not supported");
-    }
+	final long size;
 
-    @Override
-    public OutputStream getOutputStreamUnbuffered() throws IOException {
-        throw new IOException("Not supported");
-    }
+	public RAFBucket(LockableRandomAccessBuffer underlying) throws IOException {
+		this.underlying = underlying;
+		size = underlying.size();
+	}
 
-    @Override
-    public InputStream getInputStream() throws IOException {
-        return new BufferedInputStream(getInputStreamUnbuffered());
-    }
+	@Override
+	public OutputStream getOutputStream() throws IOException {
+		throw new IOException("Not supported");
+	}
 
-    @Override
-    public InputStream getInputStreamUnbuffered() throws IOException {
-        return new RAFInputStream(underlying, 0, underlying.size());
-    }
+	@Override
+	public OutputStream getOutputStreamUnbuffered() throws IOException {
+		throw new IOException("Not supported");
+	}
 
-    @Override
-    public String getName() {
-        return null;
-    }
+	@Override
+	public InputStream getInputStream() throws IOException {
+		return new BufferedInputStream(getInputStreamUnbuffered());
+	}
 
-    @Override
-    public long size() {
-        return size;
-    }
+	@Override
+	public InputStream getInputStreamUnbuffered() throws IOException {
+		return new RAFInputStream(underlying, 0, underlying.size());
+	}
 
-    @Override
-    public boolean isReadOnly() {
-        return true;
-    }
+	@Override
+	public String getName() {
+		return null;
+	}
 
-    @Override
-    public void setReadOnly() {
-        // Ignore.
-    }
+	@Override
+	public long size() {
+		return size;
+	}
 
-    @Override
-    public void free() {
-        underlying.free();
-    }
+	@Override
+	public boolean isReadOnly() {
+		return true;
+	}
 
-    @Override
-    public RandomAccessBucket createShadow() {
-        return null;
-    }
+	@Override
+	public void setReadOnly() {
+		// Ignore.
+	}
 
-    @Override
-    public void onResume(ClientContext context) throws ResumeFailedException {
-        underlying.onResume(context);
-    }
-    
-    static final int MAGIC = 0x892a708a;
+	@Override
+	public void free() {
+		underlying.free();
+	}
 
-    @Override
-    public void storeTo(DataOutputStream dos) throws IOException {
-        dos.writeInt(MAGIC);
-        underlying.storeTo(dos);
-    }
-    
-    RAFBucket(DataInputStream dis, BucketFilenameGenerator fg,
-              PersistentFileTracker persistentFileTracker, MasterSecret masterKey)
-            throws IOException, StorageFormatException, ResumeFailedException {
-        underlying = BucketTools.restoreRAFFrom(dis, fg, persistentFileTracker, masterKey);
-        size = underlying.size();
-    }
+	@Override
+	public RandomAccessBucket createShadow() {
+		return null;
+	}
 
-    @Override
-    public LockableRandomAccessBuffer toRandomAccessBuffer() {
-        return underlying;
-    }
+	@Override
+	public void onResume(ClientContext context) throws ResumeFailedException {
+		underlying.onResume(context);
+	}
+
+	static final int MAGIC = 0x892a708a;
+
+	@Override
+	public void storeTo(DataOutputStream dos) throws IOException {
+		dos.writeInt(MAGIC);
+		underlying.storeTo(dos);
+	}
+
+	RAFBucket(DataInputStream dis, BucketFilenameGenerator fg, PersistentFileTracker persistentFileTracker,
+			MasterSecret masterKey) throws IOException, StorageFormatException, ResumeFailedException {
+		underlying = BucketTools.restoreRAFFrom(dis, fg, persistentFileTracker, masterKey);
+		size = underlying.size();
+	}
+
+	@Override
+	public LockableRandomAccessBuffer toRandomAccessBuffer() {
+		return underlying;
+	}
 
 }

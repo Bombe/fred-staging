@@ -11,42 +11,38 @@ import freenet.support.Ticker;
 public class IntervalPusherManager {
 
 	/** The interval when the elements will be pushed */
-	private static final int			REFRESH_PERIOD	= 10000;
+	private static final int REFRESH_PERIOD = 10000;
 
 	/** The PushDataManager object */
-	private final PushDataManager		pushDataManager;
+	private final PushDataManager pushDataManager;
 
 	/** The Ticker to schedule the interval */
-	private final Ticker				ticker;
+	private final Ticker ticker;
 
 	/** The job, that will refresh the elements */
-	private Runnable					refresherJob	= 
-		new Runnable() {
-		
+	private Runnable refresherJob = new Runnable() {
+
 		@Override
 		public void run() {
 			// Updating
 			for (BaseUpdateableElement element : elements) {
 				pushDataManager.updateElement(element.getUpdaterId(null));
 			}
-			
+
 			// If there are more elements, it reschedules
 			if (elements.size() > 0) {
 				ticker.queueTimedJob(this, "Stats refresher", REFRESH_PERIOD, false, true);
 			}
 		}
 	};
-	
+
 	/** The elements that are pushed at a fixed interval */
-	private List<BaseUpdateableElement>	elements		= new CopyOnWriteArrayList<BaseUpdateableElement>();
+	private List<BaseUpdateableElement> elements = new CopyOnWriteArrayList<BaseUpdateableElement>();
 
 	/**
 	 * Constructor
-	 * 
-	 * @param ticker
-	 *            - The Ticker
-	 * @param pushDataManager
-	 *            - The PushDataManager
+	 * @param ticker - The Ticker
+	 * @param pushDataManager - The PushDataManager
 	 */
 	public IntervalPusherManager(Ticker ticker, PushDataManager pushDataManager) {
 		this.ticker = ticker;
@@ -55,9 +51,7 @@ public class IntervalPusherManager {
 
 	/**
 	 * Registers an element to be pushed at a fixed interval
-	 * 
-	 * @param element
-	 *            - The element
+	 * @param element - The element
 	 */
 	public void registerUpdateableElement(BaseUpdateableElement element) {
 		boolean needsStart = false;
@@ -73,9 +67,7 @@ public class IntervalPusherManager {
 
 	/**
 	 * Removes the element from interval pushing
-	 * 
-	 * @param element
-	 *            - The element to be removed
+	 * @param element - The element to be removed
 	 */
 	public void deregisterUpdateableElement(BaseUpdateableElement element) {
 		elements.remove(element);

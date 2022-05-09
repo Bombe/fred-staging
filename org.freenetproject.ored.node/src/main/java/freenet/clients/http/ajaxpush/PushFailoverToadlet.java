@@ -13,10 +13,13 @@ import freenet.clients.http.updateableelements.UpdaterConstants;
 import freenet.nodelogger.Logger;
 import freenet.http.HTTPRequest;
 
-/** A toadlet that the client can use for push failover. It requires the requestId and originalRequestId parameter. */
+/**
+ * A toadlet that the client can use for push failover. It requires the requestId and
+ * originalRequestId parameter.
+ */
 public class PushFailoverToadlet extends Toadlet {
 
-	private static volatile boolean	logMINOR;
+	private static volatile boolean logMINOR;
 
 	static {
 		Logger.registerClass(PushFailoverToadlet.class);
@@ -26,10 +29,12 @@ public class PushFailoverToadlet extends Toadlet {
 		super(client);
 	}
 
-	public void handleMethodGET(URI uri, HTTPRequest req, ToadletContext ctx) throws ToadletContextClosedException, IOException, RedirectException {
+	public void handleMethodGET(URI uri, HTTPRequest req, ToadletContext ctx)
+			throws ToadletContextClosedException, IOException, RedirectException {
 		String requestId = req.getParam("requestId");
 		String originalRequestId = req.getParam("originalRequestId");
-		boolean result = ((SimpleToadletServer) ctx.getContainer()).pushDataManager.failover(originalRequestId, requestId);
+		boolean result = ((SimpleToadletServer) ctx.getContainer()).pushDataManager.failover(originalRequestId,
+				requestId);
 		if (logMINOR) {
 			Logger.minor(this, "Failover from:" + originalRequestId + " to:" + requestId + " with result:" + result);
 		}

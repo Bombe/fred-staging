@@ -6,5 +6,7 @@ package freenet.node.diagnostics;
 import freenet.node.diagnostics.threads.NodeThreadSnapshot;
 
 public interface ThreadDiagnostics {
-    NodeThreadSnapshot getThreadSnapshot();
+
+	NodeThreadSnapshot getThreadSnapshot();
+
 }

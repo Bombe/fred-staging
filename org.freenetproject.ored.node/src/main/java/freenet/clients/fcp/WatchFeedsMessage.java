@@ -6,6 +6,7 @@ import freenet.support.SimpleFieldSet;
 public class WatchFeedsMessage extends FCPMessage {
 
 	public static final String NAME = "WatchFeeds";
+
 	public final boolean enabled;
 
 	public WatchFeedsMessage(SimpleFieldSet fs) {
@@ -18,9 +19,8 @@ public class WatchFeedsMessage extends FCPMessage {
 	}
 
 	@Override
-	public void run(FCPConnectionHandler handler, Node node)
-			throws MessageInvalidException {
-		if(enabled)
+	public void run(FCPConnectionHandler handler, Node node) throws MessageInvalidException {
+		if (enabled)
 			node.clientCore.alerts.watch(handler);
 		else
 			node.clientCore.alerts.unwatch(handler);

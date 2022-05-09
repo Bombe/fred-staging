@@ -7,8 +7,11 @@ import junit.framework.TestCase;
 import freenet.support.DoublyLinkedListImpl.Item;
 
 public class DoublyLinkedListImplTest extends TestCase {
+
 	private static class T extends Item<T> {
+
 		int value;
+
 		boolean isClone;
 
 		T(int v) {
@@ -48,6 +51,7 @@ public class DoublyLinkedListImplTest extends TestCase {
 		public int hashCode() {
 			return value;
 		}
+
 	}
 
 	public void testForwardPushPop() {
@@ -142,24 +146,24 @@ public class DoublyLinkedListImplTest extends TestCase {
 		assertTrue("isEmpty()", list.isEmpty());
 	}
 
-	//	public void testClone() {
-	//		DoublyLinkedList<T> list = new DoublyLinkedListImpl<T>();
-	//		for (int i = 0; i < 3; i++) {
-	//			list.unshift(new T(i));
-	//		}
+	// public void testClone() {
+	// DoublyLinkedList<T> list = new DoublyLinkedListImpl<T>();
+	// for (int i = 0; i < 3; i++) {
+	// list.unshift(new T(i));
+	// }
 	//
-	//		DoublyLinkedList<T> listClone = list.clone();
+	// DoublyLinkedList<T> listClone = list.clone();
 	//
-	//		for (int i = 2; i >= 0; i--) {
-	//			T t = (T) list.shift();
-	//			t.assertV(i);
-	//			t.assertIsNotClone();
+	// for (int i = 2; i >= 0; i--) {
+	// T t = (T) list.shift();
+	// t.assertV(i);
+	// t.assertIsNotClone();
 	//
-	//			T tc = (T) listClone.shift();
-	//			tc.assertV(i);
-	//			tc.assertIsClone();
-	//		}
-	//	}
+	// T tc = (T) listClone.shift();
+	// tc.assertV(i);
+	// tc.assertIsClone();
+	// }
+	// }
 
 	public void testShiftN() {
 		DoublyLinkedList<T> list = new DoublyLinkedListImpl<T>();
@@ -255,7 +259,8 @@ public class DoublyLinkedListImplTest extends TestCase {
 		T h = list.head();
 		for (int i = 0; i < 5; i++) {
 			assertEquals("manual iternate, forward", array[i], h);
-			//assertEquals("DoublyLinkedList.next() == Item.next()", h.getNext(), list.next(h));
+			// assertEquals("DoublyLinkedList.next() == Item.next()", h.getNext(),
+			// list.next(h));
 			assertEquals("hasNext()", i != 4, list.hasNext(h));
 			assertEquals("hasPrev()", i != 0, list.hasPrev(h));
 
@@ -269,7 +274,8 @@ public class DoublyLinkedListImplTest extends TestCase {
 		T t = list.tail();
 		for (int i = 4; i >= 0; i--) {
 			assertEquals("manual iternate, reverse", array[i], t);
-			//assertEquals("DoublyLinkedList.prev() == Item.getPrev()", tail.getPrev(), list.prev(tail));
+			// assertEquals("DoublyLinkedList.prev() == Item.getPrev()", tail.getPrev(),
+			// list.prev(tail));
 			assertEquals("hasNext()", i != 4, list.hasNext(t));
 			assertEquals("hasPrev()", i != 0, list.hasPrev(t));
 
@@ -291,7 +297,8 @@ public class DoublyLinkedListImplTest extends TestCase {
 		try {
 			e.nextElement();
 			fail("NoSuchElementException");
-		} catch (NoSuchElementException nsee) {
+		}
+		catch (NoSuchElementException nsee) {
 		}
 	}
 
@@ -360,38 +367,44 @@ public class DoublyLinkedListImplTest extends TestCase {
 			// already exist
 			list2.insertNext(l2, l2);
 			fail("PromiscuousItemException");
-		} catch (PromiscuousItemException pie) {
+		}
+		catch (PromiscuousItemException pie) {
 		}
 		try {
 			// already exist
 			list2.insertNext(l2, l2);
 			fail("PromiscuousItemException");
-		} catch (PromiscuousItemException pie) {
+		}
+		catch (PromiscuousItemException pie) {
 		}
 		try {
 			// bad position
 			list2.insertPrev(array[3], new T(8888));
 			fail("PromiscuousItemException");
-		} catch (PromiscuousItemException pie) {
+		}
+		catch (PromiscuousItemException pie) {
 		}
 		try {
 			// bad position
 			list2.insertNext(array[3], new T(8888));
 			fail("PromiscuousItemException");
-		} catch (PromiscuousItemException pie) {
+		}
+		catch (PromiscuousItemException pie) {
 		}
 
 		try {
 			// item in other list
 			list2.insertPrev(l2, array[3]);
 			fail("PromiscuousItemException");
-		} catch (PromiscuousItemException pie) {
+		}
+		catch (PromiscuousItemException pie) {
 		}
 		try {
 			// item in other list
 			list2.insertNext(l2, array[3]);
 			fail("PromiscuousItemException");
-		} catch (PromiscuousItemException pie) {
+		}
+		catch (PromiscuousItemException pie) {
 		}
 
 		T l3 = new T(9999);
@@ -401,14 +414,16 @@ public class DoublyLinkedListImplTest extends TestCase {
 			l3.setPrev(null); // corrupt it
 			list2.insertPrev(l3, new T(8888));
 			fail("VirginItemException");
-		} catch (VirginItemException vie) {
+		}
+		catch (VirginItemException vie) {
 		}
 		try {
 			// VirginItemException
 			l2.setNext(null); // corrupt it
 			list2.insertNext(l2, new T(8888));
 			fail("VirginItemException");
-		} catch (VirginItemException vie) {
+		}
+		catch (VirginItemException vie) {
 		}
 
 		list.shift().assertV(100);
@@ -422,4 +437,5 @@ public class DoublyLinkedListImplTest extends TestCase {
 		list.shift().assertV(104);
 
 	}
+
 }

@@ -35,19 +35,24 @@ import freenet.support.io.FileUtil;
 public class SaltedHashSlotFilterTest {
 
 	private static final int TEST_COUNT = TestProperty.EXTENSIVE ? 100 : 20;
+
 	private static final int ACCEPTABLE_FALSE_POSITIVES = TestProperty.EXTENSIVE ? 5 : 2;
+
 	private static final int STORE_SIZE = TEST_COUNT * 5;
+
 	private static final File TEMP_DIR = new File("tmp-SaltedHashSlotFilterTest");
 
 	private Random weakPRNG = new Random(12340);
+
 	private PooledExecutor exec = new PooledExecutor();
+
 	private Ticker ticker = new TrivialTicker(exec);
 
 	@BeforeClass
 	public static void setupClass() {
 		FileUtil.removeAll(TEMP_DIR);
 
-		if(! TEMP_DIR.mkdir()) {
+		if (!TEMP_DIR.mkdir()) {
 			throw new IllegalStateException("Could not create temporary directory for store tests");
 		}
 	}
@@ -66,7 +71,7 @@ public class SaltedHashSlotFilterTest {
 	private File getStorePath(String testname) {
 		File storePath = new File(TEMP_DIR, "CachingFreenetStoreTest_" + testname);
 		FileUtil.removeAll(storePath);
-		if( ! storePath.mkdirs() ) {
+		if (!storePath.mkdirs()) {
 			throw new IllegalStateException("Could not create temporary test store path: " + storePath);
 		}
 		return storePath;
@@ -129,14 +134,16 @@ public class SaltedHashSlotFilterTest {
 	@Test
 	public void testCHKPresent_veryLongPersistanceTime()
 			throws IOException, CHKEncodeException, CHKVerifyException, CHKDecodeException {
-		checkCHKPresent(600 * 1000, TEST_COUNT, ACCEPTABLE_FALSE_POSITIVES, STORE_SIZE, "testCHKPresent_veryLongPersistanceTime");
+		checkCHKPresent(600 * 1000, TEST_COUNT, ACCEPTABLE_FALSE_POSITIVES, STORE_SIZE,
+				"testCHKPresent_veryLongPersistanceTime");
 	}
 
 	// Check that it doesn't reuse slots if it can avoid it.
 	@Test
 	public void testCHKPresent_noReuseSlots()
 			throws IOException, CHKEncodeException, CHKVerifyException, CHKDecodeException {
-		checkCHKPresent(-1, SaltedHashFreenetStore.OPTION_MAX_PROBE, 1, SaltedHashFreenetStore.OPTION_MAX_PROBE, "testCHKPresent_noReuseSlots");
+		checkCHKPresent(-1, SaltedHashFreenetStore.OPTION_MAX_PROBE, 1, SaltedHashFreenetStore.OPTION_MAX_PROBE,
+				"testCHKPresent_noReuseSlots");
 	}
 
 	@Test
@@ -145,14 +152,15 @@ public class SaltedHashSlotFilterTest {
 		checkCHKPresent(-1, 10, 1, 20, "testCHKPresent_smallStoreSpace");
 	}
 
-	private void checkCHKPresent(int persistenceTime, int testCount, int acceptableFalsePositives, int storeSize, String testName)
-			throws IOException, CHKEncodeException, CHKVerifyException, CHKDecodeException {
+	private void checkCHKPresent(int persistenceTime, int testCount, int acceptableFalsePositives, int storeSize,
+			String testName) throws IOException, CHKEncodeException, CHKVerifyException, CHKDecodeException {
 		ResizablePersistentIntBuffer.setPersistenceTime(persistenceTime);
 		File f = getStorePath(testName);
 
 		CHKStore store = new CHKStore();
-		try (SaltedHashFreenetStore<CHKBlock> saltStore = SaltedHashFreenetStore.construct(f, "testCachingFreenetStoreCHK",
-				store, weakPRNG, storeSize, true, SemiOrderedShutdownHook.get(), true, true, ticker, null)) {
+		try (SaltedHashFreenetStore<CHKBlock> saltStore = SaltedHashFreenetStore.construct(f,
+				"testCachingFreenetStoreCHK", store, weakPRNG, storeSize, true, SemiOrderedShutdownHook.get(), true,
+				true, ticker, null)) {
 			saltStore.start(null, true);
 
 			int falsePositives = populateStore(store, saltStore, testCount);
@@ -173,7 +181,7 @@ public class SaltedHashSlotFilterTest {
 	public void testCHKPresentWithClose_veryLongPersistanceTime()
 			throws IOException, CHKEncodeException, CHKVerifyException, CHKDecodeException {
 		// Much longer than the test will take.
-		checkCHKPresentWithClose(600 * 1000, "testCHKPresentWithClose_veryLongPersistanceTime"); 
+		checkCHKPresentWithClose(600 * 1000, "testCHKPresentWithClose_veryLongPersistanceTime");
 	}
 
 	public void checkCHKPresentWithClose(int persistenceTime, String testName)
@@ -182,8 +190,9 @@ public class SaltedHashSlotFilterTest {
 		File f = getStorePath(testName);
 
 		CHKStore store = new CHKStore();
-		try (SaltedHashFreenetStore<CHKBlock> saltStore = SaltedHashFreenetStore.construct(f, "testCachingFreenetStoreCHK",
-				store, weakPRNG, STORE_SIZE, true, SemiOrderedShutdownHook.get(), true, true, ticker, null)) {
+		try (SaltedHashFreenetStore<CHKBlock> saltStore = SaltedHashFreenetStore.construct(f,
+				"testCachingFreenetStoreCHK", store, weakPRNG, STORE_SIZE, true, SemiOrderedShutdownHook.get(), true,
+				true, ticker, null)) {
 			saltStore.start(null, true);
 
 			int falsePositives = populateStore(store, saltStore, TEST_COUNT);
@@ -192,8 +201,9 @@ public class SaltedHashSlotFilterTest {
 		}
 
 		store = new CHKStore();
-		try (SaltedHashFreenetStore<CHKBlock> saltStore = SaltedHashFreenetStore.construct(f, "testCachingFreenetStoreCHK",
-				store, weakPRNG, STORE_SIZE, true, SemiOrderedShutdownHook.get(), true, true, ticker, null)) {
+		try (SaltedHashFreenetStore<CHKBlock> saltStore = SaltedHashFreenetStore.construct(f,
+				"testCachingFreenetStoreCHK", store, weakPRNG, STORE_SIZE, true, SemiOrderedShutdownHook.get(), true,
+				true, ticker, null)) {
 			saltStore.start(null, true);
 
 			checkStore(store, saltStore, TEST_COUNT);
@@ -201,13 +211,15 @@ public class SaltedHashSlotFilterTest {
 	}
 
 	@Test
-	public void testCHKPresentWithAbort() throws IOException, CHKEncodeException, CHKVerifyException, CHKDecodeException {
+	public void testCHKPresentWithAbort()
+			throws IOException, CHKEncodeException, CHKVerifyException, CHKDecodeException {
 		ResizablePersistentIntBuffer.setPersistenceTime(1000);
 		File f = getStorePath("testCHKPresentWithAbort");
 
 		CHKStore store = new CHKStore();
-		try (SaltedHashFreenetStore<CHKBlock> saltStore = SaltedHashFreenetStore.construct(f, "testCachingFreenetStoreCHK",
-				store, weakPRNG, STORE_SIZE, true, SemiOrderedShutdownHook.get(), true, true, ticker, null)) {
+		try (SaltedHashFreenetStore<CHKBlock> saltStore = SaltedHashFreenetStore.construct(f,
+				"testCachingFreenetStoreCHK", store, weakPRNG, STORE_SIZE, true, SemiOrderedShutdownHook.get(), true,
+				true, ticker, null)) {
 			saltStore.start(null, true);
 
 			int falsePositives = populateStore(store, saltStore, TEST_COUNT);
@@ -218,8 +230,9 @@ public class SaltedHashSlotFilterTest {
 		}
 
 		store = new CHKStore();
-		try (SaltedHashFreenetStore<CHKBlock> saltStore = SaltedHashFreenetStore.construct(f, "testCachingFreenetStoreCHK",
-				store, weakPRNG, STORE_SIZE, true, SemiOrderedShutdownHook.get(), true, true, ticker, null)) {
+		try (SaltedHashFreenetStore<CHKBlock> saltStore = SaltedHashFreenetStore.construct(f,
+				"testCachingFreenetStoreCHK", store, weakPRNG, STORE_SIZE, true, SemiOrderedShutdownHook.get(), true,
+				true, ticker, null)) {
 			saltStore.start(null, true);
 
 			checkStore(store, saltStore, TEST_COUNT);
@@ -233,8 +246,9 @@ public class SaltedHashSlotFilterTest {
 		File f = getStorePath("testCHKDelayedTurnOnSlotFilters");
 
 		CHKStore store = new CHKStore();
-		try (SaltedHashFreenetStore<CHKBlock> saltStore = SaltedHashFreenetStore.construct(f, "testCachingFreenetStoreCHK",
-				store, weakPRNG, STORE_SIZE, false, SemiOrderedShutdownHook.get(), true, true, ticker, null)) {
+		try (SaltedHashFreenetStore<CHKBlock> saltStore = SaltedHashFreenetStore.construct(f,
+				"testCachingFreenetStoreCHK", store, weakPRNG, STORE_SIZE, false, SemiOrderedShutdownHook.get(), true,
+				true, ticker, null)) {
 			saltStore.start(null, true);
 
 			int falsePositives = populateStore(store, saltStore, TEST_COUNT);
@@ -244,8 +258,9 @@ public class SaltedHashSlotFilterTest {
 
 		store = new CHKStore();
 		// Now turn on slot filters. Does it still work?
-		try (SaltedHashFreenetStore<CHKBlock> saltStore = SaltedHashFreenetStore.construct(f, "testCachingFreenetStoreCHK",
-				store, weakPRNG, STORE_SIZE, true, SemiOrderedShutdownHook.get(), true, true, ticker, null)) {
+		try (SaltedHashFreenetStore<CHKBlock> saltStore = SaltedHashFreenetStore.construct(f,
+				"testCachingFreenetStoreCHK", store, weakPRNG, STORE_SIZE, true, SemiOrderedShutdownHook.get(), true,
+				true, ticker, null)) {
 			saltStore.start(null, true);
 
 			checkStore(store, saltStore, TEST_COUNT);
@@ -259,8 +274,9 @@ public class SaltedHashSlotFilterTest {
 		File f = getStorePath("testCHKDelayedTurnOnSlotFiltersWithCleaner");
 
 		CHKStore store = new CHKStore();
-		try (SaltedHashFreenetStore<CHKBlock> saltStore = SaltedHashFreenetStore.construct(f, "testCachingFreenetStoreCHK",
-				store, weakPRNG, STORE_SIZE, false, SemiOrderedShutdownHook.get(), true, true, ticker, null)) {
+		try (SaltedHashFreenetStore<CHKBlock> saltStore = SaltedHashFreenetStore.construct(f,
+				"testCachingFreenetStoreCHK", store, weakPRNG, STORE_SIZE, false, SemiOrderedShutdownHook.get(), true,
+				true, ticker, null)) {
 			saltStore.start(null, true);
 
 			int falsePositives = populateStore(store, saltStore, TEST_COUNT);
@@ -271,8 +287,9 @@ public class SaltedHashSlotFilterTest {
 		store = new CHKStore();
 		// Now turn on slot filters. Does it still work?
 		SaltedHashFreenetStore.NO_CLEANER_SLEEP = true;
-		try (SaltedHashFreenetStore<CHKBlock> saltStore = SaltedHashFreenetStore.construct(f, "testCachingFreenetStoreCHK",
-				store, weakPRNG, STORE_SIZE, true, SemiOrderedShutdownHook.get(), true, true, ticker, null)) {
+		try (SaltedHashFreenetStore<CHKBlock> saltStore = SaltedHashFreenetStore.construct(f,
+				"testCachingFreenetStoreCHK", store, weakPRNG, STORE_SIZE, true, SemiOrderedShutdownHook.get(), true,
+				true, ticker, null)) {
 			saltStore.start(null, true);
 			saltStore.testingWaitForCleanerDone(50, 100);
 

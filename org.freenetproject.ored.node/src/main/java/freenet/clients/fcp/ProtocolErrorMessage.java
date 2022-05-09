@@ -10,31 +10,29 @@ import freenet.nodelogger.Logger;
 import freenet.support.SimpleFieldSet;
 
 /**
- * ProtocolError (some problem parsing the other side's FCP messages, or other
- * problem not related to Freenet)
- * 
- * ProtocolError
- * Code=1
- * CodeDescription=ClientHello must be first message
- * ExtraDescription=Duh
- * Fatal=false // means the connection stays open
- * [Identifier=<ident> if we managed to parse one]
- * EndMessage
+ * ProtocolError (some problem parsing the other side's FCP messages, or other problem not
+ * related to Freenet)
+ *
+ * ProtocolError Code=1 CodeDescription=ClientHello must be first message
+ * ExtraDescription=Duh Fatal=false // means the connection stays open [Identifier=<ident>
+ * if we managed to parse one] EndMessage
  */
 public class ProtocolErrorMessage extends FCPMessage implements Serializable {
 
-    private static final long serialVersionUID = 1L;
-    static final int CLIENT_HELLO_MUST_BE_FIRST_MESSAGE = 1;
+	private static final long serialVersionUID = 1L;
+	static final int CLIENT_HELLO_MUST_BE_FIRST_MESSAGE = 1;
 	static final int NO_LATE_CLIENT_HELLOS = 2;
 	static final int MESSAGE_PARSE_ERROR = 3;
 	static final int FREENET_URI_PARSE_ERROR = 4;
 	static final int MISSING_FIELD = 5;
 	static final int ERROR_PARSING_NUMBER = 6;
+
 	public static final int INVALID_MESSAGE = 7;
 	static final int INVALID_FIELD = 8;
 	static final int FILE_NOT_FOUND = 9;
 	static final int DISK_TARGET_EXISTS = 10;
-	//static final int FILENAME_AND_TEMP_FILENAME_MUST_BE_IN_SAME_DIR = 11;
+
+	// static final int FILENAME_AND_TEMP_FILENAME_MUST_BE_IN_SAME_DIR = 11;
 	static final int COULD_NOT_CREATE_FILE = 12;
 	static final int COULD_NOT_WRITE_FILE = 13;
 	static final int COULD_NOT_RENAME_FILE = 14;
@@ -42,7 +40,7 @@ public class ProtocolErrorMessage extends FCPMessage implements Serializable {
 	static final int NOT_SUPPORTED = 16;
 	static final int INTERNAL_ERROR = 17;
 	static final int SHUTTING_DOWN = 18;
-	static final int NO_SUCH_NODE_IDENTIFIER = 19;  // Unused
+	static final int NO_SUCH_NODE_IDENTIFIER = 19; // Unused
 	static final int URL_PARSE_ERROR = 20;
 	static final int REF_PARSE_ERROR = 21;
 	static final int FILE_PARSE_ERROR = 22;
@@ -62,16 +60,20 @@ public class ProtocolErrorMessage extends FCPMessage implements Serializable {
 	static final int WRONG_RETURN_TYPE = 36;
 	static final int IO_ERROR = 37;
 	static final int PLUGINS_DISABLED = 38;
-	
+
 	final int code;
+
 	final String extra;
+
 	final boolean fatal;
+
 	final String ident;
+
 	final boolean global;
-	
+
 	private String codeDescription() {
 		// FIXME l10n?
-		switch(code) {
+		switch (code) {
 		case CLIENT_HELLO_MUST_BE_FIRST_MESSAGE:
 			return "ClientHello must be first message";
 		case NO_LATE_CLIENT_HELLOS:
@@ -106,7 +108,7 @@ public class ProtocolErrorMessage extends FCPMessage implements Serializable {
 			return "Internal error";
 		case SHUTTING_DOWN:
 			return "Shutting down";
-		case NO_SUCH_NODE_IDENTIFIER:  // Unused
+		case NO_SUCH_NODE_IDENTIFIER: // Unused
 			return "No such nodeIdentifier";
 		case URL_PARSE_ERROR:
 			return "Error parsing URL";
@@ -139,14 +141,14 @@ public class ProtocolErrorMessage extends FCPMessage implements Serializable {
 		case BAD_MIME_TYPE:
 			return "Bad MIME type";
 		case WRONG_RETURN_TYPE:
-		    return "Not supported for that return type";
+			return "Not supported for that return type";
 		case IO_ERROR:
-		    return "Disk I/O error";
+			return "Disk I/O error";
 		case PERSISTENCE_DISABLED:
-		    return "Persistence disabled (e.g. encrypted queue waiting for password?)";
+			return "Persistence disabled (e.g. encrypted queue waiting for password?)";
 		default:
-			Logger.error(this, "Unknown error code: "+code, new Exception("debug"));
-		return "(Unknown)";
+			Logger.error(this, "Unknown error code: " + code, new Exception("debug"));
+			return "(Unknown)";
 		}
 	}
 
@@ -165,24 +167,24 @@ public class ProtocolErrorMessage extends FCPMessage implements Serializable {
 		fatal = fs.getBoolean("Fatal", false);
 		global = fs.getBoolean("Global", false);
 	}
-	
+
 	protected ProtocolErrorMessage() {
-	    // For serialization.
-	    code = 0;
-	    extra = null;
-	    fatal = false;
-	    ident = null;
-	    global = false;
+		// For serialization.
+		code = 0;
+		extra = null;
+		fatal = false;
+		ident = null;
+		global = false;
 	}
 
 	@Override
 	public SimpleFieldSet getFieldSet() {
 		SimpleFieldSet sfs = new SimpleFieldSet(true);
-		if(ident != null)
+		if (ident != null)
 			sfs.putSingle("Identifier", ident);
 		sfs.put("Code", code);
 		sfs.putSingle("CodeDescription", codeDescription());
-		if(extra != null)
+		if (extra != null)
 			sfs.putSingle("ExtraDescription", extra);
 		sfs.put("Fatal", fatal);
 		sfs.put("Global", global);
@@ -201,7 +203,7 @@ public class ProtocolErrorMessage extends FCPMessage implements Serializable {
 
 	@Override
 	public String toString() {
-		return super.toString()+":"+code+":"+extra+":"+fatal+":"+ident+":"+global;
+		return super.toString() + ":" + code + ":" + extra + ":" + fatal + ":" + ident + ":" + global;
 	}
 
 }

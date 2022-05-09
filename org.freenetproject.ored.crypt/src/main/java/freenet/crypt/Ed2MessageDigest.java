@@ -8,11 +8,11 @@ import java.security.MessageDigest;
 import org.bitpedia.collider.core.Ed2Handler;
 
 /**
-** Implementation of {@link MessageDigest} backed by a {@link Ed2Handler}.
-**
-** @author infinity0
-** @author toad
-*/
+ ** Implementation of {@link MessageDigest} backed by a {@link Ed2Handler}.
+ **
+ ** @author infinity0
+ ** @author toad
+ */
 public class Ed2MessageDigest extends MessageDigest {
 
 	final protected Ed2Handler handler;

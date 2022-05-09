@@ -16,9 +16,8 @@ public class SerializerTest extends TestCase {
 
 	public void test() {
 		// Values for basic type testing.
-		final Object[] data = new Object[] { true, (byte)9, (short)0xDE, 1234567, 123467890123L, Math.E,
-			123.4567f, "testing string", new double[] { Math.PI, 0.1234d},
-			new float[] { 2345.678f, 8901.234f }};
+		final Object[] data = new Object[] { true, (byte) 9, (short) 0xDE, 1234567, 123467890123L, Math.E, 123.4567f,
+				"testing string", new double[] { Math.PI, 0.1234d }, new float[] { 2345.678f, 8901.234f } };
 
 		readWrite(data);
 
@@ -51,11 +50,14 @@ public class SerializerTest extends TestCase {
 		}
 		try {
 			Serializer.writeToDataOutputStream(tooLong, dos);
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			throw new IllegalStateException("This test should not throw an IOException.", e);
-		} catch (IllegalArgumentException e) {
-			//Serializer should throw when array is too long.
-			System.out.println("Threw when too long; should be something about how the array is too long to serialize:");
+		}
+		catch (IllegalArgumentException e) {
+			// Serializer should throw when array is too long.
+			System.out
+					.println("Threw when too long; should be something about how the array is too long to serialize:");
 			e.printStackTrace();
 		}
 	}
@@ -64,29 +66,35 @@ public class SerializerTest extends TestCase {
 		ByteArrayOutputStream byteOutputStream = new ByteArrayOutputStream();
 		DataOutputStream dos = new DataOutputStream(byteOutputStream);
 
-		//Write to stream.
+		// Write to stream.
 		try {
-			for (Object datum : data) Serializer.writeToDataOutputStream(datum, dos);
-		} catch (IOException e) {
+			for (Object datum : data)
+				Serializer.writeToDataOutputStream(datum, dos);
+		}
+		catch (IOException e) {
 			throw new IllegalStateException("This test should not throw.", e);
 		}
 
-		//Read back.
+		// Read back.
 		DataInputStream dis = new DataInputStream(new ByteArrayInputStream(byteOutputStream.toByteArray()));
 		try {
 			for (Object datum : data) {
 				Object read = Serializer.readFromDataInputStream(datum.getClass(), dis);
-				//Might be an array.
+				// Might be an array.
 				if (read instanceof double[]) {
-					assertTrue(Arrays.equals((double[])datum, (double[])read));
-				} else if (read instanceof float[]) {
-					assertTrue(Arrays.equals((float[])datum, (float[])read));
-				} else {
+					assertTrue(Arrays.equals((double[]) datum, (double[]) read));
+				}
+				else if (read instanceof float[]) {
+					assertTrue(Arrays.equals((float[]) datum, (float[]) read));
+				}
+				else {
 					assertEquals(datum, read);
 				}
 			}
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			throw new IllegalStateException("This test should not throw.", e);
 		}
 	}
+
 }

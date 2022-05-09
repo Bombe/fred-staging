@@ -4,8 +4,9 @@
 package freenet.config;
 
 public class StringOption extends Option<String> {
-	public StringOption(SubConfig conf, String optionName, String defaultValue, int sortOrder, 
-			boolean expert, boolean forceWrite, String shortDesc, String longDesc, StringCallback cb) {
+
+	public StringOption(SubConfig conf, String optionName, String defaultValue, int sortOrder, boolean expert,
+			boolean forceWrite, String shortDesc, String longDesc, StringCallback cb) {
 		super(conf, optionName, cb, sortOrder, expert, forceWrite, shortDesc, longDesc, Option.DataType.STRING);
 		this.defaultValue = defaultValue;
 		this.currentValue = defaultValue;
@@ -20,4 +21,5 @@ public class StringOption extends Option<String> {
 	protected String toString(String val) {
 		return val;
 	}
+
 }

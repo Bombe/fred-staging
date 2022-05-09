@@ -9,12 +9,12 @@ import static junit.framework.TestCase.fail;
 
 public abstract class Asserts {
 
-	private Asserts() {}
+	private Asserts() {
+	}
 
 	public static void assertArrayEquals(byte[] expecteds, byte[] actuals) {
 		if (!Arrays.equals(expecteds, actuals)) {
-			fail("expected:<" + Arrays.toString(expecteds) +
-			  "> but was:<" + Arrays.toString(actuals) + ">");
+			fail("expected:<" + Arrays.toString(expecteds) + "> but was:<" + Arrays.toString(actuals) + ">");
 		}
 	}
 

@@ -1,9 +1,11 @@
 package freenet.clients.fcp;
 
 /**
- * FCP message sent from the node to the client which includes an endpoint identifier and uptime information.
+ * FCP message sent from the node to the client which includes an endpoint identifier and
+ * uptime information.
  */
 public class ProbeIdentifier extends FCPResponse {
+
 	/**
 	 * @param fcpIdentifier FCP-level identifier for pairing requests and responses
 	 * @param probeIdentifier probe endpoint identifier
@@ -19,4 +21,5 @@ public class ProbeIdentifier extends FCPResponse {
 	public String getName() {
 		return "ProbeIdentifier";
 	}
+
 }

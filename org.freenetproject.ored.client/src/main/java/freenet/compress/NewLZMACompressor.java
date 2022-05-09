@@ -24,15 +24,16 @@ import freenet.support.io.CountedOutputStream;
 
 public class NewLZMACompressor extends AbstractCompressor {
 
-	// Dictionary size 1MB, this is equivalent to lzma -4, it uses 16MB to compress and 2MB to decompress.
+	// Dictionary size 1MB, this is equivalent to lzma -4, it uses 16MB to compress and
+	// 2MB to decompress.
 	// Next one up is 2MB = -5 = 26M compress, 3M decompress.
-	static final int MAX_DICTIONARY_SIZE = 1<<20;
+	static final int MAX_DICTIONARY_SIZE = 1 << 20;
 
 	private static volatile boolean logMINOR;
 	static {
-		Logger.registerLogThresholdCallback(new LogThresholdCallback(){
+		Logger.registerLogThresholdCallback(new LogThresholdCallback() {
 			@Override
-			public void shouldUpdate(){
+			public void shouldUpdate() {
 				logMINOR = Logger.shouldLog(LogLevel.MINOR, this);
 			}
 		});
@@ -49,13 +50,16 @@ public class NewLZMACompressor extends AbstractCompressor {
 			output = bf.makeBucket(maxWriteLength);
 			is = data.getInputStream();
 			os = output.getOutputStream();
-			if(logMINOR)
-				Logger.minor(this, "Compressing "+data+" size "+data.size()+" to new bucket "+output);
+			if (logMINOR)
+				Logger.minor(this, "Compressing " + data + " size " + data.size() + " to new bucket " + output);
 			compress(is, os, maxReadLength, maxWriteLength);
 			// It is essential that the close()'s throw if there is any problem.
-			is.close(); is = null;
-			os.close(); os = null;
-		} finally {
+			is.close();
+			is = null;
+			os.close();
+			os = null;
+		}
+		finally {
 			Closer.close(is);
 			Closer.close(os);
 		}
@@ -64,23 +68,24 @@ public class NewLZMACompressor extends AbstractCompressor {
 
 	@Override
 	public long compress(InputStream is, OutputStream os, long maxReadLength, long maxWriteLength,
-						 final long amountOfDataToCheckCompressionRatio, final int minimumCompressionPercentage)
+			final long amountOfDataToCheckCompressionRatio, final int minimumCompressionPercentage)
 			throws IOException, CompressionRatioException {
 		CountedInputStream cis = null;
 		CountedOutputStream cos = null;
 		cis = new CountedInputStream(is);
 		cos = new CountedOutputStream(os);
 		Encoder encoder = new Encoder();
-		encoder.SetEndMarkerMode( true );
+		encoder.SetEndMarkerMode(true);
 		int dictionarySize = 1;
-		if(maxReadLength == Long.MAX_VALUE || maxReadLength < 0) {
+		if (maxReadLength == Long.MAX_VALUE || maxReadLength < 0) {
 			dictionarySize = MAX_DICTIONARY_SIZE;
 			Logger.error(this, "No indication of size, having to use maximum dictionary size", new Exception("debug"));
-		} else {
-			while(dictionarySize < maxReadLength && dictionarySize < MAX_DICTIONARY_SIZE)
+		}
+		else {
+			while (dictionarySize < maxReadLength && dictionarySize < MAX_DICTIONARY_SIZE)
 				dictionarySize <<= 1;
 		}
-		encoder.SetDictionarySize( dictionarySize );
+		encoder.SetDictionarySize(dictionarySize);
 		encoder.WriteCoderProperties(os);
 		try {
 			encoder.Code(cis, cos, maxReadLength, maxWriteLength, new ICodeProgress() {
@@ -91,48 +96,56 @@ public class NewLZMACompressor extends AbstractCompressor {
 					if (compressionEffectShouldBeChecked && processedInSize > amountOfDataToCheckCompressionRatio) {
 						try {
 							checkCompressionEffect(processedInSize, processedOutSize, minimumCompressionPercentage);
-						} catch (CompressionRatioException e) {
-							throw new RuntimeException(e); // need to escape from foreign API :-(
+						}
+						catch (CompressionRatioException e) {
+							throw new RuntimeException(e); // need to escape from foreign
+															// API :-(
 						}
 						compressionEffectShouldBeChecked = false;
 					}
 				}
 			});
-		} catch (RuntimeException e) {
+		}
+		catch (RuntimeException e) {
 			if (e.getCause() instanceof CompressionRatioException) {
 				throw (CompressionRatioException) e.getCause();
-			} else {
+			}
+			else {
 				throw e;
 			}
 		}
-		if(cos.written() > maxWriteLength)
+		if (cos.written() > maxWriteLength)
 			throw new CompressionOutputSizeException(cos.written());
 		cos.flush();
-		if(logMINOR)
-			Logger.minor(this, "Read "+cis.count()+" written "+cos.written());
+		if (logMINOR)
+			Logger.minor(this, "Read " + cis.count() + " written " + cos.written());
 		return cos.written();
 	}
 
-	public Bucket decompress(Bucket data, BucketFactory bf, long maxLength, long maxCheckSizeLength, Bucket preferred) throws IOException, CompressionOutputSizeException {
+	public Bucket decompress(Bucket data, BucketFactory bf, long maxLength, long maxCheckSizeLength, Bucket preferred)
+			throws IOException, CompressionOutputSizeException {
 		Bucket output;
-		if(preferred != null)
+		if (preferred != null)
 			output = preferred;
 		else
 			output = bf.makeBucket(maxLength);
-		if(logMINOR)
-			Logger.minor(this, "Decompressing "+data+" size "+data.size()+" to new bucket "+output);
+		if (logMINOR)
+			Logger.minor(this, "Decompressing " + data + " size " + data.size() + " to new bucket " + output);
 		CountedInputStream is = null;
 		OutputStream os = null;
 		try {
 			is = new CountedInputStream(data.getInputStream());
 			os = output.getOutputStream();
 			decompress(is, os, maxLength, maxCheckSizeLength);
-			if(logMINOR)
-				Logger.minor(this, "Output: "+output+" size "+output.size()+" read "+is.count());
+			if (logMINOR)
+				Logger.minor(this, "Output: " + output + " size " + output.size() + " read " + is.count());
 			// It is essential that the close()'s throw if there is any problem.
-			is.close(); is = null;
-			os.close(); os = null;
-		} finally {
+			is.close();
+			is = null;
+			os.close();
+			os = null;
+		}
+		finally {
 			Closer.close(os);
 			Closer.close(is);
 		}
@@ -140,7 +153,8 @@ public class NewLZMACompressor extends AbstractCompressor {
 	}
 
 	@Override
-	public long decompress(InputStream is, OutputStream os, long maxLength, long maxCheckSizeBytes) throws IOException, CompressionOutputSizeException {
+	public long decompress(InputStream is, OutputStream os, long maxLength, long maxCheckSizeBytes)
+			throws IOException, CompressionOutputSizeException {
 		byte[] props = new byte[5];
 		DataInputStream dis = new DataInputStream(is);
 		dis.readFully(props);
@@ -150,12 +164,15 @@ public class NewLZMACompressor extends AbstractCompressor {
 		for (int i = 0; i < 4; i++)
 			dictionarySize += ((props[1 + i]) & 0xFF) << (i * 8);
 
-		if(dictionarySize < 0) throw new InvalidCompressedDataException("Invalid dictionary size");
-		if(dictionarySize > MAX_DICTIONARY_SIZE) throw new TooBigDictionaryException();
+		if (dictionarySize < 0)
+			throw new InvalidCompressedDataException("Invalid dictionary size");
+		if (dictionarySize > MAX_DICTIONARY_SIZE)
+			throw new TooBigDictionaryException();
 		Decoder decoder = new Decoder();
-		if(!decoder.SetDecoderProperties(props)) throw new InvalidCompressedDataException("Invalid properties");
+		if (!decoder.SetDecoderProperties(props))
+			throw new InvalidCompressedDataException("Invalid properties");
 		decoder.Code(is, cos, maxLength);
-		//cos.flush();
+		// cos.flush();
 		return cos.written();
 	}
 
@@ -169,7 +186,8 @@ public class NewLZMACompressor extends AbstractCompressor {
 		try {
 			decompress(bais, baos, output.length, -1);
 			bytes = baos.size();
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			// Impossible
 			throw new Error("Got IOException: " + e.getMessage(), e);
 		}
@@ -177,4 +195,5 @@ public class NewLZMACompressor extends AbstractCompressor {
 		System.arraycopy(buf, 0, output, 0, bytes);
 		return bytes;
 	}
+
 }

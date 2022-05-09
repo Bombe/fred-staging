@@ -39,19 +39,22 @@ import freenet.support.io.FileUtil;
 
 /** Test migration from a RAMFreenetStore to a SaltedHashFreenetStore */
 public class RAMSaltMigrationTest {
-	
+
 	private static final File TEMP_DIR = new File("tmp-RAMSaltMigrationTest");
 
 	private RandomSource strongPRNG = new DummyRandomSource(43210);
+
 	private Random weakPRNG = new Random(12340);
+
 	private PooledExecutor exec = new PooledExecutor();
+
 	private Ticker ticker = new TrivialTicker(exec);
 
 	@BeforeClass
 	public static void setupClass() {
 		FileUtil.removeAll(TEMP_DIR);
 
-		if(! TEMP_DIR.mkdir()) {
+		if (!TEMP_DIR.mkdir()) {
 			throw new IllegalStateException("Could not create temporary directory for store tests");
 		}
 	}
@@ -70,12 +73,11 @@ public class RAMSaltMigrationTest {
 	private File getStorePath(String testname) {
 		File storePath = new File(TEMP_DIR, "CachingFreenetStoreTest_" + testname);
 		FileUtil.removeAll(storePath);
-		if( ! storePath.mkdirs() ) {
+		if (!storePath.mkdirs()) {
 			throw new IllegalStateException("Could not create temporary test store path: " + storePath);
 		}
 		return storePath;
 	}
-
 
 	/**
 	 * Insert Standard testing data
@@ -87,9 +89,9 @@ public class RAMSaltMigrationTest {
 	 * @throws CHKEncodeException
 	 * @throws IOException
 	 */
-	private int insertStandardTestBlocksIntoStore(int keycount, CHKStore store, List<String> dummyValueInsertedList, List<ClientCHKBlock> blockInsertedList)
-			throws CHKEncodeException, IOException {
-		
+	private int insertStandardTestBlocksIntoStore(int keycount, CHKStore store, List<String> dummyValueInsertedList,
+			List<ClientCHKBlock> blockInsertedList) throws CHKEncodeException, IOException {
+
 		int collisions = 0;
 		for (int i = 0; i < keycount; i++) {
 			String dummyValueInserted = "test" + i;
@@ -98,8 +100,9 @@ public class RAMSaltMigrationTest {
 
 			dummyValueInsertedList.add(dummyValueInserted);
 			blockInsertedList.add(blockInserted);
-			
-			// Did we have a collision during the put and the actual size did not increase?
+
+			// Did we have a collision during the put and the actual size did not
+			// increase?
 			if (store.keyCount() + collisions == i) {
 				collisions++;
 			}
@@ -108,9 +111,8 @@ public class RAMSaltMigrationTest {
 	}
 
 	/**
-	 * Probe all inserted keys and see what is actually there, after collisions might
-	 * have happend during insert or resize
-	 * 
+	 * Probe all inserted keys and see what is actually there, after collisions might have
+	 * happend during insert or resize
 	 * @param store to check for keys
 	 * @param dummyValueInsertedList to check for in store
 	 * @param blockInsertedList to check for in store
@@ -118,8 +120,9 @@ public class RAMSaltMigrationTest {
 	 * @param blockActuallyStoredList found blocks will be added to this list
 	 * @throws IOException
 	 */
-	private void probeStoreBlocks(CHKStore store, List<String> dummyValueInsertedList, List<ClientCHKBlock> blockInsertedList, List<String> dummyValueActuallyStoredList, List<ClientCHKBlock> blockActuallyStoredList)
-			throws IOException {
+	private void probeStoreBlocks(CHKStore store, List<String> dummyValueInsertedList,
+			List<ClientCHKBlock> blockInsertedList, List<String> dummyValueActuallyStoredList,
+			List<ClientCHKBlock> blockActuallyStoredList) throws IOException {
 		for (int i = 0; i < dummyValueInsertedList.size(); i++) {
 
 			CHKBlock verify = store.fetch(blockInsertedList.get(i).getClientKey().getNodeCHK(), false, false, null);
@@ -136,12 +139,14 @@ public class RAMSaltMigrationTest {
 	 * @param store to check
 	 * @param dummyValueActuallyStoredList of values expected
 	 * @param blockActuallyStoredList of blocks expecte
-	 * @param expectAll true, if all keys must be in the store, or at least one will be sufficient to succeed
+	 * @param expectAll true, if all keys must be in the store, or at least one will be
+	 * sufficient to succeed
 	 * @throws CHKVerifyException
 	 * @throws CHKDecodeException
 	 * @throws IOException
 	 */
-	private void checkStandardTestBlocks(CHKStore store, List<String> dummyValueActuallyStoredList, List<ClientCHKBlock> blockActuallyStoredList, boolean expectAll)
+	private void checkStandardTestBlocks(CHKStore store, List<String> dummyValueActuallyStoredList,
+			List<ClientCHKBlock> blockActuallyStoredList, boolean expectAll)
 			throws CHKVerifyException, CHKDecodeException, IOException {
 
 		int numberOfHits = 0;
@@ -153,7 +158,8 @@ public class RAMSaltMigrationTest {
 
 			if (expectAll) {
 				assertNotNull("Expect all keys to be in store. Not found: " + value, verify);
-			} else if (verify == null) {
+			}
+			else if (verify == null) {
 				continue;
 			}
 
@@ -161,17 +167,19 @@ public class RAMSaltMigrationTest {
 			assertEquals(value, decodedValue);
 			numberOfHits++;
 		}
-		
+
 		assertTrue("Not all keys in store were a hit", numberOfHits > 0);
 	}
 
 	@Test
-	public void testRAMStore_newFormat() throws IOException, CHKEncodeException, CHKVerifyException, CHKDecodeException {
+	public void testRAMStore_newFormat()
+			throws IOException, CHKEncodeException, CHKVerifyException, CHKDecodeException {
 		checkRAMStore(true);
 	}
 
 	@Test
-	public void testRAMStore_oldFormat() throws IOException, CHKEncodeException, CHKVerifyException, CHKDecodeException {
+	public void testRAMStore_oldFormat()
+			throws IOException, CHKEncodeException, CHKVerifyException, CHKDecodeException {
 		checkRAMStore(false);
 	}
 
@@ -238,8 +246,8 @@ public class RAMSaltMigrationTest {
 		CHKStore store = new CHKStore();
 
 		File f = getStorePath(testName);
-		try (SaltedHashFreenetStore<CHKBlock> saltStore = SaltedHashFreenetStore.construct(f, "teststore", store, weakPRNG,
-				10, false, SemiOrderedShutdownHook.get(), true, true, ticker, null)) {
+		try (SaltedHashFreenetStore<CHKBlock> saltStore = SaltedHashFreenetStore.construct(f, "teststore", store,
+				weakPRNG, 10, false, SemiOrderedShutdownHook.get(), true, true, ticker, null)) {
 			saltStore.start(null, true);
 
 			for (int i = 0; i < 5; i++) {
@@ -268,21 +276,26 @@ public class RAMSaltMigrationTest {
 		File f = getStorePath(testName);
 		List<String> dummyValueActuallyStoredList = new ArrayList<String>(keycount);
 		List<ClientCHKBlock> blockActuallyStoredList = new ArrayList<ClientCHKBlock>(keycount);
-		try (SaltedHashFreenetStore<CHKBlock> saltStore = SaltedHashFreenetStore.construct(f, "teststore", store, weakPRNG,
-				10, false, SemiOrderedShutdownHook.get(), true, true, ticker, null)) {
+		try (SaltedHashFreenetStore<CHKBlock> saltStore = SaltedHashFreenetStore.construct(f, "teststore", store,
+				weakPRNG, 10, false, SemiOrderedShutdownHook.get(), true, true, ticker, null)) {
 			saltStore.start(null, true);
 
 			List<String> dummyValueInsertedList = new ArrayList<String>(keycount);
 			List<ClientCHKBlock> blockInsertedList = new ArrayList<ClientCHKBlock>(keycount);
-			int collisions = insertStandardTestBlocksIntoStore(keycount, store, dummyValueInsertedList, blockInsertedList);
+			int collisions = insertStandardTestBlocksIntoStore(keycount, store, dummyValueInsertedList,
+					blockInsertedList);
 
-			probeStoreBlocks(store, dummyValueInsertedList, blockInsertedList, dummyValueActuallyStoredList, blockActuallyStoredList);
-			assertEquals("The number of inserts minus the number of collissions should be the same as the number of keys in the store. Collisions " + collisions, dummyValueInsertedList.size() - collisions, blockActuallyStoredList.size());
+			probeStoreBlocks(store, dummyValueInsertedList, blockInsertedList, dummyValueActuallyStoredList,
+					blockActuallyStoredList);
+			assertEquals(
+					"The number of inserts minus the number of collissions should be the same as the number of keys in the store. Collisions "
+							+ collisions,
+					dummyValueInsertedList.size() - collisions, blockActuallyStoredList.size());
 		}
 
 		store = new CHKStore();
-		try (SaltedHashFreenetStore<CHKBlock> saltStore = SaltedHashFreenetStore.construct(f, "teststore", store, weakPRNG,
-				10, false, SemiOrderedShutdownHook.get(), true, true, ticker, null)) {
+		try (SaltedHashFreenetStore<CHKBlock> saltStore = SaltedHashFreenetStore.construct(f, "teststore", store,
+				weakPRNG, 10, false, SemiOrderedShutdownHook.get(), true, true, ticker, null)) {
 			checkStandardTestBlocks(store, dummyValueActuallyStoredList, blockActuallyStoredList, true);
 		}
 	}
@@ -313,14 +326,15 @@ public class RAMSaltMigrationTest {
 	}
 
 	private void innerTestSaltedStoreSlotFilterWithAbort(int persistenceTime, int delay, boolean expectFailure,
-			boolean forceValidEmpty, String testName) throws IOException, CHKEncodeException, CHKVerifyException, CHKDecodeException {
+			boolean forceValidEmpty, String testName)
+			throws IOException, CHKEncodeException, CHKVerifyException, CHKDecodeException {
 		ResizablePersistentIntBuffer.setPersistenceTime(persistenceTime);
 
 		File f = getStorePath(testName);
 
 		CHKStore store = new CHKStore();
-		try (SaltedHashFreenetStore<CHKBlock> saltStore = SaltedHashFreenetStore.construct(f, "teststore", store, weakPRNG,
-				10, true, SemiOrderedShutdownHook.get(), true, true, ticker, null)) {
+		try (SaltedHashFreenetStore<CHKBlock> saltStore = SaltedHashFreenetStore.construct(f, "teststore", store,
+				weakPRNG, 10, true, SemiOrderedShutdownHook.get(), true, true, ticker, null)) {
 			saltStore.start(ticker, true);
 
 			// Make sure it's clear.
@@ -330,14 +344,15 @@ public class RAMSaltMigrationTest {
 
 			try {
 				Thread.sleep(delay);
-			} catch (InterruptedException e) {
 			}
-	
+			catch (InterruptedException e) {
+			}
+
 		}
 
 		store = new CHKStore();
-		try (SaltedHashFreenetStore<CHKBlock> saltStore = SaltedHashFreenetStore.construct(f, "teststore", store, weakPRNG,
-				10, true, SemiOrderedShutdownHook.get(), true, true, ticker, null)) {
+		try (SaltedHashFreenetStore<CHKBlock> saltStore = SaltedHashFreenetStore.construct(f, "teststore", store,
+				weakPRNG, 10, true, SemiOrderedShutdownHook.get(), true, true, ticker, null)) {
 			saltStore.start(ticker, true);
 			if (forceValidEmpty)
 				saltStore.forceValidEmpty();
@@ -377,32 +392,37 @@ public class RAMSaltMigrationTest {
 	public void innerTestSaltedStoreSlotFilterWithAbort_writeImmediately()
 			throws IOException, CHKEncodeException, CHKVerifyException, CHKDecodeException {
 		// Write straight through should work even with abort.
-		innerTestSaltedStoreSlotFilterWithAbort(-1, 0, false, false, "innerTestSaltedStoreSlotFilterWithAbort_writeImmediately");
+		innerTestSaltedStoreSlotFilterWithAbort(-1, 0, false, false,
+				"innerTestSaltedStoreSlotFilterWithAbort_writeImmediately");
 	}
 
 	public void innerTestSaltedStoreSlotFilterWithAbort_waitLongerThanPersistenceTime()
 			throws IOException, CHKEncodeException, CHKVerifyException, CHKDecodeException {
 		// Shorter interval than delay should work.
-		innerTestSaltedStoreSlotFilterWithAbort(1000, 2000, false, false, "innerTestSaltedStoreSlotFilterWithAbort_waitLongerThanPersistenceTime");
+		innerTestSaltedStoreSlotFilterWithAbort(1000, 2000, false, false,
+				"innerTestSaltedStoreSlotFilterWithAbort_waitLongerThanPersistenceTime");
 	}
 
 	public void innerTestSaltedStoreSlotFilterWithAbort_noWaitWithPersincenceTime_slotsUnknown()
 			throws IOException, CHKEncodeException, CHKVerifyException, CHKDecodeException {
 		// Even this should work, because the slots still say unknown.
-		innerTestSaltedStoreSlotFilterWithAbort(5000, 0, false, false, "innerTestSaltedStoreSlotFilterWithAbort_noWaitWithPersincenceTime_slotsUnknown");
+		innerTestSaltedStoreSlotFilterWithAbort(5000, 0, false, false,
+				"innerTestSaltedStoreSlotFilterWithAbort_noWaitWithPersincenceTime_slotsUnknown");
 	}
 
 	public void innerTestSaltedStoreSlotFilterWithAbort_noWaitWithPersincenceTime_forceKownEmpty_fails()
 			throws IOException, CHKEncodeException, CHKVerifyException, CHKDecodeException {
 		// However if we set the unknown slots to known empty, it should fail.
-		innerTestSaltedStoreSlotFilterWithAbort(5000, 0, true, true, "innerTestSaltedStoreSlotFilterWithAbort_noWaitWithPersincenceTime_forceKownEmpty_fails");
+		innerTestSaltedStoreSlotFilterWithAbort(5000, 0, true, true,
+				"innerTestSaltedStoreSlotFilterWithAbort_noWaitWithPersincenceTime_forceKownEmpty_fails");
 	}
 
 	public void innerTestSaltedStoreSlotFilterWithAbort_writeImmediately_forceKownEmptz()
 			throws IOException, CHKEncodeException, CHKVerifyException, CHKDecodeException {
 		// But if we do the same thing while giving it enough time to write, it should
 		// work.
-		innerTestSaltedStoreSlotFilterWithAbort(-1, 0, false, true, "innerTestSaltedStoreSlotFilterWithAbort_writeImmediately_forceKownEmptz");
+		innerTestSaltedStoreSlotFilterWithAbort(-1, 0, false, true,
+				"innerTestSaltedStoreSlotFilterWithAbort_writeImmediately_forceKownEmptz");
 	}
 
 	@Test
@@ -410,7 +430,8 @@ public class RAMSaltMigrationTest {
 			throws IOException, CHKEncodeException, CHKVerifyException, CHKDecodeException {
 		// But if we do the same thing while giving it enough time to write, it should
 		// work.
-		innerTestSaltedStoreSlotFilterWithAbort(1000, 2000, false, true, "testSaltedStoreWithClose_withPersincenceTimeAndLongerWait_forceKownEmpty");
+		innerTestSaltedStoreSlotFilterWithAbort(1000, 2000, false, true,
+				"testSaltedStoreWithClose_withPersincenceTimeAndLongerWait_forceKownEmpty");
 	}
 
 	@Test
@@ -439,20 +460,25 @@ public class RAMSaltMigrationTest {
 		CHKStore store = new CHKStore();
 
 		File f = getStorePath(testName);
-		try (SaltedHashFreenetStore<CHKBlock> saltStore = SaltedHashFreenetStore.construct(f, "teststore", store, weakPRNG,
-				size, useSlotFilter, SemiOrderedShutdownHook.get(), true, true, ticker, null)) {
-			
+		try (SaltedHashFreenetStore<CHKBlock> saltStore = SaltedHashFreenetStore.construct(f, "teststore", store,
+				weakPRNG, size, useSlotFilter, SemiOrderedShutdownHook.get(), true, true, ticker, null)) {
+
 			saltStore.start(null, true);
 
 			List<String> dummyValueInsertedList = new ArrayList<String>(keycount);
 			List<ClientCHKBlock> blockInsertedList = new ArrayList<ClientCHKBlock>(keycount);
-			int collisions = insertStandardTestBlocksIntoStore(keycount, store, dummyValueInsertedList, blockInsertedList);
+			int collisions = insertStandardTestBlocksIntoStore(keycount, store, dummyValueInsertedList,
+					blockInsertedList);
 
 			List<String> dummyValueActuallyStoredList = new ArrayList<String>(keycount);
 			List<ClientCHKBlock> blockActuallyStoredList = new ArrayList<ClientCHKBlock>(keycount);
-			probeStoreBlocks(store, dummyValueInsertedList, blockInsertedList, dummyValueActuallyStoredList, blockActuallyStoredList);
-			assertEquals("The number of inserts minus the number of collissions should be the same as the number of keys in the store. Collisions " + collisions, dummyValueInsertedList.size() - collisions, blockActuallyStoredList.size());
-			
+			probeStoreBlocks(store, dummyValueInsertedList, blockInsertedList, dummyValueActuallyStoredList,
+					blockActuallyStoredList);
+			assertEquals(
+					"The number of inserts minus the number of collissions should be the same as the number of keys in the store. Collisions "
+							+ collisions,
+					dummyValueInsertedList.size() - collisions, blockActuallyStoredList.size());
+
 			for (int i = 0; i < dummyValueActuallyStoredList.size(); i++) {
 
 				String value = dummyValueActuallyStoredList.get(i);
@@ -480,20 +506,23 @@ public class RAMSaltMigrationTest {
 	@Test
 	public void testSaltedStoreResize_noUseSlotFilter_writeImmediately_noAbort_openNewSize()
 			throws CHKEncodeException, CHKVerifyException, CHKDecodeException, IOException {
-		checkSaltedStoreResize(5, 10, 20, false, -1, false, true, "testSaltedStoreResize_noUseSlotFilter_writeImmediately_noAbort_openNewSize");
+		checkSaltedStoreResize(5, 10, 20, false, -1, false, true,
+				"testSaltedStoreResize_noUseSlotFilter_writeImmediately_noAbort_openNewSize");
 	}
 
 	@Test
 	public void testSaltedStoreResize_useSlotFilter_writeImmediately_noAbort_openNewSize()
 			throws CHKEncodeException, CHKVerifyException, CHKDecodeException, IOException {
-		checkSaltedStoreResize(5, 10, 20, true, -1, false, true, "testSaltedStoreResize_useSlotFilter_writeImmediately_noAbort_openNewSize");
+		checkSaltedStoreResize(5, 10, 20, true, -1, false, true,
+				"testSaltedStoreResize_useSlotFilter_writeImmediately_noAbort_openNewSize");
 	}
 
 	@Test
 	public void testSaltedStoreResize_useSlotFilter_1h_noAbort_openNewSize()
 			throws CHKEncodeException, CHKVerifyException, CHKDecodeException, IOException {
 		// Will write to disk on shutdown.
-		checkSaltedStoreResize(5, 10, 20, true, 60000, false, true, "testSaltedStoreResize_useSlotFilter_1h_noAbort_openNewSize");
+		checkSaltedStoreResize(5, 10, 20, true, 60000, false, true,
+				"testSaltedStoreResize_useSlotFilter_1h_noAbort_openNewSize");
 	}
 
 	@Test
@@ -501,7 +530,8 @@ public class RAMSaltMigrationTest {
 			throws CHKEncodeException, CHKVerifyException, CHKDecodeException, IOException {
 		// Using the old size causes it to resize on startup back to the old size. This
 		// needs testing too, and revealed some odd bugs.
-		checkSaltedStoreResize(5, 10, 20, true, 60000, false, false, "testSaltedStoreResize_useSlotFilter_1h_noAbort_noOpenNewSize");
+		checkSaltedStoreResize(5, 10, 20, true, 60000, false, false,
+				"testSaltedStoreResize_useSlotFilter_1h_noAbort_noOpenNewSize");
 	}
 
 	@Test
@@ -509,13 +539,15 @@ public class RAMSaltMigrationTest {
 			throws CHKEncodeException, CHKVerifyException, CHKDecodeException, IOException {
 		// It will force to disk after resizing, so should still work even with a long
 		// write time.
-		checkSaltedStoreResize(5, 10, 20, true, 60000, true, true, "testSaltedStoreResize_useSlotFilter_1h_abort_openNewSize");
+		checkSaltedStoreResize(5, 10, 20, true, 60000, true, true,
+				"testSaltedStoreResize_useSlotFilter_1h_abort_openNewSize");
 	}
 
 	@Test
 	public void testSaltedStoreResize_useSlotFilter_1h_abort_noOpenNewSize()
 			throws CHKEncodeException, CHKVerifyException, CHKDecodeException, IOException {
-		checkSaltedStoreResize(5, 10, 20, true, 60000, true, false, "testSaltedStoreResize_useSlotFilter_1h_abort_noOpenNewSize");
+		checkSaltedStoreResize(5, 10, 20, true, 60000, true, false,
+				"testSaltedStoreResize_useSlotFilter_1h_abort_noOpenNewSize");
 	}
 
 	public void checkSaltedStoreResize(int keycount, int size, int newSize, boolean useSlotFilter, int persistenceTime,
@@ -529,29 +561,37 @@ public class RAMSaltMigrationTest {
 		SaltedHashFreenetStore.NO_CLEANER_SLEEP = true;
 		List<String> dummyValueActuallyStoredList = new ArrayList<String>(keycount);
 		List<ClientCHKBlock> blockActuallyStoredList = new ArrayList<ClientCHKBlock>(keycount);
-		try (SaltedHashFreenetStore<CHKBlock> saltStore = SaltedHashFreenetStore.construct(f, "teststore", store, weakPRNG,
-				size, useSlotFilter, SemiOrderedShutdownHook.get(), true, true, ticker, null)) {
+		try (SaltedHashFreenetStore<CHKBlock> saltStore = SaltedHashFreenetStore.construct(f, "teststore", store,
+				weakPRNG, size, useSlotFilter, SemiOrderedShutdownHook.get(), true, true, ticker, null)) {
 			saltStore.start(ticker, true);
 
 			List<String> dummyValueInsertedList = new ArrayList<String>(keycount);
 			List<ClientCHKBlock> blockInsertedList = new ArrayList<ClientCHKBlock>(keycount);
-			int collisions = insertStandardTestBlocksIntoStore(keycount, store, dummyValueInsertedList, blockInsertedList);
-			
+			int collisions = insertStandardTestBlocksIntoStore(keycount, store, dummyValueInsertedList,
+					blockInsertedList);
+
 			saltStore.setMaxKeys(newSize, true);
 
-			probeStoreBlocks(store, dummyValueInsertedList, blockInsertedList, dummyValueActuallyStoredList, blockActuallyStoredList);
-			assertEquals("The number of inserts minus the number of collissions should be the same as the number of keys in the store. Collisions " + collisions, dummyValueInsertedList.size() - collisions, blockActuallyStoredList.size());
+			probeStoreBlocks(store, dummyValueInsertedList, blockInsertedList, dummyValueActuallyStoredList,
+					blockActuallyStoredList);
+			assertEquals(
+					"The number of inserts minus the number of collissions should be the same as the number of keys in the store. Collisions "
+							+ collisions,
+					dummyValueInsertedList.size() - collisions, blockActuallyStoredList.size());
 
 			saltStore.close(abort);
 		}
 
 		store = new CHKStore();
-		try (SaltedHashFreenetStore<CHKBlock> saltStore = SaltedHashFreenetStore.construct(f, "teststore", store, weakPRNG,
-				openNewSize ? newSize : size, useSlotFilter, SemiOrderedShutdownHook.get(), true, true, ticker, null)) {
+		try (SaltedHashFreenetStore<CHKBlock> saltStore = SaltedHashFreenetStore.construct(f, "teststore", store,
+				weakPRNG, openNewSize ? newSize : size, useSlotFilter, SemiOrderedShutdownHook.get(), true, true,
+				ticker, null)) {
 			saltStore.start(ticker, true);
 
-			// If we did open the new size we expect all previously matched keys to be present.
-			// If we opend the old size, it causes a resize again, which might create new collisions and keys might be lost again.
+			// If we did open the new size we expect all previously matched keys to be
+			// present.
+			// If we opend the old size, it causes a resize again, which might create new
+			// collisions and keys might be lost again.
 			boolean expectAll = openNewSize;
 
 			checkStandardTestBlocks(store, dummyValueActuallyStoredList, blockActuallyStoredList, expectAll);

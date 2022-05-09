@@ -7,10 +7,11 @@ package freenet.client.async;
 import java.io.IOException;
 import java.io.OutputStream;
 
-/** Writes an underlying data structure to an output stream.*/
+/** Writes an underlying data structure to an output stream. */
 public interface StreamGenerator {
 
-	/** Writes the data.
+	/**
+	 * Writes the data.
 	 * @param os Stream to which the data will be written
 	 * @param context
 	 * @throws IOException
@@ -21,4 +22,5 @@ public interface StreamGenerator {
 	 * @return The size of the underlying structure
 	 */
 	public long size();
+
 }

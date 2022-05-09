@@ -6,11 +6,11 @@ package freenet.pluginmanager;
 import freenet.l10n.BaseL10n.LANGUAGE;
 
 /**
- * Interface that has to be implemented for plugins that wants to use
- * the node's localization system (recommended).
+ * Interface that has to be implemented for plugins that wants to use the node's
+ * localization system (recommended).
  *
- * Those methods are called by the node when plugin l10n data are needed,
- * ex. to automate things in the translation page.
+ * Those methods are called by the node when plugin l10n data are needed, ex. to automate
+ * things in the translation page.
  *
  * @author Artefact2
  */
@@ -29,4 +29,5 @@ public interface FredPluginBaseL10n {
 	public String getL10nOverrideFilesMask();
 
 	public ClassLoader getPluginClassLoader();
+
 }

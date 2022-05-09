@@ -26,22 +26,21 @@ import freenet.nodelogger.Logger;
 
 /** Implementation of allowedHosts */
 public class AllowedHosts {
-	
+
 	protected final List<AddressMatcher> addressMatchers = new ArrayList<AddressMatcher>();
-	
+
 	public AllowedHosts(String allowedHosts) {
 		setAllowedHosts(allowedHosts);
 	}
 
 	/**
-	 * Sets the list of allowed hosts to <code>allowedHosts</code>. The new
-	 * list is in effect immediately after this method has finished.
-	 * 
-	 * @param allowedHosts
-	 *            The new list of allowed hosts s
+	 * Sets the list of allowed hosts to <code>allowedHosts</code>. The new list is in
+	 * effect immediately after this method has finished.
+	 * @param allowedHosts The new list of allowed hosts s
 	 */
 	public void setAllowedHosts(String allowedHosts) {
-                if(allowedHosts == null || allowedHosts.equals("")) allowedHosts = NetworkInterface.DEFAULT_BIND_TO;
+		if (allowedHosts == null || allowedHosts.equals(""))
+			allowedHosts = NetworkInterface.DEFAULT_BIND_TO;
 		StringTokenizer allowedHostsTokens = new StringTokenizer(allowedHosts, ",");
 		List<AddressMatcher> newAddressMatchers = new ArrayList<AddressMatcher>();
 		while (allowedHostsTokens.hasMoreTokens()) {
@@ -53,11 +52,14 @@ public class AllowedHosts {
 			AddressType addressType = AddressIdentifier.getAddressType(hostname);
 			if (addressType == AddressType.IPv4) {
 				newAddressMatchers.add(new Inet4AddressMatcher(allowedHost));
-			} else if (addressType == AddressType.IPv6) {
+			}
+			else if (addressType == AddressType.IPv6) {
 				newAddressMatchers.add(new Inet6AddressMatcher(allowedHost));
-			} else if (allowedHost.equals("*")) {
+			}
+			else if (allowedHost.equals("*")) {
 				newAddressMatchers.add(new EverythingMatcher());
-			} else {
+			}
+			else {
 				Logger.error(NetworkInterface.class, "Ignoring invalid allowedHost: " + allowedHost);
 			}
 		}
@@ -73,18 +75,21 @@ public class AllowedHosts {
 	}
 
 	public synchronized boolean allowed(AddressType clientAddressType, InetAddress clientAddress) {
-		for(AddressMatcher matcher: addressMatchers) {
-			if(matcher.matches(clientAddress)) return true;
+		for (AddressMatcher matcher : addressMatchers) {
+			if (matcher.matches(clientAddress))
+				return true;
 		}
 		return false;
 	}
 
 	public synchronized String getAllowedHosts() {
 		StringBuilder sb = new StringBuilder();
-		for(int i=0;i<addressMatchers.size();i++) {
+		for (int i = 0; i < addressMatchers.size(); i++) {
 			AddressMatcher matcher = addressMatchers.get(i);
-			if(matcher instanceof EverythingMatcher) return "*";
-			if(i != 0) sb.append(',');
+			if (matcher instanceof EverythingMatcher)
+				return "*";
+			if (i != 0)
+				sb.append(',');
 			sb.append(matcher.getHumanRepresentation());
 		}
 		return sb.toString();
