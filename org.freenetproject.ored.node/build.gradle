@@ -15,6 +15,9 @@ dependencies {
 
     implementation 'net.java.dev.jna:jna-jpms:5.11.0'
     implementation 'net.java.dev.jna:jna-platform-jpms:5.11.0'
+    implementation('net.harawata:appdirs:1.2.1') {
+        exclude group: 'net.java.dev.jna', module: 'jna-platform'
+    }
 
     testImplementation testFixtures(project(":org.freenetproject.ored.support"))
 }

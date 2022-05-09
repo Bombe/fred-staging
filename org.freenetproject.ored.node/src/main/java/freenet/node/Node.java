@@ -350,7 +350,7 @@ public class Node implements TimeSkewDetectorCallback, KeyBlockStore, Persistent
 				} else /*if(val.equals("none")) */{
 					initNoClientCacheFS();
 				}
-				
+
 				synchronized(Node.this) {
 					clientCacheType = val;
 				}
@@ -388,8 +388,8 @@ public class Node implements TimeSkewDetectorCallback, KeyBlockStore, Persistent
 
 	/** Encryption key for client.dat.crypt or client.dat.bak.crypt */
 	private DatabaseKey databaseKey;
-	
-	/** Encryption keys, if loaded, null if waiting for a password. We must be able to write them, 
+
+	/** Encryption keys, if loaded, null if waiting for a password. We must be able to write them,
 	 * and they're all used elsewhere anyway, so there's no point trying not to keep them in memory. */
 	private MasterKeys keys;
 
@@ -551,7 +551,7 @@ public class Node implements TimeSkewDetectorCallback, KeyBlockStore, Persistent
 	boolean disableProbabilisticHTLs;
 
 	public final RequestTracker tracker;
-	
+
 	/** Semi-unique ID for swap requests. Used to identify us so that the
 	 * topology can be reconstructed. */
 	public long swapIdentifier;
@@ -578,7 +578,7 @@ public class Node implements TimeSkewDetectorCallback, KeyBlockStore, Persistent
 	/** Strong RNG */
 	public final RandomSource random;
 	/** JCA-compliant strong RNG. WARNING: DO NOT CALL THIS ON THE MAIN NETWORK
-	 * HANDLING THREADS! In some configurations it can block, potentially 
+	 * HANDLING THREADS! In some configurations it can block, potentially
 	 * forever, on nextBytes()! */
 	public final SecureRandom secureRandom;
 	/** Weak but fast RNG */
@@ -713,7 +713,7 @@ public class Node implements TimeSkewDetectorCallback, KeyBlockStore, Persistent
 	private volatile boolean isPRNGReady = false;
 
 	private boolean storePreallocate;
-	
+
 	private boolean enableRoutedPing;
 
 	private boolean enableNodeDiagnostics;
@@ -930,6 +930,9 @@ public class Node implements TimeSkewDetectorCallback, KeyBlockStore, Persistent
 
 		int sortOrder = 0;
 
+		// Default userDir
+
+
 		// Directory for node-related files other than store
 		this.userDir = setupProgramDir(installConfig, "userDir", ".",
 		  "Node.userDir", "Node.userDirLong", nodeConfig);
@@ -974,9 +977,9 @@ public class Node implements TimeSkewDetectorCallback, KeyBlockStore, Persistent
 			e4.printStackTrace();
 			throw new NodeInitException(NodeInitException.EXIT_COULD_NOT_START_FPROXY, "Could not start FProxy: "+e4);
 		}
-		
+
 		final NativeThread entropyGatheringThread = new NativeThread(new Runnable() {
-			
+
 			long tLastAdded = -1;
 
 			private void recurse(File f) {
@@ -1022,11 +1025,11 @@ public class Node implements TimeSkewDetectorCallback, KeyBlockStore, Persistent
 					recurse(root);
 				}
 			}
-			
+
 			/** This is ridiculous, but for some users it can take more than an hour, and timing out sucks
 			 * a few bytes and then times out again. :( */
 			static final int EXTEND_BY = 60*60*1000;
-			
+
 			private void extendTimeouts() {
 				long now = System.currentTimeMillis();
 				if(now - tLastAdded < EXTEND_BY/2) return;
@@ -1115,7 +1118,7 @@ public class Node implements TimeSkewDetectorCallback, KeyBlockStore, Persistent
 		}
 		masterKeysFile = f;
 		FileUtil.setOwnerRW(masterKeysFile);
-		
+
 		nodeConfig.register("showFriendsVisibilityAlert", false, sortOrder++, true, false, "Node.showFriendsVisibilityAlert", "Node.showFriendsVisibilityAlert", new BooleanCallback() {
 
 			@Override
@@ -1134,15 +1137,15 @@ public class Node implements TimeSkewDetectorCallback, KeyBlockStore, Persistent
 				}
 				unregisterFriendsVisibilityAlert();
 			}
-			
-			
-			
+
+
+
 		});
-		
+
 		showFriendsVisibilityAlert = nodeConfig.getBoolean("showFriendsVisibilityAlert");
 
         byte[] clientCacheKey = null;
-        
+
         MasterSecret persistentSecret = null;
         for(int i=0;i<2; i++) {
 
@@ -1674,7 +1677,7 @@ public class Node implements TimeSkewDetectorCallback, KeyBlockStore, Persistent
 
 		// Then read the peers
 		peers = new PeerManager(this, shutdownHook);
-		
+
 		tracker = new RequestTracker(peers, ticker);
 
 		usm.setDispatcher(dispatcher=new NodeDispatcher(this));
@@ -1697,7 +1700,7 @@ public class Node implements TimeSkewDetectorCallback, KeyBlockStore, Persistent
 
 		if(showFriendsVisibilityAlert)
 			registerFriendsVisibilityAlert();
-		
+
 		// Node updater support
 
 		System.out.println("Initializing Node Updater");
@@ -1968,7 +1971,7 @@ public class Node implements TimeSkewDetectorCallback, KeyBlockStore, Persistent
 		}
 
 		maxTotalKeys = maxTotalDatastoreSize / sizePerKey;
-		
+
 		nodeConfig.register("storeUseSlotFilters", true, sortOrder++, true, false, "Node.storeUseSlotFilters", "Node.storeUseSlotFiltersLong", new BooleanCallback() {
 
 			public Boolean get() {
@@ -1982,15 +1985,15 @@ public class Node implements TimeSkewDetectorCallback, KeyBlockStore, Persistent
 				synchronized(Node.this) {
 					storeUseSlotFilters = val;
 				}
-				
+
 				// FIXME l10n
 				throw new NodeNeedRestartException("Need to restart to change storeUseSlotFilters");
 			}
-			
+
 		});
-		
+
 		storeUseSlotFilters = nodeConfig.getBoolean("storeUseSlotFilters");
-		
+
 		nodeConfig.register("storeSaltHashSlotFilterPersistenceTime", ResizablePersistentIntBuffer.DEFAULT_PERSISTENCE_TIME, sortOrder++, true, false,
 				"Node.storeSaltHashSlotFilterPersistenceTime", "Node.storeSaltHashSlotFilterPersistenceTimeLong", new IntCallback() {
 
@@ -2008,7 +2011,7 @@ public class Node implements TimeSkewDetectorCallback, KeyBlockStore, Persistent
 						} else
 							throw new InvalidConfigValueException(l10n("slotFilterPersistenceTimeError"));
 					}
-			
+
 		}, false);
 		storeSaltHashSlotFilterPersistenceTime = nodeConfig.getInt("storeSaltHashSlotFilterPersistenceTime");
 
@@ -2143,10 +2146,10 @@ public class Node implements TimeSkewDetectorCallback, KeyBlockStore, Persistent
 				throw new NodeInitException(NodeInitException.EXIT_CANT_WRITE_MASTER_KEYS, msg);
 			}
 		}
-		
+
 		long defaultCacheSize;
 		long memoryLimit = NodeStarter.getMemoryLimitBytes();
-		// This is tricky because systems with low memory probably also have slow disks, but using 
+		// This is tricky because systems with low memory probably also have slow disks, but using
 		// up too much memory can be catastrophic...
 		// Total alchemy, FIXME!
 		if(memoryLimit == Long.MAX_VALUE || memoryLimit < 0)
@@ -2157,7 +2160,7 @@ public class Node implements TimeSkewDetectorCallback, KeyBlockStore, Persistent
 			// 9 stores, total should be 5% of memory, up to maximum of 1MB per store at 308MB+
 			defaultCacheSize = Math.min(1024*1024, (memoryLimit - 128*1024*1024) / (20*9));
 		}
-		
+
 		nodeConfig.register("cachingFreenetStoreMaxSize", defaultCacheSize, sortOrder++, true, false, "Node.cachingFreenetStoreMaxSize", "Node.cachingFreenetStoreMaxSizeLong",
 			new LongCallback() {
 				@Override
@@ -2177,11 +2180,11 @@ public class Node implements TimeSkewDetectorCallback, KeyBlockStore, Persistent
 					throw new NodeNeedRestartException("Caching Maximum Size cannot be changed on the fly");
 				}
 		}, true);
-		
+
 		cachingFreenetStoreMaxSize = nodeConfig.getLong("cachingFreenetStoreMaxSize");
 		if(cachingFreenetStoreMaxSize < 0)
 			throw new NodeInitException(NodeInitException.EXIT_BAD_CONFIG, l10n("invalidMemoryCacheSize"));
-		
+
 		nodeConfig.register("cachingFreenetStorePeriod", "300k", sortOrder++, true, false, "Node.cachingFreenetStorePeriod", "Node.cachingFreenetStorePeriod",
 			new LongCallback() {
 				@Override
@@ -2199,9 +2202,9 @@ public class Node implements TimeSkewDetectorCallback, KeyBlockStore, Persistent
 					throw new NodeNeedRestartException("Caching Period cannot be changed on the fly");
 				}
 		}, true);
-		
+
 		cachingFreenetStorePeriod = nodeConfig.getLong("cachingFreenetStorePeriod");
-		
+
 		if(cachingFreenetStoreMaxSize > 0 && cachingFreenetStorePeriod > 0) {
 			cachingFreenetStoreTracker = new CachingFreenetStoreTracker(cachingFreenetStoreMaxSize, cachingFreenetStorePeriod, ticker);
 		}
@@ -2292,7 +2295,7 @@ public class Node implements TimeSkewDetectorCallback, KeyBlockStore, Persistent
 		}
 		if(!startedClientCache)
 			initRAMClientCacheFS();
-		
+
 		if(!clientCore.loadedDatabase() && databaseKey != null)  {
 			try {
 				lateSetupDatabase(databaseKey);
@@ -2485,7 +2488,7 @@ public class Node implements TimeSkewDetectorCallback, KeyBlockStore, Persistent
 		}, true);
 
 		maxPacketSize = nodeConfig.getInt("maxPacketSize");
-		
+
 		nodeConfig.register("enableRoutedPing", false, sortOrder++, true, false, "Node.enableRoutedPing", "Node.enableRoutedPingLong", new BooleanCallback() {
 
 			@Override
@@ -2502,7 +2505,7 @@ public class Node implements TimeSkewDetectorCallback, KeyBlockStore, Persistent
 					enableRoutedPing = val;
 				}
 			}
-			
+
 		});
 		enableRoutedPing = nodeConfig.getBoolean("enableRoutedPing");
 
@@ -2651,7 +2654,7 @@ public class Node implements TimeSkewDetectorCallback, KeyBlockStore, Persistent
 		File[] list = dir.listFiles();
 		for(File f : list) {
 			String name = f.getName();
-			if(f.isFile() && 
+			if(f.isFile() &&
 					name.toLowerCase().matches("((chk)|(ssk)|(pubkey))-[0-9]*\\.((store)|(cache))(\\.((keys)|(lru)))?")) {
 				System.out.println("Deleting old datastore file \""+f+"\"");
 				try {
@@ -2918,7 +2921,7 @@ public class Node implements TimeSkewDetectorCallback, KeyBlockStore, Persistent
 			final SSKStore sskDatacache = new SSKStore(getPubKey);
 			final FreenetStore<SSKBlock> sskCacheFS = makeStore("SSK", false, sskDatacache, dontResizeOnStart, masterKey);
 			((SaltedHashFreenetStore<SSKBlock>) sskCacheFS.getUnderlyingStore()).setAltStore(((SaltedHashFreenetStore<SSKBlock>) sskDataFS.getUnderlyingStore()));
-			
+
 			boolean delay =
 				chkDataFS.start(ticker, false) |
 				chkCacheFS.start(ticker, false) |
@@ -3091,12 +3094,12 @@ public class Node implements TimeSkewDetectorCallback, KeyBlockStore, Persistent
 	}
 
 	public void start(boolean noSwaps) throws NodeInitException {
-		
+
 		// IMPORTANT: Read the peers only after we have finished initializing Node.
 		// Peer constructors are complex and can call methods on Node.
 		peers.tryReadPeers(nodeDir.file("peers-"+getDarknetPortNumber()).getPath(), darknetCrypto, null, false, false);
 		peers.updatePMUserAlert();
-		
+
 		dispatcher.start(nodeStats); // must be before usm
 		dnsr.start();
 		peers.start(); // must be before usm
@@ -3215,7 +3218,7 @@ public class Node implements TimeSkewDetectorCallback, KeyBlockStore, Persistent
 		if(jvmName.startsWith("OpenJDK ")) {
 			isOpenJDK = true;
 		}
-		
+
 		//Add some checks for "Oracle" to futureproof against them renaming from "Sun".
 		//Should have no effect because if a user has downloaded a new enough file for Oracle to have changed the name these bugs shouldn't apply.
 		//Still, one never knows and this code might be extended to cover future bugs.
@@ -3268,11 +3271,11 @@ public class Node implements TimeSkewDetectorCallback, KeyBlockStore, Persistent
 		if(!isUsingWrapper() && !skipWrapperWarning) {
 			clientCore.alerts.register(new SimpleUserAlert(true, l10n("notUsingWrapperTitle"), l10n("notUsingWrapper"), l10n("notUsingWrapperShort"), FCPUserAlert.WARNING));
 		}
-		
+
 		// Unfortunately debian's version of OpenJDK appears to have segfaulting issues.
 		// Which presumably are exploitable.
 		// So we can't recommend people switch just yet. :(
-		
+
 //		if(isOracle && Rijndael.AesCtrProvider == null) {
 //			if(!(FileUtil.detectedOS == FileUtil.OperatingSystem.Windows || FileUtil.detectedOS == FileUtil.OperatingSystem.MacOS))
 //				clientCore.alerts.register(new SimpleUserAlert(true, l10n("usingOracleTitle"), l10n("usingOracle"), l10n("usingOracleTitle"), UserAlert.WARNING));
@@ -3414,7 +3417,7 @@ public class Node implements TimeSkewDetectorCallback, KeyBlockStore, Persistent
 		if(logMINOR) Logger.minor(this, "Not in store locally");
 
 		// Transfer coalescing - match key only as HTL irrelevant
-		RequestSender sender = key instanceof NodeCHK ? 
+		RequestSender sender = key instanceof NodeCHK ?
 			tracker.getTransferringRequestSenderByKey((NodeCHK)key, realTimeFlag) : null;
 		if(sender != null) {
 			if(logMINOR) Logger.minor(this, "Data already being transferred: "+sender);
@@ -3864,7 +3867,7 @@ public class Node implements TimeSkewDetectorCallback, KeyBlockStore, Persistent
 		is.start();
 		return is;
 	}
-	
+
 
 	/**
 	 * @return Some status information.
@@ -4574,7 +4577,7 @@ public class Node implements TimeSkewDetectorCallback, KeyBlockStore, Persistent
 		return routeAccordingToOurPeersLocation && htl > 1;
 	}
 
-	/** Can be called to decrypt client.dat* etc, or can be called when switching from another 
+	/** Can be called to decrypt client.dat* etc, or can be called when switching from another
 	 * security level to HIGH. */
 	public void setMasterPassword(String password, boolean inFirstTimeWizard) throws AlreadySetPasswordException, MasterKeysWrongPasswordException, MasterKeysFileSizeException, IOException {
 		MasterKeys k;
@@ -4693,7 +4696,7 @@ public class Node implements TimeSkewDetectorCallback, KeyBlockStore, Persistent
 	public boolean wantEncryptedDatabase() {
 	    return this.securityLevels.getPhysicalThreatLevel() != PHYSICAL_THREAT_LEVEL.LOW;
 	}
-	
+
 	public boolean wantNoPersistentDatabase() {
 	    return this.securityLevels.getPhysicalThreatLevel() == PHYSICAL_THREAT_LEVEL.MAXIMUM;
 	}
@@ -4783,9 +4786,9 @@ public class Node implements TimeSkewDetectorCallback, KeyBlockStore, Persistent
 		}, 0);
 		registerFriendsVisibilityAlert();
 	}
-	
+
 	private FCPUserAlert visibilityAlert = new SimpleUserAlert(true, l10n("pleaseSetPeersVisibilityAlertTitle"), l10n("pleaseSetPeersVisibilityAlert"), l10n("pleaseSetPeersVisibilityAlert"), FCPUserAlert.ERROR) {
-		
+
 		@Override
 		public void onDismiss() {
 			synchronized(Node.this) {
@@ -4794,9 +4797,9 @@ public class Node implements TimeSkewDetectorCallback, KeyBlockStore, Persistent
 			config.store();
 			unregisterFriendsVisibilityAlert();
 		}
-		
+
 	};
-	
+
 	private void registerFriendsVisibilityAlert() {
 		if(clientCore == null || clientCore.alerts == null) {
 			// Wait until startup completed.
@@ -4806,13 +4809,13 @@ public class Node implements TimeSkewDetectorCallback, KeyBlockStore, Persistent
 				public void run() {
 					registerFriendsVisibilityAlert();
 				}
-				
+
 			}, 0);
 			return;
 		}
 		clientCore.alerts.register(visibilityAlert);
 	}
-	
+
 	private void unregisterFriendsVisibilityAlert() {
 		clientCore.alerts.unregister(visibilityAlert);
 	}
@@ -4849,7 +4852,7 @@ public class Node implements TimeSkewDetectorCallback, KeyBlockStore, Persistent
 		random.nextBytes(buf);
 		return new MersenneTwister(buf);
 	}
-	
+
 	public boolean enableNewLoadManagement(boolean realTimeFlag) {
 		NodeStats stats = this.nodeStats;
 		if(stats == null) {
@@ -4858,7 +4861,7 @@ public class Node implements TimeSkewDetectorCallback, KeyBlockStore, Persistent
 		}
 		return stats.enableNewLoadManagement(realTimeFlag);
 	}
-	
+
 	/** FIXME move to Probe.java? */
 	public boolean enableRoutedPing() {
 		return enableRoutedPing;

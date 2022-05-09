@@ -3,13 +3,17 @@
  * http://www.gnu.org/ for further details of the GPL. */
 package freenet.node;
 
+import freenet.crypt.DummyRandomSource;
 import freenet.support.node.NodeInitException;
 import freenet.support.node.SemiOrderedShutdownHook;
+import net.harawata.appdirs.AppDirs;
+import net.harawata.appdirs.AppDirsFactory;
 import org.tanukisoftware.wrapper.WrapperListener;
 import org.tanukisoftware.wrapper.WrapperManager;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.util.Properties;
 import java.util.UUID;
@@ -118,7 +122,8 @@ public class NodeStarter implements WrapperListener {
 		File configFilename;
 		if(args.length == 0) {
 			System.out.println("Using default config filename freenet.ini");
-			configFilename = new File("freenet.ini");
+			AppDirs appDirs = AppDirsFactory.getInstance();
+			configFilename = Paths.get(appDirs.getUserDataDir("ored", "", "freenetproject.org"), "freenet.ini").toFile();
 		} else
 			configFilename = new File(args[0]);
 

@@ -30,7 +30,7 @@ import freenet.support.io.LineReadingInputStream;
  */
 public class FilePersistentConfig extends PersistentConfig {
 
-	final File filename;
+	final File configFile;
 	final File tempFilename;
 	final protected String header;
 	protected final Object storeSync = new Object();
@@ -104,7 +104,7 @@ public class FilePersistentConfig extends PersistentConfig {
 
 	protected FilePersistentConfig(SimpleFieldSet origFS, File fnam, File temp, String header) throws IOException {
 		super(origFS);
-		this.filename = fnam;
+		this.configFile = fnam;
 		this.tempFilename = temp;
 		this.header = header;
 	}
@@ -169,7 +169,7 @@ public class FilePersistentConfig extends PersistentConfig {
 			}
 			fos.close();
 			fos = null;
-			FileUtil.renameTo(tempFilename, filename);
+			FileUtil.renameTo(tempFilename, configFile);
 		}
 		finally {
 			Closer.close(fos);
@@ -182,5 +182,9 @@ public class FilePersistentConfig extends PersistentConfig {
 			writeOnFinished = false;
 			store();
 		}
+	}
+
+	public File getConfigFile() {
+		return configFile;
 	}
 }

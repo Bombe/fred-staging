@@ -11,4 +11,5 @@ module org.freenetproject.ored.node {
     requires com.sun.jna.platform;
     requires jdk.management;
     requires java.naming;
+    requires net.harawata.appdirs;
 }
