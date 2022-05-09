@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2022 Freenetproject.org
+ * Copyright 1999-2022 The Freenet Project
  * Copyright 2022 Marine Master
  *
  * This file is part of Oldenet.
@@ -24,6 +24,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * Proxy LockableRandomAccessBuffer allowing changing the pointer to the underlying RAT.
+ *
+ * @author Matthew Toseland
  */
 public abstract class SwitchableProxyRandomAccessBuffer implements LockableRandomAccessBuffer {
 
@@ -61,62 +63,71 @@ public abstract class SwitchableProxyRandomAccessBuffer implements LockableRando
 	public SwitchableProxyRandomAccessBuffer(LockableRandomAccessBuffer initialWrap, long size) throws IOException {
 		this.underlying = initialWrap;
 		this.size = size;
-		if (underlying.size() < size)
+		if (this.underlying.size() < size) {
 			throw new IOException("Underlying must be >= size given");
+		}
 	}
 
 	@Override
 	public long size() {
-		return size;
+		return this.size;
 	}
 
 	@Override
 	public void pread(long fileOffset, byte[] buf, int bufOffset, int length) throws IOException {
-		if (fileOffset < 0)
+		if (fileOffset < 0) {
 			throw new IllegalArgumentException();
-		if (fileOffset + length > size)
+		}
+		if (fileOffset + length > this.size) {
 			throw new IOException("Tried to read past end of file");
+		}
 		try {
-			lock.readLock().lock();
-			if (underlying == null || closed)
+			this.lock.readLock().lock();
+			if (this.underlying == null || this.closed) {
 				throw new IOException("Already closed");
-			underlying.pread(fileOffset, buf, bufOffset, length);
+			}
+			this.underlying.pread(fileOffset, buf, bufOffset, length);
 		}
 		finally {
-			lock.readLock().unlock();
+			this.lock.readLock().unlock();
 		}
 	}
 
 	@Override
 	public void pwrite(long fileOffset, byte[] buf, int bufOffset, int length) throws IOException {
-		if (fileOffset < 0)
+		if (fileOffset < 0) {
 			throw new IllegalArgumentException();
-		if (fileOffset + length > size)
+		}
+		if (fileOffset + length > this.size) {
 			throw new IOException("Tried to write past end of file");
+		}
 		try {
-			lock.readLock().lock();
-			if (underlying == null || closed)
+			this.lock.readLock().lock();
+			if (this.underlying == null || this.closed) {
 				throw new IOException("Already closed");
-			underlying.pwrite(fileOffset, buf, bufOffset, length);
+			}
+			this.underlying.pwrite(fileOffset, buf, bufOffset, length);
 		}
 		finally {
-			lock.readLock().unlock();
+			this.lock.readLock().unlock();
 		}
 	}
 
 	@Override
 	public void close() {
 		try {
-			lock.writeLock().lock();
-			if (underlying == null)
+			this.lock.writeLock().lock();
+			if (this.underlying == null) {
 				return;
-			if (closed)
+			}
+			if (this.closed) {
 				return;
-			closed = true;
-			underlying.close();
+			}
+			this.closed = true;
+			this.underlying.close();
 		}
 		finally {
-			lock.writeLock().unlock();
+			this.lock.writeLock().unlock();
 		}
 	}
 
@@ -126,20 +137,22 @@ public abstract class SwitchableProxyRandomAccessBuffer implements LockableRando
 	}
 
 	/**
-	 * @return True unless the buffer has already been freed.
+	 * Free the underlying buffer.
+	 * @return true unless the buffer has already been freed.
 	 */
 	protected boolean innerFree() {
 		try {
 			// Write lock as we're going to change the underlying pointer.
-			lock.writeLock().lock();
-			closed = true; // Effectively ...
-			if (underlying == null)
+			this.lock.writeLock().lock();
+			this.closed = true; // Effectively ...
+			if (this.underlying == null) {
 				return false;
-			underlying.free();
-			underlying = null;
+			}
+			this.underlying.free();
+			this.underlying = null;
 		}
 		finally {
-			lock.writeLock().unlock();
+			this.lock.writeLock().unlock();
 		}
 		afterFreeUnderlying();
 		return true;
@@ -147,11 +160,11 @@ public abstract class SwitchableProxyRandomAccessBuffer implements LockableRando
 
 	public boolean hasBeenFreed() {
 		try {
-			lock.readLock().lock();
-			return underlying == null;
+			this.lock.readLock().lock();
+			return this.underlying == null;
 		}
 		finally {
-			lock.readLock().unlock();
+			this.lock.readLock().unlock();
 		}
 	}
 
@@ -166,9 +179,10 @@ public abstract class SwitchableProxyRandomAccessBuffer implements LockableRando
 	@Override
 	public RAFLock lockOpen() throws IOException {
 		try {
-			lock.writeLock().lock();
-			if (closed || underlying == null)
+			this.lock.writeLock().lock();
+			if (this.closed || this.underlying == null) {
 				throw new IOException("Already closed");
+			}
 			RAFLock lock = new RAFLock() {
 
 				@Override
@@ -177,64 +191,68 @@ public abstract class SwitchableProxyRandomAccessBuffer implements LockableRando
 				}
 
 			};
-			lockOpenCount++;
-			if (lockOpenCount == 1) {
-				assert (underlyingLock == null);
-				underlyingLock = underlying.lockOpen();
+			this.lockOpenCount++;
+			if (this.lockOpenCount == 1) {
+				assert (this.underlyingLock == null);
+				this.underlyingLock = this.underlying.lockOpen();
 			}
 			return lock;
 		}
 		finally {
-			lock.writeLock().unlock();
+			this.lock.writeLock().unlock();
 		}
 	}
 
 	/** Called when an external lock-open RAFLock is closed. */
 	protected void externalUnlock() {
 		try {
-			lock.writeLock().lock();
-			lockOpenCount--;
-			if (lockOpenCount == 0) {
-				underlyingLock.unlock();
-				underlyingLock = null;
+			this.lock.writeLock().lock();
+			this.lockOpenCount--;
+			if (this.lockOpenCount == 0) {
+				this.underlyingLock.unlock();
+				this.underlyingLock = null;
 			}
 		}
 		finally {
-			lock.writeLock().unlock();
+			this.lock.writeLock().unlock();
 		}
 	}
 
 	/** Migrate from one underlying LockableRandomAccessBuffer to another. */
 	protected final void migrate() throws IOException {
 		try {
-			lock.writeLock().lock();
-			if (closed)
+			this.lock.writeLock().lock();
+			if (this.closed) {
 				return;
-			if (underlying == null)
+			}
+			if (this.underlying == null) {
 				throw new IOException("Already freed");
-			LockableRandomAccessBuffer successor = innerMigrate(underlying);
-			if (successor == null)
+			}
+			LockableRandomAccessBuffer successor = innerMigrate(this.underlying);
+			if (successor == null) {
 				throw new NullPointerException();
+			}
 			RAFLock newLock = null;
-			if (lockOpenCount > 0) {
+			if (this.lockOpenCount > 0) {
 				try {
 					newLock = successor.lockOpen();
 				}
-				catch (IOException e) {
+				catch (IOException ex) {
 					successor.close();
 					successor.free();
-					throw e;
+					throw ex;
 				}
 			}
-			if (lockOpenCount > 0)
-				underlyingLock.unlock();
-			underlying.close();
-			underlying.free();
-			underlying = successor;
-			underlyingLock = newLock;
+			if (this.lockOpenCount > 0) {
+				this.underlyingLock.unlock();
+			}
+			this.underlying.close();
+			this.underlying.free();
+			this.underlying = successor;
+			this.underlyingLock = newLock;
 		}
 		finally {
-			lock.writeLock().unlock();
+			this.lock.writeLock().unlock();
 		}
 		afterFreeUnderlying();
 	}
@@ -242,14 +260,19 @@ public abstract class SwitchableProxyRandomAccessBuffer implements LockableRando
 	/**
 	 * Create a new LockableRandomAccessBuffer containing the same data as the current
 	 * underlying.
-	 * @throws IOException If the migrate failed.
+	 * @param underlying underlying buffer.
+	 * @return the new created buffer.
+	 * @throws IOException if the migrate failed.
 	 */
 	protected abstract LockableRandomAccessBuffer innerMigrate(LockableRandomAccessBuffer underlying)
 			throws IOException;
 
-	/** For unit tests only */
+	/**
+	 * For unit tests only.
+	 * @return current underlying buffer.
+	 */
 	public synchronized LockableRandomAccessBuffer getUnderlying() {
-		return underlying;
+		return this.underlying;
 	}
 
 	// Default hashCode() and equals() i.e. comparison by identity are correct for this
