@@ -54,6 +54,7 @@ import freenet.clients.http.SecurityLevelsToadlet;
 import freenet.clients.http.SimpleToadletServer;
 import freenet.config.BooleanCallback;
 import freenet.config.EnumerableOptionCallback;
+import freenet.config.FilePersistentConfig;
 import freenet.config.FreenetFilePersistentConfig;
 import freenet.config.IntCallback;
 import freenet.config.InvalidConfigValueException;
@@ -980,11 +981,18 @@ public class Node implements TimeSkewDetectorCallback, KeyBlockStore, Persistent
 
 		int sortOrder = 0;
 
-		// Default userDir
+		// Default userDir is the dir where freenet.ini locates
+		String defaultUserDir;
+		if (config instanceof FilePersistentConfig filePersistentConfig) {
+			defaultUserDir = filePersistentConfig.getConfigFile().getParent();
+		}
+		else {
+			defaultUserDir = ".";
+		}
 
 		// Directory for node-related files other than store
-		this.userDir = this.setupProgramDir(installConfig, "userDir", ".", "Node.userDir", "Node.userDirLong",
-				nodeConfig);
+		this.userDir = this.setupProgramDir(installConfig, "userDir", defaultUserDir, "Node.userDir",
+				"Node.userDirLong", nodeConfig);
 		this.cfgDir = this.setupProgramDir(installConfig, "cfgDir", this.getUserDir().toString(), "Node.cfgDir",
 				"Node.cfgDirLong", nodeConfig);
 		this.nodeDir = this.setupProgramDir(installConfig, "nodeDir", this.getUserDir().toString(), "Node.nodeDir",

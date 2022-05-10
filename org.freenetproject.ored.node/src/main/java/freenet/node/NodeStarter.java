@@ -135,7 +135,14 @@ public final class NodeStarter implements WrapperListener {
 			File userDataDir = new File(appDirs.getUserDataDir("ored", "", "freenetproject.org"));
 
 			System.out.println("Using default config filename freenet.ini");
-			System.out.println("Using default config filename freenet.ini");
+			System.out.println("Data directory: " + userDataDir.getAbsolutePath());
+
+			if (!userDataDir.exists() || !userDataDir.isDirectory()) {
+				if (!userDataDir.mkdir()) {
+					System.err.println("Unable to create data directory. Quitting...");
+					return -1;
+				}
+			}
 
 			configFilename = Paths.get(userDataDir.getAbsolutePath(), "freenet.ini").toFile();
 		}
@@ -182,37 +189,7 @@ public final class NodeStarter implements WrapperListener {
 		// some time on a very slow system.
 		WrapperManager.signalStarting(500000);
 
-		// Thread to keep the node up.
-		// JVM deadlocks losing a lock when two threads of different types (daemon|app)
-		// are contended for the same lock. So make USM daemon, and use useless to keep
-		// the JVM
-		// up.
-		// http://forum.java.sun.com/thread.jspa?threadID=343023&messageID=2942637 - last
-		// message
-		Runnable useless = new Runnable() {
-
-			@SuppressWarnings({ "InfiniteLoopStatement", "BusyWait" })
-			@Override
-			public void run() {
-				while (true) {
-					try {
-						Thread.sleep(TimeUnit.MINUTES.toMillis(60));
-					}
-					catch (InterruptedException ignored) {
-						// Ignore
-					}
-					catch (Throwable ex) {
-						try {
-							Logger.error(this, "Caught " + ex, ex);
-						}
-						catch (Throwable t1) {
-							// Ignore
-						}
-					}
-				}
-			}
-		};
-		NativeThread plug = new NativeThread(useless, "Plug", NativeThread.MAX_PRIORITY, false);
+		NativeThread plug = new NativeThread(new UselessRunnable(), "Plug", NativeThread.MAX_PRIORITY, false);
 		// Not daemon, but doesn't do anything.
 		// Keeps the JVM alive.
 		// DO NOT do anything in the plug thread, if you do you risk the EvilJVMBug.
@@ -358,37 +335,7 @@ public final class NodeStarter implements WrapperListener {
 		RandomSource random = (randomSource != null) ? randomSource : new Yarrow();
 
 		if (enablePlug) {
-
-			// Thread to keep the node up.
-			// JVM deadlocks losing a lock when two threads of different types
-			// (daemon|app)
-			// are contended for the same lock. So make USM daemon, and use useless to
-			// keep the JVM
-			// up.
-			// http://forum.java.sun.com/thread.jspa?threadID=343023&messageID=2942637 -
-			// last message
-			Runnable useless = new Runnable() {
-
-				@SuppressWarnings({ "InfiniteLoopStatement", "BusyWait" })
-				@Override
-				public void run() {
-					while (true) {
-						try {
-							Thread.sleep(TimeUnit.MINUTES.toMillis(60));
-						}
-						catch (InterruptedException ignored) {
-						}
-						catch (Throwable ex) {
-							try {
-								Logger.error(this, "Caught " + ex, ex);
-							}
-							catch (Throwable ignored) {
-							}
-						}
-					}
-				}
-			};
-			Thread plug = new Thread(useless, "Plug");
+			Thread plug = new Thread(new UselessRunnable(), "Plug");
 			// Not daemon, but doesn't do anything.
 			// Keeps the JVM alive.
 			// DO NOT do anything in the plug thread, if you do you risk the EvilJVMBug.
@@ -701,6 +648,40 @@ public final class NodeStarter implements WrapperListener {
 		public boolean enableFCP;
 
 		public boolean enablePlugins;
+
+	}
+
+	/**
+	 * Thread to keep the node up. JVM deadlocks losing a lock when two threads of
+	 * different types (daemon|app) are contended for the same lock. So make USM daemon,
+	 * and use useless to keep the JVM up.
+	 *
+	 * @see <a href=
+	 * "http://forum.java.sun.com/thread.jspa?threadID=343023&messageID=2942637">Forum
+	 * thread</a> - last message
+	 */
+	private static class UselessRunnable implements Runnable {
+
+		@SuppressWarnings({ "InfiniteLoopStatement", "BusyWait" })
+		@Override
+		public void run() {
+			while (true) {
+				try {
+					Thread.sleep(TimeUnit.MINUTES.toMillis(60));
+				}
+				catch (InterruptedException ignored) {
+					// Ignore
+				}
+				catch (Throwable ex) {
+					try {
+						Logger.error(this, "Caught " + ex, ex);
+					}
+					catch (Throwable t1) {
+						// Ignore
+					}
+				}
+			}
+		}
 
 	}
 
