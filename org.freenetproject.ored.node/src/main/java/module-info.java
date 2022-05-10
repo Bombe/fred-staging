@@ -12,4 +12,8 @@ module org.freenetproject.ored.node {
     requires jdk.management;
     requires java.naming;
     requires net.harawata.appdirs;
+
+    exports freenet.pluginmanager;
+    exports freenet.clients.http;
+    exports freenet.clients.fcp;
 }
