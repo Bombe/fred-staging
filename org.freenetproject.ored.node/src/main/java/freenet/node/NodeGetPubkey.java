@@ -8,12 +8,12 @@ import java.io.IOException;
 import freenet.crypt.DSAPublicKey;
 import freenet.keys.BlockMetadata;
 import freenet.keys.GetPubkey;
+import freenet.nodelogger.Logger;
 import freenet.store.PubkeyStore;
 import freenet.store.StoreDSAPublicKey;
 import freenet.support.ByteArrayWrapper;
 import freenet.support.HexUtil;
 import freenet.support.LRUMap;
-import freenet.nodelogger.Logger;
 
 public class NodeGetPubkey implements GetPubkey {
 
@@ -154,21 +154,21 @@ public class NodeGetPubkey implements GetPubkey {
 		try {
 			if (canWriteClientCache && !(canWriteDatastore || writeLocalToDatastore)) {
 				if (pubKeyClientcache != null) {
-					pubKeyClientcache.put(hash, (StoreDSAPublicKey) key, false);
+					pubKeyClientcache.put(hash, StoreDSAPublicKey.from(key), false);
 				}
 			}
 			if (forULPR && !(canWriteDatastore || writeLocalToDatastore)) {
 				if (pubKeySlashdotcache != null) {
-					pubKeySlashdotcache.put(hash, (StoreDSAPublicKey) key, false);
+					pubKeySlashdotcache.put(hash, StoreDSAPublicKey.from(key), false);
 				}
 			}
 			// Cannot write to the store or cache if request started nearby.
 			if (!(canWriteDatastore || writeLocalToDatastore))
 				return;
 			if (deep) {
-				pubKeyDatastore.put(hash, (StoreDSAPublicKey) key, !canWriteDatastore);
+				pubKeyDatastore.put(hash, StoreDSAPublicKey.from(key), !canWriteDatastore);
 			}
-			pubKeyDatacache.put(hash, (StoreDSAPublicKey) key, !canWriteDatastore);
+			pubKeyDatacache.put(hash, StoreDSAPublicKey.from(key), !canWriteDatastore);
 		}
 		catch (IOException e) {
 			// FIXME deal with disk full, access perms etc; tell user about it.

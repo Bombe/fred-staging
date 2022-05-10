@@ -3,10 +3,6 @@
  * http://www.gnu.org/ for further details of the GPL. */
 package freenet.node;
 
-import static java.util.concurrent.TimeUnit.DAYS;
-import static java.util.concurrent.TimeUnit.MINUTES;
-import static java.util.concurrent.TimeUnit.SECONDS;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -52,15 +48,19 @@ import freenet.keys.ClientKSK;
 import freenet.keys.ClientKey;
 import freenet.keys.ClientSSK;
 import freenet.keys.FreenetURI;
+import freenet.nodelogger.Logger;
 import freenet.store.StoreDSAPublicKey;
 import freenet.support.Base64;
 import freenet.support.Fields;
-import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.ShortBuffer;
 import freenet.support.TimeSortedHashtable;
 import freenet.support.io.Closer;
 import freenet.support.math.BootstrappingDecayingRunningAverage;
+
+import static java.util.concurrent.TimeUnit.DAYS;
+import static java.util.concurrent.TimeUnit.MINUTES;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 /**
  * @author amphibian
@@ -346,7 +346,7 @@ public class LocationManager implements ByteCounter {
 			// together.
 			if (node.fastWeakRandom.nextBoolean()) {
 				probedLocationFromYesterday = Util.keyDigestAsNormalizedDouble(
-						((StoreDSAPublicKey) ((ClientSSK) insertFromYesterday).getPubKey()).getRoutingKey());
+						StoreDSAPublicKey.from(((ClientSSK) insertFromYesterday).getPubKey()).getRoutingKey());
 			}
 		}
 		Logger.warning(this,
