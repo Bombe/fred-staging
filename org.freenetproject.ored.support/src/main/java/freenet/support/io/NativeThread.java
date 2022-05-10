@@ -6,7 +6,6 @@ package freenet.support.io;
 
 import com.sun.jna.Native;
 import com.sun.jna.Platform;
-
 import freenet.support.Logger;
 
 /**
@@ -40,7 +39,7 @@ public class NativeThread extends Thread {
 	public final static boolean HAS_PLENTY_NICE_LEVELS;
 
 	// TODO: Wire in.
-	public static enum PriorityLevel {
+	public enum PriorityLevel {
 
 		MIN_PRIORITY(1), LOW_PRIORITY(3), NORM_PRIORITY(5), HIGH_PRIORITY(7), MAX_PRIORITY(10);
 

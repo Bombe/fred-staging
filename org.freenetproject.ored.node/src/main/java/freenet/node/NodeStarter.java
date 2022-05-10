@@ -191,6 +191,7 @@ public final class NodeStarter implements WrapperListener {
 		// message
 		Runnable useless = new Runnable() {
 
+			@SuppressWarnings({ "InfiniteLoopStatement", "BusyWait" })
 			@Override
 			public void run() {
 				while (true) {
@@ -271,15 +272,13 @@ public final class NodeStarter implements WrapperListener {
 	 */
 	@Override
 	public void controlEvent(int event) {
-		if (WrapperManager.isControlledByNativeWrapper()) {
-			// The Wrapper will take care of this event
-		}
-		else
-		// We are not being controlled by the Wrapper, so
-		// handle the event ourselves.
-		if ((event == WrapperManager.WRAPPER_CTRL_C_EVENT) || (event == WrapperManager.WRAPPER_CTRL_CLOSE_EVENT)
-				|| (event == WrapperManager.WRAPPER_CTRL_SHUTDOWN_EVENT)) {
-			WrapperManager.stop(0);
+		if (!WrapperManager.isControlledByNativeWrapper()) {
+			// We are not being controlled by the Wrapper, so
+			// handle the event ourselves.
+			if ((event == WrapperManager.WRAPPER_CTRL_C_EVENT) || (event == WrapperManager.WRAPPER_CTRL_CLOSE_EVENT)
+					|| (event == WrapperManager.WRAPPER_CTRL_SHUTDOWN_EVENT)) {
+				WrapperManager.stop(0);
+			}
 		}
 	}
 
@@ -347,6 +346,7 @@ public final class NodeStarter implements WrapperListener {
 			System.exit(NodeInitException.EXIT_TEST_ERROR);
 		}
 
+		// noinspection resource
 		Logger.setupStdoutLogging(logThreshold, details);
 
 		// set Java's DNS cache not to cache forever, since many people
@@ -369,6 +369,7 @@ public final class NodeStarter implements WrapperListener {
 			// last message
 			Runnable useless = new Runnable() {
 
+				@SuppressWarnings({ "InfiniteLoopStatement", "BusyWait" })
 				@Override
 				public void run() {
 					while (true) {
