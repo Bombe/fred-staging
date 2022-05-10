@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2022 Freenetproject.org
+ * Copyright 1999-2022 The Freenet Project
  * Copyright 2022 Marine Master
  *
  * This file is part of Oldenet.

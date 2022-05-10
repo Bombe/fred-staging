@@ -1,5 +1,6 @@
 ^/\*$
-^ \* Copyright (:?19|20)\d\d(-20\d\d)? .*$
+^ \* Copyright 1999-2022 The Freenet Project$
+^ \* Copyright 20\d\d(-20\d\d)? .*$
 ^ \*$
 ^ \* This file is part of Oldenet.$
 ^ \*$
