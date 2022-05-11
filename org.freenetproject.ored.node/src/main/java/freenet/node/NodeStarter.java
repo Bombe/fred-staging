@@ -138,7 +138,7 @@ public final class NodeStarter implements WrapperListener {
 			System.out.println("Data directory: " + userDataDir.getAbsolutePath());
 
 			if (!userDataDir.exists() || !userDataDir.isDirectory()) {
-				if (!userDataDir.mkdir()) {
+				if (!userDataDir.mkdirs()) {
 					System.err.println("Unable to create data directory. Quitting...");
 					return -1;
 				}

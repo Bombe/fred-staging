@@ -33,7 +33,7 @@ jlink {
             '--compress', '2',
             '--no-header-files',
             '--no-man-pages',
-            '--strip-debug'
+//            '--strip-debug'
     ]
 
     mainClass = "freenet.node.NodeStarter"
@@ -64,33 +64,132 @@ tasks.register('copyWrapper') {
     doLast {
         // Copy wrapper command executable
         copy {
-            from "${rootDir}/lib/wrapper/bin/wrapper-macosx-universal-64"
+            switch (osdetector.os) {
+                case 'windows':
+                    switch (osdetector.arch) {
+                        case 'x86_32':
+                            from "${rootDir}/lib/wrapper/bin/wrapper-windows-x86-32.exe"
+                            break
+                        case 'x86_64':
+                            from "${rootDir}/lib/wrapper/bin/wrapper-windows-x86-64.exe"
+                            break
+                    }
+                    break;
+                case 'osx':
+                    if (osdetector.arch == 'aarch_64') {
+                        from "${rootDir}/lib/wrapper/bin/wrapper-macosx-arm-64"
+                    } else {
+                        from "${rootDir}/lib/wrapper/bin/wrapper-macosx-universal-64"
+                    }
+                    break;
+                case 'linux':
+                    switch (osdetector.arch) {
+                        case 'arm_32':
+                            from "${rootDir}/lib/wrapper/bin/wrapper-linux-armel-32"
+                            break
+                        case 'aarch_64':
+                            from "${rootDir}/lib/wrapper/bin/wrapper-linux-arm-64"
+                            break
+                        case 'x86_32':
+                            from "${rootDir}/lib/wrapper/bin/wrapper-linux-x86-32"
+                            break
+                        case 'x86_64':
+                            from "${rootDir}/lib/wrapper/bin/wrapper-linux-x86-64"
+                            break
+                    }
+                    break;
+                case 'freebsd':
+                    switch (osdetector.arch) {
+                        case 'aarch_64':
+                            from "${rootDir}/lib/wrapper/bin/wrapper-freebsd-arm-64"
+                            break
+                        case 'x86_32':
+                            from "${rootDir}/lib/wrapper/bin/wrapper-freebsd-x86-32"
+                            break
+                        case 'x86_64':
+                            from "${rootDir}/lib/wrapper/bin/wrapper-freebsd-x86-64"
+                            break
+                    }
+                    break;
+            }
             into wrapperCmdPath
-            rename 'wrapper-(.+)', 'wrapper'
-        }
-
-        // Copy wrapper.conf
-        copy {
-            from "${rootDir}/lib/wrapper/conf/wrapper.conf"
-            into wrapperConfPath
+            rename 'wrapper-[^\\.]+(.exe)?', 'wrapper\$1'
         }
 
         // Copy lib
         copy {
-            from "${rootDir}/lib/wrapper/lib/libwrapper-macosx-universal-64.jnilib"
+            switch (osdetector.os) {
+                case 'windows':
+                    switch (osdetector.arch) {
+                        case 'x86_32':
+                            from "${rootDir}/lib/wrapper/lib/wrapper-windows-x86-32.dll"
+                            break
+                        case 'x86_64':
+                            from "${rootDir}/lib/wrapper/lib/wrapper-windows-x86-64.dll"
+                            break
+                    }
+                    break;
+                case 'osx':
+                    if (osdetector.arch == 'aarch_64') {
+                        from "${rootDir}/lib/wrapper/lib/libwrapper-macosx-arm-64.dylib"
+                    } else {
+                        from "${rootDir}/lib/wrapper/lib/libwrapper-macosx-universal-64.jnilib"
+                    }
+                    break;
+                case 'linux':
+                    switch (osdetector.arch) {
+                        case 'arm_32':
+                            from "${rootDir}/lib/wrapper/lib/libwrapper-macosx-arm-64.dylib"
+                            break
+                        case 'aarch_64':
+                            from "${rootDir}/lib/wrapper/lib/libwrapper-macosx-arm-64.dylib"
+                            break
+                        case 'x86_32':
+                            from "${rootDir}/lib/wrapper/lib/libwrapper-macosx-arm-64.dylib"
+                            break
+                        case 'x86_64':
+                            from "${rootDir}/lib/wrapper/lib/libwrapper-macosx-arm-64.dylib"
+                            break
+                    }
+                    break
+                case 'freebsd':
+                    switch (osdetector.arch) {
+                        case 'aarch_64':
+                            from "${rootDir}/lib/wrapper/bin/wrapper-freebsd-arm-64"
+                            break
+                        case 'x86_32':
+                            from "${rootDir}/lib/wrapper/bin/wrapper-freebsd-x86-32"
+                            break
+                        case 'x86_64':
+                            from "${rootDir}/lib/wrapper/bin/wrapper-freebsd-x86-64"
+                            break
+                    }
+                    break
+            }
             into wrapperLibPath
+        }
+
+        // Copy wrapper.conf
+        copy {
+            from "${rootDir}/packagefiles/common/wrapper.conf"
+            into wrapperConfPath
         }
 
         // Copy launch script
         copy {
-            from "${rootDir}/lib/wrapper/bin/App.sh"
+            if (osdetector.os == 'windows') {
+                from "${rootDir}/packagefiles/common/ored.bat"
+            } else {
+                from "${rootDir}/packagefiles/common/ored.sh"
+            }
             into wrapperCmdPath
-            rename 'App.sh', 'ored'
         }
 
-        project.exec {
-            commandLine('chmod', '+x', "${wrapperCmdPath}/wrapper")
-            commandLine('chmod', '+x', "${wrapperCmdPath}/ored")
+        if (osdetector.os != 'windows') {
+            project.exec {
+                commandLine('chmod', '+x', "${wrapperCmdPath}/wrapper")
+                commandLine('chmod', '+x', "${wrapperCmdPath}/ored.sh")
+            }
         }
 
         delete "${tasks.jlink.imageDir}/bin/org.freenetproject.ored.node", "${tasks.jlink.imageDir}/bin/org.freenetproject.ored.node.bat"
