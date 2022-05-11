@@ -277,51 +277,36 @@ public class Node implements TimeSkewDetectorCallback, KeyBlockStore, Persistent
 	// on older nodes.
 	public static final long MAX_PEER_INACTIVITY = TimeUnit.SECONDS.toMillis(35);
 
-	/** Time after which a handshake is assumed to have failed. */
-	public static final int HANDSHAKE_TIMEOUT = (int) TimeUnit.MILLISECONDS.toMillis(4800); // Keep
-
-	// the
-	// below
-	// within
-	// the
-	// 30
-	// second
-	// assumed
-	// timeout.
+	/**
+	 * Time after which a handshake is assumed to have failed. Keep the below within the
+	 * 30 second assumed timeout.
+	 */
+	public static final int HANDSHAKE_TIMEOUT = (int) TimeUnit.MILLISECONDS.toMillis(4800);
 
 	// Inter-handshake time must be at least 2x handshake timeout
-	public static final int MIN_TIME_BETWEEN_HANDSHAKE_SENDS = HANDSHAKE_TIMEOUT * 2; // 10-20
-																						// secs
+	// 10-20 secs
+	public static final int MIN_TIME_BETWEEN_HANDSHAKE_SENDS = HANDSHAKE_TIMEOUT * 2;
 
-	public static final int RANDOMIZED_TIME_BETWEEN_HANDSHAKE_SENDS = HANDSHAKE_TIMEOUT * 2; // avoid
-																								// overlap
-																								// when
-																								// the
-																								// two
-																								// handshakes
-																								// are
-																								// at
-																								// the
-																								// same
-																								// time
+	// avoid overlap when the two handshakes are at the same time
+	public static final int RANDOMIZED_TIME_BETWEEN_HANDSHAKE_SENDS = HANDSHAKE_TIMEOUT * 2;
 
 	public static final int MIN_TIME_BETWEEN_VERSION_PROBES = HANDSHAKE_TIMEOUT * 4;
 
-	public static final int RANDOMIZED_TIME_BETWEEN_VERSION_PROBES = HANDSHAKE_TIMEOUT * 2; // 20-30
-																							// secs
+	// 20-30 secs
+	public static final int RANDOMIZED_TIME_BETWEEN_VERSION_PROBES = HANDSHAKE_TIMEOUT * 2;
 
 	public static final int MIN_TIME_BETWEEN_VERSION_SENDS = HANDSHAKE_TIMEOUT * 4;
 
-	public static final int RANDOMIZED_TIME_BETWEEN_VERSION_SENDS = HANDSHAKE_TIMEOUT * 2; // 20-30
-																							// secs
+	// 20-30 secs
+	public static final int RANDOMIZED_TIME_BETWEEN_VERSION_SENDS = HANDSHAKE_TIMEOUT * 2;
 
-	public static final int MIN_TIME_BETWEEN_BURSTING_HANDSHAKE_BURSTS = HANDSHAKE_TIMEOUT * 24; // 2-5
-																									// minutes
+	// 2-5 minutes
+	public static final int MIN_TIME_BETWEEN_BURSTING_HANDSHAKE_BURSTS = HANDSHAKE_TIMEOUT * 24;
 
 	public static final int RANDOMIZED_TIME_BETWEEN_BURSTING_HANDSHAKE_BURSTS = HANDSHAKE_TIMEOUT * 36;
 
-	public static final int MIN_BURSTING_HANDSHAKE_BURST_SIZE = 1; // 1-4 handshake sends
-																	// per burst
+	// 1-4 handshake sends per burst
+	public static final int MIN_BURSTING_HANDSHAKE_BURST_SIZE = 1;
 
 	public static final int RANDOMIZED_BURSTING_HANDSHAKE_BURST_SIZE = 3;
 
@@ -331,8 +316,8 @@ public class Node implements TimeSkewDetectorCallback, KeyBlockStore, Persistent
 	static final long MIN_INTERVAL_BETWEEN_INCOMING_SWAP_REQUESTS = TimeUnit.MILLISECONDS.toMillis(900);
 	static final long MIN_INTERVAL_BETWEEN_INCOMING_PROBE_REQUESTS = TimeUnit.MILLISECONDS.toMillis(1000);
 
-	public static final int SYMMETRIC_KEY_LENGTH = 32; // 256 bits - note that this isn't
-														// used everywhere to determine it
+	// 256 bits - note that this isn't used everywhere to determine it
+	public static final int SYMMETRIC_KEY_LENGTH = 32;
 
 	/** Datastore directory */
 	private final ProgramDirectory storeDir;
