@@ -132,7 +132,7 @@ public final class NodeStarter implements WrapperListener {
 		File configFilename;
 		if (args.length == 0) {
 			AppDirs appDirs = AppDirsFactory.getInstance();
-			File userDataDir = new File(appDirs.getUserDataDir("ored", "", "freenetproject.org"));
+			File userDataDir = new File(appDirs.getUserDataDir("ored", "", "Oldenet"));
 
 			System.out.println("Using default config filename freenet.ini");
 			System.out.println("Data directory: " + userDataDir.getAbsolutePath());
