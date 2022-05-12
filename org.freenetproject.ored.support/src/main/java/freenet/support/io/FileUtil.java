@@ -19,23 +19,24 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.Random;
 
 import freenet.support.GlobalSecureRandom;
+import freenet.support.LogThresholdCallback;
+import freenet.support.Logger;
+import freenet.support.Logger.LogLevel;
+import freenet.support.StringValidityChecker;
+import freenet.support.client.DefaultMIMETypes;
 import org.bouncycastle.crypto.BufferedBlockCipher;
 import org.bouncycastle.crypto.engines.AESFastEngine;
 import org.bouncycastle.crypto.io.CipherInputStream;
 import org.bouncycastle.crypto.modes.SICBlockCipher;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.crypto.params.ParametersWithIV;
-
-import freenet.support.client.DefaultMIMETypes;
-import freenet.support.LogThresholdCallback;
-import freenet.support.Logger;
-import freenet.support.StringValidityChecker;
-import freenet.support.Logger.LogLevel;
 
 final public class FileUtil {
 
@@ -448,21 +449,16 @@ final public class FileUtil {
 		if (!orig.exists()) {
 			throw new IllegalArgumentException("Original doesn't exist!");
 		}
-		if (!orig.renameTo(dest)) {
-			// Not supported on some systems (Windows)
-			if (!dest.delete()) {
-				if (dest.exists()) {
-					Logger.error("FileUtil", "Could not delete " + dest + " - check permissions");
-					System.err.println("Could not delete " + dest + " - check permissions");
-				}
-			}
-			if (!orig.renameTo(dest)) {
-				String err = "Could not rename " + orig + " to " + dest + (dest.exists() ? " (target exists)" : "")
-						+ (orig.exists() ? " (source exists)" : "") + " - check permissions";
-				Logger.error(FileUtil.class, err);
-				System.err.println(err);
-				return false;
-			}
+
+		try {
+			Files.move(orig.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
+		}
+		catch (IOException ex) {
+			String err = "Could not rename " + orig + " to " + dest + (dest.exists() ? " (target exists)" : "")
+					+ (orig.exists() ? " (source exists)" : "") + " - check permissions";
+			Logger.error(FileUtil.class, err);
+			System.err.println(err);
+			return false;
 		}
 		return true;
 	}
