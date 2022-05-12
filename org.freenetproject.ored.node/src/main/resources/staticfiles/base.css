@@ -1,0 +1,8 @@
+/* base.css is a pure interface. Use it as starting point for your theme. */
+
+@import url(/static/baseelements.css);
+@import url(/static/color.css);
+@import url(/static/statusbar.css);
+@import url(/static/bookmark.css);
+
+/* in your theme also import behavior-STYLE.css with STYLE as static, dynamic, dropdown, classic, top */
