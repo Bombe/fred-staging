@@ -24,6 +24,7 @@ import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
@@ -48,7 +49,6 @@ import freenet.support.ListUtils;
 import freenet.support.Logger.LogLevel;
 import freenet.support.SimpleFieldSet;
 import freenet.support.TimeUtil;
-import freenet.support.io.Closer;
 import freenet.support.node.FSParseException;
 import freenet.support.transport.ip.IPUtil;
 
@@ -176,6 +176,10 @@ public class Announcer {
 			Logger.minor(this, "Connecting some seednodes...");
 		}
 		List<SimpleFieldSet> seeds = Announcer.readSeednodes(NodeFile.Seednodes.getFile(this.node));
+		if (seeds.isEmpty()) {
+			System.out.println("File seednodes.fref does not exist or is empty. Loading builtin seednodes...");
+			seeds = Announcer.readBuiltinSeednodes();
+		}
 		System.out.println("Trying to connect to " + seeds.size() + " seednodes...");
 		long now = System.currentTimeMillis();
 		synchronized (this) {
@@ -331,39 +335,53 @@ public class Announcer {
 
 	public static List<SimpleFieldSet> readSeednodes(File file) {
 		List<SimpleFieldSet> list = new ArrayList<>();
-		FileInputStream fis = null;
-		try {
-			fis = new FileInputStream(file);
-			BufferedInputStream bis = new BufferedInputStream(fis);
-			InputStreamReader isr = new InputStreamReader(bis, StandardCharsets.UTF_8);
-			BufferedReader br = new BufferedReader(isr);
-			while (true) {
-				try {
-					SimpleFieldSet fs = new SimpleFieldSet(br, false, false, true, false);
-					if (!fs.isEmpty()) {
-						list.add(fs);
-					}
-				}
-				catch (EOFException ignored) {
-					return list;
-				}
-				catch (IOException ex) {
-					Logger.error(Announcer.class, "Error while reading seednodes from " + file, ex);
-					// Continue reading. If this entry failed, we still want the following
-					// noderefs.
-					// Read a line to advance the parsing position and avoid an endless
-					// loop.
-					br.readLine();
-				}
-			}
+		try (FileInputStream fis = new FileInputStream(file)) {
+			list = Announcer.readSeednodes(fis);
 		}
 		catch (IOException ex) {
 			Logger.error(Announcer.class, "Unexpected error while reading seednodes from " + file, ex);
-			return list;
 		}
-		finally {
-			Closer.close(fis);
+		return list;
+	}
+
+	public static List<SimpleFieldSet> readSeednodes(InputStream is) throws IOException {
+		List<SimpleFieldSet> list = new ArrayList<>();
+
+		BufferedInputStream bis = new BufferedInputStream(is);
+		InputStreamReader isr = new InputStreamReader(bis, StandardCharsets.UTF_8);
+		BufferedReader br = new BufferedReader(isr);
+		while (true) {
+			try {
+				SimpleFieldSet fs = new SimpleFieldSet(br, false, false, true, false);
+				if (!fs.isEmpty()) {
+					list.add(fs);
+				}
+			}
+			catch (EOFException ignored) {
+				return list;
+			}
+			catch (IOException ex) {
+				Logger.error(Announcer.class, "Error while reading seednodes data", ex);
+				// Continue reading. If this entry failed, we still want the following
+				// noderefs.
+				// Read a line to advance the parsing position and avoid an endless
+				// loop.
+				br.readLine();
+			}
 		}
+	}
+
+	public static List<SimpleFieldSet> readBuiltinSeednodes() {
+		List<SimpleFieldSet> list = new ArrayList<>();
+
+		try (InputStream is = Announcer.class.getResourceAsStream("/seednodes.fref")) {
+			list = Announcer.readSeednodes(is);
+		}
+		catch (IOException ex) {
+			Logger.error(Announcer.class, "Unexpected error while reading seednodes from builtin file", ex);
+		}
+
+		return list;
 	}
 
 	protected void stop() {
