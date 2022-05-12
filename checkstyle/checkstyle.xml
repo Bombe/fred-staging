@@ -21,6 +21,9 @@
         <module name="JavadocVariable">
             <property name="scope" value="public"/>
         </module>
+        <module name="AvoidNestedBlocks">
+            <property name="allowInSwitchCase" value="true"/>
+        </module>
     </module>
     <module name="SuppressionSingleFilter">
         <property name="files" value=".+\.java$"/>

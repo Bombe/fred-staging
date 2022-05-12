@@ -1,3 +1,21 @@
+/*
+ * Copyright 1999-2022 The Freenet Project
+ * Copyright 2022 Marine Master
+ *
+ * This file is part of Oldenet.
+ *
+ * Oldenet is free software: you can redistribute it and/or modify it under the terms of
+ * the GNU General Public License as published by the Free Software Foundation, either
+ * version 3 of the License, or any later version.
+ *
+ * Oldenet is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with Oldenet.
+ * If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package freenet.clients.http;
 
 import java.io.File;
@@ -5,13 +23,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.util.Date;
 
 import freenet.bucket.Bucket;
 import freenet.bucket.FileBucket;
 import freenet.http.HTTPRequest;
 import freenet.l10n.NodeL10n;
+import freenet.nodelogger.Logger;
 import freenet.support.client.DefaultMIMETypes;
 
 /**
@@ -43,25 +67,25 @@ public class StaticToadlet extends Toadlet {
 			path = path.substring(ROOT_URL.length());
 		}
 		catch (IndexOutOfBoundsException ioobe) {
-			this.sendErrorPage(ctx, 404, l10n("pathNotFoundTitle"), l10n("pathNotFound"));
+			this.sendErrorPage(ctx, 404, this.l10n("pathNotFoundTitle"), this.l10n("pathNotFound"));
 			return;
 		}
 
 		// be very strict about what characters we allow in the path, since
-		if (!path.matches("^[A-Za-z0-9\\._\\/\\-]*$") || (path.indexOf("..") != -1)) {
-			this.sendErrorPage(ctx, 404, l10n("pathNotFoundTitle"), l10n("pathInvalidChars"));
+		if (!path.matches("^[A-Za-z\\d._/\\-]*$") || (path.contains(".."))) {
+			this.sendErrorPage(ctx, 404, this.l10n("pathNotFoundTitle"), this.l10n("pathInvalidChars"));
 			return;
 		}
 
 		if (path.startsWith(OVERRIDE)) {
 			File f = this.container.getOverrideFile();
 			if (f == null || (!f.exists()) || (f.isDirectory()) || (!f.isFile())) {
-				this.sendErrorPage(ctx, 404, l10n("pathNotFoundTitle"), l10n("pathInvalidChars"));
+				this.sendErrorPage(ctx, 404, this.l10n("pathNotFoundTitle"), this.l10n("pathInvalidChars"));
 				return;
 			}
 			f = f.getAbsoluteFile();
-			if (f == null || (!f.exists()) || (f.isDirectory()) || (!f.isFile())) {
-				this.sendErrorPage(ctx, 404, l10n("pathNotFoundTitle"), l10n("pathInvalidChars"));
+			if (!f.exists() || f.isDirectory() || !f.isFile()) {
+				this.sendErrorPage(ctx, 404, this.l10n("pathNotFoundTitle"), this.l10n("pathInvalidChars"));
 				return;
 			}
 			File parent = f.getParentFile();
@@ -72,12 +96,12 @@ public class StaticToadlet extends Toadlet {
 			// Because of the .. check above, any malicious thing cannot break out of the
 			// dir anyway.
 			if (parent.getParentFile() == null) {
-				this.sendErrorPage(ctx, 404, l10n("pathNotFoundTitle"), l10n("pathInvalidChars"));
+				this.sendErrorPage(ctx, 404, this.l10n("pathNotFoundTitle"), this.l10n("pathInvalidChars"));
 				return;
 			}
 			File from = new File(parent, path.substring(OVERRIDE.length()));
 			if ((!from.exists()) && (!from.isFile())) {
-				this.sendErrorPage(ctx, 404, l10n("pathNotFoundTitle"), l10n("pathInvalidChars"));
+				this.sendErrorPage(ctx, 404, this.l10n("pathNotFoundTitle"), this.l10n("pathInvalidChars"));
 				return;
 			}
 			try {
@@ -89,16 +113,16 @@ public class StaticToadlet extends Toadlet {
 				ctx.writeData(fb);
 				return;
 			}
-			catch (IOException e) {
+			catch (IOException ex) {
 				// Not strictly accurate but close enough
-				this.sendErrorPage(ctx, 404, l10n("pathNotFoundTitle"), l10n("pathNotFound"));
+				this.sendErrorPage(ctx, 404, this.l10n("pathNotFoundTitle"), this.l10n("pathNotFound"));
 				return;
 			}
 		}
 
-		InputStream strm = getClass().getResourceAsStream(ROOT_PATH + path);
+		InputStream strm = this.getClass().getResourceAsStream(ROOT_PATH + path);
 		if (strm == null) {
-			this.sendErrorPage(ctx, 404, l10n("pathNotFoundTitle"), l10n("pathNotFound"));
+			this.sendErrorPage(ctx, 404, this.l10n("pathNotFoundTitle"), this.l10n("pathNotFound"));
 			return;
 		}
 		Bucket data = ctx.getBucketFactory().makeBucket(strm.available());
@@ -107,8 +131,9 @@ public class StaticToadlet extends Toadlet {
 			byte[] cbuf = new byte[4096];
 			while (true) {
 				int r = strm.read(cbuf);
-				if (r == -1)
+				if (r == -1) {
 					break;
+				}
 				os.write(cbuf, 0, r);
 			}
 		}
@@ -117,8 +142,8 @@ public class StaticToadlet extends Toadlet {
 			os.close();
 		}
 
-		URL url = getClass().getResource(ROOT_PATH + path);
-		Date mTime = getUrlMTime(url);
+		URL url = this.getClass().getResource(ROOT_PATH + path);
+		Date mTime = this.getUrlMTime(url);
 
 		ctx.sendReplyHeadersStatic(200, "OK", null, DefaultMIMETypes.guessMIMEType(path, false), data.size(), mTime);
 
@@ -129,18 +154,39 @@ public class StaticToadlet extends Toadlet {
 	 * Try to find the modification time for a URL, or return null if not possible We
 	 * usually load our resources from the JAR, or possibly from a file in some setups, so
 	 * we check the modification time of the JAR for resources in a jar and the mtime for
-	 * files.
+	 * files. If we build custom java runtime with jlink, we should check JRT File System
+	 * instead of JAR.
 	 */
 	private Date getUrlMTime(URL url) {
-		if (url.getProtocol().equals("jar")) {
+		if (url == null) {
+			return null;
+		}
+
+		switch (url.getProtocol()) {
+		case "jrt":
+			try {
+				Path p = Path.of(url.toURI());
+				BasicFileAttributes attr = Files.readAttributes(p, BasicFileAttributes.class);
+				FileTime fileTime = attr.lastModifiedTime();
+				return new Date(fileTime.toMillis());
+			}
+			catch (URISyntaxException ex) {
+				Logger.error(this, "Invalid url: " + url);
+				return null;
+			}
+			catch (IOException ex) {
+				Logger.error(this, "Unable to read file attributes from: " + url);
+				return null;
+			}
+		case "jar": {
 			File f = new File(url.getPath().substring(0, url.getPath().indexOf('!')));
 			return new Date(f.lastModified());
 		}
-		else if (url.getProtocol().equals("file")) {
+		case "file": {
 			File f = new File(url.getPath());
 			return new Date(f.lastModified());
 		}
-		else {
+		default:
 			return null;
 		}
 	}
