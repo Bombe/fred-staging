@@ -1,6 +1,21 @@
-/* This code is part of Freenet. It is distributed under the GNU General
- * Public License, version 2 (or at your option any later version). See
- * http://www.gnu.org/ for further details of the GPL. */
+/*
+ * Copyright 1999-2022 The Freenet Project
+ * Copyright 2022 Marine Master
+ *
+ * This file is part of Oldenet.
+ *
+ * Oldenet is free software: you can redistribute it and/or modify it under the terms of
+ * the GNU General Public License as published by the Free Software Foundation, either
+ * version 3 of the License, or any later version.
+ *
+ * Oldenet is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with Oldenet.
+ * If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package freenet.node;
 
 import java.util.HashSet;
@@ -13,10 +28,10 @@ import freenet.io.comm.MessageFilter;
 import freenet.io.comm.NotConnectedException;
 import freenet.io.comm.PeerParseException;
 import freenet.io.comm.ReferenceSignatureVerificationException;
-import freenet.support.LogThresholdCallback;
 import freenet.nodelogger.Logger;
-import freenet.support.SimpleFieldSet;
+import freenet.support.LogThresholdCallback;
 import freenet.support.Logger.LogLevel;
+import freenet.support.SimpleFieldSet;
 import freenet.support.io.NativeThread;
 import freenet.support.node.FSParseException;
 import freenet.support.node.PrioRunnable;
@@ -83,17 +98,17 @@ public class AnnounceSender implements PrioRunnable, ByteCounter {
 	}
 
 	public AnnounceSender(double target, OpennetManager om, Node node, AnnouncementCallback cb, PeerNode onlyNode) {
-		source = null;
+		this.source = null;
 		this.uid = node.random.nextLong();
 		// Prevent it being routed back to us.
-		node.tracker.completed(uid);
+		node.tracker.completed(this.uid);
 		this.om = om;
 		this.node = node;
 		this.htl = node.maxHTL();
 		this.target = target;
 		this.cb = cb;
 		this.onlyNode = onlyNode;
-		noderefBuf = om.crypto.myCompressedFullRef();
+		this.noderefBuf = om.crypto.myCompressedFullRef();
 		this.xferUID = 0;
 		this.paddedLength = 0;
 		this.noderefLength = 0;
@@ -102,43 +117,46 @@ public class AnnounceSender implements PrioRunnable, ByteCounter {
 	@Override
 	public void run() {
 		try {
-			realRun();
-			node.nodeStats.reportAnnounceForwarded(forwardedRefs, source);
+			this.realRun();
+			this.node.nodeStats.reportAnnounceForwarded(this.forwardedRefs, this.source);
 		}
-		catch (Throwable t) {
-			Logger.error(this, "Caught " + t + " announcing " + uid + " from " + source, t);
+		catch (Throwable ex) {
+			Logger.error(this, "Caught " + ex + " announcing " + this.uid + " from " + this.source, ex);
 		}
 		finally {
-			if (source != null) {
-				source.completedAnnounce(uid);
+			if (this.source != null) {
+				this.source.completedAnnounce(this.uid);
 			}
-			node.tracker.completed(uid);
-			if (cb != null)
-				cb.completed();
-			node.nodeStats.endAnnouncement(uid);
+			this.node.tracker.completed(this.uid);
+			if (this.cb != null) {
+				this.cb.completed();
+			}
+			this.node.nodeStats.endAnnouncement(this.uid);
 		}
 	}
 
 	private void realRun() {
 		boolean hasForwarded = false;
-		if (source != null) {
+		if (this.source != null) {
 			try {
-				source.sendAsync(DMT.createFNPAccepted(uid), null, this);
+				this.source.sendAsync(DMT.createFNPAccepted(this.uid), null, this);
 			}
-			catch (NotConnectedException e) {
+			catch (NotConnectedException ex) {
 				return;
 			}
-			if (!transferNoderef())
+			if (!this.transferNoderef()) {
 				return;
+			}
 		}
 
 		// Now route it.
 
-		HashSet<PeerNode> nodesRoutedTo = new HashSet<PeerNode>();
+		HashSet<PeerNode> nodesRoutedTo = new HashSet<>();
 		PeerNode next = null;
 		while (true) {
-			if (logMINOR)
-				Logger.minor(this, "htl=" + htl);
+			if (logMINOR) {
+				Logger.minor(this, "htl=" + this.htl);
+			}
 			/*
 			 * If we haven't routed to any node yet, decrement according to the source. If
 			 * we have, decrement according to the node which just failed. Because: 1) If
@@ -147,47 +165,52 @@ public class AnnounceSender implements PrioRunnable, ByteCounter {
 			 * which just failed can be seen as the requestor for our purposes.
 			 */
 			// Decrement at this point so we can DNF immediately on reaching HTL 0.
-			if (onlyNode == null)
-				htl = node.decrementHTL(hasForwarded ? next : source, htl);
+			if (this.onlyNode == null) {
+				this.htl = this.node.decrementHTL(hasForwarded ? next : this.source, this.htl);
+			}
 
-			if (htl == 0) {
+			if (this.htl == 0) {
 				// No more nodes.
-				complete();
+				this.complete();
 				return;
 			}
 
-			if (!node.isOpennetEnabled()) {
-				complete();
+			if (!this.node.isOpennetEnabled()) {
+				this.complete();
 				return;
 			}
 
-			if (onlyNode == null) {
+			if (this.onlyNode == null) {
 				// Route it
-				next = node.peers.closerPeer(source, nodesRoutedTo, target, true, node.isAdvancedModeEnabled(), -1,
-						null, null, htl, 0, source == null, false, false);
+				next = this.node.peers.closerPeer(this.source, nodesRoutedTo, this.target, true,
+						this.node.isAdvancedModeEnabled(), -1, null, null, this.htl, 0, this.source == null, false,
+						false);
 			}
 			else {
-				next = onlyNode;
-				if (nodesRoutedTo.contains(onlyNode)) {
-					rnf(onlyNode);
+				next = this.onlyNode;
+				if (nodesRoutedTo.contains(this.onlyNode)) {
+					this.rnf(this.onlyNode);
 					return;
 				}
 			}
 
 			if (next == null) {
 				// Backtrack
-				rnf(next);
+				this.rnf(null);
 				return;
 			}
-			if (logMINOR)
+			if (logMINOR) {
 				Logger.minor(this, "Routing request to " + next);
-			if (onlyNode == null)
-				next.reportRoutedTo(target, source == null, false, source, nodesRoutedTo, htl);
+			}
+			if (this.onlyNode == null) {
+				next.reportRoutedTo(this.target, this.source == null, false, this.source, nodesRoutedTo, this.htl);
+			}
 			nodesRoutedTo.add(next);
 
-			long xferUID = sendTo(next);
-			if (xferUID == -1)
+			long xferUID = this.sendTo(next);
+			if (xferUID == -1) {
 				continue;
+			}
 
 			hasForwarded = true;
 
@@ -195,18 +218,18 @@ public class AnnounceSender implements PrioRunnable, ByteCounter {
 
 			while (true) {
 
-				/**
+				/*
 				 * What are we waiting for? FNPAccepted - continue FNPRejectedLoop - go to
 				 * another node FNPRejectedOverload - go to another node
 				 */
 
-				MessageFilter mfAccepted = MessageFilter.create().setSource(next).setField(DMT.UID, uid)
+				MessageFilter mfAccepted = MessageFilter.create().setSource(next).setField(DMT.UID, this.uid)
 						.setTimeout(ACCEPTED_TIMEOUT).setType(DMT.FNPAccepted);
-				MessageFilter mfRejectedLoop = MessageFilter.create().setSource(next).setField(DMT.UID, uid)
+				MessageFilter mfRejectedLoop = MessageFilter.create().setSource(next).setField(DMT.UID, this.uid)
 						.setTimeout(ACCEPTED_TIMEOUT).setType(DMT.FNPRejectedLoop);
-				MessageFilter mfRejectedOverload = MessageFilter.create().setSource(next).setField(DMT.UID, uid)
+				MessageFilter mfRejectedOverload = MessageFilter.create().setSource(next).setField(DMT.UID, this.uid)
 						.setTimeout(ACCEPTED_TIMEOUT).setType(DMT.FNPRejectedOverload);
-				MessageFilter mfOpennetDisabled = MessageFilter.create().setSource(next).setField(DMT.UID, uid)
+				MessageFilter mfOpennetDisabled = MessageFilter.create().setSource(next).setField(DMT.UID, this.uid)
 						.setTimeout(ACCEPTED_TIMEOUT).setType(DMT.FNPOpennetDisabled);
 
 				// mfRejectedOverload must be the last thing in the or
@@ -215,42 +238,46 @@ public class AnnounceSender implements PrioRunnable, ByteCounter {
 				MessageFilter mf = mfAccepted.or(mfRejectedLoop.or(mfRejectedOverload.or(mfOpennetDisabled)));
 
 				try {
-					msg = node.usm.waitFor(mf, this);
-					if (logMINOR)
+					msg = this.node.usm.waitFor(mf, this);
+					if (logMINOR) {
 						Logger.minor(this, "first part got " + msg);
+					}
 				}
-				catch (DisconnectedException e) {
-					Logger.normal(this, "Disconnected from " + next + " while waiting for Accepted on " + uid);
+				catch (DisconnectedException ex) {
+					Logger.normal(this, "Disconnected from " + next + " while waiting for Accepted on " + this.uid);
 					break;
 				}
 
 				if (msg == null) {
-					if (logMINOR)
+					if (logMINOR) {
 						Logger.minor(this, "Timeout waiting for Accepted");
+					}
 					// Try next node
-					msg = null;
 					break;
 				}
 
 				if (msg.getSpec() == DMT.FNPRejectedLoop) {
-					if (logMINOR)
+					if (logMINOR) {
 						Logger.minor(this, "Rejected loop");
+					}
 					// Find another node to route to
 					msg = null;
 					break;
 				}
 
 				if (msg.getSpec() == DMT.FNPRejectedOverload) {
-					if (logMINOR)
+					if (logMINOR) {
 						Logger.minor(this, "Rejected: overload");
+					}
 					// Give up on this one, try another
 					msg = null;
 					break;
 				}
 
 				if (msg.getSpec() == DMT.FNPOpennetDisabled) {
-					if (logMINOR)
+					if (logMINOR) {
 						Logger.minor(this, "Opennet disabled");
+					}
 					msg = null;
 					break;
 				}
@@ -268,20 +295,23 @@ public class AnnounceSender implements PrioRunnable, ByteCounter {
 				continue;
 			}
 
-			if (logMINOR)
+			if (logMINOR) {
 				Logger.minor(this, "Got Accepted");
+			}
 
-			if (cb != null)
-				cb.acceptedSomewhere();
+			if (this.cb != null) {
+				this.cb.acceptedSomewhere();
+			}
 
 			// Send the rest
 
 			try {
-				sendRest(next, xferUID);
+				this.sendRest(next, xferUID);
 			}
 			catch (NotConnectedException e1) {
-				if (logMINOR)
+				if (logMINOR) {
 					Logger.minor(this, "Not connected while sending noderef on " + next);
+				}
 				continue;
 			}
 
@@ -291,51 +321,52 @@ public class AnnounceSender implements PrioRunnable, ByteCounter {
 
 			while (true) {
 
-				MessageFilter mfAnnounceCompleted = MessageFilter.create().setSource(next).setField(DMT.UID, uid)
+				MessageFilter mfAnnounceCompleted = MessageFilter.create().setSource(next).setField(DMT.UID, this.uid)
 						.setTimeout(ANNOUNCE_TIMEOUT).setType(DMT.FNPOpennetAnnounceCompleted);
-				MessageFilter mfRouteNotFound = MessageFilter.create().setSource(next).setField(DMT.UID, uid)
+				MessageFilter mfRouteNotFound = MessageFilter.create().setSource(next).setField(DMT.UID, this.uid)
 						.setTimeout(ANNOUNCE_TIMEOUT).setType(DMT.FNPRouteNotFound);
-				MessageFilter mfRejectedOverload = MessageFilter.create().setSource(next).setField(DMT.UID, uid)
+				MessageFilter mfRejectedOverload = MessageFilter.create().setSource(next).setField(DMT.UID, this.uid)
 						.setTimeout(ANNOUNCE_TIMEOUT).setType(DMT.FNPRejectedOverload);
-				MessageFilter mfAnnounceReply = MessageFilter.create().setSource(next).setField(DMT.UID, uid)
+				MessageFilter mfAnnounceReply = MessageFilter.create().setSource(next).setField(DMT.UID, this.uid)
 						.setTimeout(ANNOUNCE_TIMEOUT).setType(DMT.FNPOpennetAnnounceReply);
-				MessageFilter mfOpennetDisabled = MessageFilter.create().setSource(next).setField(DMT.UID, uid)
+				MessageFilter mfOpennetDisabled = MessageFilter.create().setSource(next).setField(DMT.UID, this.uid)
 						.setTimeout(ANNOUNCE_TIMEOUT).setType(DMT.FNPOpennetDisabled);
-				MessageFilter mfNotWanted = MessageFilter.create().setSource(next).setField(DMT.UID, uid)
+				MessageFilter mfNotWanted = MessageFilter.create().setSource(next).setField(DMT.UID, this.uid)
 						.setTimeout(ANNOUNCE_TIMEOUT).setType(DMT.FNPOpennetAnnounceNodeNotWanted);
-				MessageFilter mfOpennetNoderefRejected = MessageFilter.create().setSource(next).setField(DMT.UID, uid)
-						.setTimeout(ANNOUNCE_TIMEOUT).setType(DMT.FNPOpennetNoderefRejected);
+				MessageFilter mfOpennetNoderefRejected = MessageFilter.create().setSource(next)
+						.setField(DMT.UID, this.uid).setTimeout(ANNOUNCE_TIMEOUT)
+						.setType(DMT.FNPOpennetNoderefRejected);
 				MessageFilter mf = mfAnnounceCompleted.or(mfRouteNotFound.or(mfRejectedOverload
 						.or(mfAnnounceReply.or(mfOpennetDisabled.or(mfNotWanted.or(mfOpennetNoderefRejected))))));
 
 				try {
-					msg = node.usm.waitFor(mf, this);
+					msg = this.node.usm.waitFor(mf, this);
 				}
-				catch (DisconnectedException e) {
+				catch (DisconnectedException ex) {
 					Logger.normal(this, "Disconnected from " + next + " while waiting for announcement");
 					break;
 				}
 
-				if (logMINOR)
+				if (logMINOR) {
 					Logger.minor(this, "second part got " + msg);
+				}
 
 				if (msg == null) {
 					// Fatal timeout, must be terminal (IS_LOCAL==true)
-					timedOut(next);
+					this.timedOut(next);
 					return;
 				}
 
 				if (msg.getSpec() == DMT.FNPOpennetNoderefRejected) {
 					int reason = msg.getInt(DMT.REJECT_CODE);
 					Logger.normal(this, "Announce rejected by " + next + " : " + DMT.getOpennetRejectedCode(reason));
-					msg = null;
 					break;
 				}
 
 				if (msg.getSpec() == DMT.FNPOpennetAnnounceCompleted) {
 					// Send the completion on immediately. We don't want to accumulate 30
 					// seconds per hop!
-					complete();
+					this.complete();
 					mfAnnounceReply.setTimeout(END_TIMEOUT).setTimeoutRelativeToCreation(true);
 					mfNotWanted.setTimeout(END_TIMEOUT).setTimeoutRelativeToCreation(true);
 					mfAnnounceReply.clearOr();
@@ -343,30 +374,31 @@ public class AnnounceSender implements PrioRunnable, ByteCounter {
 					mf = mfAnnounceReply.or(mfNotWanted);
 					while (true) {
 						try {
-							msg = node.usm.waitFor(mf, this);
+							msg = this.node.usm.waitFor(mf, this);
 						}
-						catch (DisconnectedException e) {
+						catch (DisconnectedException ignored) {
 							return;
 						}
-						if (msg == null)
+						if (msg == null) {
 							return;
+						}
 						if (msg.getSpec() == DMT.FNPOpennetAnnounceReply) {
-							validateForwardReply(msg, next);
+							this.validateForwardReply(msg, next);
 							continue;
 						}
 						if (msg.getSpec() == DMT.FNPOpennetAnnounceNodeNotWanted) {
-							if (cb != null)
-								cb.nodeNotWanted();
-							if (source != null) {
+							if (this.cb != null) {
+								this.cb.nodeNotWanted();
+							}
+							if (this.source != null) {
 								try {
-									sendNotWanted();
+									this.sendNotWanted();
 								}
-								catch (NotConnectedException e) {
+								catch (NotConnectedException ignored) {
 									Logger.warning(this, "Lost connection to source (announce completed)");
 									return;
 								}
 							}
-							continue;
 						}
 					}
 				}
@@ -374,10 +406,12 @@ public class AnnounceSender implements PrioRunnable, ByteCounter {
 				if (msg.getSpec() == DMT.FNPRouteNotFound) {
 					// Backtrack within available hops
 					short newHtl = msg.getShort(DMT.HTL);
-					if (newHtl < 0)
+					if (newHtl < 0) {
 						newHtl = 0;
-					if (newHtl < htl)
-						htl = newHtl;
+					}
+					if (newHtl < this.htl) {
+						this.htl = newHtl;
+					}
 					break;
 				}
 
@@ -388,23 +422,23 @@ public class AnnounceSender implements PrioRunnable, ByteCounter {
 
 				if (msg.getSpec() == DMT.FNPOpennetDisabled) {
 					Logger.minor(this, "Opennet disabled");
-					msg = null;
 					break;
 				}
 
 				if (msg.getSpec() == DMT.FNPOpennetAnnounceReply) {
-					validateForwardReply(msg, next);
+					this.validateForwardReply(msg, next);
 					continue; // There may be more
 				}
 
 				if (msg.getSpec() == DMT.FNPOpennetAnnounceNodeNotWanted) {
-					if (cb != null)
-						cb.nodeNotWanted();
-					if (source != null) {
+					if (this.cb != null) {
+						this.cb.nodeNotWanted();
+					}
+					if (this.source != null) {
 						try {
-							sendNotWanted();
+							this.sendNotWanted();
 						}
-						catch (NotConnectedException e) {
+						catch (NotConnectedException ignored) {
 							Logger.warning(this, "Lost connection to source (announce not wanted)");
 							return;
 						}
@@ -423,14 +457,13 @@ public class AnnounceSender implements PrioRunnable, ByteCounter {
 	/**
 	 * Validate a reply, and relay it back to the source.
 	 * @param msg The AnnouncementReply message.
-	 * @return True unless we lost the connection to our request source.
 	 */
 	private void validateForwardReply(Message msg, final PeerNode next) {
 		final long xferUID = msg.getLong(DMT.TRANSFER_UID);
 		final int noderefLength = msg.getInt(DMT.NODEREF_LENGTH);
 		final int paddedLength = msg.getInt(DMT.PADDED_LENGTH);
 		synchronized (this) {
-			waitingForTransfers++;
+			this.waitingForTransfers++;
 		}
 		Runnable r = new Runnable() {
 
@@ -438,26 +471,28 @@ public class AnnounceSender implements PrioRunnable, ByteCounter {
 			public void run() {
 				try {
 					byte[] noderefBuf = OpennetManager.innerWaitForOpennetNoderef(xferUID, paddedLength, noderefLength,
-							next, false, uid, true, AnnounceSender.this, node);
+							next, false, AnnounceSender.this.uid, true, AnnounceSender.this, AnnounceSender.this.node);
 					if (noderefBuf == null) {
 						return; // Don't relay
 					}
 					SimpleFieldSet fs = OpennetManager.validateNoderef(noderefBuf, 0, noderefLength, next, false);
 					if (fs == null) {
-						if (cb != null)
-							cb.bogusNoderef("invalid noderef");
+						if (AnnounceSender.this.cb != null) {
+							AnnounceSender.this.cb.bogusNoderef("invalid noderef");
+						}
 						return; // Don't relay
 					}
-					if (source != null) {
+					if (AnnounceSender.this.source != null) {
 						// Now relay it
 						try {
-							forwardedRefs++;
-							om.sendAnnouncementReply(uid, source, noderefBuf, AnnounceSender.this);
-							if (cb != null) {
-								cb.relayedNoderef();
+							AnnounceSender.this.forwardedRefs++;
+							AnnounceSender.this.om.sendAnnouncementReply(AnnounceSender.this.uid,
+									AnnounceSender.this.source, noderefBuf, AnnounceSender.this);
+							if (AnnounceSender.this.cb != null) {
+								AnnounceSender.this.cb.relayedNoderef();
 							}
 						}
-						catch (NotConnectedException e) {
+						catch (NotConnectedException ignored) {
 							// Hmmm...!
 							return;
 						}
@@ -465,35 +500,28 @@ public class AnnounceSender implements PrioRunnable, ByteCounter {
 					else {
 						// Add it
 						try {
-							OpennetPeerNode pn = node.addNewOpennetNode(fs, OpennetManager.ConnectionType.ANNOUNCE);
-							if (cb != null) {
-								if (pn != null)
-									cb.addedNode(pn);
-								else
-									cb.nodeNotAdded();
+							OpennetPeerNode pn = AnnounceSender.this.node.addNewOpennetNode(fs,
+									OpennetManager.ConnectionType.ANNOUNCE);
+							if (AnnounceSender.this.cb != null) {
+								if (pn != null) {
+									AnnounceSender.this.cb.addedNode(pn);
+								}
+								else {
+									AnnounceSender.this.cb.nodeNotAdded();
+								}
 							}
 						}
-						catch (FSParseException e) {
-							Logger.normal(this, "Failed to parse reply: " + e, e);
-							if (cb != null)
-								cb.bogusNoderef("parse failed: " + e);
-						}
-						catch (PeerParseException e) {
-							Logger.normal(this, "Failed to parse reply: " + e, e);
-							if (cb != null)
-								cb.bogusNoderef("parse failed: " + e);
-						}
-						catch (ReferenceSignatureVerificationException e) {
-							Logger.normal(this, "Failed to parse reply: " + e, e);
-							if (cb != null)
-								cb.bogusNoderef("parse failed: " + e);
+						catch (FSParseException | PeerParseException | ReferenceSignatureVerificationException ex) {
+							Logger.normal(this, "Failed to parse reply: " + ex, ex);
+							if (AnnounceSender.this.cb != null) {
+								AnnounceSender.this.cb.bogusNoderef("parse failed: " + ex);
+							}
 						}
 					}
-					return;
 				}
 				finally {
 					synchronized (AnnounceSender.this) {
-						waitingForTransfers--;
+						AnnounceSender.this.waitingForTransfers--;
 						AnnounceSender.this.notifyAll();
 					}
 				}
@@ -501,11 +529,11 @@ public class AnnounceSender implements PrioRunnable, ByteCounter {
 
 		};
 		try {
-			node.executor.execute(r);
+			this.node.executor.execute(r);
 		}
-		catch (Throwable t) {
+		catch (Throwable ignored) {
 			synchronized (this) {
-				waitingForTransfers--;
+				this.waitingForTransfers--;
 			}
 		}
 	}
@@ -517,11 +545,12 @@ public class AnnounceSender implements PrioRunnable, ByteCounter {
 	 */
 	private long sendTo(PeerNode next) {
 		try {
-			return om.startSendAnnouncementRequest(uid, next, noderefBuf, this, target, htl);
+			return this.om.startSendAnnouncementRequest(this.uid, next, this.noderefBuf, this, this.target, this.htl);
 		}
-		catch (NotConnectedException e) {
-			if (logMINOR)
+		catch (NotConnectedException ignored) {
+			if (logMINOR) {
 				Logger.minor(this, "Disconnected");
+			}
 			return -1;
 		}
 	}
@@ -529,65 +558,66 @@ public class AnnounceSender implements PrioRunnable, ByteCounter {
 	/**
 	 * Send an AnnouncementRequest.
 	 * @param next The node to send the announcement to.
-	 * @return True if the announcement was successfully sent.
-	 * @throws NotConnectedException
 	 */
 	private void sendRest(PeerNode next, long xferUID) throws NotConnectedException {
-		om.finishSentAnnouncementRequest(next, noderefBuf, this, xferUID);
+		this.om.finishSentAnnouncementRequest(next, this.noderefBuf, this, xferUID);
 	}
 
 	private void timedOut(PeerNode next) {
-		Message msg = DMT.createFNPRejectedOverload(uid, true, false, false);
-		if (source != null) {
+		Message msg = DMT.createFNPRejectedOverload(this.uid, true, false, false);
+		if (this.source != null) {
 			try {
-				source.sendAsync(msg, null, this);
+				this.source.sendAsync(msg, null, this);
 			}
-			catch (NotConnectedException e) {
+			catch (NotConnectedException ignored) {
 				// Ok
 			}
 		}
-		if (cb != null)
-			cb.nodeFailed(next, "timed out");
+		if (this.cb != null) {
+			this.cb.nodeFailed(next, "timed out");
+		}
 	}
 
 	private synchronized void waitForRunningTransfers() {
-		while (waitingForTransfers > 0) {
+		while (this.waitingForTransfers > 0) {
 			try {
-				wait();
+				this.wait();
 			}
-			catch (InterruptedException e) {
+			catch (InterruptedException ignored) {
 				// Ignore.
 			}
 		}
 	}
 
 	private void rnf(PeerNode next) {
-		waitForRunningTransfers();
-		Message msg = DMT.createFNPRouteNotFound(uid, htl);
-		if (source != null) {
+		this.waitForRunningTransfers();
+		Message msg = DMT.createFNPRouteNotFound(this.uid, this.htl);
+		if (this.source != null) {
 			try {
-				source.sendAsync(msg, null, this);
+				this.source.sendAsync(msg, null, this);
 			}
-			catch (NotConnectedException e) {
+			catch (NotConnectedException ignored) {
 				// Ok
 			}
 		}
-		if (cb != null) {
-			if (next != null)
-				cb.nodeFailed(next, "route not found");
-			else
-				cb.noMoreNodes();
+		if (this.cb != null) {
+			if (next != null) {
+				this.cb.nodeFailed(next, "route not found");
+			}
+			else {
+				this.cb.noMoreNodes();
+			}
 		}
 	}
 
 	private void complete() {
-		waitForRunningTransfers();
-		Message msg = DMT.createFNPOpennetAnnounceCompleted(uid);
-		if (source != null) {
+		this.waitForRunningTransfers();
+		Message msg = DMT.createFNPOpennetAnnounceCompleted(this.uid);
+		if (this.source != null) {
 			try {
-				source.sendAsync(msg, null, this);
+				this.source.sendAsync(msg, null, this);
 			}
-			catch (NotConnectedException e) {
+			catch (NotConnectedException ignored) {
 				// Oh well.
 			}
 		}
@@ -597,46 +627,37 @@ public class AnnounceSender implements PrioRunnable, ByteCounter {
 	 * @return True unless the noderef is bogus.
 	 */
 	private boolean transferNoderef() {
-		noderefBuf = OpennetManager.innerWaitForOpennetNoderef(xferUID, paddedLength, noderefLength, source, false, uid,
-				true, this, node);
-		if (noderefBuf == null) {
+		this.noderefBuf = OpennetManager.innerWaitForOpennetNoderef(this.xferUID, this.paddedLength, this.noderefLength,
+				this.source, false, this.uid, true, this, this.node);
+		if (this.noderefBuf == null) {
 			return false;
 		}
-		SimpleFieldSet fs = OpennetManager.validateNoderef(noderefBuf, 0, noderefLength, source, false);
+		SimpleFieldSet fs = OpennetManager.validateNoderef(this.noderefBuf, 0, this.noderefLength, this.source, false);
 		if (fs == null) {
-			OpennetManager.rejectRef(uid, source, DMT.NODEREF_REJECTED_INVALID, this);
+			OpennetManager.rejectRef(this.uid, this.source, DMT.NODEREF_REJECTED_INVALID, this);
 			return false;
 		}
 		// If we want it, add it and send it.
 		try {
 			// Allow reconnection - sometimes one side has the ref and the other side
 			// doesn't.
-			if (om.addNewOpennetNode(fs, OpennetManager.ConnectionType.ANNOUNCE, true) != null) {
-				sendOurRef(source, om.crypto.myCompressedFullRef());
+			if (this.om.addNewOpennetNode(fs, OpennetManager.ConnectionType.ANNOUNCE, true) != null) {
+				this.sendOurRef(this.source, this.om.crypto.myCompressedFullRef());
 			}
 			else {
-				if (logMINOR)
+				if (logMINOR) {
 					Logger.minor(this, "Don't need the node");
-				sendNotWanted();
+				}
+				this.sendNotWanted();
 				// Okay, just route it.
 			}
 		}
-		catch (FSParseException e) {
-			Logger.warning(this, "Rejecting noderef: " + e, e);
-			OpennetManager.rejectRef(uid, source, DMT.NODEREF_REJECTED_INVALID, this);
+		catch (FSParseException | PeerParseException | ReferenceSignatureVerificationException ex) {
+			Logger.warning(this, "Rejecting noderef: " + ex, ex);
+			OpennetManager.rejectRef(this.uid, this.source, DMT.NODEREF_REJECTED_INVALID, this);
 			return false;
 		}
-		catch (PeerParseException e) {
-			Logger.warning(this, "Rejecting noderef: " + e, e);
-			OpennetManager.rejectRef(uid, source, DMT.NODEREF_REJECTED_INVALID, this);
-			return false;
-		}
-		catch (ReferenceSignatureVerificationException e) {
-			Logger.warning(this, "Rejecting noderef: " + e, e);
-			OpennetManager.rejectRef(uid, source, DMT.NODEREF_REJECTED_INVALID, this);
-			return false;
-		}
-		catch (NotConnectedException e) {
+		catch (NotConnectedException ex) {
 			Logger.normal(this, "Could not receive noderef, disconnected");
 			return false;
 		}
@@ -644,27 +665,27 @@ public class AnnounceSender implements PrioRunnable, ByteCounter {
 	}
 
 	private void sendNotWanted() throws NotConnectedException {
-		Message msg = DMT.createFNPOpennetAnnounceNodeNotWanted(uid);
-		source.sendAsync(msg, null, this);
+		Message msg = DMT.createFNPOpennetAnnounceNodeNotWanted(this.uid);
+		this.source.sendAsync(msg, null, this);
 	}
 
 	private void sendOurRef(PeerNode next, byte[] ref) throws NotConnectedException {
-		om.sendAnnouncementReply(uid, next, ref, this);
+		this.om.sendAnnouncementReply(this.uid, next, ref, this);
 	}
 
 	@Override
 	public void sentBytes(int x) {
-		node.nodeStats.announceByteCounter.sentBytes(x);
+		this.node.nodeStats.announceByteCounter.sentBytes(x);
 	}
 
 	@Override
 	public void receivedBytes(int x) {
-		node.nodeStats.announceByteCounter.receivedBytes(x);
+		this.node.nodeStats.announceByteCounter.receivedBytes(x);
 	}
 
 	@Override
 	public void sentPayload(int x) {
-		node.nodeStats.announceByteCounter.sentPayload(x);
+		this.node.nodeStats.announceByteCounter.sentPayload(x);
 		// Doesn't count.
 	}
 

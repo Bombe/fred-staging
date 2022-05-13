@@ -1,10 +1,26 @@
-/* This code is part of Freenet. It is distributed under the GNU General
- * Public License, version 2 (or at your option any later version). See
- * http://www.gnu.org/ for further details of the GPL. */
+/*
+ * Copyright 1999-2022 The Freenet Project
+ * Copyright 2022 Marine Master
+ *
+ * This file is part of Oldenet.
+ *
+ * Oldenet is free software: you can redistribute it and/or modify it under the terms of
+ * the GNU General Public License as published by the Free Software Foundation, either
+ * version 3 of the License, or any later version.
+ *
+ * Oldenet is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with Oldenet.
+ * If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package freenet.node;
 
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 import freenet.io.comm.FreenetInetAddress;
 import freenet.io.comm.Peer;
@@ -13,9 +29,6 @@ import freenet.io.comm.ReferenceSignatureVerificationException;
 import freenet.nodelogger.Logger;
 import freenet.support.SimpleFieldSet;
 import freenet.support.node.FSParseException;
-
-import static java.util.concurrent.TimeUnit.MINUTES;
-import static java.util.concurrent.TimeUnit.SECONDS;
 
 /**
  * Sender's representation of a seed node.
@@ -56,15 +69,17 @@ public class SeedServerPeerNode extends PeerNode {
 
 	@Override
 	public boolean equals(Object o) {
-		if (o == this)
+		if (o == this) {
 			return true;
+		}
 		// Only equal to seednode of its own type.
 		// Different to an OpennetPeerNode with the same identity!
 		if (o instanceof SeedServerPeerNode) {
 			return super.equals(o);
 		}
-		else
+		else {
 			return false;
+		}
 	}
 
 	@Override
@@ -85,15 +100,15 @@ public class SeedServerPeerNode extends PeerNode {
 	@Override
 	protected void sendInitialMessages() {
 		super.sendInitialMessages();
-		final OpennetManager om = node.getOpennet();
+		final OpennetManager om = this.node.getOpennet();
 		if (om == null) {
 			Logger.normal(this, "Opennet turned off while connecting to seednodes");
-			node.peers.disconnectAndRemove(this, true, true, true);
+			this.node.peers.disconnectAndRemove(this, true, true, true);
 		}
 		else {
 			// Wait 5 seconds. Another node may connect first, we don't want all the
 			// announcements to go to the node which we connect to most quickly.
-			node.getTicker().queueTimedJob(new Runnable() {
+			this.node.getTicker().queueTimedJob(new Runnable() {
 				@Override
 				public void run() {
 					try {
@@ -103,25 +118,27 @@ public class SeedServerPeerNode extends PeerNode {
 						Logger.error(this, "Caught " + t, t);
 					}
 				}
-			}, SECONDS.toMillis(5));
+			}, TimeUnit.SECONDS.toMillis(5));
 		}
 	}
 
 	public InetAddress[] getInetAddresses() {
-		ArrayList<InetAddress> v = new ArrayList<InetAddress>();
-		for (Peer peer : getHandshakeIPs()) {
+		ArrayList<InetAddress> v = new ArrayList<>();
+		for (Peer peer : this.getHandshakeIPs()) {
 			FreenetInetAddress fa = peer.getFreenetAddress().dropHostname();
-			if (fa == null)
+			if (fa == null) {
 				continue;
+			}
 			InetAddress ia = fa.getAddress();
-			if (v.contains(ia))
+			if (v.contains(ia)) {
 				continue;
+			}
 			v.add(ia);
 		}
 		if (v.isEmpty()) {
 			Logger.error(this, "No valid addresses for seed node " + this);
 		}
-		return v.toArray(new InetAddress[v.size()]);
+		return v.toArray(new InetAddress[0]);
 	}
 
 	@Override
@@ -137,21 +154,23 @@ public class SeedServerPeerNode extends PeerNode {
 	@Override
 	public boolean disconnected(boolean dumpMessageQueue, boolean dumpTrackers) {
 		boolean ret = super.disconnected(dumpMessageQueue, dumpTrackers);
-		node.peers.disconnectAndRemove(this, false, false, false);
+		this.node.peers.disconnectAndRemove(this, false, false, false);
 		return ret;
 	}
 
 	@Override
 	public boolean shouldDisconnectAndRemoveNow() {
-		OpennetManager om = node.getOpennet();
-		if (om == null)
+		OpennetManager om = this.node.getOpennet();
+		if (om == null) {
 			return true;
-		if (!om.announcer.enoughPeers())
+		}
+		if (!om.announcer.enoughPeers()) {
 			return false;
+		}
 		// We have enough peers, but we might fluctuate a bit.
 		// Drop the connection once we have consistently had enough opennet peers for 5
 		// minutes.
-		return System.currentTimeMillis() - om.announcer.timeGotEnoughPeers() > MINUTES.toMillis(5);
+		return System.currentTimeMillis() - om.announcer.timeGotEnoughPeers() > TimeUnit.MINUTES.toMillis(5);
 	}
 
 	@Override
@@ -173,7 +192,7 @@ public class SeedServerPeerNode extends PeerNode {
 	@Override
 	public void fatalTimeout() {
 		// Disconnect.
-		forceDisconnect();
+		this.forceDisconnect();
 	}
 
 	@Override
