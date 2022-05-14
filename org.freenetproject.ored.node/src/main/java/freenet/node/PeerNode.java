@@ -102,16 +102,17 @@ import freenet.support.transport.ip.HostnameSyntaxException;
 import freenet.support.transport.ip.IPUtil;
 
 /**
- * @author amphibian
- *
  * Represents a peer we are connected to. One of the major issues is that we can rekey, or
  * a node can go down and come back up while we are connected to it, and we want to
- * reinitialize the packet numbers when this happens. Hence we separate a lot of code into
- * SessionKey, which handles all communications to and from this peer over the duration of
- * a single key.
+ * reinitialize the packet numbers when this happens. Hence, we separate a lot of code
+ * into SessionKey, which handles all communications to and from this peer over the
+ * duration of a single key.
  *
  * LOCKING: Can hold PeerManager and then lock PeerNode. Cannot hold PeerNode and then
  * lock PeerManager.
+ *
+ * @author amphibian
+ *
  */
 public abstract class PeerNode implements USKRetrieverCallback, BasePeerNode, PeerNodeUnlocked {
 

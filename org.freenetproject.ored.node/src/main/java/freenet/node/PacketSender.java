@@ -343,10 +343,8 @@ public class PacketSender implements Runnable {
 					nextActionTime = Math.min(nextActionTime, pn.timeCheckForLostPackets());
 				}
 			}
-			else
-			// Not connected
-
-			if (pn.noContactDetails()) {
+			else if (pn.noContactDetails()) {
+				// Not connected
 				pn.startARKFetcher();
 			}
 
