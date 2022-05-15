@@ -1151,8 +1151,8 @@ public class Node implements TimeSkewDetectorCallback, KeyBlockStore, Persistent
 		this.securityLevels = new SecurityLevels(this, config);
 
 		// Location of master key
-		nodeConfig.register("masterKeyFile", "master.keys", sortOrder++, true, true, "Node.masterKeyFile",
-				"Node.masterKeyFileLong", new StringCallback() {
+		nodeConfig.register("masterKeyFile", this.userDir().file("master.keys").toString(), sortOrder++, true, true,
+				"Node.masterKeyFile", "Node.masterKeyFileLong", new StringCallback() {
 
 					@Override
 					public String get() {
