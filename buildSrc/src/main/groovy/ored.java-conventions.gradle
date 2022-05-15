@@ -4,7 +4,7 @@ plugins {
     id "checkstyle"
 }
 
-version = '0.7.5.1493.0-dev'
+version = '1493.1.0-dev'
 group = 'org.freenetproject'
 
 repositories {
