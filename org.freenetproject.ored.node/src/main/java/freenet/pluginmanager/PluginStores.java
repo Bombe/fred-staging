@@ -27,8 +27,9 @@ public class PluginStores {
 
 	public PluginStores(Node node, SubConfig installConfig) throws NodeInitException {
 		this.node = node;
-		pluginStoresDir = node.setupProgramDir(installConfig, "pluginStoresDir", "plugin-data",
-				"NodeClientCore.pluginStoresDir", "NodeClientCore.pluginStoresDir", null, null);
+		pluginStoresDir = node.setupProgramDir(installConfig, "pluginStoresDir",
+				this.node.userDir().file("plugin-data").toString(), "NodeClientCore.pluginStoresDir",
+				"NodeClientCore.pluginStoresDir", null, null);
 		File dir = pluginStoresDir.dir();
 		if (!(dir.mkdirs() || (dir.exists() && dir.isDirectory() && dir.canRead() && dir.canWrite()))) {
 			System.err.println("Unable to create folder for plugin data: " + pluginStoresDir.dir());

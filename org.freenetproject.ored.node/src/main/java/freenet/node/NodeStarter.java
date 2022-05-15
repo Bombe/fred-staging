@@ -131,6 +131,7 @@ public final class NodeStarter implements WrapperListener {
 
 		File configFilename;
 		if (args.length == 0) {
+
 			AppDirs appDirs = AppDirsFactory.getInstance();
 			File userDataDir = new File(appDirs.getUserDataDir("ored", "", "Oldenet"));
 
@@ -143,6 +144,12 @@ public final class NodeStarter implements WrapperListener {
 					return -1;
 				}
 			}
+
+			// Set temp directory inside user data directory as multi-user setup fails with
+			// the global tempdir
+			String tmpDir = Paths.get(userDataDir.getAbsolutePath(), "temp").toAbsolutePath().toString();
+			System.setProperty("java.io.tmpdir",tmpDir);
+			System.out.println("Temporary directory: " + tmpDir);
 
 			configFilename = Paths.get(userDataDir.getAbsolutePath(), "freenet.ini").toFile();
 		}

@@ -3007,7 +3007,8 @@ public class Node implements TimeSkewDetectorCallback, KeyBlockStore, Persistent
 			dir.move(dirName);
 		}
 		catch (IOException ex) {
-			throw new NodeInitException(NodeInitException.EXIT_BAD_DIR, "could not set up directory: " + longdesc);
+			throw new NodeInitException(NodeInitException.EXIT_BAD_DIR,
+					"could not set up directory: " + longdesc + " (" + dirName + ")");
 		}
 		return dir;
 	}
