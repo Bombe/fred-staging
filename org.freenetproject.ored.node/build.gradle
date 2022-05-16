@@ -42,14 +42,6 @@ jlink {
 
     imageDir = file("$rootDir/build/jlink")
     imageZip = file("$rootDir/build/jlink.zip")
-
-    jpackage {
-        imageOutputDir = file("$rootDir/build/jpackage")
-        installerOutputDir = file("$rootDir/build/jpackage")
-        imageName = 'Oldenet'
-        installerName = 'Oldenet'
-        appVersion = '7.5.1493'
-    }
 }
 
 tasks.register('copyWrapper') {
@@ -201,4 +193,58 @@ tasks.named('clean').configure {
     delete += jlink.imageZip
     delete += jlink.jpackageData.get().imageOutputDir
     delete += jlink.jpackageData.get().installerOutputDir
+    delete += file("${rootDir}/build/wix/")
+}
+
+
+tasks.register('package') {
+//    dependsOn 'copyWrapper'
+
+    doLast {
+        if (osdetector.os == 'windows') {
+            if (osdetector.arch == 'x86_32') {
+                throw new GradleScriptException("Currently win32 package is not supported")
+            }
+
+            String wixHome
+            if (project.hasProperty('wix.home')) {
+                wixHome = project.property('wix_home')
+            } else {
+                wixHome = System.getenv('WIX')
+            }
+
+            if (wixHome.isEmpty()) {
+                throw new GradleScriptException("Unable to locate WiX toolset. Please specify WIX envirement variable or set wix.home property.")
+            }
+
+            // assert file("${wixHome}/bin/heat.exe").exists()
+            assert file("${wixHome}/bin/candle.exe").exists()
+            assert file("${wixHome}/bin/light.exe").exists()
+
+            // Generate JlinkFiles.wxs from jlink dir
+            // heat.exe dir "Z:\ored\build\jlink" -dr APPLICATIONFOLDER -cg NewFilesGroup -gg -g1 -sf -srd -var "var.JlinkDir" -out "Z:\Downloads\JlinkFiles.wxs"
+//            exec {
+//                workingDir "${rootDir}"
+//                executable "${wixHome}/bin/heat.exe"
+//                args 'dir', "${rootDir}/build/jlink", '-dr', 'APPLICATIONFOLDER', '-cg', 'NewFilesGroup', '-gg', '-g1', '-sf', '-srd', '-var', 'var.JlinkDir', '-out', "${rootDir}/packagefiles/windows/wix/JlinkFiles.wxs"
+//            }
+
+            // Compile
+            // "C:\Program Files (x86)\WiX Toolset v3.11\bin\candle.exe" -arch x64 -ext WixUIExtension -dJlinkDir=Z:\ored\build\jlink -out Z:\ored\build\wix\ Z:\ored\packagefiles\windows\wix\*.wxs
+            exec {
+                workingDir "${rootDir}"
+                executable "${wixHome}/bin/candle.exe"
+                args '-arch', 'x64', '-ext', 'WixUIExtension', "-dJlinkDir=${rootDir}/build/jlink", '-out', "${rootDir}/build/wix/", "${rootDir}/packagefiles/windows/wix/*.wxs"
+            }
+
+            // Link
+            // "C:\Program Files (x86)\WiX Toolset v3.11\bin\light.exe" -out Z:\ored\build\wix\OldenetInstaller.msi Z:\ored\build\wix\*.wixobj -ext WixUIExtension
+            exec {
+                workingDir "${rootDir}"
+                executable "${wixHome}/bin/light.exe"
+                args '-out', "${rootDir}/build/wix/OldenetInstaller.msi", "${rootDir}/build/wix/*.wixobj", '-ext', 'WixUIExtension'
+            }
+        }
+    }
+
 }
