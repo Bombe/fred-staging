@@ -190,7 +190,7 @@ tasks.register('copyWrapper') {
 
 
 tasks.register('package') {
-    dependsOn 'copyWrapper'
+//    dependsOn 'copyWrapper'
     dependsOn 'wixClean'
 
     doLast {
@@ -226,7 +226,6 @@ tasks.register('package') {
 //            }
 
             // Compile
-            // "C:\Program Files (x86)\WiX Toolset v3.11\bin\candle.exe" -arch x64 -ext WixUIExtension -dJlinkDir=Z:\ored\build\jlink -out Z:\ored\build\wix\ Z:\ored\packagefiles\windows\wix\*.wxs
             exec {
                 workingDir "${rootDir}"
                 executable "${wixHome}/bin/candle.exe"
@@ -235,16 +234,24 @@ tasks.register('package') {
 
             // Copy necessary files before linking
             copy {
-                from "${wixSrcDir}/gpl-3.0.rtf"
+                from wixSrcDir
+                include 'gpl-3.0.rtf'
+                include '*.wxl'
                 into "${wixBuildDir}"
             }
 
             // Link
-            // "C:\Program Files (x86)\WiX Toolset v3.11\bin\light.exe" -out Z:\ored\build\wix\OldenetInstaller.msi Z:\ored\build\wix\*.wixobj -ext WixUIExtension
             exec {
                 workingDir "${rootDir}"
                 executable "${wixHome}/bin/light.exe"
-                args '-out', "${wixBuildDir}/OldenetInstaller.msi", "${wixBuildDir}/*.wixobj", '-ext', 'WixUIExtension'
+                args(
+                        '-out', "${wixBuildDir}/OldenetInstaller.msi",
+                        '-sice:ICE17',
+                        '-ext', 'WixUIExtension',
+                        '-cultures:en-us',
+                        '-loc', "${wixBuildDir}/en-us.wxl",
+                        "${wixBuildDir}/*.wixobj"
+                )
             }
         }
     }
