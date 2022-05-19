@@ -102,13 +102,28 @@
                 <Control Id="FolderLabel" Type="Text" X="20" Y="60" Width="290" Height="18" NoPrefix="yes"
                          Text="!(loc.InstallDirDlgFolderLabel)"/>
                 <Control Id="Folder" Type="PathEdit" X="20" Y="80" Width="250" Height="18" Property="WIXUI_INSTALLDIR"
-                         Indirect="yes"/>
+                         Indirect="yes">
+                    <Condition Action="enable">
+                        <![CDATA[(ALLUSERS=1 OR (ALLUSERS=2 AND Privileged))]]>
+                    </Condition>
+                    <Condition Action="disable">
+                        <![CDATA[ALLUSERS="" OR (ALLUSERS=2 AND (NOT Privileged))]]>
+                    </Condition>
+                </Control>
                 <Control Id="ChangeFolder" Type="PushButton" X="280" Y="80" Width="56" Height="18"
-                         Text="!(loc.InstallDirDlgChange)"/>
+                         Text="!(loc.InstallDirDlgChange)">
+                    <Condition Action="enable">
+                        <![CDATA[(ALLUSERS=1 OR (ALLUSERS=2 AND Privileged))]]>
+                    </Condition>
+                    <Condition Action="disable">
+                        <![CDATA[ALLUSERS="" OR (ALLUSERS=2 AND (NOT Privileged))]]>
+                    </Condition>
+                </Control>
 
                 <Control Id="DataFolderLabel" Type="Text" X="20" Y="120" Width="290" Height="18" NoPrefix="yes"
                          Text="!(loc.InstallDataDirDlgFolderLabel)"/>
-                <Control Id="DataFolder" Type="PathEdit" X="20" Y="140" Width="250" Height="18" Property="ORED_DATADIR"
+                <Control Id="DataFolder" Type="PathEdit" X="20" Y="140" Width="250" Height="18"
+                         Property="WIXUI_DATADIR"
                          Indirect="yes"/>
                 <Control Id="ChangeDataFolder" Type="PushButton" X="280" Y="140" Width="56" Height="17"
                          Text="!(loc.InstallDataDirDlgChange)"/>

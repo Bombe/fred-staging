@@ -14,10 +14,21 @@
                       Value="[ProgramFilesFolder][ApplicationFolderName]" Execute="immediate"/>
         <CustomAction Id="WixSetDefaultPerMachineFolder64Oldenet" Property="WixPerMachineFolder"
                       Value="[ProgramFiles64Folder][ApplicationFolderName]" Execute="immediate"/>
+
         <CustomAction Id="WixSetPerUserFolderOldenet" Property="APPLICATIONFOLDER" Value="[WixPerUserFolder]"
                       Execute="immediate"/>
         <CustomAction Id="WixSetPerMachineFolderOldenet" Property="APPLICATIONFOLDER" Value="[WixPerMachineFolder]"
                       Execute="immediate"/>
+
+        <CustomAction Id="WixSetDefaultNormalOredDataFolder" Property="WixNormalOredDataFolder"
+                      Value="[LocalAppDataFolder][ApplicationFolderName]" Execute="immediate"/>
+        <CustomAction Id="WixSetDefaultServiceOredDataFolder" Property="WixServiceOredDataFolder"
+                      Value="[CommonAppDataFolder][ApplicationFolderName]" Execute="immediate"/>
+
+        <CustomAction Id="WixSetNormalOredDataFolder" Property="OREDDATAFOLDER"
+                      Value="[WixNormalOredDataFolder]" Execute="immediate"/>
+        <CustomAction Id="WixSetServiceOredDataFolder" Property="OREDDATAFOLDER"
+                      Value="[WixServiceOredDataFolder]" Execute="immediate"/>
 
         <InstallExecuteSequence>
             <Custom Action="WixSetDefaultPerUserFolderOldenet" Before="CostFinalize"/>
@@ -40,6 +51,11 @@
                 APPLICATIONFOLDER=""
                 AND
                 (ALLUSERS=1 OR (ALLUSERS=2 AND Privileged))
+            </Custom>
+            <Custom Action="WixSetDefaultNormalOredDataFolder" After="WixSetPerMachineFolderOldenet"/>
+            <Custom Action="WixSetDefaultServiceOredDataFolder" After="WixSetDefaultNormalOredDataFolder"/>
+            <Custom Action="WixSetNormalOredDataFolder" After="WixSetDefaultServiceOredDataFolder">
+                OREDDATAFOLDER=""
             </Custom>
         </InstallExecuteSequence>
         <InstallUISequence>
@@ -64,6 +80,9 @@
                 AND
                 (ALLUSERS=1 OR (ALLUSERS=2 AND Privileged))
             </Custom>
+            <Custom Action="WixSetDefaultNormalOredDataFolder" After="WixSetPerMachineFolderOldenet"/>
+            <Custom Action="WixSetDefaultServiceOredDataFolder" After="WixSetDefaultNormalOredDataFolder"/>
+            <Custom Action="WixSetNormalOredDataFolder" After="WixSetDefaultServiceOredDataFolder"/>
         </InstallUISequence>
 
         <UI Id="WixUI_Oldenet">
@@ -104,17 +123,62 @@
             </Publish>
 
             <!-- OredSetupTypeDlg -->
-            <Publish Dialog="OredSetupTypeDlg" Control="Back" Event="NewDialog" Value="AdvancedWelcomeEulaDlg"
+            <Publish Dialog="OredSetupTypeDlg" Control="Back" Property="WixUI_InstallMode" Value="InstallNormal"
                      Order="1">
                 NOT Installed
             </Publish>
-            <Publish Dialog="OredSetupTypeDlg" Control="Back" Event="NewDialog" Value="MaintenanceTypeDlg" Order="2">
+            <Publish Dialog="OredSetupTypeDlg" Control="Back" Property="ALLUSERS" Value="{}" Order="2">
+                NOT Installed
+            </Publish>
+            <Publish Dialog="OredSetupTypeDlg" Control="Back" Event="DoAction" Value="WixSetNormalOredDataFolder"
+                     Order="3">
+                NOT Installed
+            </Publish>
+            <Publish Dialog="OredSetupTypeDlg" Control="Back" Event="DoAction" Value="WixSetPerUserFolderOldenet"
+                     Order="4">
+                NOT Installed
+            </Publish>
+            <Publish Dialog="OredSetupTypeDlg" Control="Back" Event="NewDialog" Value="AdvancedWelcomeEulaDlg"
+                     Order="5">
+                NOT Installed
+            </Publish>
+            <Publish Dialog="OredSetupTypeDlg" Control="Back" Event="NewDialog" Value="MaintenanceTypeDlg" Order="6">
                 Installed
             </Publish>
-            <Publish Dialog="OredSetupTypeDlg" Control="NormalButton" Event="NewDialog" Value="InstallScopeDlg">
+
+            <Publish Dialog="OredSetupTypeDlg" Control="NormalButton" Property="ALLUSERS" Value="{}" Order="1">
                 1
             </Publish>
-            <Publish Dialog="OredSetupTypeDlg" Control="ServiceButton" Event="NewDialog" Value="InstallDataDirDlg">
+            <Publish Dialog="OredSetupTypeDlg" Control="NormalButton" Event="DoAction"
+                     Value="WixSetNormalOredDataFolder"
+                     Order="2">
+                1
+            </Publish>
+            <Publish Dialog="OredSetupTypeDlg" Control="NormalButton" Event="DoAction"
+                     Value="WixSetPerUserFolderOldenet"
+                     Order="3">
+                1
+            </Publish>
+            <Publish Dialog="OredSetupTypeDlg" Control="NormalButton" Event="NewDialog" Value="InstallScopeDlg"
+                     Order="4">
+                1
+            </Publish>
+
+            <Publish Dialog="OredSetupTypeDlg" Control="ServiceButton" Property="ALLUSERS" Value="1" Order="1">
+                1
+            </Publish>
+            <Publish Dialog="OredSetupTypeDlg" Control="ServiceButton" Event="DoAction"
+                     Value="WixSetServiceOredDataFolder"
+                     Order="2">
+                1
+            </Publish>
+            <Publish Dialog="OredSetupTypeDlg" Control="ServiceButton" Event="DoAction"
+                     Value="WixSetPerMachineFolderOldenet"
+                     Order="3">
+                1
+            </Publish>
+            <Publish Dialog="OredSetupTypeDlg" Control="ServiceButton" Event="NewDialog" Value="InstallDataDirDlg"
+                     Order="4">
                 1
             </Publish>
 
@@ -161,10 +225,6 @@
             <Publish Dialog="InstallDataDirDlg" Control="Install" Event="SpawnDialog" Value="InvalidDirDlg" Order="3">
                 <![CDATA[NOT WIXUI_DONTVALIDATEPATH AND WIXUI_INSTALLDIR_VALID<>"1"]]>
             </Publish>
-            <Publish Dialog="InstallDataDirDlg" Control="Install" Property="ORED_DATADIR" Value="InvalidDirDlg"
-                     Order="3">
-                <![CDATA[NOT WIXUI_DONTVALIDATEPATH AND WIXUI_INSTALLDIR_VALID<>"1"]]>
-            </Publish>
 
             <Publish Dialog="InstallDataDirDlg" Control="InstallNoShield" Event="SetTargetPath"
                      Value="[WIXUI_INSTALLDIR]"
@@ -178,10 +238,6 @@
                      Order="3">
                 <![CDATA[NOT WIXUI_DONTVALIDATEPATH AND WIXUI_INSTALLDIR_VALID<>"1"]]>
             </Publish>
-            <Publish Dialog="InstallDataDirDlg" Control="InstallNoShield" Property="ORED_DATADIR" Value="InvalidDirDlg"
-                     Order="3">
-                <![CDATA[NOT WIXUI_DONTVALIDATEPATH AND WIXUI_INSTALLDIR_VALID<>"1"]]>
-            </Publish>
 
             <Publish Dialog="InstallDataDirDlg" Control="Change" Event="SetTargetPath" Value="[WIXUI_INSTALLDIR]"
                      Order="1">1
@@ -190,10 +246,6 @@
                 NOT WIXUI_DONTVALIDATEPATH
             </Publish>
             <Publish Dialog="InstallDataDirDlg" Control="Change" Event="SpawnDialog" Value="InvalidDirDlg" Order="3">
-                <![CDATA[NOT WIXUI_DONTVALIDATEPATH AND WIXUI_INSTALLDIR_VALID<>"1"]]>
-            </Publish>
-            <Publish Dialog="InstallDataDirDlg" Control="Change" Property="ORED_DATADIR" Value="InvalidDirDlg"
-                     Order="3">
                 <![CDATA[NOT WIXUI_DONTVALIDATEPATH AND WIXUI_INSTALLDIR_VALID<>"1"]]>
             </Publish>
 
@@ -206,10 +258,6 @@
                 NOT WIXUI_DONTVALIDATEPATH
             </Publish>
             <Publish Dialog="InstallDataDirDlg" Control="ChangeNoShield" Event="SpawnDialog" Value="InvalidDirDlg"
-                     Order="3">
-                <![CDATA[NOT WIXUI_DONTVALIDATEPATH AND WIXUI_INSTALLDIR_VALID<>"1"]]>
-            </Publish>
-            <Publish Dialog="InstallDataDirDlg" Control="ChangeNoShield" Property="ORED_DATADIR" Value="InvalidDirDlg"
                      Order="3">
                 <![CDATA[NOT WIXUI_DONTVALIDATEPATH AND WIXUI_INSTALLDIR_VALID<>"1"]]>
             </Publish>
@@ -269,7 +317,7 @@
         </InstallUISequence>
 
         <Property Id="WIXUI_INSTALLDIR" Value="APPLICATIONFOLDER"/>
-        <Property Id="ORED_DATADIR" Value="LocalAppDataFolder"/>
+        <Property Id="WIXUI_DATADIR" Value="OREDDATAFOLDER"/>
         <UIRef Id="WixUI_Common"/>
     </Fragment>
 </Wix>
