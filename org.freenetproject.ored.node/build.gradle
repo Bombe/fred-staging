@@ -188,23 +188,19 @@ tasks.register('copyWrapper') {
     }
 }
 
-tasks.named('clean').configure {
-    delete += jlink.imageDir
-    delete += jlink.imageZip
-    delete += jlink.jpackageData.get().imageOutputDir
-    delete += jlink.jpackageData.get().installerOutputDir
-    delete += file("${rootDir}/build/wix/")
-}
-
 
 tasks.register('package') {
-//    dependsOn 'copyWrapper'
+    dependsOn 'copyWrapper'
+    dependsOn 'wixClean'
 
     doLast {
         if (osdetector.os == 'windows') {
             if (osdetector.arch == 'x86_32') {
                 throw new GradleScriptException("Currently win32 package is not supported")
             }
+
+            def wixSrcDir = "${rootDir}/packagefiles/windows/wix"
+            def wixBuildDir = "${rootDir}/build/wix"
 
             String wixHome
             if (project.hasProperty('wix.home')) {
@@ -234,7 +230,13 @@ tasks.register('package') {
             exec {
                 workingDir "${rootDir}"
                 executable "${wixHome}/bin/candle.exe"
-                args '-arch', 'x64', '-ext', 'WixUIExtension', "-dJlinkDir=${rootDir}/build/jlink", '-out', "${rootDir}/build/wix/", "${rootDir}/packagefiles/windows/wix/*.wxs"
+                args '-arch', 'x64', '-ext', 'WixUIExtension', "-dJlinkDir=${tasks.jlink.imageDir}", '-out', "${wixBuildDir}/", "${wixSrcDir}/*.wxs"
+            }
+
+            // Copy necessary files before linking
+            copy {
+                from "${wixSrcDir}/gpl-3.0.rtf"
+                into "${wixBuildDir}"
             }
 
             // Link
@@ -242,9 +244,22 @@ tasks.register('package') {
             exec {
                 workingDir "${rootDir}"
                 executable "${wixHome}/bin/light.exe"
-                args '-out', "${rootDir}/build/wix/OldenetInstaller.msi", "${rootDir}/build/wix/*.wixobj", '-ext', 'WixUIExtension'
+                args '-out', "${wixBuildDir}/OldenetInstaller.msi", "${wixBuildDir}/*.wixobj", '-ext', 'WixUIExtension'
             }
         }
     }
 
+}
+
+tasks.register('wixClean', Delete) {
+    delete file("${rootDir}/build/wix/")
+}
+
+tasks.named('clean').configure {
+    dependsOn 'wixClean'
+
+    delete += jlink.imageDir
+    delete += jlink.imageZip
+    delete += jlink.jpackageData.get().imageOutputDir
+    delete += jlink.jpackageData.get().installerOutputDir
 }

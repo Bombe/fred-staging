@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" RequiredVersion="3.11.2.4516">
+    <Product Id="FE39C52F-47BD-4BED-96C7-08307BFF22B2"
+             Name="Oldenet"
+             Language="1033" Version="1.0.1493"
+             Manufacturer="Oldenet"
+             UpgradeCode="05E713E3-8944-4DBB-B606-901AAA4E01FB">
+        <Package InstallerVersion="301"
+                 Compressed="yes"
+                 Manufacturer="Oldenet"
+                 Description="Oldenet" Keywords="Freenet,Oldenet,ored"
+                 Comments="(c) 2012 Awesome Company"/>
+        <MediaTemplate EmbedCab="yes" CompressionLevel="high"/>
+
+        <WixVariable Id="WixUILicenseRtf" Value="gpl-3.0.rtf"/>
+
+        <UIRef Id="WixUI_Oldenet"/>
+
+        <Property Id="ApplicationFolderName" Value="Oldenet"/>
+        <Property Id="WixAppFolder" Value="WixPerUserFolder"/>
+
+        <Directory Id="TARGETDIR" Name="SourceDir">
+            <Directory Id="ProgramFiles64Folder">
+                <Directory Id="APPLICATIONFOLDER" Name="Oldenet"/>
+            </Directory>
+        </Directory>
+
+        <Feature Id="MainProduct" Title="Oldenet" Level="1">
+            <ComponentGroupRef Id="CMP_NewFilesGroup"/>
+        </Feature>
+
+    </Product>
+</Wix>
