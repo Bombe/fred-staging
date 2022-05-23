@@ -1,0 +1,14 @@
+plugins {
+    id 'application'
+    id 'ored.java-conventions'
+}
+
+dependencies {
+    implementation 'info.picocli:picocli:4.6.3'
+}
+
+application {
+    mainModule = 'org.freenetproject.ored.cli'
+    mainClass = 'freenet.cli.Cli'
+}
+

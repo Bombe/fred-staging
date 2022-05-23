@@ -1,4 +1,4 @@
-rootProject.name="ored"
+rootProject.name = "ored"
 
 include 'org.freenetproject.ored.l10n'
 include 'org.freenetproject.ored.support'
@@ -7,5 +7,6 @@ include 'org.freenetproject.ored.client'
 include 'org.freenetproject.ored.config'
 include 'org.freenetproject.ored.store'
 include 'org.freenetproject.ored.node'
+include 'org.freenetproject.ored.cli'
 include 'org.freenetproject.ext'
 
