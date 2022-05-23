@@ -248,6 +248,10 @@
                        Guid="1872F2D1-5827-4A5B-81E9-25EE0BC8266D">
                 <File Id="fil982A1886C470BDEE266E897BCE870B51" KeyPath="yes" Source="$(var.JlinkDir)\bin\ored.bat"/>
             </Component>
+            <Component Id="cmporedcli" Directory="dirBD35FD5C001808C2DA6BDBD555B2851B"
+                       Guid="BA25BE22-C7FC-4F80-B2B8-8900F1357323">
+                <File Id="filoredcli" KeyPath="yes" Source="$(var.JlinkDir)\bin\oredcli.bat"/>
+            </Component>
             <Component Id="cmp9FB0251D64C7CF3D0EA71235B99E38D5" Directory="dirBD35FD5C001808C2DA6BDBD555B2851B"
                        Guid="D6DF342F-7FA4-4B64-B819-1ABDF66B1166">
                 <File Id="fil5756A82CFDCB21DB2AEF7471BD8A044E" KeyPath="yes"

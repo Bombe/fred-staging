@@ -17,9 +17,9 @@
 
 package freenet.cli.subcommand;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.concurrent.Callable;
 
 import picocli.CommandLine.Command;
@@ -37,7 +37,8 @@ public class WrapperConf implements Callable<Integer> {
 
 	@Override
 	public Integer call() throws Exception {
-		try (var writer = new BufferedWriter(new FileWriter(this.customConfFile))) {
+		try (var writer = Files.newBufferedWriter(this.customConfFile.toPath(), StandardOpenOption.CREATE,
+				StandardOpenOption.WRITE)) {
 			writer.append("wrapper.app.parameter.1=");
 			writer.append(this.iniPath);
 			writer.append("\n");

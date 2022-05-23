@@ -11,6 +11,7 @@ dependencies {
     implementation project(':org.freenetproject.ored.client')
     implementation project(':org.freenetproject.ored.config')
     implementation project(':org.freenetproject.ored.store')
+    implementation project(':org.freenetproject.ored.cli')
     implementation project(path: ':org.freenetproject.ext', configuration: 'shadow')
 
     implementation 'net.java.dev.jna:jna-jpms:5.11.0'
@@ -33,23 +34,28 @@ jlink {
             '--compress', '2',
             '--no-header-files',
             '--no-man-pages',
+            '--add-modules', 'org.freenetproject.ored.node',
 //            '--strip-debug'
     ]
 
-    mainClass = "freenet.node.NodeStarter"
-
-    jarExclude 'freenet-ext', '/freenet/support/**'
+    moduleName = "org.freenetproject.ored.cli"
+    mainClass = "freenet.cli.Cli"
 
     imageDir = file("$rootDir/build/jlink")
     imageZip = file("$rootDir/build/jlink.zip")
+
+    launcher {
+        name = "oredcli"
+    }
 }
 
 tasks.register('copyWrapper') {
+    dependsOn 'jlink'
+
     def wrapperCmdPath = "${tasks.jlink.imageDir}/bin";
     def wrapperConfPath = "${tasks.jlink.imageDir}/conf";
     def wrapperLibPath = "${tasks.jlink.imageDir}/lib/wrapper";
 
-    dependsOn 'jlink'
     inputs.files tasks.jlink.imageDirAsFile, "${rootDir}/lib/wrapper"
     outputs.dirs wrapperCmdPath, wrapperConfPath, wrapperLibPath
 
@@ -163,7 +169,8 @@ tasks.register('copyWrapper') {
 
         // Copy wrapper.conf
         copy {
-            from "${rootDir}/packagefiles/common/wrapper.conf"
+            from "${rootDir}/packagefiles/common/"
+            include 'wrapper.conf'
             into wrapperConfPath
         }
 
@@ -229,7 +236,14 @@ tasks.register('package') {
             exec {
                 workingDir "${rootDir}"
                 executable "${wixHome}/bin/candle.exe"
-                args '-arch', 'x64', '-ext', 'WixUIExtension', "-dJlinkDir=${tasks.jlink.imageDir}", '-out', "${wixBuildDir}/", "${wixSrcDir}/*.wxs"
+                args(
+                        '-arch', 'x64',
+                        '-ext', 'WixUIExtension',
+                        '-ext', 'WixUtilExtension',
+                        "-dJlinkDir=${tasks.jlink.imageDir}",
+                        '-out', "${wixBuildDir}/",
+                        "${wixSrcDir}/*.wxs"
+                )
             }
 
             // Copy necessary files before linking
@@ -248,6 +262,7 @@ tasks.register('package') {
                         '-out', "${wixBuildDir}/OldenetInstaller.msi",
                         '-sice:ICE17',
                         '-ext', 'WixUIExtension',
+                        '-ext', 'WixUtilExtension',
                         '-cultures:en-us',
                         '-loc', "${wixBuildDir}/en-us.wxl",
                         "${wixBuildDir}/*.wixobj"

@@ -5,6 +5,7 @@ module org.freenetproject.ored.node {
     requires org.freenetproject.ored.config;
     requires org.freenetproject.ored.client;
     requires org.freenetproject.ored.store;
+    requires org.freenetproject.ored.cli;
     requires org.freenetproject.ext;
     requires org.tanukisoftware.wrapper;
     requires com.sun.jna;
