@@ -21,9 +21,9 @@
                       Execute="immediate"/>
 
         <CustomAction Id="WixSetDefaultNormalOredDataFolder" Property="WixNormalOredDataFolder"
-                      Value="[LocalAppDataFolder][ApplicationFolderName]" Execute="immediate"/>
+                      Value="[LocalAppDataFolder][ApplicationFolderName]\" Execute="immediate"/>
         <CustomAction Id="WixSetDefaultServiceOredDataFolder" Property="WixServiceOredDataFolder"
-                      Value="[CommonAppDataFolder][ApplicationFolderName]" Execute="immediate"/>
+                      Value="[CommonAppDataFolder][ApplicationFolderName]\" Execute="immediate"/>
 
         <CustomAction Id="WixSetNormalOredDataFolder" Property="OREDDATAFOLDER"
                       Value="[WixNormalOredDataFolder]" Execute="immediate"/>

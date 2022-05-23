@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
-
+<!--
+TODO:
+Delete wrapper_custom.conf before uninstall files
+wrapper_custom.conf rollback support
+Service installation
+Start Oldenet after install finished
+Modify installation including installing/removing service, moving data/installation directory and rollback.
+Uninstall icon
+Prompt to delete data dir during uninstall
+-->
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
      RequiredVersion="3.11.2.4516">
     <Product Id="FE39C52F-47BD-4BED-96C7-08307BFF22B2"
@@ -14,6 +23,8 @@
                  Description="Oldenet" Keywords="Freenet,Oldenet,ored"
                  Comments="(c) 2012 Awesome Company"/>
         <MediaTemplate EmbedCab="yes" CompressionLevel="high"/>
+        <MajorUpgrade
+                DowngradeErrorMessage="A newer version of [ProductName] is already installed."/>
 
         <WixVariable Id="WixUILicenseRtf" Value="gpl-3.0.rtf"/>
 
@@ -30,11 +41,14 @@
 
         <Feature Id="Normal" Title="Normal Installation" Level="1">
             <ComponentGroupRef Id="CMP_NewFilesGroup"/>
+            <ComponentRef Id="cmpWrapperCustomConf"/>
         </Feature>
 
         <Feature Id="Service" Title="Service Installation" Level="100">
 
         </Feature>
+
+        <CustomActionRef Id="WixFailWhenDeferred"/>
 
         <!-- Create custom configuration file for Wrapper -->
         <SetProperty Id="QtExecCreateWrapperConf"
@@ -42,9 +56,24 @@
                      Sequence="execute" Before="QtExecCreateWrapperConf"/>
         <CustomAction Id="QtExecCreateWrapperConf" BinaryKey="WixCA" DllEntry="WixQuietExec64"
                       Execute="deferred" Return="check"/>
+        <!-- Rollback: Delete custom configuration file for Wrapper if something bad happens -->
+        <SetProperty Id="RollbackCreateWrapperConf"
+                     Value="&quot;cmd.exe&quot; /C &quot;cd /d [APPLICATIONFOLDER] &amp;&amp; del conf\wrapper_custom.conf&quot;"
+                     Sequence="execute" Before="RollbackCreateWrapperConf"/>
+        <CustomAction Id="RollbackCreateWrapperConf" BinaryKey="WixCA" DllEntry="WixQuietExec64"
+                      Execute="rollback" Return="check"/>
+
+        <!-- Remove custom configuration file for Wrapper during uninstall -->
+        <DirectoryRef Id="dirCA7C0207AC03E4CC75B8991A675418D8">
+            <Component Id="cmpWrapperCustomConf" Guid="3AC82ACF-269A-41DB-86C6-C6B8AE428A05">
+                <RemoveFile Id="removeWrapperCustomConf" On="uninstall" Name="wrapper_custom.conf"/>
+            </Component>
+        </DirectoryRef>
 
         <InstallExecuteSequence>
-            <Custom Action="QtExecCreateWrapperConf" Before="InstallFinalize"/>
+            <Custom Action="QtExecCreateWrapperConf" Before="InstallFinalize">NOT Installed AND NOT REMOVE</Custom>
+            <Custom Action="RollbackCreateWrapperConf" Before="QtExecCreateWrapperConf">NOT Installed AND NOT REMOVE
+            </Custom>
         </InstallExecuteSequence>
     </Product>
 </Wix>
