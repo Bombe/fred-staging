@@ -28,6 +28,9 @@ application {
     mainClass = 'freenet.node.NodeStarter'
 }
 
+
+// TODO: Move jlink to cli package
+
 jlink {
     options = [
             '--ignore-signing-information',
@@ -46,6 +49,7 @@ jlink {
 
     launcher {
         name = "oredcli"
+        windowsScriptTemplate = file("$rootDir/packagefiles/common/windowsScriptTemplate.txt")
     }
 }
 
