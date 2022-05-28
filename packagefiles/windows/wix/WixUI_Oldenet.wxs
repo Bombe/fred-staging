@@ -159,8 +159,13 @@
                      Order="3">
                 1
             </Publish>
-            <Publish Dialog="OredSetupTypeDlg" Control="NormalButton" Event="NewDialog" Value="InstallScopeDlg"
+            <Publish Dialog="OredSetupTypeDlg" Control="NormalButton" Property="INSTALLLEVEL"
+                     Value="50"
                      Order="4">
+                1
+            </Publish>
+            <Publish Dialog="OredSetupTypeDlg" Control="NormalButton" Event="NewDialog" Value="InstallScopeDlg"
+                     Order="5">
                 1
             </Publish>
 
@@ -177,8 +182,13 @@
                      Order="3">
                 1
             </Publish>
-            <Publish Dialog="OredSetupTypeDlg" Control="ServiceButton" Event="NewDialog" Value="InstallDataDirDlg"
+            <Publish Dialog="OredSetupTypeDlg" Control="ServiceButton" Property="INSTALLLEVEL"
+                     Value="200"
                      Order="4">
+                1
+            </Publish>
+            <Publish Dialog="OredSetupTypeDlg" Control="ServiceButton" Event="NewDialog" Value="InstallDataDirDlg"
+                     Order="5">
                 1
             </Publish>
 
