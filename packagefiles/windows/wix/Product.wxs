@@ -2,11 +2,10 @@
 <!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
 <!--
 TODO:
-Service installation
 Start Oldenet after install finished
+Prompt to delete data dir during uninstall
 Modify installation including installing/removing service, moving data/installation directory and rollback.
 Uninstall icon
-Prompt to delete data dir during uninstall
 -->
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
      RequiredVersion="3.11.2.4516">
@@ -23,6 +22,9 @@ Prompt to delete data dir during uninstall
         <MediaTemplate EmbedCab="yes" CompressionLevel="high"/>
         <MajorUpgrade
                 DowngradeErrorMessage="A newer version of [ProductName] is already installed."/>
+
+        <Property Id="ARPNOREPAIR" Value="yes" Secure="yes"/>
+        <Property Id="ARPNOMODIFY" Value="yes" Secure="yes"/>
 
         <WixVariable Id="WixUILicenseRtf" Value="gpl-3.0.rtf"/>
 
@@ -51,23 +53,23 @@ Prompt to delete data dir during uninstall
 
         <!-- Create custom configuration file for Wrapper -->
         <SetProperty Id="QtExecCreateWrapperConf"
-                     Value="&quot;[APPLICATIONFOLDER]bin\oredcli.bat&quot; wrapperconf --ini-path=&quot;[OREDDATAFOLDER]ored\freenet.ini&quot; ..\conf\wrapper_custom.conf"
+                     Value="&quot;[#filoredcli]&quot; wrapperconf --ini-path=&quot;[OREDDATAFOLDER]ored\freenet.ini&quot; &quot;[$cmpWrapperConf]wrapper_custom.conf&quot;"
                      Sequence="execute" Before="QtExecCreateWrapperConf"/>
         <CustomAction Id="QtExecCreateWrapperConf" BinaryKey="WixCA" DllEntry="WixQuietExec64"
                       Execute="deferred" Return="check" Impersonate="yes"/>
         <SetProperty Id="QtExecCreateWrapperConfAllusers"
-                     Value="&quot;[APPLICATIONFOLDER]bin\oredcli.bat&quot; wrapperconf --ini-path=&quot;[OREDDATAFOLDER]ored\freenet.ini&quot; ..\conf\wrapper_custom.conf"
+                     Value="&quot;[#filoredcli]&quot; wrapperconf --ini-path=&quot;[OREDDATAFOLDER]ored\freenet.ini&quot; &quot;[$cmpWrapperConf]wrapper_custom.conf&quot;"
                      Sequence="execute" Before="QtExecCreateWrapperConfAllusers"/>
         <CustomAction Id="QtExecCreateWrapperConfAllusers" BinaryKey="WixCA" DllEntry="WixQuietExec64"
                       Execute="deferred" Return="check" Impersonate="no"/>
         <!-- Rollback: Delete custom configuration file for Wrapper if something bad happens -->
         <SetProperty Id="RollbackCreateWrapperConf"
-                     Value="&quot;cmd.exe&quot; /C &quot;cd /d [APPLICATIONFOLDER] &amp;&amp; del conf\wrapper_custom.conf&quot;"
+                     Value="&quot;cmd.exe&quot; /C &quot;cd /d &apos;[APPLICATIONFOLDER]&apos; &amp;&amp; del &apos;[$cmpWrapperConf]wrapper_custom.conf&apos;&quot;"
                      Sequence="execute" Before="RollbackCreateWrapperConf"/>
         <CustomAction Id="RollbackCreateWrapperConf" BinaryKey="WixCA" DllEntry="WixQuietExec64"
                       Execute="rollback" Return="ignore" Impersonate="yes"/>
         <SetProperty Id="RollbackCreateWrapperConfAllusers"
-                     Value="&quot;cmd.exe&quot; /C &quot;cd /d [APPLICATIONFOLDER] &amp;&amp; del conf\wrapper_custom.conf&quot;"
+                     Value="&quot;cmd.exe&quot; /C &quot;cd /d &apos;[APPLICATIONFOLDER]&apos; &amp;&amp; del &apos;[$cmpWrapperConf]wrapper_custom.conf&apos;&quot;"
                      Sequence="execute" Before="RollbackCreateWrapperConfAllusers"/>
         <CustomAction Id="RollbackCreateWrapperConfAllusers" BinaryKey="WixCA" DllEntry="WixQuietExec64"
                       Execute="rollback" Return="ignore" Impersonate="no"/>
@@ -81,23 +83,23 @@ Prompt to delete data dir during uninstall
 
         <!-- Install / uninstall service -->
         <SetProperty Id="QtExecInstallService"
-                     Value="&quot;[APPLICATIONFOLDER]bin\wrapper.exe&quot; -i ..\conf\wrapper.conf"
+                     Value="&quot;[#filWrapperExe]&quot; -i &quot;[#filWrapperConf]&quot;"
                      Sequence="execute" Before="QtExecInstallService"/>
         <CustomAction Id="QtExecInstallService" BinaryKey="WixCA" DllEntry="WixQuietExec64"
                       Execute="deferred" Return="check" Impersonate="no"/>
         <SetProperty Id="RollbackInstallService"
-                     Value="&quot;[APPLICATIONFOLDER]bin\wrapper.exe&quot; -r ..\conf\wrapper.conf"
+                     Value="&quot;[#filWrapperExe]&quot; -r &quot;[#filWrapperConf]&quot;"
                      Sequence="execute" Before="RollbackInstallService"/>
         <CustomAction Id="RollbackInstallService" BinaryKey="WixCA" DllEntry="WixQuietExec64"
                       Execute="rollback" Return="ignore" Impersonate="no"/>
 
         <SetProperty Id="QtExecUninstallService"
-                     Value="&quot;[APPLICATIONFOLDER]bin\wrapper.exe&quot; -r ..\conf\wrapper.conf"
+                     Value="&quot;[#filWrapperExe]&quot; -r &quot;[#filWrapperConf]&quot;"
                      Sequence="execute" Before="QtExecUninstallService"/>
         <CustomAction Id="QtExecUninstallService" BinaryKey="WixCA" DllEntry="WixQuietExec64"
                       Execute="deferred" Return="check" Impersonate="no"/>
         <SetProperty Id="RollbackUninstallService"
-                     Value="&quot;[APPLICATIONFOLDER]bin\wrapper.exe&quot; -i ..\conf\wrapper.conf"
+                     Value="&quot;[#filWrapperExe]&quot; -i &quot;[#filWrapperConf]&quot;"
                      Sequence="execute" Before="RollbackUninstallService"/>
         <CustomAction Id="RollbackUninstallService" BinaryKey="WixCA" DllEntry="WixQuietExec64"
                       Execute="rollback" Return="ignore" Impersonate="no"/>
@@ -108,7 +110,7 @@ Prompt to delete data dir during uninstall
         <!--        <CustomAction Id="QtExecStartService" BinaryKey="WixCA" DllEntry="WixQuietExec64"-->
         <!--                      Execute="deferred" Return="check"/>-->
         <SetProperty Id="QtExecStopService"
-                     Value="&quot;[APPLICATIONFOLDER]bin\wrapper.exe&quot; -p ..\conf\wrapper.conf"
+                     Value="&quot;[#filWrapperExe]&quot; -p &quot;[#filWrapperConf]&quot;"
                      Sequence="execute" Before="QtExecStopService"/>
         <CustomAction Id="QtExecStopService" BinaryKey="WixCA" DllEntry="WixQuietExec64"
                       Execute="deferred" Return="check" Impersonate="no"/>
@@ -131,16 +133,17 @@ Prompt to delete data dir during uninstall
             <Custom Action="RollbackCreateWrapperConfAllusers" Before="QtExecCreateWrapperConf">
                 ALLUSERS=1 OR (ALLUSERS=2 AND Privileged)
             </Custom>
+
             <Custom Action="QtExecInstallService" After="QtExecCreateWrapperConf">
-                <![CDATA[NOT !ServiceFeature=3 AND &ServiceFeature=3]]></Custom>
+                <![CDATA[!ServiceFeature<>3 AND &ServiceFeature=3]]></Custom>
             <Custom Action="RollbackInstallService" Before="QtExecInstallService"/>
 
             <Custom Action="QtExecStopService" Before="RemoveFiles">
-                <![CDATA[!ServiceFeature=3 AND (NOT &ServiceFeature=3 OR REMOVE~="ALL" OR UPGRADINGPRODUCTCODE)]]></Custom>
+                <![CDATA[REMOVE~="ALL" OR (!ServiceFeature=3 AND &ServiceFeature=2)]]></Custom>
             <Custom Action="QtExecUninstallService" After="QtExecStopService">
-                <![CDATA[!ServiceFeature=3 AND (NOT &ServiceFeature=3 OR REMOVE~="ALL" OR UPGRADINGPRODUCTCODE)]]></Custom>
+                <![CDATA[REMOVE~="ALL" OR (!ServiceFeature=3 AND &ServiceFeature=2)]]></Custom>
             <Custom Action="RollbackUninstallService" Before="QtExecStopService">
-                <![CDATA[!ServiceFeature=3 AND (NOT &ServiceFeature=3 OR REMOVE~="ALL" OR UPGRADINGPRODUCTCODE)]]></Custom>
+                <![CDATA[REMOVE~="ALL" OR (!ServiceFeature=3 AND &ServiceFeature=2)]]></Custom>
         </InstallExecuteSequence>
 
     </Product>

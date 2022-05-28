@@ -139,7 +139,7 @@
             </Component>
             <Component Id="cmp754F5B60D9BE0CD851C2ECC422A354E0" Directory="dirBD35FD5C001808C2DA6BDBD555B2851B"
                        Guid="5A34172A-8C93-483A-A0D8-ECE05D93C390">
-                <File Id="filCEDD661D4763C89BEE4EA2D5BC40B2F7" KeyPath="yes" Source="$(var.JlinkDir)\bin\wrapper.exe"/>
+                <File Id="filWrapperExe" KeyPath="yes" Source="$(var.JlinkDir)\bin\wrapper.exe"/>
             </Component>
             <Component Id="cmpC8FEFD55F5182622646CDE699B8A582A" Directory="dirBD35FD5C001808C2DA6BDBD555B2851B"
                        Guid="175738FC-5A41-4B03-8550-4531EBD9F5B2">
@@ -731,9 +731,9 @@
                 <File Id="fil36E2E773C45A9CDEB2055CE085E943A0" KeyPath="yes"
                       Source="$(var.JlinkDir)\conf\net.properties"/>
             </Component>
-            <Component Id="cmp0EC3404F6A9DBB0BFE57C9E751722795" Directory="dirCA7C0207AC03E4CC75B8991A675418D8"
+            <Component Id="cmpWrapperConf" Directory="dirCA7C0207AC03E4CC75B8991A675418D8"
                        Guid="6DC6D0F1-4D6A-4B7A-8212-9EA7B272219F">
-                <File Id="fil04BACD578BF5EDF5EF5600C863856AFB" KeyPath="yes"
+                <File Id="filWrapperConf" KeyPath="yes"
                       Source="$(var.JlinkDir)\conf\wrapper.conf"/>
             </Component>
             <Component Id="cmp1CCE4B12D50F2B8D22F184B0D5E53447" Directory="dir1E3D73D8FC435009577EE2CE7F658F6C"

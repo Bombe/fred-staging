@@ -39,9 +39,9 @@ public class WrapperConf implements Callable<Integer> {
 	public Integer call() throws Exception {
 		try (var writer = Files.newBufferedWriter(this.customConfFile.toPath(), StandardOpenOption.CREATE,
 				StandardOpenOption.WRITE)) {
-			writer.append("wrapper.app.parameter.1=");
+			writer.append("wrapper.app.parameter.1=\"");
 			writer.append(this.iniPath);
-			writer.append("\n");
+			writer.append("\"\n");
 		}
 		return 0;
 	}
