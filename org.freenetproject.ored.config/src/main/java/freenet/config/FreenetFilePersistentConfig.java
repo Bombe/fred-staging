@@ -50,9 +50,16 @@ public class FreenetFilePersistentConfig extends FilePersistentConfig {
 	}
 
 	public static FreenetFilePersistentConfig constructFreenetFilePersistentConfig(File f) throws IOException {
-		File filename = f;
+		var parentDir = f.getParentFile();
+		System.out.println("freenet.ini parent dir: " + parentDir.getAbsolutePath());
+		if (!parentDir.exists() || !parentDir.isDirectory()) {
+			if (!parentDir.mkdirs()) {
+				throw new IOException("Unable to create directory for freenet.ini");
+			}
+		}
+
 		File tempFilename = new File(f.getPath() + ".tmp");
-		return new FreenetFilePersistentConfig(load(filename, tempFilename), filename, tempFilename);
+		return new FreenetFilePersistentConfig(load(f, tempFilename), f, tempFilename);
 	}
 
 	@Override

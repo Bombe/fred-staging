@@ -9,7 +9,7 @@ Uninstall icon
 Find available ports for oldenet and update freenet.ini
 Add oredcli.bat to PATH
 -->
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension"
      RequiredVersion="3.11.2.4516">
     <Product Id="FE39C52F-47BD-4BED-96C7-08307BFF22B2"
              Name="Oldenet"
@@ -27,6 +27,7 @@ Add oredcli.bat to PATH
 
         <Property Id="ARPNOREPAIR" Value="yes" Secure="yes"/>
         <Property Id="ARPNOMODIFY" Value="yes" Secure="yes"/>
+        <!--        <Property Id="MSIRESTARTMANAGERCONTROL" Value="Disable"/>-->
 
         <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Launch Oldenet"/>
         <WixVariable Id="WixUILicenseRtf" Value="gpl-3.0.rtf"/>
@@ -44,6 +45,7 @@ Add oredcli.bat to PATH
             <Directory Id="ProgramMenuFolder">
                 <Directory Id="ApplicationProgramsFolder" Name="Oldenet"/>
             </Directory>
+            <Directory Id="OREDDATAFOLDER"/>
         </Directory>
 
         <!-- Shortcuts -->
@@ -85,12 +87,64 @@ Add oredcli.bat to PATH
             </Directory>
         </DirectoryRef>
 
+        <!-- Remove custom configuration file for Wrapper during uninstall -->
+        <DirectoryRef Id="dirConf">
+            <Component Id="cmpWrapperCustomConf" Guid="3AC82ACF-269A-41DB-86C6-C6B8AE428A05">
+                <RemoveFile Id="removeWrapperCustomConf" On="uninstall" Name="wrapper_custom.conf"/>
+            </Component>
+        </DirectoryRef>
+
+        <DirectoryRef Id="dirBin">
+            <Component Id="cmpFilWrapperExe"
+                       Guid="5A34172A-8C93-483A-A0D8-ECE05D93C390">
+                <Condition><![CDATA[INSTALLLEVEL<100]]></Condition>
+                <File Id="filWrapperExe" KeyPath="yes" Source="$(var.JlinkDir)\bin\wrapper.exe"/>
+            </Component>
+            <Component Id="cmpFilWrapperExeService"
+                       Guid="9F968703-239F-4184-9E37-CA86B244ABB0">
+                <Condition><![CDATA[INSTALLLEVEL>=100]]></Condition>
+                <File Id="filWrapperExeService" KeyPath="yes" Source="$(var.JlinkDir)\bin\wrapper.exe"/>
+                <!--
+                Run the service with a virtual account.
+                See: https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-r2-and-2008/dd548356(v=ws.10)
+                -->
+                <ServiceInstall Id="ServiceInstaller" Type="ownProcess" Vital="yes"
+                                Name="ored" DisplayName="Oldenet REference Daemon"
+                                Account="NT Service\ored"
+                                Description="Oldenet is a platform for censorship-resistant communication and publishing."
+                                Start="auto"
+                                ErrorControl="critical" Interactive="no" Arguments="-s &quot;[!filWrapperConf]&quot;">
+                    <util:ServiceConfig FirstFailureActionType="restart" SecondFailureActionType="restart"
+                                        ThirdFailureActionType="none" RestartServiceDelayInSeconds="5"/>
+                </ServiceInstall>
+                <ServiceControl Id="scOred" Name="ored" Start="install" Stop="both"
+                                Remove="both" Wait="yes"/>
+            </Component>
+        </DirectoryRef>
+
         <!-- Features -->
         <Feature Id="NormalFeature" Title="Normal Installation" Level="1">
             <ComponentGroupRef Id="cmpgNewFilesGroup"/>
+            <ComponentRef Id="cmpFilWrapperExe"/>
+            <Component Id="cmpDataFolder" Directory="OREDDATAFOLDER" Guid="957B42B4-3109-43DA-9B82-2C8DFB17C1D4">
+                <Condition><![CDATA[INSTALLLEVEL<100]]></Condition>
+                <CreateFolder Directory="OREDDATAFOLDER">
+                    <util:PermissionEx User="[LogonUser]" GenericAll="yes"/>
+                </CreateFolder>
+            </Component>
             <ComponentRef Id="cmpWrapperCustomConf"/>
             <ComponentRef Id="cmpApplicationShortcut"/>
+
             <Feature Id="ServiceFeature" Title="Service Installation" Level="100">
+                <ComponentRef Id="cmpFilWrapperExeService"/>
+                <Component Id="cmpDataFolderService" Directory="OREDDATAFOLDER"
+                           Guid="B331A3E3-1B6F-49A2-A1AA-372E9A2263C5">
+                    <Condition><![CDATA[INSTALLLEVEL>=100]]></Condition>
+                    <CreateFolder Directory="OREDDATAFOLDER">
+                        <util:PermissionEx User="NT Service\ored" GenericAll="yes"/>
+                        <util:PermissionEx User="Users" Read="no" Write="no" Delete="no"/>
+                    </CreateFolder>
+                </Component>
                 <ComponentRef Id="cmpServiceShortcut"/>
             </Feature>
         </Feature>
@@ -120,58 +174,52 @@ Add oredcli.bat to PATH
         <CustomAction Id="RollbackCreateWrapperConfAllusers" BinaryKey="WixCA" DllEntry="WixQuietExec64"
                       Execute="rollback" Return="ignore" Impersonate="no"/>
 
-        <!-- Remove custom configuration file for Wrapper during uninstall -->
-        <DirectoryRef Id="dirCA7C0207AC03E4CC75B8991A675418D8">
-            <Component Id="cmpWrapperCustomConf" Guid="3AC82ACF-269A-41DB-86C6-C6B8AE428A05">
-                <RemoveFile Id="removeWrapperCustomConf" On="uninstall" Name="wrapper_custom.conf"/>
-            </Component>
-        </DirectoryRef>
 
         <!-- Install / uninstall service -->
-        <SetProperty Id="QtExecInstallService"
-                     Value="&quot;[#filWrapperExe]&quot; -i &quot;[#filWrapperConf]&quot;"
-                     Sequence="execute" Before="QtExecInstallService"/>
-        <CustomAction Id="QtExecInstallService" BinaryKey="WixCA" DllEntry="WixQuietExec64"
-                      Execute="deferred" Return="check" Impersonate="no"/>
-        <SetProperty Id="RollbackInstallService"
-                     Value="&quot;[#filWrapperExe]&quot; -r &quot;[#filWrapperConf]&quot;"
-                     Sequence="execute" Before="RollbackInstallService"/>
-        <CustomAction Id="RollbackInstallService" BinaryKey="WixCA" DllEntry="WixQuietExec64"
-                      Execute="rollback" Return="ignore" Impersonate="no"/>
+        <!--        <SetProperty Id="QtExecInstallService"-->
+        <!--                     Value="&quot;[#filWrapperExe]&quot; -i &quot;[#filWrapperConf]&quot;"-->
+        <!--                     Sequence="execute" Before="QtExecInstallService"/>-->
+        <!--        <CustomAction Id="QtExecInstallService" BinaryKey="WixCA" DllEntry="WixQuietExec64"-->
+        <!--                      Execute="deferred" Return="check" Impersonate="no"/>-->
+        <!--        <SetProperty Id="RollbackInstallService"-->
+        <!--                     Value="&quot;[#filWrapperExe]&quot; -r &quot;[#filWrapperConf]&quot;"-->
+        <!--                     Sequence="execute" Before="RollbackInstallService"/>-->
+        <!--        <CustomAction Id="RollbackInstallService" BinaryKey="WixCA" DllEntry="WixQuietExec64"-->
+        <!--                      Execute="rollback" Return="ignore" Impersonate="no"/>-->
 
-        <SetProperty Id="QtExecUninstallService"
-                     Value="&quot;[#filWrapperExe]&quot; -r &quot;[#filWrapperConf]&quot;"
-                     Sequence="execute" Before="QtExecUninstallService"/>
-        <CustomAction Id="QtExecUninstallService" BinaryKey="WixCA" DllEntry="WixQuietExec64"
-                      Execute="deferred" Return="check" Impersonate="no"/>
-        <SetProperty Id="RollbackUninstallService"
-                     Value="&quot;[#filWrapperExe]&quot; -i &quot;[#filWrapperConf]&quot;"
-                     Sequence="execute" Before="RollbackUninstallService"/>
-        <CustomAction Id="RollbackUninstallService" BinaryKey="WixCA" DllEntry="WixQuietExec64"
-                      Execute="rollback" Return="ignore" Impersonate="no"/>
+        <!--        <SetProperty Id="QtExecUninstallService"-->
+        <!--                     Value="&quot;[#filWrapperExe]&quot; -r &quot;[#filWrapperConf]&quot;"-->
+        <!--                     Sequence="execute" Before="QtExecUninstallService"/>-->
+        <!--        <CustomAction Id="QtExecUninstallService" BinaryKey="WixCA" DllEntry="WixQuietExec64"-->
+        <!--                      Execute="deferred" Return="check" Impersonate="no"/>-->
+        <!--        <SetProperty Id="RollbackUninstallService"-->
+        <!--                     Value="&quot;[#filWrapperExe]&quot; -i &quot;[#filWrapperConf]&quot;"-->
+        <!--                     Sequence="execute" Before="RollbackUninstallService"/>-->
+        <!--        <CustomAction Id="RollbackUninstallService" BinaryKey="WixCA" DllEntry="WixQuietExec64"-->
+        <!--                      Execute="rollback" Return="ignore" Impersonate="no"/>-->
 
         <!-- Start / stop service -->
-        <SetProperty Id="QtExecStartService"
-                     Value="&quot;[#filWrapperExe]&quot; -t &quot;[#filWrapperConf]&quot;"
-                     Sequence="execute" Before="QtExecStartService"/>
-        <CustomAction Id="QtExecStartService" BinaryKey="WixCA" DllEntry="WixQuietExec64"
-                      Execute="deferred" Return="ignore" Impersonate="no"/>
-        <SetProperty Id="QtExecStopService"
-                     Value="&quot;[#filWrapperExe]&quot; -p &quot;[#filWrapperConf]&quot;"
-                     Sequence="execute" Before="QtExecStopService"/>
-        <CustomAction Id="QtExecStopService" BinaryKey="WixCA" DllEntry="WixQuietExec64"
-                      Execute="deferred" Return="ignore" Impersonate="no"/>
+        <!--        <SetProperty Id="QtExecStartService"-->
+        <!--                     Value="&quot;[#filWrapperExe]&quot; -t &quot;[#filWrapperConf]&quot;"-->
+        <!--                     Sequence="execute" Before="QtExecStartService"/>-->
+        <!--        <CustomAction Id="QtExecStartService" BinaryKey="WixCA" DllEntry="WixQuietExec64"-->
+        <!--                      Execute="deferred" Return="ignore" Impersonate="no"/>-->
+        <!--        <SetProperty Id="QtExecStopService"-->
+        <!--                     Value="&quot;[#filWrapperExe]&quot; -p &quot;[#filWrapperConf]&quot;"-->
+        <!--                     Sequence="execute" Before="QtExecStopService"/>-->
+        <!--        <CustomAction Id="QtExecStopService" BinaryKey="WixCA" DllEntry="WixQuietExec64"-->
+        <!--                      Execute="deferred" Return="ignore" Impersonate="no"/>-->
 
         <!-- Launch Oldenet and open browser -->
 
 
         <InstallExecuteSequence>
-            <Custom Action="QtExecCreateWrapperConf" Before="InstallFinalize">
+            <Custom Action="QtExecCreateWrapperConf" After="InstallFiles">
                 NOT Installed AND NOT REMOVE
                 AND
                 (ALLUSERS="" OR (ALLUSERS=2 AND (NOT Privileged)))
             </Custom>
-            <Custom Action="QtExecCreateWrapperConfAllusers" Before="InstallFinalize">
+            <Custom Action="QtExecCreateWrapperConfAllusers" After="InstallFiles">
                 NOT Installed AND NOT REMOVE
                 AND
                 (ALLUSERS=1 OR (ALLUSERS=2 AND Privileged))
@@ -183,19 +231,19 @@ Add oredcli.bat to PATH
                 ALLUSERS=1 OR (ALLUSERS=2 AND Privileged)
             </Custom>
 
-            <Custom Action="QtExecInstallService" After="QtExecCreateWrapperConf">
-                <![CDATA[!ServiceFeature<>3 AND &ServiceFeature=3]]></Custom>
-            <Custom Action="RollbackInstallService" Before="QtExecInstallService"/>
+            <!--            <Custom Action="QtExecInstallService" After="QtExecCreateWrapperConf">-->
+            <!--                <![CDATA[!ServiceFeature<>3 AND &ServiceFeature=3]]></Custom>-->
+            <!--            <Custom Action="RollbackInstallService" Before="QtExecInstallService"/>-->
 
-            <Custom Action="QtExecStartService" After="QtExecInstallService">
-                <![CDATA[!ServiceFeature<>3 AND &ServiceFeature=3]]></Custom>
+            <!--            <Custom Action="QtExecStartService" After="QtExecInstallService">-->
+            <!--                <![CDATA[!ServiceFeature<>3 AND &ServiceFeature=3]]></Custom>-->
 
-            <Custom Action="QtExecStopService" Before="RemoveFiles">
-                <![CDATA[!ServiceFeature=3 AND (REMOVE~="ALL" OR &ServiceFeature=2)]]></Custom>
-            <Custom Action="QtExecUninstallService" After="QtExecStopService">
-                <![CDATA[!ServiceFeature=3 AND (REMOVE~="ALL" OR &ServiceFeature=2)]]></Custom>
-            <Custom Action="RollbackUninstallService" Before="QtExecStopService">
-                <![CDATA[!ServiceFeature=3 AND (REMOVE~="ALL" OR &ServiceFeature=2)]]></Custom>
+            <!--            <Custom Action="QtExecStopService" Before="RemoveFiles">-->
+            <!--                <![CDATA[!ServiceFeature=3 AND (REMOVE~="ALL" OR &ServiceFeature=2)]]></Custom>-->
+            <!--            <Custom Action="QtExecUninstallService" After="QtExecStopService">-->
+            <!--                <![CDATA[!ServiceFeature=3 AND (REMOVE~="ALL" OR &ServiceFeature=2)]]></Custom>-->
+            <!--            <Custom Action="RollbackUninstallService" Before="QtExecStopService">-->
+            <!--                <![CDATA[!ServiceFeature=3 AND (REMOVE~="ALL" OR &ServiceFeature=2)]]></Custom>-->
         </InstallExecuteSequence>
 
     </Product>

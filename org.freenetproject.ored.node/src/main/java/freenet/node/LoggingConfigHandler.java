@@ -380,6 +380,7 @@ public class LoggingConfigHandler {
 	}
 
 	protected void preSetLogDir(File f) throws InvalidConfigValueException {
+		System.out.println("Log directory: " + f.getAbsolutePath());
 		boolean exists = f.exists();
 		if (exists && !f.isDirectory()) {
 			throw new InvalidConfigValueException("Cannot overwrite a file with a log directory");

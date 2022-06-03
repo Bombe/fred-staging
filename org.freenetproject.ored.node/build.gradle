@@ -60,7 +60,7 @@ tasks.register('copyWrapper') {
     def wrapperConfPath = "${tasks.jlink.imageDir}/conf";
     def wrapperLibPath = "${tasks.jlink.imageDir}/lib/wrapper";
 
-    inputs.files tasks.jlink.imageDirAsFile, "${rootDir}/lib/wrapper"
+    inputs.files tasks.jlink.imageDirAsFile, "${rootDir}/lib/wrapper", "${rootDir}/packagefiles/common"
     outputs.dirs wrapperCmdPath, wrapperConfPath, wrapperLibPath
 
     doLast {
@@ -264,7 +264,7 @@ tasks.register('package') {
                 executable "${wixHome}/bin/light.exe"
                 args(
                         '-out', "${wixBuildDir}/OldenetInstaller.msi",
-                        '-sice:ICE17',
+                        '-sice:ICE20',
                         '-ext', 'WixUIExtension',
                         '-ext', 'WixUtilExtension',
                         '-cultures:en-us',

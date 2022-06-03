@@ -102,8 +102,9 @@
             <DialogRef Id="DiskCostDlg"/>
             <DialogRef Id="ErrorDlg"/>
             <DialogRef Id="FatalError"/>
-            <DialogRef Id="FilesInUse"/>
-            <DialogRef Id="MsiRMFilesInUse"/>
+            <!-- https://stackoverflow.com/questions/33248658/how-does-the-msi-installer-installvalidate-determine-files-in-use -->
+            <!-- <DialogRef Id="FilesInUse"/> -->
+            <!-- <DialogRef Id="MsiRMFilesInUse"/> -->
             <DialogRef Id="PrepareDlg"/>
             <DialogRef Id="ProgressDlg"/>
             <DialogRef Id="ResumeDlg"/>
