@@ -11,7 +11,7 @@
         </DirectoryRef>
     </Fragment>
     <Fragment>
-        <ComponentGroup Id="CMP_NewFilesGroup">
+        <ComponentGroup Id="cmpgNewFilesGroup">
             <Component Id="cmpC4B2CE8BC5493A76A2B5B93B7812DC66" Directory="APPLICATIONFOLDER"
                        Guid="42AE1724-826C-4F84-830D-EA06C43208CC">
                 <File Id="filF074436A4CC0464DB44B35A8151035C3" KeyPath="yes" Source="$(var.JlinkDir)\release"/>

@@ -6,6 +6,8 @@ Start Oldenet after install finished
 Prompt to delete data dir during uninstall
 Modify installation including installing/removing service, moving data/installation directory and rollback.
 Uninstall icon
+Find available ports for oldenet and update freenet.ini
+Add oredcli.bat to PATH
 -->
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
      RequiredVersion="3.11.2.4516">
@@ -26,6 +28,7 @@ Uninstall icon
         <Property Id="ARPNOREPAIR" Value="yes" Secure="yes"/>
         <Property Id="ARPNOMODIFY" Value="yes" Secure="yes"/>
 
+        <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Launch Oldenet"/>
         <WixVariable Id="WixUILicenseRtf" Value="gpl-3.0.rtf"/>
 
         <UIRef Id="WixUI_Oldenet"/>
@@ -33,20 +36,63 @@ Uninstall icon
         <Property Id="ApplicationFolderName" Value="Oldenet"/>
         <Property Id="WixAppFolder" Value="WixPerUserFolder"/>
 
+        <!-- Directories -->
         <Directory Id="TARGETDIR" Name="SourceDir">
             <Directory Id="ProgramFiles64Folder">
                 <Directory Id="APPLICATIONFOLDER" Name="Oldenet"/>
             </Directory>
+            <Directory Id="ProgramMenuFolder">
+                <Directory Id="ApplicationProgramsFolder" Name="Oldenet"/>
+            </Directory>
         </Directory>
+
+        <!-- Shortcuts -->
+        <DirectoryRef Id="ApplicationProgramsFolder">
+            <Component Id="cmpApplicationShortcut" Guid="2870EF92-588C-4371-B9DE-23CD05B627E6">
+                <Shortcut Id="StartOldenetShortcut"
+                          Name="Oldenet"
+                          Description="Start Oldenet"
+                          Target="[!filWrapperExe]"
+                          Arguments="cli"
+                          WorkingDirectory="APPLICATIONROOTDIRECTORY"/>
+                <Shortcut Id="UninstallShortcut" Name="Uninstall Oldenet"
+                          Description="Uninstalls Oldenet and all of its components"
+                          Target="[System64Folder]msiexec.exe" Arguments="/x [ProductCode]"/>
+                <RemoveFolder Id="CleanUpShortCut" Directory="ApplicationProgramsFolder" On="uninstall"/>
+                <RegistryValue Root="HKCU" Key="Software\Oldenet\Oldenet" Name="installed" Type="integer"
+                               Value="1" KeyPath="yes"/>
+            </Component>
+            <Directory Id="dirShortcutService" Name="Service">
+                <Component Id="cmpServiceShortcut" Guid="1A76E179-CBF6-440A-AEC4-B44652CDC8D8">
+                    <!-- Avoid ICE18 error -->
+                    <!-- CreateFolder -->
+                    <Shortcut Id="StartOldenetServiceShortcut"
+                              Name="Start Oldenet Service"
+                              Description="Start Oldenet Service"
+                              Target="[!filWrapperExe]"
+                              Arguments="-t &quot;[!filWrapperConf]&quot;"
+                              WorkingDirectory="APPLICATIONROOTDIRECTORY"/>
+                    <Shortcut Id="StopOldenetServiceShortcut"
+                              Name="Stop Oldenet Service"
+                              Description="Stop Oldenet Service"
+                              Target="[!filWrapperExe]"
+                              Arguments="-p &quot;[!filWrapperConf]&quot;"
+                              WorkingDirectory="APPLICATIONROOTDIRECTORY"/>
+                    <RemoveFolder Id="CleanUpShortCutService" Directory="dirShortcutService" On="uninstall"/>
+                    <RegistryValue Root="HKCU" Key="Software\Oldenet\Oldenet\Service" Name="installed" Type="integer"
+                                   Value="1" KeyPath="yes"/>
+                </Component>
+            </Directory>
+        </DirectoryRef>
 
         <!-- Features -->
         <Feature Id="NormalFeature" Title="Normal Installation" Level="1">
-            <ComponentGroupRef Id="CMP_NewFilesGroup"/>
+            <ComponentGroupRef Id="cmpgNewFilesGroup"/>
             <ComponentRef Id="cmpWrapperCustomConf"/>
-        </Feature>
-
-        <Feature Id="ServiceFeature" Title="Service Installation" Level="100">
-
+            <ComponentRef Id="cmpApplicationShortcut"/>
+            <Feature Id="ServiceFeature" Title="Service Installation" Level="100">
+                <ComponentRef Id="cmpServiceShortcut"/>
+            </Feature>
         </Feature>
 
         <CustomActionRef Id="WixFailWhenDeferred"/>
@@ -104,16 +150,19 @@ Uninstall icon
         <CustomAction Id="RollbackUninstallService" BinaryKey="WixCA" DllEntry="WixQuietExec64"
                       Execute="rollback" Return="ignore" Impersonate="no"/>
 
-        <!--        <SetProperty Id="QtExecStartService"-->
-        <!--                     Value="&quot;[APPLICATIONFOLDER]bin\wrapper.exe&quot; -t ..\conf\wrapper.conf"-->
-        <!--                     Sequence="execute" Before="QtExecStartService"/>-->
-        <!--        <CustomAction Id="QtExecStartService" BinaryKey="WixCA" DllEntry="WixQuietExec64"-->
-        <!--                      Execute="deferred" Return="check"/>-->
+        <!-- Start / stop service -->
+        <SetProperty Id="QtExecStartService"
+                     Value="&quot;[#filWrapperExe]&quot; -t &quot;[#filWrapperConf]&quot;"
+                     Sequence="execute" Before="QtExecStartService"/>
+        <CustomAction Id="QtExecStartService" BinaryKey="WixCA" DllEntry="WixQuietExec64"
+                      Execute="deferred" Return="ignore" Impersonate="no"/>
         <SetProperty Id="QtExecStopService"
                      Value="&quot;[#filWrapperExe]&quot; -p &quot;[#filWrapperConf]&quot;"
                      Sequence="execute" Before="QtExecStopService"/>
         <CustomAction Id="QtExecStopService" BinaryKey="WixCA" DllEntry="WixQuietExec64"
-                      Execute="deferred" Return="check" Impersonate="no"/>
+                      Execute="deferred" Return="ignore" Impersonate="no"/>
+
+        <!-- Launch Oldenet and open browser -->
 
 
         <InstallExecuteSequence>
@@ -138,12 +187,15 @@ Uninstall icon
                 <![CDATA[!ServiceFeature<>3 AND &ServiceFeature=3]]></Custom>
             <Custom Action="RollbackInstallService" Before="QtExecInstallService"/>
 
+            <Custom Action="QtExecStartService" After="QtExecInstallService">
+                <![CDATA[!ServiceFeature<>3 AND &ServiceFeature=3]]></Custom>
+
             <Custom Action="QtExecStopService" Before="RemoveFiles">
-                <![CDATA[REMOVE~="ALL" OR (!ServiceFeature=3 AND &ServiceFeature=2)]]></Custom>
+                <![CDATA[!ServiceFeature=3 AND (REMOVE~="ALL" OR &ServiceFeature=2)]]></Custom>
             <Custom Action="QtExecUninstallService" After="QtExecStopService">
-                <![CDATA[REMOVE~="ALL" OR (!ServiceFeature=3 AND &ServiceFeature=2)]]></Custom>
+                <![CDATA[!ServiceFeature=3 AND (REMOVE~="ALL" OR &ServiceFeature=2)]]></Custom>
             <Custom Action="RollbackUninstallService" Before="QtExecStopService">
-                <![CDATA[REMOVE~="ALL" OR (!ServiceFeature=3 AND &ServiceFeature=2)]]></Custom>
+                <![CDATA[!ServiceFeature=3 AND (REMOVE~="ALL" OR &ServiceFeature=2)]]></Custom>
         </InstallExecuteSequence>
 
     </Product>
