@@ -25,6 +25,8 @@ Add oredcli.bat to PATH
         <MajorUpgrade
                 DowngradeErrorMessage="A newer version of [ProductName] is already installed."/>
 
+        <Property Id="INSTALLLEVEL" Value="50"/>
+
         <Property Id="ARPNOREPAIR" Value="yes" Secure="yes"/>
         <Property Id="ARPNOMODIFY" Value="yes" Secure="yes"/>
 
@@ -44,7 +46,24 @@ Add oredcli.bat to PATH
             <Directory Id="ProgramMenuFolder">
                 <Directory Id="ApplicationProgramsFolder" Name="Oldenet"/>
             </Directory>
-            <Directory Id="OREDDATAFOLDER"/>
+            <Directory Id="OREDDATAFOLDER">
+                <Component Id="cmpDataFolder" Guid="957B42B4-3109-43DA-9B82-2C8DFB17C1D4">
+                    <CreateFolder Directory="OREDDATAFOLDER">
+                        <PermissionEx Id="permDataFolder"
+                                      Sddl="D:PAI(A;OICIIO;FA;;;CO)(A;OICI;FA;;;SY)(A;OICI;FA;;;BA)(A;OICI;FA;;;&lt;[%USERDOMAIN]\[%USERNAME]&gt;)">
+                            <Condition><![CDATA[INSTALLLEVEL<100]]></Condition>
+                        </PermissionEx>
+                        <!-- S-1-5-80-3999633217-2467299158-3277899649-3608804430-1740951273 is the SID of service "NT Service\ored" -->
+                        <!-- Can't use "<NT Service\ored>" in Sddl as when CreateFolders CA runs, the service hasn't been installed yet. -->
+                        <!-- Windows Installer is unable to find this virtual account object. -->
+                        <!-- See also: https://pcsxcetrasupport3.wordpress.com/2013/09/08/how-do-you-get-a-service-sid-from-a-service-name/ -->
+                        <PermissionEx Id="permDataFolderService"
+                                      Sddl="D:PAI(A;OICIIO;FA;;;CO)(A;OICI;FA;;;SY)(A;OICI;FA;;;BA)(A;OICI;FA;;;S-1-5-80-3999633217-2467299158-3277899649-3608804430-1740951273)(A;OICI;FA;;;&lt;[%USERDOMAIN]\[%USERNAME]&gt;)">
+                            <Condition><![CDATA[INSTALLLEVEL>=100]]></Condition>
+                        </PermissionEx>
+                    </CreateFolder>
+                </Component>
+            </Directory>
         </Directory>
 
         <!-- Shortcuts -->
@@ -123,27 +142,12 @@ Add oredcli.bat to PATH
         <Feature Id="NormalFeature" Title="Normal Installation" Level="1">
             <ComponentGroupRef Id="cmpgNewFilesGroup"/>
             <ComponentRef Id="cmpFilWrapperExe"/>
-            <Component Id="cmpDataFolder" Directory="OREDDATAFOLDER" Guid="957B42B4-3109-43DA-9B82-2C8DFB17C1D4">
-                <Condition><![CDATA[INSTALLLEVEL<100]]></Condition>
-                <CreateFolder Directory="OREDDATAFOLDER">
-                    <util:PermissionEx User="[LogonUser]" GenericAll="yes"/>
-                </CreateFolder>
-            </Component>
             <ComponentRef Id="cmpWrapperCustomConf"/>
             <ComponentRef Id="cmpApplicationShortcut"/>
+            <ComponentRef Id="cmpDataFolder"/>
 
             <Feature Id="ServiceFeature" Title="Service Installation" Level="100">
                 <ComponentRef Id="cmpFilWrapperExeService"/>
-                <Component Id="cmpDataFolderService" Directory="OREDDATAFOLDER"
-                           Guid="B331A3E3-1B6F-49A2-A1AA-372E9A2263C5">
-                    <Condition><![CDATA[INSTALLLEVEL>=100]]></Condition>
-                    <CreateFolder Directory="OREDDATAFOLDER">
-                        <!-- S-1-5-80-3999633217-2467299158-3277899649-3608804430-1740951273 is the SID of service "NT Service\ored" -->
-                        <!-- See also: https://pcsxcetrasupport3.wordpress.com/2013/09/08/how-do-you-get-a-service-sid-from-a-service-name/ -->
-                        <PermissionEx Id="permDataFolderService"
-                                      Sddl="D:PAI(A;OICIIO;FA;;;CO)(A;OICI;FA;;;SY)(A;OICI;FA;;;BA)(A;OICI;FA;;;S-1-5-80-3999633217-2467299158-3277899649-3608804430-1740951273)"/>
-                    </CreateFolder>
-                </Component>
                 <ComponentRef Id="cmpServiceShortcut"/>
             </Feature>
         </Feature>
@@ -173,44 +177,7 @@ Add oredcli.bat to PATH
         <CustomAction Id="RollbackCreateWrapperConfAllusers" BinaryKey="WixCA" DllEntry="WixQuietExec64"
                       Execute="rollback" Return="ignore" Impersonate="no"/>
 
-
-        <!-- Install / uninstall service -->
-        <!--        <SetProperty Id="QtExecInstallService"-->
-        <!--                     Value="&quot;[#filWrapperExe]&quot; -i &quot;[#filWrapperConf]&quot;"-->
-        <!--                     Sequence="execute" Before="QtExecInstallService"/>-->
-        <!--        <CustomAction Id="QtExecInstallService" BinaryKey="WixCA" DllEntry="WixQuietExec64"-->
-        <!--                      Execute="deferred" Return="check" Impersonate="no"/>-->
-        <!--        <SetProperty Id="RollbackInstallService"-->
-        <!--                     Value="&quot;[#filWrapperExe]&quot; -r &quot;[#filWrapperConf]&quot;"-->
-        <!--                     Sequence="execute" Before="RollbackInstallService"/>-->
-        <!--        <CustomAction Id="RollbackInstallService" BinaryKey="WixCA" DllEntry="WixQuietExec64"-->
-        <!--                      Execute="rollback" Return="ignore" Impersonate="no"/>-->
-
-        <!--        <SetProperty Id="QtExecUninstallService"-->
-        <!--                     Value="&quot;[#filWrapperExe]&quot; -r &quot;[#filWrapperConf]&quot;"-->
-        <!--                     Sequence="execute" Before="QtExecUninstallService"/>-->
-        <!--        <CustomAction Id="QtExecUninstallService" BinaryKey="WixCA" DllEntry="WixQuietExec64"-->
-        <!--                      Execute="deferred" Return="check" Impersonate="no"/>-->
-        <!--        <SetProperty Id="RollbackUninstallService"-->
-        <!--                     Value="&quot;[#filWrapperExe]&quot; -i &quot;[#filWrapperConf]&quot;"-->
-        <!--                     Sequence="execute" Before="RollbackUninstallService"/>-->
-        <!--        <CustomAction Id="RollbackUninstallService" BinaryKey="WixCA" DllEntry="WixQuietExec64"-->
-        <!--                      Execute="rollback" Return="ignore" Impersonate="no"/>-->
-
-        <!-- Start / stop service -->
-        <!--        <SetProperty Id="QtExecStartService"-->
-        <!--                     Value="&quot;[#filWrapperExe]&quot; -t &quot;[#filWrapperConf]&quot;"-->
-        <!--                     Sequence="execute" Before="QtExecStartService"/>-->
-        <!--        <CustomAction Id="QtExecStartService" BinaryKey="WixCA" DllEntry="WixQuietExec64"-->
-        <!--                      Execute="deferred" Return="ignore" Impersonate="no"/>-->
-        <!--        <SetProperty Id="QtExecStopService"-->
-        <!--                     Value="&quot;[#filWrapperExe]&quot; -p &quot;[#filWrapperConf]&quot;"-->
-        <!--                     Sequence="execute" Before="QtExecStopService"/>-->
-        <!--        <CustomAction Id="QtExecStopService" BinaryKey="WixCA" DllEntry="WixQuietExec64"-->
-        <!--                      Execute="deferred" Return="ignore" Impersonate="no"/>-->
-
         <!-- Launch Oldenet and open browser -->
-
 
         <InstallExecuteSequence>
             <Custom Action="QtExecCreateWrapperConf" After="InstallFiles">
@@ -229,20 +196,6 @@ Add oredcli.bat to PATH
             <Custom Action="RollbackCreateWrapperConfAllusers" Before="QtExecCreateWrapperConf">
                 ALLUSERS=1 OR (ALLUSERS=2 AND Privileged)
             </Custom>
-
-            <!--            <Custom Action="QtExecInstallService" After="QtExecCreateWrapperConf">-->
-            <!--                <![CDATA[!ServiceFeature<>3 AND &ServiceFeature=3]]></Custom>-->
-            <!--            <Custom Action="RollbackInstallService" Before="QtExecInstallService"/>-->
-
-            <!--            <Custom Action="QtExecStartService" After="QtExecInstallService">-->
-            <!--                <![CDATA[!ServiceFeature<>3 AND &ServiceFeature=3]]></Custom>-->
-
-            <!--            <Custom Action="QtExecStopService" Before="RemoveFiles">-->
-            <!--                <![CDATA[!ServiceFeature=3 AND (REMOVE~="ALL" OR &ServiceFeature=2)]]></Custom>-->
-            <!--            <Custom Action="QtExecUninstallService" After="QtExecStopService">-->
-            <!--                <![CDATA[!ServiceFeature=3 AND (REMOVE~="ALL" OR &ServiceFeature=2)]]></Custom>-->
-            <!--            <Custom Action="RollbackUninstallService" Before="QtExecStopService">-->
-            <!--                <![CDATA[!ServiceFeature=3 AND (REMOVE~="ALL" OR &ServiceFeature=2)]]></Custom>-->
         </InstallExecuteSequence>
 
     </Product>

@@ -143,6 +143,10 @@
                      Order="5">
                 NOT Installed
             </Publish>
+            <Publish Dialog="OredSetupTypeDlg" Control="Back" Event="SetInstallLevel" Value="50"
+                     Order="6">
+                NOT Installed
+            </Publish>
             <Publish Dialog="OredSetupTypeDlg" Control="Back" Event="NewDialog" Value="MaintenanceTypeDlg" Order="6">
                 Installed
             </Publish>
@@ -160,7 +164,7 @@
                      Order="3">
                 1
             </Publish>
-            <Publish Dialog="OredSetupTypeDlg" Control="NormalButton" Property="INSTALLLEVEL"
+            <Publish Dialog="OredSetupTypeDlg" Control="NormalButton" Event="SetInstallLevel"
                      Value="50"
                      Order="4">
                 1
@@ -183,7 +187,7 @@
                      Order="3">
                 1
             </Publish>
-            <Publish Dialog="OredSetupTypeDlg" Control="ServiceButton" Property="INSTALLLEVEL"
+            <Publish Dialog="OredSetupTypeDlg" Control="ServiceButton" Event="SetInstallLevel"
                      Value="200"
                      Order="4">
                 1
