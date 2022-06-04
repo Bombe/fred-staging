@@ -27,7 +27,6 @@ Add oredcli.bat to PATH
 
         <Property Id="ARPNOREPAIR" Value="yes" Secure="yes"/>
         <Property Id="ARPNOMODIFY" Value="yes" Secure="yes"/>
-        <!--        <Property Id="MSIRESTARTMANAGERCONTROL" Value="Disable"/>-->
 
         <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Launch Oldenet"/>
         <WixVariable Id="WixUILicenseRtf" Value="gpl-3.0.rtf"/>
@@ -66,8 +65,6 @@ Add oredcli.bat to PATH
             </Component>
             <Directory Id="dirShortcutService" Name="Service">
                 <Component Id="cmpServiceShortcut" Guid="1A76E179-CBF6-440A-AEC4-B44652CDC8D8">
-                    <!-- Avoid ICE18 error -->
-                    <!-- CreateFolder -->
                     <Shortcut Id="StartOldenetServiceShortcut"
                               Name="Start Oldenet Service"
                               Description="Start Oldenet Service"
@@ -141,8 +138,10 @@ Add oredcli.bat to PATH
                            Guid="B331A3E3-1B6F-49A2-A1AA-372E9A2263C5">
                     <Condition><![CDATA[INSTALLLEVEL>=100]]></Condition>
                     <CreateFolder Directory="OREDDATAFOLDER">
-                        <util:PermissionEx User="NT Service\ored" GenericAll="yes"/>
-                        <util:PermissionEx User="Users" Read="no" Write="no" Delete="no"/>
+                        <!-- S-1-5-80-3999633217-2467299158-3277899649-3608804430-1740951273 is the SID of service "NT Service\ored" -->
+                        <!-- See also: https://pcsxcetrasupport3.wordpress.com/2013/09/08/how-do-you-get-a-service-sid-from-a-service-name/ -->
+                        <PermissionEx Id="permDataFolderService"
+                                      Sddl="D:PAI(A;OICIIO;FA;;;CO)(A;OICI;FA;;;SY)(A;OICI;FA;;;BA)(A;OICI;FA;;;S-1-5-80-3999633217-2467299158-3277899649-3608804430-1740951273)"/>
                     </CreateFolder>
                 </Component>
                 <ComponentRef Id="cmpServiceShortcut"/>
