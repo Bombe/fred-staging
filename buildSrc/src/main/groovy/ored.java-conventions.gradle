@@ -20,7 +20,7 @@ dependencies {
     testRuntimeOnly 'org.junit.vintage:junit-vintage-engine'
     testImplementation 'org.mockito:mockito-core:4.5.1'
 
-    checkstyle("io.spring.javaformat:spring-javaformat-checkstyle:0.0.31")
+    checkstyle("io.spring.javaformat:spring-javaformat-checkstyle:0.0.33")
 }
 
 checkstyle {
