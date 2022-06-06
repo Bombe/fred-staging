@@ -8,6 +8,7 @@ Modify installation including installing/removing service, moving data/installat
 Uninstall icon
 Find available ports for oldenet and update freenet.ini
 Add oredcli.bat to PATH
+Minimum Windows version is 7 64bit
 -->
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension"
      RequiredVersion="3.11.2.4516">
@@ -49,8 +50,9 @@ Add oredcli.bat to PATH
             <Directory Id="OREDDATAFOLDER">
                 <Component Id="cmpDataFolder" Guid="957B42B4-3109-43DA-9B82-2C8DFB17C1D4">
                     <CreateFolder Directory="OREDDATAFOLDER">
+                        <!-- Build-in Users group has traverse folder permission so that it can read inner files if the files have read permission -->
                         <PermissionEx Id="permDataFolder"
-                                      Sddl="D:PAI(A;OICIIO;FA;;;CO)(A;OICI;FA;;;SY)(A;OICI;FA;;;BA)(A;OICI;FA;;;&lt;[%USERDOMAIN]\[%USERNAME]&gt;)">
+                                      Sddl="D:PAI(A;OICIIO;FA;;;CO)(A;OICI;FA;;;SY)(A;OICI;FA;;;BA)(A;OICI;FA;;;&lt;[%USERDOMAIN]\[%USERNAME]&gt;)(A;OICI;0x100020;;;BU)">
                             <Condition><![CDATA[INSTALLLEVEL<100]]></Condition>
                         </PermissionEx>
                         <!-- S-1-5-80-3999633217-2467299158-3277899649-3608804430-1740951273 is the SID of service "NT Service\ored" -->
@@ -58,7 +60,7 @@ Add oredcli.bat to PATH
                         <!-- Windows Installer is unable to find this virtual account object. -->
                         <!-- See also: https://pcsxcetrasupport3.wordpress.com/2013/09/08/how-do-you-get-a-service-sid-from-a-service-name/ -->
                         <PermissionEx Id="permDataFolderService"
-                                      Sddl="D:PAI(A;OICIIO;FA;;;CO)(A;OICI;FA;;;SY)(A;OICI;FA;;;BA)(A;OICI;FA;;;S-1-5-80-3999633217-2467299158-3277899649-3608804430-1740951273)(A;OICI;FA;;;&lt;[%USERDOMAIN]\[%USERNAME]&gt;)">
+                                      Sddl="D:PAI(A;OICIIO;FA;;;CO)(A;OICI;FA;;;SY)(A;OICI;FA;;;BA)(A;OICI;FA;;;S-1-5-80-3999633217-2467299158-3277899649-3608804430-1740951273)(A;OICI;FA;;;&lt;[%USERDOMAIN]\[%USERNAME]&gt;)(A;OICI;0x100020;;;BU)">
                             <Condition><![CDATA[INSTALLLEVEL>=100]]></Condition>
                         </PermissionEx>
                     </CreateFolder>

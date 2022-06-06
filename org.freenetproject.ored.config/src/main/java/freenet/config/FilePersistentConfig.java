@@ -1,9 +1,23 @@
-/* This code is part of Freenet. It is distributed under the GNU General
- * Public License, version 2 (or at your option any later version). See
- * http://www.gnu.org/ for further details of the GPL. */
+/*
+ * Copyright 1999-2022 The Freenet Project
+ * Copyright 2022 Marine Master
+ *
+ * This file is part of Oldenet.
+ *
+ * Oldenet is free software: you can redistribute it and/or modify it under the terms of
+ * the GNU General Public License as published by the Free Software Foundation, either
+ * version 3 of the License, or any later version.
+ *
+ * Oldenet is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with Oldenet.
+ * If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package freenet.config;
 
-import freenet.support.LogThresholdCallback;
 import java.io.BufferedInputStream;
 import java.io.EOFException;
 import java.io.File;
@@ -12,9 +26,10 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import freenet.support.LogThresholdCallback;
 import freenet.support.Logger;
-import freenet.support.SimpleFieldSet;
 import freenet.support.Logger.LogLevel;
+import freenet.support.SimpleFieldSet;
 import freenet.support.io.Closer;
 import freenet.support.io.FileUtil;
 import freenet.support.io.LineReadingInputStream;
@@ -33,13 +48,14 @@ public class FilePersistentConfig extends PersistentConfig {
 
 	final File tempFilename;
 
-	final protected String header;
+	protected final String header;
 
 	protected final Object storeSync = new Object();
 
 	protected boolean writeOnFinished;
 
 	private static volatile boolean logMINOR;
+
 	static {
 		Logger.registerLogThresholdCallback(new LogThresholdCallback() {
 			@Override
@@ -54,9 +70,8 @@ public class FilePersistentConfig extends PersistentConfig {
 	}
 
 	public static FilePersistentConfig constructFilePersistentConfig(File f, String header) throws IOException {
-		File filename = f;
 		File tempFilename = new File(f.getPath() + ".tmp");
-		return new FilePersistentConfig(load(filename, tempFilename), filename, tempFilename, header);
+		return new FilePersistentConfig(load(f, tempFilename), f, tempFilename, header);
 	}
 
 	static SimpleFieldSet load(File filename, File tempFilename) throws IOException {
@@ -75,11 +90,11 @@ public class FilePersistentConfig extends PersistentConfig {
 				try {
 					return initialLoad(filename);
 				}
-				catch (FileNotFoundException e) {
-					System.err.println("Cannot open config file " + filename + " : " + e + " - checking for temp file "
+				catch (FileNotFoundException ex) {
+					System.err.println("Cannot open config file " + filename + " : " + ex + " - checking for temp file "
 							+ tempFilename);
 				}
-				catch (EOFException e) {
+				catch (EOFException ignored) {
 					System.err.println("Empty config file " + filename + " (end of file)");
 				}
 				// Other IOE's indicate a more serious problem.
@@ -94,8 +109,8 @@ public class FilePersistentConfig extends PersistentConfig {
 				try {
 					return initialLoad(tempFilename);
 				}
-				catch (FileNotFoundException e) {
-					System.err.println("Cannot open temp config file either: " + tempFilename + " : " + e);
+				catch (FileNotFoundException ex) {
+					System.err.println("Cannot open temp config file either: " + tempFilename + " : " + ex);
 				} // Other IOE's indicate a more serious problem.
 			}
 			else {
@@ -123,8 +138,9 @@ public class FilePersistentConfig extends PersistentConfig {
 	 * @throws IOException
 	 */
 	private static SimpleFieldSet initialLoad(File toRead) throws IOException {
-		if (toRead == null)
+		if (toRead == null) {
 			return null;
+		}
 		FileInputStream fis = null;
 		BufferedInputStream bis = null;
 		LineReadingInputStream lis = null;
@@ -133,16 +149,8 @@ public class FilePersistentConfig extends PersistentConfig {
 			bis = new BufferedInputStream(fis);
 			lis = new LineReadingInputStream(bis);
 			// Config file is UTF-8 too!
-			return new SimpleFieldSet(lis, 1024 * 1024, 128, true, true, true); // FIXME?
-																				// advanced
-																				// users
-																				// may
-																				// edit
-																				// the
-																				// config
-																				// file,
-																				// hence
-																				// true?
+			// FIXME? advanced users may edit the config file, hence true?
+			return new SimpleFieldSet(lis, 1024 * 1024, 128, true, true, true);
 		}
 		finally {
 			Closer.close(lis);
@@ -158,41 +166,43 @@ public class FilePersistentConfig extends PersistentConfig {
 
 	@Override
 	public void store() {
-		if (!finishedInit) {
-			writeOnFinished = true;
+		if (!this.finishedInit) {
+			this.writeOnFinished = true;
 			return;
 		}
 		try {
-			synchronized (storeSync) {
-				innerStore();
+			synchronized (this.storeSync) {
+				this.innerStore();
 			}
 		}
-		catch (IOException e) {
-			String err = "Cannot store config: " + e;
-			Logger.error(this, err, e);
+		catch (IOException ex) {
+			String err = "Cannot store config: " + ex;
+			Logger.error(this, err, ex);
 			System.err.println(err);
-			e.printStackTrace();
+			ex.printStackTrace();
 		}
 	}
 
 	/** Don't call without taking storeSync first */
 	protected final void innerStore() throws IOException {
-		if (!finishedInit)
+		if (!this.finishedInit) {
 			throw new IllegalStateException("SHOULD NOT HAPPEN!!");
+		}
 
-		SimpleFieldSet fs = exportFieldSet();
-		if (logMINOR)
+		SimpleFieldSet fs = this.exportFieldSet();
+		if (logMINOR) {
 			Logger.minor(this, "fs = " + fs);
+		}
 		FileOutputStream fos = null;
 		try {
-			fos = new FileOutputStream(tempFilename);
+			fos = new FileOutputStream(this.tempFilename);
 			synchronized (this) {
-				fs.setHeader(header);
+				fs.setHeader(this.header);
 				fs.writeToBigBuffer(fos);
 			}
 			fos.close();
 			fos = null;
-			FileUtil.renameTo(tempFilename, configFile);
+			FileUtil.renameTo(this.tempFilename, this.configFile);
 		}
 		finally {
 			Closer.close(fos);
@@ -201,14 +211,14 @@ public class FilePersistentConfig extends PersistentConfig {
 
 	public void finishedInit() {
 		super.finishedInit();
-		if (writeOnFinished) {
-			writeOnFinished = false;
-			store();
+		if (this.writeOnFinished) {
+			this.writeOnFinished = false;
+			this.store();
 		}
 	}
 
 	public File getConfigFile() {
-		return configFile;
+		return this.configFile;
 	}
 
 }
