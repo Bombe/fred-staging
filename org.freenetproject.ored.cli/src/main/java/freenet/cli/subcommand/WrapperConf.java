@@ -30,7 +30,7 @@ import picocli.CommandLine.Parameters;
 public class WrapperConf implements Callable<Integer> {
 
 	@Option(names = "--ini-path", required = true, paramLabel = "PATH", description = "Path to freenet.ini")
-	String iniPath;
+	File iniFile;
 
 	@Parameters(paramLabel = "FILE", description = "File path to save the custom configuration file")
 	File customConfFile;
@@ -40,8 +40,11 @@ public class WrapperConf implements Callable<Integer> {
 		try (var writer = Files.newBufferedWriter(this.customConfFile.toPath(), StandardOpenOption.CREATE,
 				StandardOpenOption.WRITE)) {
 			writer.append("wrapper.app.parameter.1=\"");
-			writer.append(this.iniPath);
+			writer.append(this.iniFile.getAbsolutePath());
 			writer.append("\"\n");
+			writer.append("wrapper.logfile=");
+			writer.append(this.iniFile.getParentFile().getAbsolutePath()).append("/logs/wrapper.log");
+			writer.append("\n");
 		}
 		return 0;
 	}
