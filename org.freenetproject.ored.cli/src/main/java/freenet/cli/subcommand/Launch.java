@@ -27,11 +27,13 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.time.Duration;
+import java.util.Scanner;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
@@ -74,6 +76,8 @@ public class Launch implements Callable<Integer> {
 		}
 		else {
 			var cwd = System.getProperty("user.dir");
+			System.out.println("Working dir: " + cwd);
+
 			if (SystemUtils.IS_OS_WINDOWS) {
 				this.oredPath = Path.of(cwd + "/ored.bat");
 			}
@@ -105,13 +109,30 @@ public class Launch implements Callable<Integer> {
 				// If not, start Oldenet
 				System.out.println("Node is not running. Starting...");
 				if (SystemUtils.IS_OS_WINDOWS) {
-					rt.exec("cmd.exe /c start cmd.exe /c \"" + this.oredPath + "\"");
+					var scProcess = rt.exec("sc query ored");
+					Scanner reader = new Scanner(scProcess.getInputStream(), StandardCharsets.UTF_8);
+					var serviceInstalled = false;
+					while (reader.hasNextLine()) {
+						if (reader.nextLine().contains("ored")) {
+							serviceInstalled = true;
+							System.out.println("Oldenet service detected.");
+							break;
+						}
+					}
+
+					if (serviceInstalled) {
+						rt.exec(this.oredPath.getParent() + "\\Elevate.exe net start ored");
+					}
+					else {
+						rt.exec("cmd.exe /c start cmd.exe /c \"" + this.oredPath + "\"");
+					}
 				}
 				else {
 					// TODO: other OS
 				}
 			}
 			catch (IOException ex) {
+				ex.printStackTrace();
 				// Unable to bind to the port. Node is running.
 				System.out.println("Node is running.");
 			}

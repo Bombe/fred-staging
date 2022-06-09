@@ -182,6 +182,14 @@ tasks.register('copyWrapper') {
         copy {
             if (osdetector.os == 'windows') {
                 from "${rootDir}/packagefiles/common/ored.bat"
+                switch (osdetector.arch) {
+                    case 'x86_32':
+                        from "${rootDir}/packagefiles/common/elevate/bin/x86/Release/Elevate.exe"
+                        break
+                    case 'x86_64':
+                        from "${rootDir}/packagefiles/common/elevate/bin/x64/Release/Elevate.exe"
+                        break
+                }
             } else {
                 from "${rootDir}/packagefiles/common/ored.sh"
             }
