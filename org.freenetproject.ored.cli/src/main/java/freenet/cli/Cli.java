@@ -17,6 +17,7 @@
 
 package freenet.cli;
 
+import freenet.cli.subcommand.Launch;
 import freenet.cli.subcommand.WrapperConf;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -24,12 +25,13 @@ import picocli.CommandLine.Model.UsageMessageSpec;
 
 @Command(name = "oredcli", description = "Command-line utilities and administration tools for Oldenet",
 		optionListHeading = "%nOptions:%n", mixinStandardHelpOptions = true,
-		versionProvider = JPMSVersionProvider.class, subcommands = { CommandLine.HelpCommand.class, WrapperConf.class })
+		versionProvider = JPMSVersionProvider.class,
+		subcommands = { CommandLine.HelpCommand.class, WrapperConf.class, Launch.class })
 public class Cli {
 
 	public static void main(String... args) {
 		// bootstrap the application
-		var commandLine = new CommandLine(new Cli());
+		var commandLine = new CommandLine(new Cli()).setExecutionExceptionHandler(new PrintExceptionMessageHandler());
 		commandLine.getHelpSectionMap().put(UsageMessageSpec.SECTION_KEY_HEADER, (help) -> help
 				.createHeading("Oldenet CLI " + "v" + commandLine.getCommandSpec().version()[0] + "%n%n"));
 		System.exit(commandLine.execute(args));
