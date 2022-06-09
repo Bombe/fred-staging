@@ -132,7 +132,6 @@ public class Launch implements Callable<Integer> {
 				}
 			}
 			catch (IOException ex) {
-				ex.printStackTrace();
 				// Unable to bind to the port. Node is running.
 				System.out.println("Node is running.");
 			}
