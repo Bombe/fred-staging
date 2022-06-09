@@ -16,6 +16,9 @@ dependencies {
 application {
     mainModule = 'org.freenetproject.ored.cli'
     mainClass = 'freenet.cli.Cli'
-    applicationDefaultJvmArgs = ["-Djdk.httpclient.HttpClient.log=all"]
+//    applicationDefaultJvmArgs = [
+//            "-Djdk.httpclient.HttpClient.log=all", // HTTPClient log
+//            "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005" // Remote debug
+//    ]
 }
 

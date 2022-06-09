@@ -105,7 +105,7 @@ public class Launch implements Callable<Integer> {
 				// If not, start Oldenet
 				System.out.println("Node is not running. Starting...");
 				if (SystemUtils.IS_OS_WINDOWS) {
-					rt.exec("cmd.exe /c start cmd.exe /k \"" + this.oredPath + "\"");
+					rt.exec("cmd.exe /c start cmd.exe /c \"" + this.oredPath + "\"");
 				}
 				else {
 					// TODO: other OS

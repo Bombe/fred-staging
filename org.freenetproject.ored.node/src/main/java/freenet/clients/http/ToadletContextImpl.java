@@ -31,10 +31,10 @@ import freenet.clients.http.bookmark.BookmarkManager;
 import freenet.http.HTTPRequest;
 import freenet.l10n.NodeL10n;
 import freenet.node.useralerts.UserAlertManager;
+import freenet.nodelogger.Logger;
 import freenet.support.HTMLEncoder;
 import freenet.support.HTMLNode;
 import freenet.support.LogThresholdCallback;
-import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.MultiValueTable;
 import freenet.support.TimeUtil;
@@ -651,25 +651,8 @@ public class ToadletContextImpl implements ToadletContext {
 
 				String slen = headers.get("content-length");
 
-				if (METHODS_MUST_HAVE_DATA.contains(method)) {
-					// <method> must have data
-					if (slen == null) {
-						ctx.shouldDisconnect = true;
-						ctx.sendReplyHeaders(400, "Bad Request", null, null, -1);
-						return;
-					}
-				}
-				else if (METHODS_CANNOT_HAVE_DATA.contains(method)) {
-					// <method> can not have data
-					if (slen != null) {
-						ctx.shouldDisconnect = true;
-						ctx.sendReplyHeaders(400, "Bad Request", null, null, -1);
-						return;
-					}
-				}
-
+				long len = 0L;
 				if (slen != null) {
-					long len;
 					try {
 						len = Integer.parseInt(slen);
 						if (len < 0)
@@ -680,6 +663,26 @@ public class ToadletContextImpl implements ToadletContext {
 						ctx.sendReplyHeaders(400, "Bad Request", null, null, -1);
 						return;
 					}
+				}
+
+				if (METHODS_MUST_HAVE_DATA.contains(method)) {
+					// <method> must have data
+					if (slen == null || len == 0) {
+						ctx.shouldDisconnect = true;
+						ctx.sendReplyHeaders(400, "Bad Request", null, null, -1);
+						return;
+					}
+				}
+				else if (METHODS_CANNOT_HAVE_DATA.contains(method)) {
+					// <method> can not have data
+					if (slen != null && len != 0) {
+						ctx.shouldDisconnect = true;
+						ctx.sendReplyHeaders(400, "Bad Request", null, null, -1);
+						return;
+					}
+				}
+
+				if (slen != null && len != 0) {
 					if (allowPost && ((!container.publicGatewayMode()) || ctx.isAllowedFullAccess())) {
 						data = bf.makeBucket(len);
 						BucketTools.copyFrom(data, is, len);
