@@ -52,6 +52,9 @@ import picocli.CommandLine.Option;
 @Command(name = "launch", description = "Launch Oldenet and browser.")
 public class Launch implements Callable<Integer> {
 
+	// Flag to prevent from running node twice
+	boolean nodeHasRun = false;
+
 	@CommandLine.Spec
 	CommandLine.Model.CommandSpec spec;
 
@@ -63,9 +66,12 @@ public class Launch implements Callable<Integer> {
 			description = "Path to ored.bat/ored.sh start script. If not specified, I'll look for it in the same directory I'm in.")
 	Path oredPath;
 
+	@Option(names = "--node-may-never-run",
+			description = "Set this option if Oldenet may have never run and freenet.ini may haven't been created yet. If this option is set, you need to ensure --ini-path is correct.")
+	boolean nodeMayNeverRun;
+
 	@Override
 	public Integer call() throws Exception {
-		var rt = Runtime.getRuntime();
 
 		if (this.oredPath != null) {
 			if (!Files.exists(this.oredPath)) {
@@ -97,6 +103,19 @@ public class Launch implements Callable<Integer> {
 			this.iniPath = Paths.get(userDataDir.getAbsolutePath(), "freenet.ini");
 		}
 
+		if (!Files.exists(this.iniPath) && this.nodeMayNeverRun) {
+			// Assume that the node has never run and freenet.ini hasn't been created
+			// Try to start ored
+			System.out.println("Preparing for first run. Please be patient.");
+			this.startNode();
+			for (var i = 0; i < 15; i++) {
+				TimeUnit.SECONDS.sleep(2);
+				if (Files.exists(this.iniPath)) {
+					break;
+				}
+			}
+		}
+
 		try (var br = Files.newBufferedReader(this.iniPath)) {
 			var sfs = new SimpleFieldSet(br, true, true);
 
@@ -104,36 +123,17 @@ public class Launch implements Callable<Integer> {
 			var listenPort = Integer.parseInt(sfs.get("node.listenPort"));
 			var bindTo = sfs.get("node.bindTo");
 
-			// Check if Oldenet is running
-			try (var ignored = new DatagramSocket(new InetSocketAddress(bindTo, listenPort))) {
-				// If not, start Oldenet
-				System.out.println("Node is not running. Starting...");
-				if (SystemUtils.IS_OS_WINDOWS) {
-					var scProcess = rt.exec("sc query ored");
-					Scanner reader = new Scanner(scProcess.getInputStream(), StandardCharsets.UTF_8);
-					var serviceInstalled = false;
-					while (reader.hasNextLine()) {
-						if (reader.nextLine().contains("ored")) {
-							serviceInstalled = true;
-							System.out.println("Oldenet service detected.");
-							break;
-						}
-					}
-
-					if (serviceInstalled) {
-						rt.exec(this.oredPath.getParent() + "\\Elevate.exe net start ored");
-					}
-					else {
-						rt.exec("cmd.exe /c start cmd.exe /c \"" + this.oredPath + "\"");
-					}
+			if (!this.nodeHasRun) {
+				// Check if Oldenet is running
+				try (var ignored = new DatagramSocket(new InetSocketAddress(bindTo, listenPort))) {
+					// If not, start Oldenet
+					System.out.println("Node is not running. Starting...");
+					this.startNode();
 				}
-				else {
-					// TODO: other OS
+				catch (IOException ex) {
+					// Unable to bind to the port. Node is running.
+					System.out.println("Node is running.");
 				}
-			}
-			catch (IOException ex) {
-				// Unable to bind to the port. Node is running.
-				System.out.println("Node is running.");
 			}
 
 			// Check Oldenet is ready
@@ -205,6 +205,8 @@ public class Launch implements Callable<Integer> {
 			// Avoid using java.awt.Desktop as it requires the huge "java.desktop" module
 			// (which contains swing)
 			try {
+				var rt = Runtime.getRuntime();
+
 				if (SystemUtils.IS_OS_WINDOWS) {
 					rt.exec("cmd.exe /c \"start " + fproxyUrl + "\"");
 				}
@@ -224,11 +226,45 @@ public class Launch implements Callable<Integer> {
 		}
 		catch (IOException ex) {
 			throw new CommandLine.ParameterException(this.spec.commandLine(),
-					"Unable to read freenet.ini file. Check whether --ini-path is correct.", ex,
-					this.spec.findOption("--ini-path"), this.iniPath.toString());
+					"Unable to read freenet.ini file. Check whether --ini-path is correct and freenet.ini has proper permission set.",
+					ex, this.spec.findOption("--ini-path"), this.iniPath.toString());
 		}
 
 		return 0;
+	}
+
+	private void startNode() throws IOException {
+
+		if (this.nodeHasRun) {
+			return;
+		}
+
+		var rt = Runtime.getRuntime();
+
+		if (SystemUtils.IS_OS_WINDOWS) {
+			var scProcess = rt.exec("sc query ored");
+			Scanner reader = new Scanner(scProcess.getInputStream(), StandardCharsets.UTF_8);
+			var serviceInstalled = false;
+			while (reader.hasNextLine()) {
+				if (reader.nextLine().contains("ored")) {
+					serviceInstalled = true;
+					System.out.println("Oldenet service detected.");
+					break;
+				}
+			}
+
+			if (serviceInstalled) {
+				rt.exec(this.oredPath.getParent() + "\\Elevate.exe net start ored");
+			}
+			else {
+				rt.exec("cmd.exe /c start cmd.exe /c \"" + this.oredPath + "\"");
+			}
+		}
+		else {
+			// TODO: other OS
+		}
+
+		this.nodeHasRun = true;
 	}
 
 	private void printAndHold(String msg) throws IOException {

@@ -74,9 +74,9 @@ Minimum Windows version is 7 64bit
                 <Shortcut Id="StartOldenetShortcut"
                           Name="Oldenet"
                           Description="Start Oldenet"
-                          Target="[!filWrapperExe]"
-                          Arguments="cli"
-                          WorkingDirectory="APPLICATIONROOTDIRECTORY"/>
+                          Target="[System64Folder]cmd.exe"
+                          Arguments="/C &quot;[!filoredcli] launch --node-may-never-run --ini-path=&quot;&quot;[OREDDATAFOLDER]ored\freenet.ini&quot;"
+                          WorkingDirectory="dirBin"/>
                 <Shortcut Id="UninstallShortcut" Name="Uninstall Oldenet"
                           Description="Uninstalls Oldenet and all of its components"
                           Target="[System64Folder]msiexec.exe" Arguments="/x [ProductCode]"/>
