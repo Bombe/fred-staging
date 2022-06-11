@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   version="1.0"
+   width="256"
+   height="256"
+   id="svg15"
+   sodipodi:docname="oldenet_icon_inkscape.svg"
+   inkscape:version="1.2 (dc2aeda, 2022-05-15)"
+   inkscape:export-filename="oldenet_icon.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview17"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:showpageshadow="false"
+     inkscape:pageopacity="0.52156863"
+     inkscape:pagecheckerboard="true"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:lockguides="true"
+     showborder="true"
+     inkscape:zoom="4.2929687"
+     inkscape:cx="128.34941"
+     inkscape:cy="128.46588"
+     inkscape:window-width="1857"
+     inkscape:window-height="1277"
+     inkscape:window-x="507"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="g1670" />
+  <defs
+     id="defs9">
+    <inkscape:path-effect
+       effect="bspline"
+       id="path-effect5200"
+       is_visible="true"
+       lpeversion="1"
+       weight="33.333333"
+       steps="2"
+       helper_size="0"
+       apply_no_weight="true"
+       apply_with_weight="true"
+       only_selected="false" />
+    <inkscape:path-effect
+       effect="bspline"
+       id="path-effect5166"
+       is_visible="true"
+       lpeversion="1"
+       weight="33.333333"
+       steps="2"
+       helper_size="0"
+       apply_no_weight="true"
+       apply_with_weight="true"
+       only_selected="false" />
+  </defs>
+  <g
+     inkscape:groupmode="layer"
+     id="layer1"
+     inkscape:label="Background">
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:#356ace;stroke-width:0;stroke-dasharray:none;stop-color:#000000"
+       id="rect331"
+       width="256"
+       height="256"
+       x="47.873314"
+       y="111.6845"
+       transform="translate(-47.495719,-111.30691)"
+       rx="20"
+       ry="20" />
+  </g>
+  <g
+     transform="translate(-47.495719,-111.30691)"
+     id="g13">
+    <g
+       id="g1670"
+       inkscape:label="g1670">
+      <path
+         d="m 152.12673,189.59076 c 48.1044,-51.89686 80.80609,-28.84268 24.95042,7.41859 -17.7647,11.54373 -13.14055,14.90371 -1.19762,13.07402 16.86648,-2.56158 26.08151,0.66534 30.17337,3.85899 9.78056,7.65147 14.67085,1.96277 17.9643,-3.85899 6.55364,-11.54373 28.64308,0.99801 12.4752,13.07402 -12.64154,9.41462 -10.87838,20.02686 0.59882,26.14803 21.25775,11.31086 68.96294,33.73296 61.77723,57.61883 -2.92752,9.74729 -8.21701,18.92904 -20.1932,6.52037 -22.45538,-23.18725 -37.39236,-42.98125 -89.12289,-51.06518 -33.40029,-5.25623 -66.96692,-14.0055 -99.202855,2.36197 -15.169853,8.05067 -34.265237,13.24035 -38.323838,3.72593 -5.289488,-12.40867 21.723494,-22.62171 47.838258,-25.11675 16.966285,-1.6301 32.169405,-12.74134 8.915625,-18.39677 -28.643082,-8.81582 4.2582,-33.93257 24.95041,-27.94447 13.47323,3.92554 14.80392,-3.52632 18.39677,-7.41859 z"
+         style="fill:none;stroke:#356ace;stroke-width:8;stroke-dasharray:none"
+         id="path11" />
+      <circle
+         style="font-variation-settings:normal;opacity:1;fill:none;fill-opacity:1;stroke:#356ace;stroke-width:5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;stop-color:#000000;stop-opacity:1"
+         id="path4291"
+         cx="123.0144"
+         cy="212.12433"
+         r="3.1967351" />
+    </g>
+  </g>
+</svg>
