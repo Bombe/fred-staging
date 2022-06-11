@@ -26,6 +26,9 @@ Minimum Windows version is 7 64bit
         <MajorUpgrade
                 DowngradeErrorMessage="A newer version of [ProductName] is already installed."/>
 
+        <Icon Id="icooldenet" SourceFile="$(var.JlinkDir)\bin\oldenet.ico"/>
+        <Property Id="ARPPRODUCTICON" Value="icooldenet"/>
+
         <Property Id="INSTALLLEVEL" Value="50"/>
 
         <Property Id="ARPNOREPAIR" Value="yes" Secure="yes"/>
@@ -79,7 +82,7 @@ Minimum Windows version is 7 64bit
                           Description="Start Oldenet"
                           Target="[System64Folder]cmd.exe"
                           Arguments="/C &quot;[!filoredcli] launch --node-may-never-run --ini-path=&quot;&quot;[OREDDATAFOLDER]ored\freenet.ini&quot;"
-                          WorkingDirectory="dirBin"/>
+                          WorkingDirectory="dirBin" Icon="icooldenet"/>
                 <Shortcut Id="UninstallShortcut" Name="Uninstall Oldenet"
                           Description="Uninstalls Oldenet and all of its components"
                           Target="[System64Folder]msiexec.exe" Arguments="/x [ProductCode]"/>
@@ -114,7 +117,7 @@ Minimum Windows version is 7 64bit
                           Description="Start Oldenet"
                           Target="[System64Folder]cmd.exe"
                           Arguments="/C &quot;[!filoredcli] launch --node-may-never-run --ini-path=&quot;&quot;[OREDDATAFOLDER]ored\freenet.ini&quot;"
-                          WorkingDirectory="dirBin"/>
+                          WorkingDirectory="dirBin" Icon="icooldenet"/>
                 <RegistryValue Root="HKCU" Key="Software\Oldenet\Oldenet\Desktop" Name="installed" Type="integer"
                                Value="1" KeyPath="yes"/>
             </Component>

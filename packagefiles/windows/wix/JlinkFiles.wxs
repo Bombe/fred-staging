@@ -21,6 +21,11 @@
                 <File Id="filelevateexe" KeyPath="yes"
                       Source="$(var.JlinkDir)\bin\Elevate.exe"/>
             </Component>
+            <Component Id="cmpfiloldenetico" Directory="dirBin"
+                       Guid="18C227B0-3070-4449-A7B7-FDDA67937247">
+                <File Id="filoldenetico" KeyPath="yes"
+                      Source="$(var.JlinkDir)\bin\oldenet.ico"/>
+            </Component>
             <Component Id="cmpAE8FC40EFC6A3591E7F92E902814CD10" Directory="dirBin"
                        Guid="6A2A11D9-4B7E-48E2-8908-7323BCED8898">
                 <File Id="filC3B75760D6AA471991201FB053E61E78" KeyPath="yes"
