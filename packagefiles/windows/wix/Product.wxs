@@ -32,6 +32,8 @@ Minimum Windows version is 7 64bit
         <Property Id="ARPNOMODIFY" Value="yes" Secure="yes"/>
 
         <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Launch Oldenet"/>
+        <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOX" Value="1"/>
+
         <WixVariable Id="WixUILicenseRtf" Value="gpl-3.0.rtf"/>
 
         <UIRef Id="WixUI_Oldenet"/>
@@ -180,6 +182,12 @@ Minimum Windows version is 7 64bit
                       Execute="rollback" Return="ignore" Impersonate="no"/>
 
         <!-- Launch Oldenet and open browser -->
+        <CustomAction Id="LaunchApplication"
+                      Impersonate="yes"
+                      Execute="immediate"
+                      ExeCommand="[System64Folder]cmd.exe /C &quot;[!filoredcli] launch --node-may-never-run --ini-path=&quot;&quot;[OREDDATAFOLDER]ored\freenet.ini&quot;"
+                      Directory="dirBin"
+                      Return="asyncNoWait"/>
 
         <InstallExecuteSequence>
             <Custom Action="QtExecCreateWrapperConf" After="InstallFiles">

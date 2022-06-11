@@ -325,6 +325,13 @@
             <Publish Dialog="WelcomeDlg" Control="Next" Event="NewDialog" Value="VerifyReadyDlg">
                 Installed AND PATCH
             </Publish>
+
+            <!-- ExitDialog -->
+            <Publish Dialog="ExitDialog"
+                     Control="Finish"
+                     Event="DoAction"
+                     Value="LaunchApplication">WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 and NOT Installed
+            </Publish>
         </UI>
 
         <InstallUISequence>
