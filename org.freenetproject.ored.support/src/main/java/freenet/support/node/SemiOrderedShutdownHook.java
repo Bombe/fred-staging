@@ -47,12 +47,14 @@ public final class SemiOrderedShutdownHook extends Thread {
 					catch (IllegalThreadStateException ignored) {
 						// Already started. Just join.
 					}
+
 					try {
 						singleton.join();
 					}
 					catch (InterruptedException ignored) {
-						return false;
+
 					}
+
 					try {
 						// Sleep for 1 second for users to see shutdown information
 						TimeUnit.SECONDS.sleep(1);
