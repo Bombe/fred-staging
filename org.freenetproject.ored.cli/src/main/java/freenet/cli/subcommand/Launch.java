@@ -123,6 +123,7 @@ public class Launch implements Callable<Integer> {
 			var listenPort = Integer.parseInt(sfs.get("node.listenPort"));
 			var bindTo = sfs.get("node.bindTo");
 
+			var nodeIsRunning = false;
 			if (!this.nodeHasRun) {
 				// Check if Oldenet is running
 				try (var ignored = new DatagramSocket(new InetSocketAddress(bindTo, listenPort))) {
@@ -133,6 +134,7 @@ public class Launch implements Callable<Integer> {
 				catch (IOException ex) {
 					// Unable to bind to the port. Node is running.
 					System.out.println("Node is running.");
+					nodeIsRunning = true;
 				}
 			}
 
@@ -175,8 +177,10 @@ public class Launch implements Callable<Integer> {
 			var httpClient = httpClientBuilder.followRedirects(HttpClient.Redirect.NORMAL)
 					.version(HttpClient.Version.HTTP_1_1).connectTimeout(Duration.ofSeconds(3)).build();
 
-			// Wait for 3 seconds for Node to start
-			TimeUnit.SECONDS.sleep(3);
+			if (!nodeIsRunning) {
+				// Wait for 3 seconds for Node to start
+				TimeUnit.SECONDS.sleep(3);
+			}
 
 			var tries = 0;
 
