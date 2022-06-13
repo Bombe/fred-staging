@@ -2964,7 +2964,7 @@ public class Node implements TimeSkewDetectorCallback, KeyBlockStore, Persistent
 	private void fixCertsFile(File certs) {
 		long oldLength = certs.exists() ? certs.length() : -1;
 		try {
-			File tmpFile = File.createTempFile(PluginDownLoaderOfficialHTTPS.certfileOld, ".tmp", new File("."));
+			File tmpFile = File.createTempFile(PluginDownLoaderOfficialHTTPS.certfileOld, ".tmp");
 			PluginDownLoaderOfficialHTTPS.writeCertsTo(tmpFile);
 			if (FileUtil.renameTo(tmpFile, certs)) {
 				long newLength = certs.length();
