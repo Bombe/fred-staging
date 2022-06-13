@@ -110,6 +110,7 @@
             <DialogRef Id="ResumeDlg"/>
             <DialogRef Id="UserExit"/>
             <DialogRef Id="WelcomeDlg"/>
+            <DialogRef Id="UninstallWelcomeDlg"/>
 
             <Publish Dialog="ExitDialog" Control="Finish" Event="EndDialog" Value="Return" Order="999">1</Publish>
 
@@ -147,7 +148,8 @@
                      Order="6">
                 NOT Installed
             </Publish>
-            <Publish Dialog="OredSetupTypeDlg" Control="Back" Event="NewDialog" Value="MaintenanceTypeDlg" Order="6">
+            <Publish Dialog="OredSetupTypeDlg" Control="Back" Event="NewDialog" Value="OredMaintenanceTypeDlg"
+                     Order="6">
                 Installed
             </Publish>
 
@@ -313,24 +315,25 @@
             </Publish>
 
             <!-- MaintenanceWelcomeDlg -->
-            <Publish Dialog="MaintenanceWelcomeDlg" Control="Next" Event="NewDialog" Value="MaintenanceTypeDlg">
+            <Publish Dialog="MaintenanceWelcomeDlg" Control="Next" Event="NewDialog" Value="OredMaintenanceTypeDlg">
                 1
             </Publish>
-            <Publish Dialog="MaintenanceTypeDlg" Control="ChangeButton" Event="NewDialog" Value="OredSetupTypeDlg">
+            <Publish Dialog="OredMaintenanceTypeDlg" Control="ChangeButton" Event="NewDialog" Value="OredSetupTypeDlg">
                 1
             </Publish>
-            <Publish Dialog="MaintenanceTypeDlg" Control="RepairButton" Event="NewDialog" Value="VerifyReadyDlg">
+            <Publish Dialog="OredMaintenanceTypeDlg" Control="RepairButton" Event="NewDialog" Value="VerifyReadyDlg">
                 1
             </Publish>
-            <Publish Dialog="MaintenanceTypeDlg" Control="RemoveButton" Event="NewDialog" Value="VerifyReadyDlg">
+            <Publish Dialog="OredMaintenanceTypeDlg" Control="RemoveButton" Event="NewDialog"
+                     Value="UninstallWelcomeDlg">
                 1
             </Publish>
-            <Publish Dialog="MaintenanceTypeDlg" Control="Back" Event="NewDialog" Value="MaintenanceWelcomeDlg">
+            <Publish Dialog="OredMaintenanceTypeDlg" Control="Back" Event="NewDialog" Value="MaintenanceWelcomeDlg">
                 1
             </Publish>
 
             <!-- VerifyReadyDlg -->
-            <Publish Dialog="VerifyReadyDlg" Control="Back" Event="NewDialog" Value="MaintenanceTypeDlg" Order="2">
+            <Publish Dialog="VerifyReadyDlg" Control="Back" Event="NewDialog" Value="OredMaintenanceTypeDlg" Order="2">
                 Installed AND NOT PATCH
             </Publish>
             <Publish Dialog="VerifyReadyDlg" Control="Back" Event="NewDialog" Value="WelcomeDlg" Order="3">
@@ -340,6 +343,20 @@
             <!-- WelcomeDlg -->
             <Publish Dialog="WelcomeDlg" Control="Next" Event="NewDialog" Value="VerifyReadyDlg">
                 Installed AND PATCH
+            </Publish>
+
+            <!-- UninstallWelcomeDlg -->
+            <Publish Dialog="UninstallWelcomeDlg" Control="Uninstall" Property="DELDATADIR" Value="1" Order="1">
+                WIXUI_DELDATACHECKBOX = 1
+            </Publish>
+            <Publish Dialog="UninstallWelcomeDlg" Control="Uninstall" Property="DELDATADIR" Value="0" Order="2">
+                NOT WIXUI_DELDATACHECKBOX = 1
+            </Publish>
+            <Publish Dialog="UninstallWelcomeDlg" Control="Uninstall" Property="REMOVE" Value="ALL" Order="3">
+                1
+            </Publish>
+            <Publish Dialog="UninstallWelcomeDlg" Control="Uninstall" Event="EndDialog" Value="Return" Order="999">
+                1
             </Publish>
 
             <!-- ExitDialog -->

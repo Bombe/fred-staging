@@ -2,13 +2,13 @@
 <!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
 <!--
 TODO:
-Start Oldenet after install finished
 Prompt to delete data dir during uninstall
+Close Ored before uninstall
 Modify installation including installing/removing service, moving data/installation directory and rollback.
-Uninstall icon
-Find available ports for oldenet and update freenet.ini
+Update install UI bitmap
 Add oredcli.bat to PATH
 Minimum Windows version is 7 64bit
+Multi-language support
 -->
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension"
      RequiredVersion="3.11.2.4516">
@@ -21,7 +21,7 @@ Minimum Windows version is 7 64bit
                  Compressed="yes"
                  Manufacturer="Oldenet"
                  Description="Oldenet" Keywords="Freenet,Oldenet,ored"
-                 Comments="(c) 2012 Awesome Company"/>
+                 Comments="(c) 2022 The Freenet Project and Marine Master"/>
         <MediaTemplate EmbedCab="yes" CompressionLevel="high"/>
         <MajorUpgrade
                 DowngradeErrorMessage="A newer version of [ProductName] is already installed."/>
@@ -30,10 +30,7 @@ Minimum Windows version is 7 64bit
         <Property Id="ARPPRODUCTICON" Value="icooldenet"/>
 
         <Property Id="INSTALLLEVEL" Value="50"/>
-
-        <Property Id="ARPNOREPAIR" Value="yes" Secure="yes"/>
-        <Property Id="ARPNOMODIFY" Value="yes" Secure="yes"/>
-
+        
         <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Launch Oldenet"/>
         <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOX" Value="1"/>
 
@@ -202,9 +199,16 @@ Minimum Windows version is 7 64bit
         <CustomAction Id="LaunchApplication"
                       Impersonate="yes"
                       Execute="immediate"
-                      ExeCommand="[System64Folder]cmd.exe /C &quot;&quot;[!filoredcli]&quot;&quot;&quot; launch --node-may-never-run --ini-path=&quot;&quot;[OREDDATAFOLDER]ored\freenet.ini&quot;&quot;&quot;"
+                      ExeCommand="&quot;[System64Folder]cmd.exe&quot; /C &quot;&quot;[!filoredcli]&quot;&quot;&quot; launch --node-may-never-run --ini-path=&quot;&quot;[OREDDATAFOLDER]ored\freenet.ini&quot;&quot;&quot;"
                       Directory="dirBin"
                       Return="asyncNoWait"/>
+
+        <!-- Delete datadir -->
+        <SetProperty Id="QtExecDeleteDataDir"
+                     Value="&quot;[System64Folder]cmd.exe&quot; /C &quot;rmdir /s /q &quot;&quot;&quot;[OREDDATAFOLDER]ored&quot;&quot;&quot;"
+                     Sequence="execute" Before="QtExecDeleteDataDir"/>
+        <CustomAction Id="QtExecDeleteDataDir" BinaryKey="WixCA" DllEntry="WixQuietExec64"
+                      Execute="deferred" Return="ignore" Impersonate="no"/>
 
         <InstallExecuteSequence>
             <Custom Action="QtExecCreateWrapperConf" After="InstallFiles">
@@ -222,6 +226,10 @@ Minimum Windows version is 7 64bit
             </Custom>
             <Custom Action="RollbackCreateWrapperConfAllusers" Before="QtExecCreateWrapperConf">
                 ALLUSERS=1 OR (ALLUSERS=2 AND Privileged)
+            </Custom>
+
+            <Custom Action="QtExecDeleteDataDir" Before="InstallFinalize">
+                REMOVE~="ALL" AND DELDATADIR=1 AND NOT UPGRADINGPRODUCTCODE
             </Custom>
         </InstallExecuteSequence>
 

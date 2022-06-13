@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+    <Fragment>
+        <UI>
+            <Dialog Id="UninstallWelcomeDlg" Width="370" Height="270" Title="!(loc.UninstallWelcomeDlg_Title)">
+                <Control Id="Uninstall" Type="PushButton" X="236" Y="243" Width="56" Height="17" Default="yes"
+                         Text="!(loc.WixUIUninstall)"/>
+                <Control Id="Cancel" Type="PushButton" X="304" Y="243" Width="56" Height="17" Cancel="yes"
+                         Text="!(loc.WixUICancel)">
+                    <Publish Event="EndDialog" Value="Exit">1</Publish>
+                </Control>
+                <Control Id="Bitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="234" TabSkip="no"
+                         Text="!(loc.UninstallWelcomeDlgBitmap)"/>
+                <Control Id="BottomLine" Type="Line" X="0" Y="234" Width="370" Height="0"/>
+                <Control Id="Description" Type="Text" X="135" Y="80" Width="220" Height="60" Transparent="yes"
+                         NoPrefix="yes" Text="!(loc.UninstallWelcomeDlgDescription)"/>
+                <Control Id="Title" Type="Text" X="135" Y="20" Width="220" Height="60" Transparent="yes" NoPrefix="yes"
+                         Text="!(loc.UninstallWelcomeDlgTitle)"/>
+                <Control Id="OptionalCheckBox" Type="CheckBox" X="135" Y="160" Width="220" Height="40" Hidden="no"
+                         Property="WIXUI_DELDATACHECKBOX" CheckBoxValue="1"
+                         Text="!(loc.UninstallWelcomeDlgCheckBoxText)"/>
+                <Control Id="OptionalText" Type="Text" X="135" Y="200" Width="220" Height="40" Transparent="yes"
+                         NoPrefix="yes" Text="!(loc.UninstallWelcomeDlgOptionalText)"/>
+            </Dialog>
+        </UI>
+    </Fragment>
+</Wix>

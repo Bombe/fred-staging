@@ -3,6 +3,8 @@
 
 <WixLocalization Culture="en-US" Codepage="1252" xmlns="http://schemas.microsoft.com/wix/2006/localization">
 
+    <String Id="WixUIUninstall">Uninstall</String>
+
     <String Id="AdvancedWelcomeEulaDlg_Title">[ProductName] [ProductVersion] Setup</String>
 
     <String Id="InstallDataDirDlg_Title">[ProductName] [ProductVersion] Setup</String>
@@ -21,5 +23,15 @@
     <String Id="OredSetupTypeDlgServiceButton">Service</String>
     <String Id="OredSetupTypeDlgServiceButtonTooltip">Install as a Windows Service</String>
     <String Id="OredSetupTypeDlgServiceText">Install as a Windows Service. It can be controlled through the Windows Services app after installation. On the current machine, all users share one Oldenet datastore.</String>
+
+    <String Id="UninstallWelcomeDlg_Title">[ProductName] [ProductVersion] Uninstall</String>
+    <String Id="UninstallWelcomeDlgTitle">{\WixUI_Font_Bigger}Welcome to the [ProductName] Uninstall Wizard</String>
+    <String Id="UninstallWelcomeDlgBitmap">WixUI_Bmp_Dialog</String>
+    <String Id="UninstallWelcomeDlgDescription">The Uninstall Wizard will uninstall [ProductName] [ProductVersion] from your computer. Click Uninstall to continue or Cancel to exit the Uninstall Wizard.</String>
+    <String Id="UninstallWelcomeDlgCheckBoxText">DELETE ALL DATA?</String>
+    <String Id="UninstallWelcomeDlgOptionalText">{\WixUI_Font_Emphasized}Please make a backup of your identity files BEFORE deleting all data.</String>
+
+    <String Id="OredMaintenanceTypeDlgRemoveButton">Advanced Uninstall</String>
+    <String Id="OredMaintenanceTypeDlgRemoveText">You can choose to delete all data here.</String>
 
 </WixLocalization>
