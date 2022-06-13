@@ -81,7 +81,7 @@ Minimum Windows version is 7 64bit
                           Name="Oldenet"
                           Description="Start Oldenet"
                           Target="[System64Folder]cmd.exe"
-                          Arguments="/C &quot;[!filoredcli] launch --node-may-never-run --ini-path=&quot;&quot;[OREDDATAFOLDER]ored\freenet.ini&quot;"
+                          Arguments="/C &quot;&quot;[!filoredcli]&quot;&quot;&quot; launch --node-may-never-run --ini-path=&quot;&quot;[OREDDATAFOLDER]ored\freenet.ini&quot;&quot;&quot;"
                           WorkingDirectory="dirBin" Icon="icooldenet"/>
                 <Shortcut Id="UninstallShortcut" Name="Uninstall Oldenet"
                           Description="Uninstalls Oldenet and all of its components"
@@ -116,7 +116,7 @@ Minimum Windows version is 7 64bit
                           Name="Oldenet"
                           Description="Start Oldenet"
                           Target="[System64Folder]cmd.exe"
-                          Arguments="/C &quot;[!filoredcli] launch --node-may-never-run --ini-path=&quot;&quot;[OREDDATAFOLDER]ored\freenet.ini&quot;"
+                          Arguments="/C &quot;&quot;[!filoredcli]&quot;&quot;&quot; launch --node-may-never-run --ini-path=&quot;&quot;[OREDDATAFOLDER]ored\freenet.ini&quot;&quot;&quot;"
                           WorkingDirectory="dirBin" Icon="icooldenet"/>
                 <RegistryValue Root="HKCU" Key="Software\Oldenet\Oldenet\Desktop" Name="installed" Type="integer"
                                Value="1" KeyPath="yes"/>
@@ -202,7 +202,7 @@ Minimum Windows version is 7 64bit
         <CustomAction Id="LaunchApplication"
                       Impersonate="yes"
                       Execute="immediate"
-                      ExeCommand="[System64Folder]cmd.exe /C &quot;[!filoredcli] launch --node-may-never-run --ini-path=&quot;&quot;[OREDDATAFOLDER]ored\freenet.ini&quot;"
+                      ExeCommand="[System64Folder]cmd.exe /C &quot;&quot;[!filoredcli]&quot;&quot;&quot; launch --node-may-never-run --ini-path=&quot;&quot;[OREDDATAFOLDER]ored\freenet.ini&quot;&quot;&quot;"
                       Directory="dirBin"
                       Return="asyncNoWait"/>
 
