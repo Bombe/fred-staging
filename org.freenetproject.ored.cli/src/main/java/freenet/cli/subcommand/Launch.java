@@ -107,6 +107,13 @@ public class Launch implements Callable<Integer> {
 			// Assume that the node has never run and freenet.ini hasn't been created
 			// Try to start ored
 			System.out.println("Preparing for first run. Please be patient.");
+
+			// Create logs dir in data dir for wrapper.log
+			var logdir = this.iniPath.getParent().resolve("logs");
+			if (!Files.exists(logdir)) {
+				Files.createDirectories(logdir);
+			}
+
 			this.startNode();
 			for (var i = 0; i < 15; i++) {
 				TimeUnit.SECONDS.sleep(2);
