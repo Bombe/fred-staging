@@ -273,7 +273,10 @@ tasks.register('package') {
                 executable "${wixHome}/bin/light.exe"
                 args(
                         '-out', "${wixBuildDir}/OldenetInstaller.msi",
-                        '-sice:ICE20',
+                        '-sice:ICE20', // https://stackoverflow.com/questions/31211028/error-lght0204-ice57-component-xxx-has-both-per-user-data-and-a-keypath-tha
+                        '-sice:ICE30',
+                        '-sice:ICE57',
+                        '-sice:ICE105',
                         '-ext', 'WixUIExtension',
                         '-ext', 'WixUtilExtension',
                         '-cultures:en-us',

@@ -2,7 +2,6 @@
 <!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
 <!--
 TODO:
-Prompt to delete data dir during uninstall
 Close Ored before uninstall
 Modify installation including installing/removing service, moving data/installation directory and rollback.
 Update install UI bitmap
@@ -26,11 +25,15 @@ Multi-language support
         <MajorUpgrade
                 DowngradeErrorMessage="A newer version of [ProductName] is already installed."/>
 
+        <!-- Single Package Authoring: https://docs.microsoft.com/en-us/windows/win32/msi/single-package-authoring -->
+        <Property Id='ALLUSERS' Value='2'/>
+        <Property Id='MSIINSTALLPERUSER' Value='1'/>
+
         <Icon Id="icooldenet" SourceFile="$(var.JlinkDir)\bin\oldenet.ico"/>
         <Property Id="ARPPRODUCTICON" Value="icooldenet"/>
 
         <Property Id="INSTALLLEVEL" Value="50"/>
-        
+
         <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Launch Oldenet"/>
         <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOX" Value="1"/>
 
@@ -84,7 +87,7 @@ Multi-language support
                           Description="Uninstalls Oldenet and all of its components"
                           Target="[System64Folder]msiexec.exe" Arguments="/x [ProductCode]"/>
                 <RemoveFolder Id="CleanUpShortCut" Directory="ApplicationProgramsFolder" On="uninstall"/>
-                <RegistryValue Root="HKCU" Key="Software\Oldenet\Oldenet" Name="installed" Type="integer"
+                <RegistryValue Root="HKMU" Key="Software\Oldenet\Oldenet" Name="installed" Type="integer"
                                Value="1" KeyPath="yes"/>
             </Component>
             <Directory Id="dirShortcutService" Name="Service">
@@ -102,7 +105,7 @@ Multi-language support
                               Arguments="-p &quot;[!filWrapperConf]&quot;"
                               WorkingDirectory="APPLICATIONROOTDIRECTORY"/>
                     <RemoveFolder Id="CleanUpShortCutService" Directory="dirShortcutService" On="uninstall"/>
-                    <RegistryValue Root="HKCU" Key="Software\Oldenet\Oldenet\Service" Name="installed" Type="integer"
+                    <RegistryValue Root="HKMU" Key="Software\Oldenet\Oldenet\Service" Name="installed" Type="integer"
                                    Value="1" KeyPath="yes"/>
                 </Component>
             </Directory>
@@ -115,7 +118,7 @@ Multi-language support
                           Target="[System64Folder]cmd.exe"
                           Arguments="/C &quot;&quot;[!filoredcli]&quot;&quot;&quot; launch --node-may-never-run --ini-path=&quot;&quot;[OREDDATAFOLDER]ored\freenet.ini&quot;&quot;&quot;"
                           WorkingDirectory="dirBin" Icon="icooldenet"/>
-                <RegistryValue Root="HKCU" Key="Software\Oldenet\Oldenet\Desktop" Name="installed" Type="integer"
+                <RegistryValue Root="HKMU" Key="Software\Oldenet\Oldenet\Desktop" Name="installed" Type="integer"
                                Value="1" KeyPath="yes"/>
             </Component>
         </DirectoryRef>
@@ -214,18 +217,18 @@ Multi-language support
             <Custom Action="QtExecCreateWrapperConf" After="InstallFiles">
                 NOT Installed AND NOT REMOVE
                 AND
-                (ALLUSERS="" OR (ALLUSERS=2 AND (NOT Privileged)))
+                MSIINSTALLPERUSER=1
             </Custom>
             <Custom Action="QtExecCreateWrapperConfAllusers" After="InstallFiles">
                 NOT Installed AND NOT REMOVE
                 AND
-                (ALLUSERS=1 OR (ALLUSERS=2 AND Privileged))
+                MSIINSTALLPERUSER=""
             </Custom>
             <Custom Action="RollbackCreateWrapperConf" Before="QtExecCreateWrapperConf">
-                ALLUSERS="" OR (ALLUSERS=2 AND (NOT Privileged))
+                MSIINSTALLPERUSER=1
             </Custom>
             <Custom Action="RollbackCreateWrapperConfAllusers" Before="QtExecCreateWrapperConf">
-                ALLUSERS=1 OR (ALLUSERS=2 AND Privileged)
+                MSIINSTALLPERUSER=""
             </Custom>
 
             <Custom Action="QtExecDeleteDataDir" Before="InstallFinalize">

@@ -8,16 +8,12 @@
 
         <PropertyRef Id="ApplicationFolderName"/>
 
-        <CustomAction Id="WixSetDefaultPerUserAppFolder" Property="WixPerUserAppFolder"
-                      Value="[LocalAppDataFolder]Apps\[ApplicationFolderName]" Execute="immediate"/>
-        <CustomAction Id="WixSetDefaultPerMachineAppFolder" Property="WixPerMachineAppFolder"
+        <CustomAction Id="WixSetDefaultAppFolder" Property="WixAppFolder"
                       Value="[ProgramFilesFolder][ApplicationFolderName]" Execute="immediate"/>
-        <CustomAction Id="WixSetDefaultPerMachineAppFolder64" Property="WixPerMachineAppFolder"
+        <CustomAction Id="WixSetDefaultApp64Folder" Property="WixAppFolder"
                       Value="[ProgramFiles64Folder][ApplicationFolderName]" Execute="immediate"/>
 
-        <CustomAction Id="WixSetPerUserAppFolder" Property="APPLICATIONFOLDER" Value="[WixPerUserAppFolder]"
-                      Execute="immediate"/>
-        <CustomAction Id="WixSetPerMachineAppFolder" Property="APPLICATIONFOLDER" Value="[WixPerMachineAppFolder]"
+        <CustomAction Id="WixSetAppFolder" Property="APPLICATIONFOLDER" Value="[WixAppFolder]"
                       Execute="immediate"/>
 
         <CustomAction Id="WixSetDefaultPerUserOredDataFolder" Property="WixPerUserOredDataFolder"
@@ -31,56 +27,32 @@
                       Value="[WixPerMachineOredDataFolder]" Execute="immediate"/>
 
         <InstallExecuteSequence>
-            <Custom Action="WixSetDefaultPerUserAppFolder" Before="CostFinalize"/>
-            <Custom Action="WixSetDefaultPerMachineAppFolder" After="WixSetDefaultPerUserAppFolder">
+            <Custom Action="WixSetDefaultAppFolder" Before="CostFinalize">
                 Not VersionNT64
             </Custom>
-            <Custom Action="WixSetDefaultPerMachineAppFolder64" After="WixSetDefaultPerMachineAppFolder">
+            <Custom Action="WixSetDefaultApp64Folder" After="WixSetDefaultAppFolder">
                 VersionNT64
             </Custom>
-            <Custom Action="WixSetPerUserAppFolder" After="WixSetDefaultPerMachineAppFolder64">
-                ACTION="INSTALL"
-                AND
+            <Custom Action="WixSetAppFolder" After="WixSetDefaultApp64Folder">
                 APPLICATIONFOLDER=""
-                AND
-                (ALLUSERS="" OR (ALLUSERS=2 AND (NOT Privileged)))
             </Custom>
-            <Custom Action="WixSetPerMachineAppFolder" After="WixSetPerUserAppFolder">
-                ACTION="INSTALL"
-                AND
-                APPLICATIONFOLDER=""
-                AND
-                (ALLUSERS=1 OR (ALLUSERS=2 AND Privileged))
-            </Custom>
-            <Custom Action="WixSetDefaultPerUserOredDataFolder" After="WixSetPerMachineAppFolder"/>
+            <Custom Action="WixSetDefaultPerUserOredDataFolder" After="WixSetAppFolder"/>
             <Custom Action="WixSetDefaultPerMachineOredDataFolder" After="WixSetDefaultPerUserOredDataFolder"/>
             <Custom Action="WixSetPerUserOredDataFolder" After="WixSetDefaultPerMachineOredDataFolder">
                 OREDDATAFOLDER=""
             </Custom>
         </InstallExecuteSequence>
         <InstallUISequence>
-            <Custom Action="WixSetDefaultPerUserAppFolder" Before="CostFinalize"/>
-            <Custom Action="WixSetDefaultPerMachineAppFolder" After="WixSetDefaultPerUserAppFolder">
+            <Custom Action="WixSetDefaultAppFolder" Before="CostFinalize">
                 Not VersionNT64
             </Custom>
-            <Custom Action="WixSetDefaultPerMachineAppFolder64" After="WixSetDefaultPerMachineAppFolder">
+            <Custom Action="WixSetDefaultApp64Folder" After="WixSetDefaultAppFolder">
                 VersionNT64
             </Custom>
-            <Custom Action="WixSetPerUserAppFolder" After="WixSetDefaultPerMachineAppFolder64">
-                ACTION="INSTALL"
-                AND
+            <Custom Action="WixSetAppFolder" After="WixSetDefaultApp64Folder">
                 APPLICATIONFOLDER=""
-                AND
-                (ALLUSERS="" OR (ALLUSERS=2 AND (NOT Privileged)))
             </Custom>
-            <Custom Action="WixSetPerMachineAppFolder" After="WixSetPerUserAppFolder">
-                ACTION="INSTALL"
-                AND
-                APPLICATIONFOLDER=""
-                AND
-                (ALLUSERS=1 OR (ALLUSERS=2 AND Privileged))
-            </Custom>
-            <Custom Action="WixSetDefaultPerUserOredDataFolder" After="WixSetPerMachineAppFolder"/>
+            <Custom Action="WixSetDefaultPerUserOredDataFolder" After="WixSetAppFolder"/>
             <Custom Action="WixSetDefaultPerMachineOredDataFolder" After="WixSetDefaultPerUserOredDataFolder"/>
             <Custom Action="WixSetPerUserOredDataFolder" After="WixSetDefaultPerMachineOredDataFolder"/>
         </InstallUISequence>
@@ -129,15 +101,11 @@
                      Order="1">
                 NOT Installed
             </Publish>
-            <Publish Dialog="OredSetupTypeDlg" Control="Back" Property="ALLUSERS" Value="{}" Order="2">
+            <Publish Dialog="OredSetupTypeDlg" Control="Back" Property="MSIINSTALLPERUSER" Value="1" Order="2">
                 NOT Installed
             </Publish>
             <Publish Dialog="OredSetupTypeDlg" Control="Back" Event="DoAction" Value="WixSetPerUserOredDataFolder"
                      Order="3">
-                NOT Installed
-            </Publish>
-            <Publish Dialog="OredSetupTypeDlg" Control="Back" Event="DoAction" Value="WixSetPerUserAppFolder"
-                     Order="4">
                 NOT Installed
             </Publish>
             <Publish Dialog="OredSetupTypeDlg" Control="Back" Event="NewDialog" Value="AdvancedWelcomeEulaDlg"
@@ -153,17 +121,12 @@
                 Installed
             </Publish>
 
-            <Publish Dialog="OredSetupTypeDlg" Control="NormalButton" Property="ALLUSERS" Value="{}" Order="1">
+            <Publish Dialog="OredSetupTypeDlg" Control="NormalButton" Property="MSIINSTALLPERUSER" Value="1" Order="1">
                 1
             </Publish>
             <Publish Dialog="OredSetupTypeDlg" Control="NormalButton" Event="DoAction"
                      Value="WixSetPerUserOredDataFolder"
                      Order="2">
-                1
-            </Publish>
-            <Publish Dialog="OredSetupTypeDlg" Control="NormalButton" Event="DoAction"
-                     Value="WixSetPerUserAppFolder"
-                     Order="3">
                 1
             </Publish>
             <Publish Dialog="OredSetupTypeDlg" Control="NormalButton" Event="SetInstallLevel"
@@ -176,13 +139,8 @@
                 1
             </Publish>
 
-            <Publish Dialog="OredSetupTypeDlg" Control="ServiceButton" Property="ALLUSERS" Value="1" Order="1">
+            <Publish Dialog="OredSetupTypeDlg" Control="ServiceButton" Property="MSIINSTALLPERUSER" Order="1">
                 1
-            </Publish>
-            <Publish Dialog="OredSetupTypeDlg" Control="ServiceButton" Event="DoAction"
-                     Value="WixSetPerMachineAppFolder"
-                     Order="2">
-                NOT Installed
             </Publish>
             <Publish Dialog="OredSetupTypeDlg" Control="ServiceButton" Event="DoAction"
                      Value="WixSetPerMachineOredDataFolder"
@@ -208,21 +166,10 @@
                      Order="1">
                 NOT Privileged
             </Publish>
-            <Publish Dialog="InstallScopeDlg" Control="Next" Property="ALLUSERS" Value="{}" Order="2">
+            <Publish Dialog="InstallScopeDlg" Control="Next" Property="MSIINSTALLPERUSER" Value="1" Order="2">
                 WixAppFolder = "WixPerUserFolder"
             </Publish>
-            <Publish Dialog="InstallScopeDlg" Control="Next" Property="ALLUSERS" Value="1" Order="3">
-                WixAppFolder = "WixPerMachineFolder"
-            </Publish>
-            <Publish Dialog="InstallScopeDlg" Control="Next" Event="DoAction" Value="WixSetPerUserAppFolder" Order="4">
-                NOT Installed
-                AND
-                WixAppFolder = "WixPerUserFolder"
-            </Publish>
-            <Publish Dialog="InstallScopeDlg" Control="Next" Event="DoAction" Value="WixSetPerMachineAppFolder"
-                     Order="5">
-                NOT Installed
-                AND
+            <Publish Dialog="InstallScopeDlg" Control="Next" Property="MSIINSTALLPERUSER" Order="3">
                 WixAppFolder = "WixPerMachineFolder"
             </Publish>
             <Publish Dialog="InstallScopeDlg" Control="Next" Event="DoAction" Value="WixSetPerUserOredDataFolder"
