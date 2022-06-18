@@ -18,7 +18,6 @@
 package freenet.cli.subcommand;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.DatagramSocket;
@@ -30,7 +29,6 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.time.Duration;
 import java.util.Scanner;
@@ -41,10 +39,9 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
+import com.sun.jna.Platform;
+import freenet.cli.mixin.IniPathOption;
 import freenet.support.SimpleFieldSet;
-import net.harawata.appdirs.AppDirs;
-import net.harawata.appdirs.AppDirsFactory;
-import org.apache.commons.lang3.SystemUtils;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -58,9 +55,8 @@ public class Launch implements Callable<Integer> {
 	@CommandLine.Spec
 	CommandLine.Model.CommandSpec spec;
 
-	@Option(names = "--ini-path", paramLabel = "PATH",
-			description = "Path to freenet.ini. If not specified, I'll look for it in default user data directory.")
-	Path iniPath;
+	@CommandLine.Mixin
+	private IniPathOption iniPathOptionMixin;
 
 	@Option(names = "--ored-path", paramLabel = "PATH",
 			description = "Path to ored.bat/ored.sh start script. If not specified, I'll look for it in the same directory I'm in.")
@@ -84,7 +80,7 @@ public class Launch implements Callable<Integer> {
 			var cwd = System.getProperty("user.dir");
 			System.out.println("Working dir: " + cwd);
 
-			if (SystemUtils.IS_OS_WINDOWS) {
+			if (Platform.isWindows()) {
 				this.oredPath = Path.of(cwd + "/ored.bat");
 			}
 			else {
@@ -97,19 +93,13 @@ public class Launch implements Callable<Integer> {
 			}
 		}
 
-		if (this.iniPath == null) {
-			AppDirs appDirs = AppDirsFactory.getInstance();
-			File userDataDir = new File(appDirs.getUserDataDir("ored", "", "Oldenet"));
-			this.iniPath = Paths.get(userDataDir.getAbsolutePath(), "freenet.ini");
-		}
-
-		if (!Files.exists(this.iniPath) && this.nodeMayNeverRun) {
+		if (!Files.exists(this.iniPathOptionMixin.iniPath) && this.nodeMayNeverRun) {
 			// Assume that the node has never run and freenet.ini hasn't been created
 			// Try to start ored
 			System.out.println("Preparing for first run. Please be patient.");
 
 			// Create logs dir in data dir for wrapper.log
-			var logdir = this.iniPath.getParent().resolve("logs");
+			var logdir = this.iniPathOptionMixin.iniPath.getParent().resolve("logs");
 			if (!Files.exists(logdir)) {
 				Files.createDirectories(logdir);
 			}
@@ -117,13 +107,13 @@ public class Launch implements Callable<Integer> {
 			this.startNode();
 			for (var i = 0; i < 15; i++) {
 				TimeUnit.SECONDS.sleep(2);
-				if (Files.exists(this.iniPath)) {
+				if (Files.exists(this.iniPathOptionMixin.iniPath)) {
 					break;
 				}
 			}
 		}
 
-		try (var br = Files.newBufferedReader(this.iniPath)) {
+		try (var br = Files.newBufferedReader(this.iniPathOptionMixin.iniPath)) {
 			var sfs = new SimpleFieldSet(br, true, true);
 
 			// Try to connect to node port
@@ -218,13 +208,13 @@ public class Launch implements Callable<Integer> {
 			try {
 				var rt = Runtime.getRuntime();
 
-				if (SystemUtils.IS_OS_WINDOWS) {
+				if (Platform.isWindows()) {
 					rt.exec("cmd.exe /c \"start " + fproxyUrl + "\"");
 				}
-				else if (SystemUtils.IS_OS_MAC) {
+				else if (Platform.isMac()) {
 					rt.exec("open " + fproxyUrl);
 				}
-				else if (SystemUtils.IS_OS_LINUX) {
+				else if (Platform.isLinux()) {
 					rt.exec("x-www-browser " + fproxyUrl);
 				}
 				else {
@@ -238,7 +228,7 @@ public class Launch implements Callable<Integer> {
 		catch (IOException ex) {
 			throw new CommandLine.ParameterException(this.spec.commandLine(),
 					"Unable to read freenet.ini file. Check whether --ini-path is correct and freenet.ini has proper permission set.",
-					ex, this.spec.findOption("--ini-path"), this.iniPath.toString());
+					ex, this.spec.findOption("--ini-path"), this.iniPathOptionMixin.iniPath.toString());
 		}
 
 		return 0;
@@ -252,7 +242,7 @@ public class Launch implements Callable<Integer> {
 
 		var rt = Runtime.getRuntime();
 
-		if (SystemUtils.IS_OS_WINDOWS) {
+		if (Platform.isWindows()) {
 			var scProcess = rt.exec("sc query ored");
 			Scanner reader = new Scanner(scProcess.getInputStream(), StandardCharsets.UTF_8);
 			var serviceInstalled = false;
