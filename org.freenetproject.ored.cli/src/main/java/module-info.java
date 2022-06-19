@@ -7,6 +7,6 @@ module org.freenetproject.ored.cli {
     requires com.sun.jna.platform;
 
     opens freenet.cli to info.picocli;
-    opens freenet.cli.subcommand to info.picocli;
+    opens freenet.cli.subcommand to info.picocli, com.sun.jna;
     opens freenet.cli.mixin to info.picocli;
 }

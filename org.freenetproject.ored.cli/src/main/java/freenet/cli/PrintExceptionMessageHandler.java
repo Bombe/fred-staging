@@ -24,7 +24,12 @@ class PrintExceptionMessageHandler implements CommandLine.IExecutionExceptionHan
 	public int handleExecutionException(Exception ex, CommandLine cmd, CommandLine.ParseResult parseResult) {
 
 		// bold red error message
-		cmd.getErr().println(cmd.getColorScheme().errorText(ex.getMessage()));
+		if (ex.getMessage() != null) {
+			cmd.getErr().println(cmd.getColorScheme().errorText(ex.getMessage()));
+		}
+
+		// ex.printStackTrace();
+
 		cmd.usage(System.out);
 
 		return cmd.getExitCodeExceptionMapper() != null ? cmd.getExitCodeExceptionMapper().getExitCode(ex)

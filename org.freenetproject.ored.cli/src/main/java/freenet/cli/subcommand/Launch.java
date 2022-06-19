@@ -20,8 +20,6 @@ package freenet.cli.subcommand;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.DatagramSocket;
-import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -40,6 +38,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 import com.sun.jna.Platform;
+import freenet.cli.Common;
 import freenet.cli.mixin.IniPathOption;
 import freenet.support.SimpleFieldSet;
 import picocli.CommandLine;
@@ -122,16 +121,15 @@ public class Launch implements Callable<Integer> {
 
 			var nodeIsRunning = false;
 			if (!this.nodeHasRun) {
-				// Check if Oldenet is running
-				try (var ignored = new DatagramSocket(new InetSocketAddress(bindTo, listenPort))) {
+				// Detect if Oldenet is running
+				nodeIsRunning = Common.detectNodeIsRunning(bindTo, listenPort);
+				if (!nodeIsRunning) {
 					// If not, start Oldenet
 					System.out.println("Node is not running. Starting...");
 					this.startNode();
 				}
-				catch (IOException ex) {
-					// Unable to bind to the port. Node is running.
+				else {
 					System.out.println("Node is running.");
-					nodeIsRunning = true;
 				}
 			}
 

@@ -17,22 +17,31 @@
 
 package freenet.cli;
 
-import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.IOException;
+import java.net.DatagramSocket;
+import java.net.InetSocketAddress;
 
-import net.harawata.appdirs.AppDirs;
-import net.harawata.appdirs.AppDirsFactory;
-
-final class Common {
+public final class Common {
 
 	private Common() {
 	}
 
-	static Path getDefaultIniPath() {
-		AppDirs appDirs = AppDirsFactory.getInstance();
-		File userDataDir = new File(appDirs.getUserDataDir("ored", "", "Oldenet"));
-		return Paths.get(userDataDir.getAbsolutePath(), "freenet.ini");
+	/**
+	 * Detect whether a node is running by trying to bind the same port as the node.
+	 * @param hostname Hostname or IP address to bind to
+	 * @param port Port number to bind to
+	 * @return whether the node is running
+	 */
+	public static boolean detectNodeIsRunning(String hostname, int port) {
+		try (var ignored = new DatagramSocket(new InetSocketAddress(hostname, port))) {
+			// If not, start Oldenet
+			return false;
+		}
+		catch (IOException ex) {
+			// Unable to bind to the port. Node is running.
+			return true;
+		}
+
 	}
 
 }
