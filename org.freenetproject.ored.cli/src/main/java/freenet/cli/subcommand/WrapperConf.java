@@ -44,7 +44,7 @@ public class WrapperConf implements Callable<Integer> {
 			writer.append(this.iniPathOptionMixin.iniPath.toString());
 			writer.append("\"\n");
 			writer.append("wrapper.logfile=");
-			writer.append(this.iniPathOptionMixin.iniPath.getParent().resolve("/logs/wrapper.log").toString());
+			writer.append(this.iniPathOptionMixin.iniPath.getParent().resolve("logs/wrapper.log").toString());
 			writer.append("\n");
 		}
 		return 0;
