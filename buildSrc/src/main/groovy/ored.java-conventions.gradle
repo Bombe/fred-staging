@@ -32,6 +32,7 @@ extraJavaModuleInfo {
     failOnMissingModuleInfo.set(false)
     module('wrapper.jar', 'org.tanukisoftware.wrapper', '3.5.49') {
         exports 'org.tanukisoftware.wrapper'
+        exports 'org.tanukisoftware.wrapper.jmx'
     }
 
     module('net.harawata:appdirs', 'net.harawata.appdirs') {

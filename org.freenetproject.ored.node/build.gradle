@@ -37,7 +37,7 @@ jlink {
             '--compress', '2',
             '--no-header-files',
             '--no-man-pages',
-            '--add-modules', 'org.freenetproject.ored.node',
+            '--add-modules', 'org.freenetproject.ored.node,jdk.management.agent',
 //            '--strip-debug'
     ]
 
