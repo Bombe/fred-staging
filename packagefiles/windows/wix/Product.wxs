@@ -152,6 +152,7 @@ Multi-language support
                                 ErrorControl="critical" Interactive="no" Arguments="-s &quot;[!filWrapperConf]&quot;">
                     <util:ServiceConfig FirstFailureActionType="restart" SecondFailureActionType="restart"
                                         ThirdFailureActionType="none" RestartServiceDelayInSeconds="5"/>
+                    <util:PermissionEx User="Users" ServiceStart="yes" ServiceStop="yes"/>
                 </ServiceInstall>
                 <ServiceControl Id="scOred" Name="ored" Start="install" Stop="both"
                                 Remove="both" Wait="yes"/>

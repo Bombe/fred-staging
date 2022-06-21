@@ -253,7 +253,11 @@ public class Launch implements Callable<Integer> {
 			}
 
 			if (serviceInstalled) {
-				rt.exec(this.oredPath.getParent() + "\\Elevate.exe net start ored");
+				// All user have permission to start/stop the service now. No need to
+				// elevate.
+				// rt.exec(this.oredPath.getParent() + "\\Elevate.exe net start ored");
+				rt.exec("cmd.exe /c \"net start ored\"");
+				System.out.println("Oldenet service started.");
 			}
 			else {
 				rt.exec("cmd.exe /c start cmd.exe /c \"" + this.oredPath + "\"");
