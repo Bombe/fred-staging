@@ -8,6 +8,6 @@ set CDS_JVM_OPTS=-XX:ArchiveClassesAtExit=%CDS_ARCHIVE_FILE%
 if exist %CDS_ARCHIVE_FILE% set CDS_JVM_OPTS=-XX:SharedArchiveFile=%CDS_ARCHIVE_FILE%
 <% } %>
 
-pushd %DIR% & %JAVA_EXEC% %CDS_JVM_OPTS% ${jvmArgs} -p "%~dp0/../app" -m ${moduleName}/${mainClassName} ${args} %* & popd
+pushd %DIR% & %JAVA_EXEC% -ea %CDS_JVM_OPTS% ${jvmArgs} -p "%~dp0/../app" -m ${moduleName}/${mainClassName} ${args} %* & popd
 
 EXIT /B %ERRORLEVEL%
