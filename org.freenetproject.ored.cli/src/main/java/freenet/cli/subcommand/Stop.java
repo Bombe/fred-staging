@@ -18,16 +18,23 @@ import javax.management.remote.JMXServiceURL;
 
 import com.sun.jna.LastErrorException;
 import com.sun.jna.Memory;
+import com.sun.jna.Native;
 import com.sun.jna.Platform;
+import com.sun.jna.Pointer;
+import com.sun.jna.platform.win32.Advapi32;
 import com.sun.jna.platform.win32.IPHlpAPI;
 import com.sun.jna.platform.win32.Kernel32;
+import com.sun.jna.platform.win32.Tlhelp32;
 import com.sun.jna.platform.win32.WinBase;
+import com.sun.jna.platform.win32.WinDef;
 import com.sun.jna.platform.win32.WinError;
 import com.sun.jna.platform.win32.WinNT;
+import com.sun.jna.platform.win32.Winsvc;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.tools.attach.AttachNotSupportedException;
 import com.sun.tools.attach.VirtualMachine;
 import com.sun.tools.attach.VirtualMachineDescriptor;
+import freenet.cli.Common;
 import freenet.cli.mixin.IniPathOption;
 import freenet.support.SimpleFieldSet;
 import org.tanukisoftware.wrapper.jmx.WrapperManagerMBean;
@@ -54,6 +61,11 @@ public class Stop implements Callable<Integer> {
 			var bindTo = sfs.get("node.bindTo");
 			var addr = new InetSocketAddress(bindTo, listenPort);
 
+			if (!Common.detectNodeIsRunning(bindTo, listenPort)) {
+				System.out.println("Node is not running.");
+				return 0;
+			}
+
 			int pid = 0;
 
 			if (Platform.isWindows()) {
@@ -69,11 +81,11 @@ public class Stop implements Callable<Integer> {
 					var ret = ipHlpApi.GetExtendedUdpTable(pUdpTable, bufSize, true, IPHlpAPI.AF_INET,
 							IPHlpAPI.UDP_TABLE_CLASS.UDP_TABLE_OWNER_PID, 0);
 
-					var udpTable = new IPHlpAPI.MIB_UDPTABLE_OWNER_PID(pUdpTable);
-
 					if (ret != WinError.NO_ERROR) {
 						throw new LastErrorException("Error retrieving the socket table.");
 					}
+
+					var udpTable = new IPHlpAPI.MIB_UDPTABLE_OWNER_PID(pUdpTable);
 
 					for (IPHlpAPI.MIB_UDPROW_OWNER_PID row : udpTable.table) {
 
@@ -184,9 +196,19 @@ public class Stop implements Callable<Integer> {
 					}
 				}
 
-				// TODO: Force stop pid
-				// TODO: Stop service
+				if (!stopped) {
+					System.out.println("Unable to stop ored via JMX. Trying other ways...");
+
+					// Try to stop service
+					var serviceName = findServiceNameByPID(pid);
+					if (serviceName != null) {
+
+					}
+
+					// TODO: Force stop pid
+				}
 			}
+
 		}
 		catch (IOException ex) {
 			throw new CommandLine.ParameterException(this.spec.commandLine(),
@@ -197,12 +219,119 @@ public class Stop implements Callable<Integer> {
 		return 0;
 	}
 
+	/**
+	 * Convert network Port integer returned from JNA windows API to java int
+	 * @param dwLocalPort port integer returned from JNA
+	 * @return real port number
+	 */
 	private static int convertPort(int dwLocalPort) {
 		var portBf = ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN).putInt(dwLocalPort);
 		var portBytes = Arrays.copyOfRange(portBf.array(), 0, 2);
 		var portBytesNew = new byte[Integer.BYTES];
 		System.arraycopy(portBytes, 0, portBytesNew, 2, 2);
 		return ByteBuffer.wrap(portBytesNew).getInt();
+	}
+
+	/**
+	 * Find Windows service name by given process ID
+	 * @param pid process ID
+	 * @return service name. null if not found.
+	 */
+	private String findServiceNameByPID(int pid) {
+
+		assert Platform.isWindows();
+
+		var wrapperPid = findWrapperPid(pid);
+		if (wrapperPid == 0) {
+			// Its parent process is not wrapper. So it shouldn't be running as service.
+			return null;
+		}
+		System.out.println("Wrapper PID: " + wrapperPid);
+
+		var advapi32 = Advapi32.INSTANCE;
+
+		var scManager = advapi32.OpenSCManager(null, null, WinNT.GENERIC_READ);
+
+		var pcbBytesNeeded = new IntByReference();
+		var lpServicesReturned = new IntByReference();
+		var lpResumeHandle = new IntByReference();
+		var ret = advapi32.EnumServicesStatusEx(scManager, Winsvc.SC_ENUM_PROCESS_INFO, WinNT.SERVICE_WIN32_OWN_PROCESS,
+				Winsvc.SERVICE_STATE_ALL, null, 0, pcbBytesNeeded, lpServicesReturned, lpResumeHandle, null);
+		if (!ret) {
+			var errno = Native.getLastError();
+			if (errno == WinError.ERROR_MORE_DATA) {
+
+				var lpServices = new Memory(pcbBytesNeeded.getValue());
+
+				ret = advapi32.EnumServicesStatusEx(scManager, Winsvc.SC_ENUM_PROCESS_INFO,
+						WinNT.SERVICE_WIN32_OWN_PROCESS, Winsvc.SERVICE_STATE_ALL, lpServices,
+						pcbBytesNeeded.getValue(), pcbBytesNeeded, lpServicesReturned, lpResumeHandle, null);
+				if (!ret) {
+					// TODO: load more services if one call of EnumServicesStatusEx is not
+					// enough
+					throw new LastErrorException("Unable to enum services");
+				}
+
+				for (var i = 0; i < lpServicesReturned.getValue(); i++) {
+					var status = new ENUM_SERVICE_STATUS_PROCESS(lpServices, i);
+					if (status.ServiceStatusProcess.dwProcessId == wrapperPid) {
+						System.out.println("Found service: " + status.lpDisplayName + " Process ID: " + pid);
+						return status.lpServiceName;
+					}
+				}
+			}
+		}
+
+		return null;
+	}
+
+	private static int findWrapperPid(int pid) {
+		if (Platform.isWindows()) {
+			var kernel32 = Kernel32.INSTANCE;
+			var snapshot = kernel32.CreateToolhelp32Snapshot(Tlhelp32.TH32CS_SNAPPROCESS, new WinDef.DWORD());
+
+			WinDef.DWORD parentPid = null;
+			var pe = new Tlhelp32.PROCESSENTRY32();
+			if (kernel32.Process32First(snapshot, pe)) {
+				do {
+					if (pe.th32ProcessID.equals(new WinDef.DWORD(pid))) {
+						parentPid = pe.th32ParentProcessID;
+						break;
+					}
+				}
+				while (kernel32.Process32Next(snapshot, pe));
+			}
+
+			if (parentPid != null && kernel32.Process32First(snapshot, pe)) {
+				do {
+					if (pe.th32ProcessID.equals(parentPid)) {
+						var exeFile = new String(pe.szExeFile);
+						System.out.println(exeFile);
+						if (exeFile.startsWith("wrapper")) {
+							return parentPid.intValue();
+						}
+						else {
+							// Its parent process is not wrapper
+							return 0;
+						}
+					}
+				}
+				while (kernel32.Process32Next(snapshot, pe));
+			}
+
+		}
+
+		return 0;
+	}
+
+	static class ENUM_SERVICE_STATUS_PROCESS extends Winsvc.ENUM_SERVICE_STATUS_PROCESS {
+
+		ENUM_SERVICE_STATUS_PROCESS(Pointer p, int count) {
+			super();
+			this.useMemory(p, this.size() * count);
+			this.read();
+		}
+
 	}
 
 }
