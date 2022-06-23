@@ -36,7 +36,6 @@ import javax.management.remote.JMXServiceURL;
 import com.sun.jna.LastErrorException;
 import com.sun.jna.Memory;
 import com.sun.jna.Platform;
-import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.IPHlpAPI;
 import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.Tlhelp32;
@@ -139,7 +138,7 @@ public class Stop implements Callable<Integer> {
 						stopped = true;
 						System.out.println("Service stopped.");
 					}
-					catch (Exception ex) {
+					catch (Win32Exception ex) {
 						System.out
 								.println("Unable to stop ored service. Trying other ways... Error: " + ex.getMessage());
 					}
@@ -354,16 +353,6 @@ public class Stop implements Callable<Integer> {
 		}
 
 		return 0;
-	}
-
-	static class ENUM_SERVICE_STATUS_PROCESS extends Winsvc.ENUM_SERVICE_STATUS_PROCESS {
-
-		ENUM_SERVICE_STATUS_PROCESS(Pointer p, int count) {
-			super();
-			this.useMemory(p, this.size() * count);
-			this.read();
-		}
-
 	}
 
 }
