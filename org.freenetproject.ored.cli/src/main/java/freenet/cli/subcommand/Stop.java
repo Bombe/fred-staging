@@ -35,13 +35,13 @@ import javax.management.remote.JMXServiceURL;
 
 import com.sun.jna.LastErrorException;
 import com.sun.jna.Memory;
-import com.sun.jna.Native;
 import com.sun.jna.Platform;
 import com.sun.jna.Pointer;
-import com.sun.jna.platform.win32.Advapi32;
 import com.sun.jna.platform.win32.IPHlpAPI;
 import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.Tlhelp32;
+import com.sun.jna.platform.win32.W32ServiceManager;
+import com.sun.jna.platform.win32.Win32Exception;
 import com.sun.jna.platform.win32.WinBase;
 import com.sun.jna.platform.win32.WinDef;
 import com.sun.jna.platform.win32.WinError;
@@ -132,9 +132,12 @@ public class Stop implements Callable<Integer> {
 				// Try to stop service
 				var serviceName = this.findServiceNameByPID(pid);
 				if (serviceName != null) {
-					try {
-						Common.controlService(serviceName, Common.ServiceOp.STOP);
+					try (var serviceManager = new W32ServiceManager(WinNT.GENERIC_READ);
+							var service = serviceManager.openService(serviceName,
+									Winsvc.SERVICE_STOP | Winsvc.SERVICE_QUERY_STATUS)) {
+						service.stopService(30000);
 						stopped = true;
+						System.out.println("Service stopped.");
 					}
 					catch (Exception ex) {
 						System.out
@@ -297,47 +300,18 @@ public class Stop implements Callable<Integer> {
 		}
 		System.out.println("Wrapper PID: " + wrapperPid);
 
-		var advapi32 = Advapi32.INSTANCE;
-
-		var scManager = advapi32.OpenSCManager(null, null, WinNT.GENERIC_READ);
-		if (scManager == null) {
-			var error = Native.getLastError();
-			if (error == WinError.ERROR_ACCESS_DENIED) {
-				// TODO: elevate and try again
-			}
-			else {
-				throw new LastErrorException("Unable to OpenSCManager()");
+		try (var scManager = new W32ServiceManager(WinNT.GENERIC_READ)) {
+			var serviceStatusProcesses = scManager.enumServicesStatusExProcess(WinNT.SERVICE_WIN32_OWN_PROCESS,
+					Winsvc.SERVICE_STATE_ALL, null);
+			for (var status : serviceStatusProcesses) {
+				if (status.ServiceStatusProcess.dwProcessId == wrapperPid) {
+					System.out.println("Found service: " + status.lpDisplayName + " Process ID: " + pid);
+					return status.lpServiceName;
+				}
 			}
 		}
-
-		var pcbBytesNeeded = new IntByReference();
-		var lpServicesReturned = new IntByReference();
-		var lpResumeHandle = new IntByReference();
-		var ret = advapi32.EnumServicesStatusEx(scManager, Winsvc.SC_ENUM_PROCESS_INFO, WinNT.SERVICE_WIN32_OWN_PROCESS,
-				Winsvc.SERVICE_STATE_ALL, null, 0, pcbBytesNeeded, lpServicesReturned, lpResumeHandle, null);
-		if (!ret) {
-			var errno = Native.getLastError();
-			if (errno == WinError.ERROR_MORE_DATA) {
-
-				var lpServices = new Memory(pcbBytesNeeded.getValue());
-
-				ret = advapi32.EnumServicesStatusEx(scManager, Winsvc.SC_ENUM_PROCESS_INFO,
-						WinNT.SERVICE_WIN32_OWN_PROCESS, Winsvc.SERVICE_STATE_ALL, lpServices,
-						pcbBytesNeeded.getValue(), pcbBytesNeeded, lpServicesReturned, lpResumeHandle, null);
-				if (!ret) {
-					// TODO: load more services if one call of EnumServicesStatusEx is not
-					// enough
-					throw new LastErrorException("Unable to enum services");
-				}
-
-				for (var i = 0; i < lpServicesReturned.getValue(); i++) {
-					var status = new ENUM_SERVICE_STATUS_PROCESS(lpServices, i);
-					if (status.ServiceStatusProcess.dwProcessId == wrapperPid) {
-						System.out.println("Found service: " + status.lpDisplayName + " Process ID: " + pid);
-						return status.lpServiceName;
-					}
-				}
-			}
+		catch (Win32Exception ex) {
+			System.out.println("Unable to open service manager.");
 		}
 
 		return null;
