@@ -1,3 +1,20 @@
+/*
+ * Copyright 2022 Marine Master
+ *
+ * This file is part of Oldenet.
+ *
+ * Oldenet is free software: you can redistribute it and/or modify it under the terms of
+ * the GNU General Public License as published by the Free Software Foundation, either
+ * version 3 of the License, or any later version.
+ *
+ * Oldenet is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with Oldenet.
+ * If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package freenet.cli.subcommand;
 
 import java.io.IOException;
@@ -112,101 +129,114 @@ public class Stop implements Callable<Integer> {
 
 			if (pid != 0) {
 
-				// Try to find and attach to the VM
-
-				List<VirtualMachineDescriptor> vms = VirtualMachine.list();
-
-				for (VirtualMachineDescriptor desc : vms) {
+				// Try to stop service
+				var serviceName = this.findServiceNameByPID(pid);
+				if (serviceName != null) {
 					try {
-						// The identifier is implementation-dependent but is typically the
-						// process identifier (or pid) in environments where each Java
-						// virtual
-						// machine runs in its own operating system process.
-						if (pid == Integer.parseInt(desc.id())) {
-							// Attach to VM
-							var vm = VirtualMachine.attach(desc.id());
-							vm.startLocalManagementAgent();
-
-							var props = vm.getAgentProperties();
-
-							final String CONNECTOR_ADDRESS_PROP = "com.sun.management.jmxremote.localConnectorAddress";
-
-							var connectorAddress = props.getProperty(CONNECTOR_ADDRESS_PROP);
-
-							if (connectorAddress == null) {
-								System.err.println("Unable to get vm local connector address.");
-								break;
-							}
-
-							var url = new JMXServiceURL(connectorAddress);
-							try (var connector = JMXConnectorFactory.connect(url)) {
-								var mBeanConn = connector.getMBeanServerConnection();
-								var mBeanName = new ObjectName("org.tanukisoftware.wrapper:type=WrapperManager");
-								var wrapperManagerBean = (WrapperManagerMBean) MBeanServerInvocationHandler
-										.newProxyInstance(mBeanConn, mBeanName, WrapperManagerMBean.class, false);
-
-								wrapperManagerBean.stop(0);
-
-								if (Platform.isWindows()) {
-									var kernel32 = Kernel32.INSTANCE;
-
-									var handle = kernel32.OpenProcess(WinNT.PROCESS_QUERY_LIMITED_INFORMATION, false,
-											pid);
-
-									for (var i = 0; i < 10; i++) {
-										// Wait for the process to exit
-										TimeUnit.SECONDS.sleep(1);
-
-										var exitCode = new IntByReference();
-
-										if (kernel32.GetExitCodeProcess(handle, exitCode)) {
-											if (exitCode.getValue() != WinBase.STILL_ACTIVE) {
-												stopped = true;
-												break;
-											}
-										}
-										else {
-											throw new LastErrorException("Unable to GetExitCodeProcess()");
-										}
-
-									}
-
-									kernel32.CloseHandle(handle);
-								}
-
-								if (stopped) {
-									System.err.println("Stopped.");
-									break;
-								}
-							}
-							catch (IOException ex) {
-								if (!stopped) {
-									System.err.println("Unable to stop by JMX: " + ex.getMessage());
-								}
-							}
-						}
-
+						Common.controlService(serviceName, Common.ServiceOp.STOP);
+						stopped = true;
 					}
-					catch (NumberFormatException ignored) {
-						// Ignored and try next one
-					}
-					catch (AttachNotSupportedException ex) {
-						System.err.println("Unable to attach vm: " + ex.getMessage());
-						break;
+					catch (Exception ex) {
+						System.out
+								.println("Unable to stop ored service. Trying other ways... Error: " + ex.getMessage());
 					}
 				}
 
 				if (!stopped) {
-					System.out.println("Unable to stop ored via JMX. Trying other ways...");
+					// Try to find and attach to the VM
 
-					// Try to stop service
-					var serviceName = findServiceNameByPID(pid);
-					if (serviceName != null) {
+					List<VirtualMachineDescriptor> vms = VirtualMachine.list();
 
+					for (VirtualMachineDescriptor desc : vms) {
+						try {
+							// The identifier is implementation-dependent but is typically
+							// the
+							// process identifier (or pid) in environments where each Java
+							// virtual
+							// machine runs in its own operating system process.
+							if (pid == Integer.parseInt(desc.id())) {
+								// Attach to VM
+								var vm = VirtualMachine.attach(desc.id());
+								vm.startLocalManagementAgent();
+
+								var props = vm.getAgentProperties();
+
+								final String CONNECTOR_ADDRESS_PROP = "com.sun.management.jmxremote.localConnectorAddress";
+
+								var connectorAddress = props.getProperty(CONNECTOR_ADDRESS_PROP);
+
+								if (connectorAddress == null) {
+									System.err.println("Unable to get vm local connector address.");
+									break;
+								}
+
+								var url = new JMXServiceURL(connectorAddress);
+								try (var connector = JMXConnectorFactory.connect(url)) {
+									var mBeanConn = connector.getMBeanServerConnection();
+									var mBeanName = new ObjectName("org.tanukisoftware.wrapper:type=WrapperManager");
+									var wrapperManagerBean = (WrapperManagerMBean) MBeanServerInvocationHandler
+											.newProxyInstance(mBeanConn, mBeanName, WrapperManagerMBean.class, false);
+
+									wrapperManagerBean.stop(0);
+
+									if (Platform.isWindows()) {
+										var kernel32 = Kernel32.INSTANCE;
+
+										var handle = kernel32.OpenProcess(WinNT.PROCESS_QUERY_LIMITED_INFORMATION,
+												false, pid);
+
+										for (var i = 0; i < 10; i++) {
+											// Wait for the process to exit
+											TimeUnit.SECONDS.sleep(1);
+
+											var exitCode = new IntByReference();
+
+											if (kernel32.GetExitCodeProcess(handle, exitCode)) {
+												if (exitCode.getValue() != WinBase.STILL_ACTIVE) {
+													stopped = true;
+													break;
+												}
+											}
+											else {
+												throw new LastErrorException("GetExitCodeProcess() failed");
+											}
+
+										}
+
+										kernel32.CloseHandle(handle);
+									}
+
+									if (stopped) {
+										System.err.println("Stopped.");
+										break;
+									}
+								}
+								catch (IOException ex) {
+									if (!stopped) {
+										System.err.println("Unable to stop by JMX: " + ex.getMessage());
+									}
+								}
+							}
+
+						}
+						catch (NumberFormatException ignored) {
+							// Ignored and try next one
+						}
+						catch (AttachNotSupportedException ex) {
+							System.err.println("Unable to attach vm: " + ex.getMessage());
+							break;
+						}
 					}
+				}
+
+				if (!stopped) {
+					System.out.println("Unable to stop ored via JMX. Trying to kill the process.");
 
 					// TODO: Force stop pid
 				}
+			}
+			else {
+				System.out.println("Unable to find running process.");
 			}
 
 		}
@@ -251,6 +281,15 @@ public class Stop implements Callable<Integer> {
 		var advapi32 = Advapi32.INSTANCE;
 
 		var scManager = advapi32.OpenSCManager(null, null, WinNT.GENERIC_READ);
+		if (scManager == null) {
+			var error = Native.getLastError();
+			if (error == WinError.ERROR_ACCESS_DENIED) {
+				// TODO: elevate and try again
+			}
+			else {
+				throw new LastErrorException("Unable to OpenSCManager()");
+			}
+		}
 
 		var pcbBytesNeeded = new IntByReference();
 		var lpServicesReturned = new IntByReference();

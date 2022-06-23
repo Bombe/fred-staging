@@ -241,6 +241,8 @@ public class Launch implements Callable<Integer> {
 		var rt = Runtime.getRuntime();
 
 		if (Platform.isWindows()) {
+
+			// TODO: replace with win32 api
 			var scProcess = rt.exec("sc query ored");
 			Scanner reader = new Scanner(scProcess.getInputStream(), StandardCharsets.UTF_8);
 			var serviceInstalled = false;
