@@ -24,12 +24,10 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.SecureRandom;
 import java.time.Duration;
-import java.util.Scanner;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
@@ -38,6 +36,11 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 import com.sun.jna.Platform;
+import com.sun.jna.platform.win32.W32ServiceManager;
+import com.sun.jna.platform.win32.Win32Exception;
+import com.sun.jna.platform.win32.WinError;
+import com.sun.jna.platform.win32.WinNT;
+import com.sun.jna.platform.win32.Winsvc;
 import freenet.cli.Common;
 import freenet.cli.mixin.IniPathOption;
 import freenet.support.SimpleFieldSet;
@@ -127,6 +130,7 @@ public class Launch implements Callable<Integer> {
 					// If not, start Oldenet
 					System.out.println("Node is not running. Starting...");
 					this.startNode();
+					nodeIsRunning = true;
 				}
 				else {
 					System.out.println("Node is running.");
@@ -238,38 +242,44 @@ public class Launch implements Callable<Integer> {
 			return;
 		}
 
+		var started = false;
 		var rt = Runtime.getRuntime();
 
 		if (Platform.isWindows()) {
 
-			// TODO: replace with win32 api
-			var scProcess = rt.exec("sc query ored");
-			Scanner reader = new Scanner(scProcess.getInputStream(), StandardCharsets.UTF_8);
-			var serviceInstalled = false;
-			while (reader.hasNextLine()) {
-				if (reader.nextLine().contains("ored")) {
-					serviceInstalled = true;
-					System.out.println("Oldenet service detected.");
-					break;
+			try (var scManager = new W32ServiceManager(WinNT.GENERIC_READ)) {
+				try (var service = scManager.openService("ored", Winsvc.SERVICE_START | Winsvc.SERVICE_QUERY_STATUS)) {
+					System.out.print("Found Oldenet service. Starting...");
+					// All users have permission to start/stop the service. Permission is
+					// set by the installer. No need to elevate.
+					service.startService();
+					started = true;
+					System.out.println("Done");
+				}
+				catch (Win32Exception ex) {
+					if (ex.getErrorCode() == WinError.ERROR_SERVICE_DOES_NOT_EXIST) {
+						System.out.println("Unable to find Oldenet service.");
+					}
+					else {
+						throw ex;
+					}
 				}
 			}
 
-			if (serviceInstalled) {
-				// All user have permission to start/stop the service now. No need to
-				// elevate.
-				// rt.exec(this.oredPath.getParent() + "\\Elevate.exe net start ored");
-				rt.exec("cmd.exe /c \"net start ored\"");
-				System.out.println("Oldenet service started.");
-			}
-			else {
+			if (!started) {
+				// Run in command window
 				rt.exec("cmd.exe /c start cmd.exe /c \"" + this.oredPath + "\"");
+				started = true;
 			}
+
 		}
 		else {
 			// TODO: other OS
 		}
 
-		this.nodeHasRun = true;
+		if (started) {
+			this.nodeHasRun = true;
+		}
 	}
 
 	private void printAndHold(String msg) throws IOException {
