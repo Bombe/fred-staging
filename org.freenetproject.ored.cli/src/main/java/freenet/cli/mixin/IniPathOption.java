@@ -32,7 +32,7 @@ public class IniPathOption {
 	@CommandLine.Spec
 	CommandLine.Model.CommandSpec spec;
 
-	@CommandLine.Option(names = "--ini-path", paramLabel = "PATH",
+	@CommandLine.Option(names = "--ini-path", required = true, paramLabel = "PATH",
 			description = "Path to freenet.ini. If not specified, I'll look for it in default user data directory.")
 	void setIniPath(Path path) {
 		if (path == null) {
