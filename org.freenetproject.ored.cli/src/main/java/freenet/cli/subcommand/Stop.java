@@ -232,7 +232,21 @@ public class Stop implements Callable<Integer> {
 				if (!stopped) {
 					System.out.println("Unable to stop ored via JMX. Trying to kill the process.");
 
-					// TODO: Force stop pid
+					// Force stop pid
+					var kernel32 = Kernel32.INSTANCE;
+					var hProcess = kernel32.OpenProcess(WinNT.PROCESS_TERMINATE, false, pid);
+					if (hProcess != null) {
+						if (kernel32.TerminateProcess(hProcess, 0)) {
+							stopped = true;
+						}
+						else {
+							System.err.println("TerminateProcess() failed");
+						}
+						kernel32.CloseHandle(hProcess);
+					}
+					else {
+						System.err.println("OpenProcess() failed");
+					}
 				}
 			}
 			else {
@@ -246,7 +260,12 @@ public class Stop implements Callable<Integer> {
 					ex, this.spec.findOption("--ini-path"), this.iniPathOptionMixin.iniPath.toString());
 		}
 
-		return 0;
+		if (stopped) {
+			return 0;
+		}
+		else {
+			return 1;
+		}
 	}
 
 	/**

@@ -66,7 +66,6 @@ public final class Common {
 	 * "https://docs.microsoft.com/en-us/windows/win32/services/stopping-a-service">Reference</a>
 	 *
 	 * TODO: Starting service not implemented
-	 *
 	 * @param serviceName Service name
 	 * @param op START or STOP
 	 */
@@ -81,6 +80,7 @@ public final class Common {
 				var error = Native.getLastError();
 				if (error == WinError.ERROR_ACCESS_DENIED) {
 					// TODO: elevate and try again
+					throw new LastErrorException("OpenSCManager() failed no permission");
 				}
 				else {
 					throw new LastErrorException("OpenSCManager() failed");
