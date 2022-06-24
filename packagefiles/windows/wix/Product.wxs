@@ -214,7 +214,18 @@ Multi-language support
         <CustomAction Id="QtExecDeleteDataDir" BinaryKey="WixCA" DllEntry="WixQuietExec64"
                       Execute="deferred" Return="ignore" Impersonate="no"/>
 
+        <!-- Stop Oldenet -->
+        <SetProperty Id="WixQuietExec64CmdLine"
+                     Value="&quot;[System64Folder]cmd.exe&quot; /C &quot;&quot;[!filoredcli]&quot;&quot;&quot; stop --ini-path=&quot;&quot;[OREDDATAFOLDER]ored\freenet.ini&quot;&quot;&quot;"
+                     Sequence="execute" Before="QtExecStopApplication"/>
+        <CustomAction Id="QtExecStopApplication" BinaryKey="WixCA" DllEntry="WixQuietExec64"
+                      Execute="immediate" Return="ignore"/>
+
         <InstallExecuteSequence>
+            <Custom Action="QtExecStopApplication" Before="InstallValidate">
+                REMOVE~="ALL"
+            </Custom>
+
             <Custom Action="QtExecCreateWrapperConf" After="InstallFiles">
                 NOT Installed AND NOT REMOVE
                 AND
