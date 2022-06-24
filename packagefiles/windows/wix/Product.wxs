@@ -4,7 +4,6 @@
 TODO:
 Modify installation including installing/removing service, moving data/installation directory and rollback.
 Add oredcli.bat to PATH
-Minimum Windows version is 7 64bit
 Multi-language support
 -->
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension"
@@ -22,6 +21,10 @@ Multi-language support
         <MediaTemplate EmbedCab="yes" CompressionLevel="high"/>
         <MajorUpgrade
                 DowngradeErrorMessage="A newer version of [ProductName] is already installed."/>
+
+        <Condition Message="OS must be Windows 7 64-bit or higher">
+            <![CDATA[Installed OR (VersionNT>=601 AND VersionNT=VersionNT64)]]>
+        </Condition>
 
         <!-- Single Package Authoring: https://docs.microsoft.com/en-us/windows/win32/msi/single-package-authoring -->
         <Property Id='ALLUSERS' Value='2'/>
