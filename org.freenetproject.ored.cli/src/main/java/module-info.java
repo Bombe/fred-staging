@@ -1,7 +1,9 @@
 module org.freenetproject.ored.cli {
+    requires java.management;
+    requires java.management.rmi;
     requires java.net.http;
     requires jdk.attach;
-    requires java.management;
+
     requires info.picocli;
     requires org.freenetproject.ored.support;
     requires net.harawata.appdirs;

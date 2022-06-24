@@ -1,4 +1,8 @@
 module org.freenetproject.ored.node {
+    requires java.naming;
+    requires jdk.management;
+    requires jdk.management.agent;
+
     requires org.freenetproject.ored.support;
     requires org.freenetproject.ored.crypt;
     requires org.freenetproject.ored.l10n;
@@ -7,11 +11,10 @@ module org.freenetproject.ored.node {
     requires org.freenetproject.ored.store;
     requires org.freenetproject.ored.cli;
     requires org.freenetproject.ext;
+
     requires org.tanukisoftware.wrapper;
     requires com.sun.jna;
     requires com.sun.jna.platform;
-    requires jdk.management;
-    requires java.naming;
     requires net.harawata.appdirs;
 
     exports freenet.pluginmanager;

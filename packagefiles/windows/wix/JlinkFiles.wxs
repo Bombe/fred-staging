@@ -55,6 +55,10 @@
                        Guid="F5D67716-34BD-4241-BCDF-A7B4516ABDEB">
                 <File Id="filF3EE49B6B5EB25788625922B0B392D98" KeyPath="yes" Source="$(var.JlinkDir)\bin\prefs.dll"/>
             </Component>
+            <Component Id="cmprmidll" Directory="dirBin"
+                       Guid="3D586F4B-F710-4722-892D-610EFE8DF028">
+                <File Id="filrmidll" KeyPath="yes" Source="$(var.JlinkDir)\bin\rmi.dll"/>
+            </Component>
             <Component Id="cmp38B78FC3F8995DD80D431BF6D3BBF182" Directory="dirBin"
                        Guid="4F782254-23B0-40EC-A663-163E46959882">
                 <File Id="filBA89533023A958BDCEA75773140BC10E" KeyPath="yes"
