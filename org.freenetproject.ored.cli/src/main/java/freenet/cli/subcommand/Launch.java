@@ -95,6 +95,7 @@ public class Launch implements Callable<Integer> {
 			}
 		}
 
+		var asyncRun = false;
 		if (!Files.exists(this.iniPathOptionMixin.iniPath) && this.nodeMayNeverRun) {
 			// Assume that the node has never run and freenet.ini hasn't been created
 			// Try to start ored
@@ -106,7 +107,7 @@ public class Launch implements Callable<Integer> {
 				Files.createDirectories(logdir);
 			}
 
-			this.startNode();
+			asyncRun = this.startNode();
 			for (var i = 0; i < 15; i++) {
 				TimeUnit.SECONDS.sleep(2);
 				if (Files.exists(this.iniPathOptionMixin.iniPath)) {
@@ -129,7 +130,7 @@ public class Launch implements Callable<Integer> {
 				if (!nodeIsRunning) {
 					// If not, start Oldenet
 					System.out.println("Node is not running. Starting...");
-					this.startNode();
+					asyncRun = this.startNode();
 					nodeIsRunning = true;
 				}
 				else {
@@ -176,7 +177,7 @@ public class Launch implements Callable<Integer> {
 			var httpClient = httpClientBuilder.followRedirects(HttpClient.Redirect.NORMAL)
 					.version(HttpClient.Version.HTTP_1_1).connectTimeout(Duration.ofSeconds(3)).build();
 
-			if (!nodeIsRunning) {
+			if (!nodeIsRunning || asyncRun) {
 				// Wait for 3 seconds for Node to start
 				TimeUnit.SECONDS.sleep(3);
 			}
@@ -236,10 +237,13 @@ public class Launch implements Callable<Integer> {
 		return 0;
 	}
 
-	private void startNode() throws IOException {
+	private boolean startNode() throws IOException {
+
+		// whether the node is started asynchronously
+		var async = false;
 
 		if (this.nodeHasRun) {
-			return;
+			return false;
 		}
 
 		var started = false;
@@ -270,6 +274,7 @@ public class Launch implements Callable<Integer> {
 				// Run in command window
 				rt.exec("cmd.exe /c start cmd.exe /c \"" + this.oredPath + "\"");
 				started = true;
+				async = true;
 			}
 
 		}
@@ -280,6 +285,7 @@ public class Launch implements Callable<Integer> {
 		if (started) {
 			this.nodeHasRun = true;
 		}
+		return async;
 	}
 
 	private void printAndHold(String msg) throws IOException {
