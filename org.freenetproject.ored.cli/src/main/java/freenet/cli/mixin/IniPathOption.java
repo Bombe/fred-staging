@@ -32,15 +32,15 @@ public class IniPathOption {
 	@CommandLine.Spec
 	CommandLine.Model.CommandSpec spec;
 
+	public IniPathOption() {
+		AppDirs appDirs = AppDirsFactory.getInstance();
+		File userDataDir = new File(appDirs.getUserDataDir("ored", "", "Oldenet"));
+		this.iniPath = Paths.get(userDataDir.getAbsolutePath(), "freenet.ini");
+	}
+
 	@CommandLine.Option(names = "--ini-path", paramLabel = "PATH",
 			description = "Path to freenet.ini. If not specified, I'll look for it in default user data directory.")
 	void setIniPath(Path path) {
-		if (path == null) {
-			AppDirs appDirs = AppDirsFactory.getInstance();
-			File userDataDir = new File(appDirs.getUserDataDir("ored", "", "Oldenet"));
-			path = Paths.get(userDataDir.getAbsolutePath(), "freenet.ini");
-		}
-
 		this.iniPath = path;
 	}
 
