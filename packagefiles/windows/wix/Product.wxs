@@ -2,9 +2,7 @@
 <!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
 <!--
 TODO:
-Close Ored before uninstall
 Modify installation including installing/removing service, moving data/installation directory and rollback.
-Update install UI bitmap
 Add oredcli.bat to PATH
 Minimum Windows version is 7 64bit
 Multi-language support
@@ -38,6 +36,8 @@ Multi-language support
         <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOX" Value="1"/>
 
         <WixVariable Id="WixUILicenseRtf" Value="gpl-3.0.rtf"/>
+        <WixVariable Id="WixUIBannerBmp" Value="$(var.ProjectDir)\Bitmaps\Banner.bmp"/>
+        <WixVariable Id="WixUIDialogBmp" Value="$(var.ProjectDir)\Bitmaps\Dialog.bmp"/>
 
         <UIRef Id="WixUI_Oldenet"/>
 

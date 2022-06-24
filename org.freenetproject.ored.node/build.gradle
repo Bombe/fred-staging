@@ -254,6 +254,7 @@ tasks.register('package') {
                         '-ext', 'WixUIExtension',
                         '-ext', 'WixUtilExtension',
                         "-dJlinkDir=${tasks.jlink.imageDir}",
+                        "-dProjectDir=${rootDir}/packagefiles/windows/wix",
                         '-out', "${wixBuildDir}/",
                         "${wixSrcDir}/*.wxs"
                 )
