@@ -19,8 +19,8 @@ jobs:
           command: choco upgrade microsoft-openjdk
       - run:
           name: "Gradle Package"
-          command: .\gradlew --parallel --dependency-verification lenient package
+          command: .\gradlew --parallel --no-daemon --dependency-verification lenient package
       - save_cache:
           key: sdks-and-tools
           paths:
-            - C:\ProgramData\chocolatey\lib
+            - C:\users\circleci\appdata\local\temp\chocolatey
