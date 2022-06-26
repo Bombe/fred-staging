@@ -1,0 +1,23 @@
+version: 2.1
+
+orbs:
+  windows: circleci/windows@4.1.1
+
+jobs:
+  build:
+    executor:
+      name: win/default
+    steps:
+      - checkout
+      - restore_cache:
+          keys: sdks-and-tools
+      - run:
+          name: "Install WiX Toolset"
+          command: choco upgrade wixtoolset
+      - run:
+          name: "Install JDK"
+          command: choco upgrade microsoft-openjdk
+      - save_cache:
+          key: sdks-and-tools
+          paths:
+            - C:\ProgramData\chocolatey\lib
