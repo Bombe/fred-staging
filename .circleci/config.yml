@@ -18,11 +18,8 @@ jobs:
           name: "Install JDK"
           command: choco upgrade microsoft-openjdk
       - run:
-          name: "Write gradle properties"
-          command: '"org.gradle.dependency.verification=lenient`norg.gradle.parallel=true" | Out-File -FilePath .\gradle.properties'
-      - run:
           name: "Gradle Package"
-          command: .\gradlew package
+          command: .\gradlew --parallel --dependency-verification lenient package
       - save_cache:
           key: sdks-and-tools
           paths:
