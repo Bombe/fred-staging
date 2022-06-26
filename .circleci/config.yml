@@ -10,7 +10,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          keys: sdks-and-tools
+          keys: sdks-and-tools-v2
       - run:
           name: "Install WiX Toolset"
           command: choco upgrade wixtoolset
@@ -21,6 +21,6 @@ jobs:
           name: "Gradle Package"
           command: .\gradlew --parallel --no-daemon --dependency-verification lenient package
       - save_cache:
-          key: sdks-and-tools
+          key: sdks-and-tools-v2
           paths:
             - C:\users\circleci\appdata\local\temp\chocolatey
