@@ -18,6 +18,9 @@ jobs:
           name: "Install JDK"
           command: choco upgrade microsoft-openjdk
       - run:
+          name: "Gradle Copy Wrapper"
+          command: .\gradlew --parallel --no-daemon --dependency-verification lenient copyWrapper
+      - run:
           name: "Gradle Package"
           command: .\gradlew --parallel --no-daemon --dependency-verification lenient package
       - save_cache:
