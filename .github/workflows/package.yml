@@ -18,15 +18,15 @@ jobs:
       - name: Gradle Test
         uses: gradle/gradle-build-action@v2
         with:
-          arguments: --parallel --dependency-verification lenient test
+          arguments: --scan --parallel --dependency-verification lenient test
       - name: Gradle copyWrapper
         uses: gradle/gradle-build-action@v2
         with:
-          arguments: --parallel --dependency-verification lenient copyWrapper
+          arguments: --scan --parallel --dependency-verification lenient copyWrapper
       - name: Gradle package
         uses: gradle/gradle-build-action@v2
         with:
-          arguments: --parallel --dependency-verification lenient package
+          arguments: --scan --parallel --dependency-verification lenient package
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
         with:
