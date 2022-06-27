@@ -1,5 +1,19 @@
 version: 2.1
 
+parameters:
+  GHA_Actor:
+    type: string
+    default: ""
+  GHA_Action:
+    type: string
+    default: ""
+  GHA_Event:
+    type: string
+    default: ""
+  GHA_Meta:
+    type: string
+    default: ""
+
 orbs:
   win: circleci/windows@4.1.1
 
@@ -27,3 +41,12 @@ jobs:
           key: sdks-and-tools-v2
           paths:
             - C:\users\circleci\appdata\local\temp\chocolatey
+
+workflows:
+  # This workflow is set to be conditionally triggered,
+  # only via the GitHub Action.
+  # With no other unfiltered workflows, normal push events will be ignored.
+  when: << pipeline.parameters.GHA_Action >>
+  package:
+    jobs:
+      - build
