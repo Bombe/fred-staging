@@ -8,5 +8,5 @@ repositories {
 
 dependencies {
     implementation "de.jjohannes.gradle:extra-java-module-info:0.12"
-    implementation "io.spring.javaformat:spring-javaformat-gradle-plugin:0.0.33"
+    implementation "io.spring.javaformat:spring-javaformat-gradle-plugin:0.0.34"
 }
