@@ -224,12 +224,12 @@ tasks.register('package') {
 
             String wixHome
             if (project.hasProperty('wix.home')) {
-                wixHome = project.property('wix_home')
+                wixHome = project.property('wix.home')
             } else {
                 wixHome = System.getenv('WIX')
             }
 
-            if (wixHome.isEmpty()) {
+            if (wixHome == null || wixHome.isEmpty()) {
                 throw new GradleScriptException("Unable to locate WiX toolset. Please specify WIX envirement variable or set wix.home property.")
             }
 
