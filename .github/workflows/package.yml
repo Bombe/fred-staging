@@ -18,7 +18,7 @@ jobs:
       - name: Build with Gradle
         uses: gradle/gradle-build-action@v2
         with:
-          arguments: package
+          arguments: --parallel --no-daemon --dependency-verification lenient package
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
         with:
