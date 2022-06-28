@@ -1,20 +1,19 @@
 /*
- * Dijjer - A Peer to Peer HTTP Cache
- * Copyright (C) 2004,2005 Change.Tv, Inc
+ * Copyright 1999-2022 The Freenet Project
+ * Copyright 2022 Marine Master
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This file is part of Oldenet.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * Oldenet is free software: you can redistribute it and/or modify it under the terms of
+ * the GNU General Public License as published by the Free Software Foundation, either
+ * version 3 of the License, or any later version.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Oldenet is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with Oldenet.
+ * If not, see <https://www.gnu.org/licenses/>.
  */
 
 package freenet.io.comm;
@@ -22,6 +21,7 @@ package freenet.io.comm;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Objects;
 
 import freenet.io.Serializer;
 import freenet.nodelogger.Logger;
@@ -31,15 +31,15 @@ public class MessageType {
 
 	public static final String VERSION = "$Id: MessageType.java,v 1.6 2005/08/25 17:28:19 amphibian Exp $";
 
-	private static HashMap<Integer, MessageType> _specs = new HashMap<Integer, MessageType>();
+	private static final HashMap<Integer, MessageType> _specs = new HashMap<>();
 
 	private final String _name;
 
-	private final LinkedList<String> _orderedFields = new LinkedList<String>();
+	private final LinkedList<String> _orderedFields = new LinkedList<>();
 
-	private final HashMap<String, Class<?>> _fields = new HashMap<String, Class<?>>();
+	private final HashMap<String, Class<?>> _fields = new HashMap<>();
 
-	private final HashMap<String, Class<?>> _linkedListTypes = new HashMap<String, Class<?>>();
+	private final HashMap<String, Class<?>> _linkedListTypes = new HashMap<>();
 
 	private final boolean internalOnly;
 
@@ -52,12 +52,12 @@ public class MessageType {
 	}
 
 	public MessageType(String name, short priority, boolean internal, boolean isLossyPacketMessage) {
-		_name = name;
+		this._name = name;
 		this.priority = priority;
 		this.isLossyPacketMessage = isLossyPacketMessage;
-		internalOnly = internal;
+		this.internalOnly = internal;
 		// XXX hashCode() is NOT required to be unique!
-		Integer id = Integer.valueOf(name.hashCode());
+		Integer id = name.hashCode();
 		if (_specs.containsKey(id)) {
 			throw new RuntimeException("A message type by the name of " + name + " already exists!");
 		}
@@ -65,45 +65,44 @@ public class MessageType {
 	}
 
 	public void unregister() {
-		_specs.remove(Integer.valueOf(_name.hashCode()));
+		_specs.remove(this._name.hashCode());
 	}
 
 	public void addLinkedListField(String name, Class<?> parameter) {
-		_linkedListTypes.put(name, parameter);
-		addField(name, LinkedList.class);
+		this._linkedListTypes.put(name, parameter);
+		this.addField(name, LinkedList.class);
 	}
 
 	public void addField(String name, Class<?> type) {
-		_fields.put(name, type);
-		_orderedFields.addLast(name);
+		this._fields.put(name, type);
+		this._orderedFields.addLast(name);
 	}
 
 	public void addRoutedToNodeMessageFields() {
-		addField(DMT.UID, Long.class);
-		addField(DMT.TARGET_LOCATION, Double.class);
-		addField(DMT.HTL, Short.class);
-		addField(DMT.NODE_IDENTITY, ShortBuffer.class);
+		this.addField(DMT.UID, Long.class);
+		this.addField(DMT.TARGET_LOCATION, Double.class);
+		this.addField(DMT.HTL, Short.class);
+		this.addField(DMT.NODE_IDENTITY, ShortBuffer.class);
 	}
 
 	public boolean checkType(String fieldName, Object fieldValue) {
 		if (fieldValue == null) {
 			return false;
 		}
-		Class<?> defClass = _fields.get(fieldName);
+		Class<?> defClass = this._fields.get(fieldName);
 		if (defClass == null) {
 			throw new IllegalStateException("Cannot set field \"" + fieldName + "\" which is not defined"
-					+ " in the message type \"" + getName() + "\".");
+					+ " in the message type \"" + this.getName() + "\".");
 		}
 		Class<?> valueClass = fieldValue.getClass();
-		if (defClass == valueClass)
+		if (defClass == valueClass) {
 			return true;
-		if (defClass.isAssignableFrom(valueClass))
-			return true;
-		return false;
+		}
+		return defClass.isAssignableFrom(valueClass);
 	}
 
 	public Class<?> typeOf(String field) {
-		return _fields.get(field);
+		return this._fields.get(field);
 	}
 
 	@Override
@@ -113,37 +112,38 @@ public class MessageType {
 		}
 		// We can only register one MessageType for each name.
 		// So we can do == here.
-		return ((MessageType) o)._name == _name;
+		return Objects.equals(((MessageType) o)._name, this._name);
 	}
 
 	@Override
 	public int hashCode() {
-		return _name.hashCode();
+		return this._name.hashCode();
 	}
 
 	public static MessageType getSpec(Integer specID, boolean dontLog) {
 		MessageType id = _specs.get(specID);
 		if (id == null) {
-			if (!dontLog)
+			if (!dontLog) {
 				Logger.error(MessageType.class, "Unrecognised message type received (" + specID + ')');
+			}
 		}
 		return id;
 	}
 
 	public String getName() {
-		return _name;
+		return this._name;
 	}
 
 	public Map<String, Class<?>> getFields() {
-		return _fields;
+		return this._fields;
 	}
 
 	public LinkedList<String> getOrderedFields() {
-		return _orderedFields;
+		return this._orderedFields;
 	}
 
 	public Map<String, Class<?>> getLinkedListTypes() {
-		return _linkedListTypes;
+		return this._linkedListTypes;
 	}
 
 	/**
@@ -151,7 +151,7 @@ public class MessageType {
 	 * messages in UDP form of this spec will be silently discarded.
 	 */
 	public boolean isInternalOnly() {
-		return internalOnly;
+		return this.internalOnly;
 	}
 
 	/**
@@ -159,7 +159,7 @@ public class MessageType {
 	 * this: Message.boostPriority() can increase it for a realtime message, for instance.
 	 */
 	public short getDefaultPriority() {
-		return priority;
+		return this.priority;
 	}
 
 	/** Only works for simple messages!! */
@@ -167,14 +167,14 @@ public class MessageType {
 		// This method mirrors Message.encodeToPacket.
 		int length = 0;
 		length += 4; // _spec.getName().hashCode()
-		for (Map.Entry<String, Class<?>> entry : _fields.entrySet()) {
+		for (Map.Entry<String, Class<?>> entry : this._fields.entrySet()) {
 			length += Serializer.length(entry.getValue(), maxStringLength);
 		}
 		return length;
 	}
 
 	public boolean isLossyPacketMessage() {
-		return isLossyPacketMessage;
+		return this.isLossyPacketMessage;
 	}
 
 }
