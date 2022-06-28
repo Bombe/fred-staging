@@ -1,25 +1,25 @@
 /*
- * Dijjer - A Peer to Peer HTTP Cache
- * Copyright (C) 2004,2005 Change.Tv, Inc
+ * Copyright 1999-2022 The Freenet Project
+ * Copyright 2022 Marine Master
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This file is part of Oldenet.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * Oldenet is free software: you can redistribute it and/or modify it under the terms of
+ * the GNU General Public License as published by the Free Software Foundation, either
+ * version 3 of the License, or any later version.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Oldenet is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with Oldenet.
+ * If not, see <https://www.gnu.org/licenses/>.
  */
 
 package freenet.io.comm;
 
 import freenet.crypt.DSAPublicKey;
+import freenet.io.Buffer;
 import freenet.keys.Key;
 import freenet.keys.NodeCHK;
 import freenet.keys.NodeSSK;
@@ -27,7 +27,6 @@ import freenet.node.NodeStats.PeerLoadStats;
 import freenet.node.probe.Error;
 import freenet.node.probe.Type;
 import freenet.support.BitArray;
-import freenet.io.Buffer;
 import freenet.support.Fields;
 import freenet.support.ShortBuffer;
 
@@ -37,7 +36,7 @@ import freenet.support.ShortBuffer;
  * To change the template for this generated type comment go to Window - Preferences -
  * Java - Code Generation - Code and Comments
  */
-public class DMT {
+public final class DMT {
 
 	public static final String UID = "uid";
 
@@ -280,15 +279,16 @@ public class DMT {
 
 	public static final short NUM_PRIORITIES = 6;
 
-	// Assimilation
+	private DMT() {
+	}
 
 	// New data transmission messages
 	public static final MessageType packetTransmit = new MessageType("packetTransmit", PRIORITY_BULK_DATA) {
 		{
-			addField(UID, Long.class);
-			addField(PACKET_NO, Integer.class);
-			addField(SENT, BitArray.class);
-			addField(DATA, Buffer.class);
+			this.addField(UID, Long.class);
+			this.addField(PACKET_NO, Integer.class);
+			this.addField(SENT, BitArray.class);
+			this.addField(DATA, Buffer.class);
 		}
 	};
 
@@ -298,8 +298,9 @@ public class DMT {
 		msg.set(PACKET_NO, packetNo);
 		msg.set(SENT, sent);
 		msg.set(DATA, data);
-		if (realTime)
+		if (realTime) {
 			msg.boostPriority();
+		}
 		return msg;
 	}
 
@@ -316,7 +317,7 @@ public class DMT {
 	// queued after the packets it represents
 	public static final MessageType allSent = new MessageType("allSent", PRIORITY_BULK_DATA) {
 		{
-			addField(UID, Long.class);
+			this.addField(UID, Long.class);
 		}
 	};
 
@@ -328,7 +329,7 @@ public class DMT {
 
 	public static final MessageType allReceived = new MessageType("allReceived", PRIORITY_UNSPECIFIED) {
 		{
-			addField(UID, Long.class);
+			this.addField(UID, Long.class);
 		}
 	};
 
@@ -340,9 +341,9 @@ public class DMT {
 
 	public static final MessageType sendAborted = new MessageType("sendAborted", PRIORITY_UNSPECIFIED) {
 		{
-			addField(UID, Long.class);
-			addField(DESCRIPTION, String.class);
-			addField(REASON, Integer.class);
+			this.addField(UID, Long.class);
+			this.addField(DESCRIPTION, String.class);
+			this.addField(REASON, Integer.class);
 		}
 	};
 
@@ -356,9 +357,9 @@ public class DMT {
 
 	public static final MessageType FNPBulkPacketSend = new MessageType("FNPBulkPacketSend", PRIORITY_BULK_DATA) {
 		{
-			addField(UID, Long.class);
-			addField(PACKET_NO, Integer.class);
-			addField(DATA, ShortBuffer.class);
+			this.addField(UID, Long.class);
+			this.addField(PACKET_NO, Integer.class);
+			this.addField(DATA, ShortBuffer.class);
 		}
 	};
 
@@ -376,7 +377,7 @@ public class DMT {
 
 	public static final MessageType FNPBulkSendAborted = new MessageType("FNPBulkSendAborted", PRIORITY_UNSPECIFIED) {
 		{
-			addField(UID, Long.class);
+			this.addField(UID, Long.class);
 		}
 	};
 
@@ -389,7 +390,7 @@ public class DMT {
 	public static final MessageType FNPBulkReceiveAborted = new MessageType("FNPBulkReceiveAborted",
 			PRIORITY_UNSPECIFIED) {
 		{
-			addField(UID, Long.class);
+			this.addField(UID, Long.class);
 		}
 	};
 
@@ -401,7 +402,7 @@ public class DMT {
 
 	public static final MessageType FNPBulkReceivedAll = new MessageType("FNPBulkReceivedAll", PRIORITY_UNSPECIFIED) {
 		{
-			addField(UID, Long.class);
+			this.addField(UID, Long.class);
 		}
 	};
 
@@ -413,7 +414,7 @@ public class DMT {
 
 	public static final MessageType testTransferSend = new MessageType("testTransferSend", PRIORITY_UNSPECIFIED) {
 		{
-			addField(UID, Long.class);
+			this.addField(UID, Long.class);
 		}
 	};
 
@@ -425,7 +426,7 @@ public class DMT {
 
 	public static final MessageType testTransferSendAck = new MessageType("testTransferSendAck", PRIORITY_UNSPECIFIED) {
 		{
-			addField(UID, Long.class);
+			this.addField(UID, Long.class);
 		}
 	};
 
@@ -437,9 +438,9 @@ public class DMT {
 
 	public static final MessageType testSendCHK = new MessageType("testSendCHK", PRIORITY_UNSPECIFIED) {
 		{
-			addField(UID, Long.class);
-			addField(FREENET_URI, String.class);
-			addField(CHK_HEADER, Buffer.class);
+			this.addField(UID, Long.class);
+			this.addField(FREENET_URI, String.class);
+			this.addField(CHK_HEADER, Buffer.class);
 		}
 	};
 
@@ -453,9 +454,9 @@ public class DMT {
 
 	public static final MessageType testRequest = new MessageType("testRequest", PRIORITY_UNSPECIFIED) {
 		{
-			addField(UID, Long.class);
-			addField(FREENET_ROUTING_KEY, Key.class);
-			addField(HTL, Integer.class);
+			this.addField(UID, Long.class);
+			this.addField(FREENET_ROUTING_KEY, Key.class);
+			this.addField(HTL, Integer.class);
 		}
 	};
 
@@ -469,7 +470,7 @@ public class DMT {
 
 	public static final MessageType testDataNotFound = new MessageType("testDataNotFound", PRIORITY_UNSPECIFIED) {
 		{
-			addField(UID, Long.class);
+			this.addField(UID, Long.class);
 		}
 	};
 
@@ -481,8 +482,8 @@ public class DMT {
 
 	public static final MessageType testDataReply = new MessageType("testDataReply", PRIORITY_UNSPECIFIED) {
 		{
-			addField(UID, Long.class);
-			addField(TEST_CHK_HEADERS, Buffer.class);
+			this.addField(UID, Long.class);
+			this.addField(TEST_CHK_HEADERS, Buffer.class);
 		}
 	};
 
@@ -495,8 +496,8 @@ public class DMT {
 
 	public static final MessageType testSendCHKAck = new MessageType("testSendCHKAck", PRIORITY_UNSPECIFIED) {
 		{
-			addField(UID, Long.class);
-			addField(FREENET_URI, String.class);
+			this.addField(UID, Long.class);
+			this.addField(FREENET_URI, String.class);
 		}
 	};
 
@@ -509,7 +510,7 @@ public class DMT {
 
 	public static final MessageType testDataReplyAck = new MessageType("testDataReplyAck", PRIORITY_UNSPECIFIED) {
 		{
-			addField(UID, Long.class);
+			this.addField(UID, Long.class);
 		}
 	};
 
@@ -521,7 +522,7 @@ public class DMT {
 
 	public static final MessageType testDataNotFoundAck = new MessageType("testDataNotFoundAck", PRIORITY_UNSPECIFIED) {
 		{
-			addField(UID, Long.class);
+			this.addField(UID, Long.class);
 		}
 	};
 
@@ -536,9 +537,9 @@ public class DMT {
 	public static final MessageType testReceiveCompleted = new MessageType("testReceiveCompleted", PRIORITY_UNSPECIFIED,
 			true, false) {
 		{
-			addField(UID, Long.class);
-			addField(SUCCESS, Boolean.class);
-			addField(REASON, String.class);
+			this.addField(UID, Long.class);
+			this.addField(SUCCESS, Boolean.class);
+			this.addField(REASON, String.class);
 		}
 	};
 
@@ -553,9 +554,9 @@ public class DMT {
 	public static final MessageType testSendCompleted = new MessageType("testSendCompleted", PRIORITY_UNSPECIFIED, true,
 			false) {
 		{
-			addField(UID, Long.class);
-			addField(SUCCESS, Boolean.class);
-			addField(REASON, String.class);
+			this.addField(UID, Long.class);
+			this.addField(SUCCESS, Boolean.class);
+			this.addField(REASON, String.class);
 		}
 	};
 
@@ -571,8 +572,8 @@ public class DMT {
 	public static final MessageType nodeToNodeMessage = new MessageType("nodeToNodeMessage", PRIORITY_LOW, false,
 			false) {
 		{
-			addField(NODE_TO_NODE_MESSAGE_TYPE, Integer.class);
-			addField(NODE_TO_NODE_MESSAGE_DATA, ShortBuffer.class);
+			this.addField(NODE_TO_NODE_MESSAGE_TYPE, Integer.class);
+			this.addField(NODE_TO_NODE_MESSAGE_DATA, ShortBuffer.class);
 		}
 	};
 
@@ -586,10 +587,10 @@ public class DMT {
 	// FNP messages
 	public static final MessageType FNPCHKDataRequest = new MessageType("FNPCHKDataRequest", PRIORITY_LOW) {
 		{
-			addField(UID, Long.class);
-			addField(HTL, Short.class);
-			addField(NEAREST_LOCATION, Double.class);
-			addField(FREENET_ROUTING_KEY, NodeCHK.class);
+			this.addField(UID, Long.class);
+			this.addField(HTL, Short.class);
+			this.addField(NEAREST_LOCATION, Double.class);
+			this.addField(FREENET_ROUTING_KEY, NodeCHK.class);
 		}
 	};
 
@@ -604,11 +605,11 @@ public class DMT {
 
 	public static final MessageType FNPSSKDataRequest = new MessageType("FNPSSKDataRequest", PRIORITY_LOW) {
 		{
-			addField(UID, Long.class);
-			addField(HTL, Short.class);
-			addField(NEAREST_LOCATION, Double.class);
-			addField(FREENET_ROUTING_KEY, NodeSSK.class);
-			addField(NEED_PUB_KEY, Boolean.class);
+			this.addField(UID, Long.class);
+			this.addField(HTL, Short.class);
+			this.addField(NEAREST_LOCATION, Double.class);
+			this.addField(FREENET_ROUTING_KEY, NodeSSK.class);
+			this.addField(NEED_PUB_KEY, Boolean.class);
 		}
 	};
 
@@ -625,7 +626,7 @@ public class DMT {
 	// Hit our tail, try a different node.
 	public static final MessageType FNPRejectedLoop = new MessageType("FNPRejectLoop", PRIORITY_HIGH) {
 		{
-			addField(UID, Long.class);
+			this.addField(UID, Long.class);
 		}
 	};
 
@@ -639,8 +640,8 @@ public class DMT {
 	// to source, and reduce send rate.
 	public static final MessageType FNPRejectedOverload = new MessageType("FNPRejectOverload", PRIORITY_HIGH) {
 		{
-			addField(UID, Long.class);
-			addField(IS_LOCAL, Boolean.class);
+			this.addField(UID, Long.class);
+			this.addField(IS_LOCAL, Boolean.class);
 		}
 	};
 
@@ -649,17 +650,19 @@ public class DMT {
 		msg.set(UID, id);
 		msg.set(IS_LOCAL, isLocal);
 		if (needsLoad) {
-			if (realTimeFlag)
+			if (realTimeFlag) {
 				msg.setNeedsLoadRT();
-			else
+			}
+			else {
 				msg.setNeedsLoadBulk();
+			}
 		}
 		return msg;
 	}
 
 	public static final MessageType FNPAccepted = new MessageType("FNPAccepted", PRIORITY_HIGH) {
 		{
-			addField(UID, Long.class);
+			this.addField(UID, Long.class);
 		}
 	};
 
@@ -671,7 +674,7 @@ public class DMT {
 
 	public static final MessageType FNPDataNotFound = new MessageType("FNPDataNotFound", PRIORITY_UNSPECIFIED) {
 		{
-			addField(UID, Long.class);
+			this.addField(UID, Long.class);
 		}
 	};
 
@@ -683,8 +686,8 @@ public class DMT {
 
 	public static final MessageType FNPRecentlyFailed = new MessageType("FNPRecentlyFailed", PRIORITY_HIGH) {
 		{
-			addField(UID, Long.class);
-			addField(TIME_LEFT, Integer.class);
+			this.addField(UID, Long.class);
+			this.addField(TIME_LEFT, Integer.class);
 		}
 	};
 
@@ -697,8 +700,8 @@ public class DMT {
 
 	public static final MessageType FNPCHKDataFound = new MessageType("FNPCHKDataFound", PRIORITY_UNSPECIFIED) {
 		{
-			addField(UID, Long.class);
-			addField(BLOCK_HEADERS, ShortBuffer.class);
+			this.addField(UID, Long.class);
+			this.addField(BLOCK_HEADERS, ShortBuffer.class);
 		}
 	};
 
@@ -711,8 +714,8 @@ public class DMT {
 
 	public static final MessageType FNPRouteNotFound = new MessageType("FNPRouteNotFound", PRIORITY_UNSPECIFIED) {
 		{
-			addField(UID, Long.class);
-			addField(HTL, Short.class);
+			this.addField(UID, Long.class);
+			this.addField(HTL, Short.class);
 		}
 	};
 
@@ -725,10 +728,10 @@ public class DMT {
 
 	public static final MessageType FNPInsertRequest = new MessageType("FNPInsertRequest", PRIORITY_LOW) {
 		{
-			addField(UID, Long.class);
-			addField(HTL, Short.class);
-			addField(NEAREST_LOCATION, Double.class);
-			addField(FREENET_ROUTING_KEY, Key.class);
+			this.addField(UID, Long.class);
+			this.addField(HTL, Short.class);
+			this.addField(NEAREST_LOCATION, Double.class);
+			this.addField(FREENET_ROUTING_KEY, Key.class);
 		}
 	};
 
@@ -743,7 +746,7 @@ public class DMT {
 
 	public static final MessageType FNPInsertReply = new MessageType("FNPInsertReply", PRIORITY_UNSPECIFIED) {
 		{
-			addField(UID, Long.class);
+			this.addField(UID, Long.class);
 		}
 	};
 
@@ -755,8 +758,8 @@ public class DMT {
 
 	public static final MessageType FNPDataInsert = new MessageType("FNPDataInsert", PRIORITY_HIGH) {
 		{
-			addField(UID, Long.class);
-			addField(BLOCK_HEADERS, ShortBuffer.class);
+			this.addField(UID, Long.class);
+			this.addField(BLOCK_HEADERS, ShortBuffer.class);
 		}
 	};
 
@@ -770,8 +773,8 @@ public class DMT {
 	public static final MessageType FNPInsertTransfersCompleted = new MessageType("FNPInsertTransfersCompleted",
 			PRIORITY_UNSPECIFIED) {
 		{
-			addField(UID, Long.class);
-			addField(ANY_TIMED_OUT, Boolean.class);
+			this.addField(UID, Long.class);
+			this.addField(ANY_TIMED_OUT, Boolean.class);
 		}
 	};
 
@@ -792,7 +795,7 @@ public class DMT {
 	// FNPSSKInsertRequestNew vs the old version.
 	public static final MessageType FNPRejectedTimeout = new MessageType("FNPTooSlow", PRIORITY_UNSPECIFIED) {
 		{
-			addField(UID, Long.class);
+			this.addField(UID, Long.class);
 		}
 	};
 
@@ -805,8 +808,8 @@ public class DMT {
 	public static final MessageType FNPDataInsertRejected = new MessageType("FNPDataInsertRejected",
 			PRIORITY_UNSPECIFIED) {
 		{
-			addField(UID, Long.class);
-			addField(DATA_INSERT_REJECTED_REASON, Short.class);
+			this.addField(UID, Long.class);
+			this.addField(DATA_INSERT_REJECTED_REASON, Short.class);
 		}
 	};
 
@@ -826,14 +829,18 @@ public class DMT {
 	public static final short DATA_INSERT_REJECTED_TIMEOUT_WAITING_FOR_ACCEPTED = 4;
 
 	public static String getDataInsertRejectedReason(short reason) {
-		if (reason == DATA_INSERT_REJECTED_VERIFY_FAILED)
+		if (reason == DATA_INSERT_REJECTED_VERIFY_FAILED) {
 			return "Verify failed";
-		else if (reason == DATA_INSERT_REJECTED_RECEIVE_FAILED)
+		}
+		else if (reason == DATA_INSERT_REJECTED_RECEIVE_FAILED) {
 			return "Receive failed";
-		else if (reason == DATA_INSERT_REJECTED_SSK_ERROR)
+		}
+		else if (reason == DATA_INSERT_REJECTED_SSK_ERROR) {
 			return "SSK error";
-		else if (reason == DATA_INSERT_REJECTED_TIMEOUT_WAITING_FOR_ACCEPTED)
+		}
+		else if (reason == DATA_INSERT_REJECTED_TIMEOUT_WAITING_FOR_ACCEPTED) {
 			return "Timeout waiting for Accepted (moved on)";
+		}
 		return "Unknown reason code: " + reason;
 	}
 
@@ -844,13 +851,13 @@ public class DMT {
 
 	public static final MessageType FNPSSKInsertRequest = new MessageType("FNPSSKInsertRequest", PRIORITY_BULK_DATA) {
 		{
-			addField(UID, Long.class);
-			addField(HTL, Short.class);
-			addField(FREENET_ROUTING_KEY, NodeSSK.class);
-			addField(NEAREST_LOCATION, Double.class);
-			addField(BLOCK_HEADERS, ShortBuffer.class);
-			addField(PUBKEY_HASH, ShortBuffer.class);
-			addField(DATA, ShortBuffer.class);
+			this.addField(UID, Long.class);
+			this.addField(HTL, Short.class);
+			this.addField(FREENET_ROUTING_KEY, NodeSSK.class);
+			this.addField(NEAREST_LOCATION, Double.class);
+			this.addField(BLOCK_HEADERS, ShortBuffer.class);
+			this.addField(PUBKEY_HASH, ShortBuffer.class);
+			this.addField(DATA, ShortBuffer.class);
 		}
 	};
 
@@ -864,16 +871,17 @@ public class DMT {
 		msg.set(BLOCK_HEADERS, new ShortBuffer(headers));
 		msg.set(PUBKEY_HASH, new ShortBuffer(pubKeyHash));
 		msg.set(DATA, new ShortBuffer(data));
-		if (realTime)
+		if (realTime) {
 			msg.boostPriority();
+		}
 		return msg;
 	}
 
 	public static final MessageType FNPSSKInsertRequestNew = new MessageType("FNPSSKInsertRequestNew", PRIORITY_LOW) {
 		{
-			addField(UID, Long.class);
-			addField(HTL, Short.class);
-			addField(FREENET_ROUTING_KEY, NodeSSK.class);
+			this.addField(UID, Long.class);
+			this.addField(HTL, Short.class);
+			this.addField(FREENET_ROUTING_KEY, NodeSSK.class);
 		}
 	};
 
@@ -890,8 +898,8 @@ public class DMT {
 	public static final MessageType FNPSSKInsertRequestHeaders = new MessageType("FNPSSKInsertRequestHeaders",
 			PRIORITY_BULK_DATA) {
 		{
-			addField(UID, Long.class);
-			addField(BLOCK_HEADERS, ShortBuffer.class);
+			this.addField(UID, Long.class);
+			this.addField(BLOCK_HEADERS, ShortBuffer.class);
 		}
 	};
 
@@ -899,16 +907,17 @@ public class DMT {
 		Message msg = new Message(FNPSSKInsertRequestHeaders);
 		msg.set(UID, uid);
 		msg.set(BLOCK_HEADERS, new ShortBuffer(headers));
-		if (realTime)
+		if (realTime) {
 			msg.boostPriority();
+		}
 		return msg;
 	}
 
 	public static final MessageType FNPSSKInsertRequestData = new MessageType("FNPSSKInsertRequestData",
 			PRIORITY_BULK_DATA) {
 		{
-			addField(UID, Long.class);
-			addField(DATA, ShortBuffer.class);
+			this.addField(UID, Long.class);
+			this.addField(DATA, ShortBuffer.class);
 		}
 	};
 
@@ -916,8 +925,9 @@ public class DMT {
 		Message msg = new Message(FNPSSKInsertRequestData);
 		msg.set(UID, uid);
 		msg.set(DATA, new ShortBuffer(data));
-		if (realTime)
+		if (realTime) {
 			msg.boostPriority();
+		}
 		return msg;
 	}
 
@@ -928,8 +938,8 @@ public class DMT {
 	public static final MessageType FNPSSKDataFoundHeaders = new MessageType("FNPSSKDataFoundHeaders",
 			PRIORITY_BULK_DATA) {
 		{
-			addField(UID, Long.class);
-			addField(BLOCK_HEADERS, ShortBuffer.class);
+			this.addField(UID, Long.class);
+			this.addField(BLOCK_HEADERS, ShortBuffer.class);
 		}
 	};
 
@@ -937,15 +947,16 @@ public class DMT {
 		Message msg = new Message(FNPSSKDataFoundHeaders);
 		msg.set(UID, uid);
 		msg.set(BLOCK_HEADERS, new ShortBuffer(headers));
-		if (realTime)
+		if (realTime) {
 			msg.boostPriority();
+		}
 		return msg;
 	}
 
 	public static final MessageType FNPSSKDataFoundData = new MessageType("FNPSSKDataFoundData", PRIORITY_BULK_DATA) {
 		{
-			addField(UID, Long.class);
-			addField(DATA, ShortBuffer.class);
+			this.addField(UID, Long.class);
+			this.addField(DATA, ShortBuffer.class);
 		}
 	};
 
@@ -953,15 +964,16 @@ public class DMT {
 		Message msg = new Message(FNPSSKDataFoundData);
 		msg.set(UID, uid);
 		msg.set(DATA, new ShortBuffer(data));
-		if (realTime)
+		if (realTime) {
 			msg.boostPriority();
+		}
 		return msg;
 	}
 
-	public final static MessageType FNPSSKAccepted = new MessageType("FNPSSKAccepted", PRIORITY_HIGH) {
+	public static final MessageType FNPSSKAccepted = new MessageType("FNPSSKAccepted", PRIORITY_HIGH) {
 		{
-			addField(UID, Long.class);
-			addField(NEED_PUB_KEY, Boolean.class);
+			this.addField(UID, Long.class);
+			this.addField(NEED_PUB_KEY, Boolean.class);
 		}
 	};
 
@@ -972,10 +984,10 @@ public class DMT {
 		return msg;
 	}
 
-	public final static MessageType FNPSSKPubKey = new MessageType("FNPSSKPubKey", PRIORITY_BULK_DATA) {
+	public static final MessageType FNPSSKPubKey = new MessageType("FNPSSKPubKey", PRIORITY_BULK_DATA) {
 		{
-			addField(UID, Long.class);
-			addField(PUBKEY_AS_BYTES, ShortBuffer.class);
+			this.addField(UID, Long.class);
+			this.addField(PUBKEY_AS_BYTES, ShortBuffer.class);
 		}
 	};
 
@@ -983,14 +995,15 @@ public class DMT {
 		Message msg = new Message(FNPSSKPubKey);
 		msg.set(UID, uid);
 		msg.set(PUBKEY_AS_BYTES, new ShortBuffer(pubkey.asPaddedBytes()));
-		if (realTime)
+		if (realTime) {
 			msg.boostPriority();
+		}
 		return msg;
 	}
 
-	public final static MessageType FNPSSKPubKeyAccepted = new MessageType("FNPSSKPubKeyAccepted", PRIORITY_HIGH) {
+	public static final MessageType FNPSSKPubKeyAccepted = new MessageType("FNPSSKPubKeyAccepted", PRIORITY_HIGH) {
 		{
-			addField(UID, Long.class);
+			this.addField(UID, Long.class);
 		}
 	};
 
@@ -1007,9 +1020,9 @@ public class DMT {
 	 * want to path fold. Sent even on pure darknet. A better name might be
 	 * FNPRequestCompletedAck.
 	 */
-	public final static MessageType FNPOpennetCompletedAck = new MessageType("FNPOpennetCompletedAck", PRIORITY_HIGH) {
+	public static final MessageType FNPOpennetCompletedAck = new MessageType("FNPOpennetCompletedAck", PRIORITY_HIGH) {
 		{
-			addField(UID, Long.class);
+			this.addField(UID, Long.class);
 		}
 	};
 
@@ -1023,10 +1036,10 @@ public class DMT {
 	 * Sent when we wait for an FNP transfer or a completion from upstream and it never
 	 * comes.
 	 */
-	public final static MessageType FNPOpennetCompletedTimeout = new MessageType("FNPOpennetCompletedTimeout",
+	public static final MessageType FNPOpennetCompletedTimeout = new MessageType("FNPOpennetCompletedTimeout",
 			PRIORITY_HIGH) {
 		{
-			addField(UID, Long.class);
+			this.addField(UID, Long.class);
 		}
 	};
 
@@ -1040,14 +1053,15 @@ public class DMT {
 	 * Sent when a request completes and the data source wants to path fold. Starts a bulk
 	 * data transfer including the (padded) noderef.
 	 */
-	public final static MessageType FNPOpennetConnectDestinationNew = new MessageType("FNPConnectDestinationNew",
+	public static final MessageType FNPOpennetConnectDestinationNew = new MessageType("FNPConnectDestinationNew",
 			PRIORITY_UNSPECIFIED) {
 		{
-			addField(UID, Long.class); // UID of original message chain
-			addField(TRANSFER_UID, Long.class); // UID of data transfer
-			addField(NODEREF_LENGTH, Integer.class); // Size of noderef
-			addField(PADDED_LENGTH, Integer.class); // Size of actual transfer i.e. padded
-													// length
+			this.addField(UID, Long.class); // UID of original message chain
+			this.addField(TRANSFER_UID, Long.class); // UID of data transfer
+			this.addField(NODEREF_LENGTH, Integer.class); // Size of noderef
+			this.addField(PADDED_LENGTH, Integer.class); // Size of actual transfer i.e.
+															// padded
+			// length
 		}
 	};
 
@@ -1066,14 +1080,15 @@ public class DMT {
 	 * a noderef from the data source. Starts a bulk data transfer including the (padded)
 	 * noderef.
 	 */
-	public final static MessageType FNPOpennetConnectReplyNew = new MessageType("FNPConnectReplyNew",
+	public static final MessageType FNPOpennetConnectReplyNew = new MessageType("FNPConnectReplyNew",
 			PRIORITY_UNSPECIFIED) {
 		{
-			addField(UID, Long.class); // UID of original message chain
-			addField(TRANSFER_UID, Long.class); // UID of data transfer
-			addField(NODEREF_LENGTH, Integer.class); // Size of noderef
-			addField(PADDED_LENGTH, Integer.class); // Size of actual transfer i.e. padded
-													// length
+			this.addField(UID, Long.class); // UID of original message chain
+			this.addField(TRANSFER_UID, Long.class); // UID of data transfer
+			this.addField(NODEREF_LENGTH, Integer.class); // Size of noderef
+			this.addField(PADDED_LENGTH, Integer.class); // Size of actual transfer i.e.
+															// padded
+			// length
 		}
 	};
 
@@ -1093,16 +1108,16 @@ public class DMT {
 	 * Announcement request. Noderef is attached, will be transferred before anything else
 	 * is done.
 	 */
-	public final static MessageType FNPOpennetAnnounceRequest = new MessageType("FNPOpennetAnnounceRequest",
+	public static final MessageType FNPOpennetAnnounceRequest = new MessageType("FNPOpennetAnnounceRequest",
 			PRIORITY_HIGH) {
 		{
-			addField(UID, Long.class);
-			addField(TRANSFER_UID, Long.class);
-			addField(NODEREF_LENGTH, Integer.class);
-			addField(PADDED_LENGTH, Integer.class);
-			addField(HTL, Short.class);
-			addField(NEAREST_LOCATION, Double.class);
-			addField(TARGET_LOCATION, Double.class);
+			this.addField(UID, Long.class);
+			this.addField(TRANSFER_UID, Long.class);
+			this.addField(NODEREF_LENGTH, Integer.class);
+			this.addField(PADDED_LENGTH, Integer.class);
+			this.addField(HTL, Short.class);
+			this.addField(NEAREST_LOCATION, Double.class);
+			this.addField(TARGET_LOCATION, Double.class);
 		}
 	};
 
@@ -1125,13 +1140,13 @@ public class DMT {
 	 * we return a DataNotFound; if we run into a dead-end, we return a RejectedLoop; if
 	 * we can't accept it, RejectedOverload.
 	 */
-	public final static MessageType FNPOpennetAnnounceReply = new MessageType("FNPOpennetAnnounceReply",
+	public static final MessageType FNPOpennetAnnounceReply = new MessageType("FNPOpennetAnnounceReply",
 			PRIORITY_UNSPECIFIED) {
 		{
-			addField(UID, Long.class);
-			addField(TRANSFER_UID, Long.class);
-			addField(NODEREF_LENGTH, Integer.class);
-			addField(PADDED_LENGTH, Integer.class);
+			this.addField(UID, Long.class);
+			this.addField(TRANSFER_UID, Long.class);
+			this.addField(NODEREF_LENGTH, Integer.class);
+			this.addField(PADDED_LENGTH, Integer.class);
 		}
 	};
 
@@ -1145,10 +1160,10 @@ public class DMT {
 		return msg;
 	}
 
-	public final static MessageType FNPOpennetAnnounceCompleted = new MessageType("FNPOpennetAnnounceCompleted",
+	public static final MessageType FNPOpennetAnnounceCompleted = new MessageType("FNPOpennetAnnounceCompleted",
 			PRIORITY_UNSPECIFIED) {
 		{
-			addField(UID, Long.class);
+			this.addField(UID, Long.class);
 		}
 	};
 
@@ -1158,9 +1173,9 @@ public class DMT {
 		return msg;
 	}
 
-	public final static MessageType FNPOpennetDisabled = new MessageType("FNPOpennetDisabled", PRIORITY_HIGH) {
+	public static final MessageType FNPOpennetDisabled = new MessageType("FNPOpennetDisabled", PRIORITY_HIGH) {
 		{
-			addField(UID, Long.class);
+			this.addField(UID, Long.class);
 		}
 	};
 
@@ -1170,11 +1185,11 @@ public class DMT {
 		return msg;
 	}
 
-	public final static MessageType FNPOpennetNoderefRejected = new MessageType("FNPOpennetNoderefRejected",
+	public static final MessageType FNPOpennetNoderefRejected = new MessageType("FNPOpennetNoderefRejected",
 			PRIORITY_HIGH) {
 		{
-			addField(UID, Long.class);
-			addField(REJECT_CODE, Integer.class);
+			this.addField(UID, Long.class);
+			this.addField(REJECT_CODE, Integer.class);
 		}
 	};
 
@@ -1186,18 +1201,13 @@ public class DMT {
 	}
 
 	public static String getOpennetRejectedCode(int x) {
-		switch (x) {
-		case NODEREF_REJECTED_TOO_BIG:
-			return "Too big";
-		case NODEREF_REJECTED_REAL_BIGGER_THAN_PADDED:
-			return "Real length bigger than padded length";
-		case NODEREF_REJECTED_TRANSFER_FAILED:
-			return "Transfer failed";
-		case NODEREF_REJECTED_INVALID:
-			return "Invalid noderef";
-		default:
-			return "Unknown rejection code " + x;
-		}
+		return switch (x) {
+			case NODEREF_REJECTED_TOO_BIG -> "Too big";
+			case NODEREF_REJECTED_REAL_BIGGER_THAN_PADDED -> "Real length bigger than padded length";
+			case NODEREF_REJECTED_TRANSFER_FAILED -> "Transfer failed";
+			case NODEREF_REJECTED_INVALID -> "Invalid noderef";
+			default -> "Unknown rejection code " + x;
+		};
 	}
 
 	public static final int NODEREF_REJECTED_TOO_BIG = 1;
@@ -1210,10 +1220,10 @@ public class DMT {
 
 	// FIXME get rid???
 
-	public final static MessageType FNPOpennetAnnounceNodeNotWanted = new MessageType("FNPOpennetAnnounceNodeNotWanted",
+	public static final MessageType FNPOpennetAnnounceNodeNotWanted = new MessageType("FNPOpennetAnnounceNodeNotWanted",
 			PRIORITY_LOW) {
 		{
-			addField(UID, Long.class);
+			this.addField(UID, Long.class);
 		}
 	};
 
@@ -1225,10 +1235,10 @@ public class DMT {
 
 	// Key offers (ULPRs)
 
-	public final static MessageType FNPOfferKey = new MessageType("FNPOfferKey", PRIORITY_LOW) {
+	public static final MessageType FNPOfferKey = new MessageType("FNPOfferKey", PRIORITY_LOW) {
 		{
-			addField(KEY, Key.class);
-			addField(OFFER_AUTHENTICATOR, ShortBuffer.class);
+			this.addField(KEY, Key.class);
+			this.addField(OFFER_AUTHENTICATOR, ShortBuffer.class);
 		}
 	};
 
@@ -1240,12 +1250,12 @@ public class DMT {
 	}
 
 	// Short timeout so PRIORITY_HIGH
-	public final static MessageType FNPGetOfferedKey = new MessageType("FNPGetOfferedKey", PRIORITY_LOW) {
+	public static final MessageType FNPGetOfferedKey = new MessageType("FNPGetOfferedKey", PRIORITY_LOW) {
 		{
-			addField(KEY, Key.class);
-			addField(OFFER_AUTHENTICATOR, ShortBuffer.class);
-			addField(NEED_PUB_KEY, Boolean.class);
-			addField(UID, Long.class);
+			this.addField(KEY, Key.class);
+			this.addField(OFFER_AUTHENTICATOR, ShortBuffer.class);
+			this.addField(NEED_PUB_KEY, Boolean.class);
+			this.addField(UID, Long.class);
 		}
 	};
 
@@ -1259,11 +1269,11 @@ public class DMT {
 	}
 
 	// Permanently rejected. RejectedOverload means temporarily rejected.
-	public final static MessageType FNPGetOfferedKeyInvalid = new MessageType("FNPGetOfferedKeyInvalid",
+	public static final MessageType FNPGetOfferedKeyInvalid = new MessageType("FNPGetOfferedKeyInvalid",
 			PRIORITY_HIGH) {
 		{ // short timeout
-			addField(UID, Long.class);
-			addField(REASON, Short.class);
+			this.addField(UID, Long.class);
+			this.addField(REASON, Short.class);
 		}
 	};
 
@@ -1274,13 +1284,13 @@ public class DMT {
 		return msg;
 	}
 
-	public final static short GET_OFFERED_KEY_REJECTED_BAD_AUTHENTICATOR = 1;
+	public static final short GET_OFFERED_KEY_REJECTED_BAD_AUTHENTICATOR = 1;
 
-	public final static short GET_OFFERED_KEY_REJECTED_NO_KEY = 2;
+	public static final short GET_OFFERED_KEY_REJECTED_NO_KEY = 2;
 
 	public static final MessageType FNPPing = new MessageType("FNPPing", PRIORITY_HIGH) {
 		{
-			addField(PING_SEQNO, Integer.class);
+			this.addField(PING_SEQNO, Integer.class);
 		}
 	};
 
@@ -1292,7 +1302,7 @@ public class DMT {
 
 	public static final MessageType FNPPong = new MessageType("FNPPong", PRIORITY_HIGH) {
 		{
-			addField(PING_SEQNO, Integer.class);
+			this.addField(PING_SEQNO, Integer.class);
 		}
 	};
 
@@ -1304,12 +1314,12 @@ public class DMT {
 
 	public static final MessageType FNPRHProbeReply = new MessageType("FNPRHProbeReply", PRIORITY_UNSPECIFIED) {
 		{
-			addField(UID, Long.class);
-			addField(NEAREST_LOCATION, Double.class);
-			addField(BEST_LOCATION, Double.class);
-			addField(COUNTER, Short.class);
-			addField(UNIQUE_COUNTER, Short.class);
-			addField(LINEAR_COUNTER, Short.class);
+			this.addField(UID, Long.class);
+			this.addField(NEAREST_LOCATION, Double.class);
+			this.addField(BEST_LOCATION, Double.class);
+			this.addField(COUNTER, Short.class);
+			this.addField(UNIQUE_COUNTER, Short.class);
+			this.addField(LINEAR_COUNTER, Short.class);
 		}
 	};
 
@@ -1327,9 +1337,9 @@ public class DMT {
 
 	public static final MessageType ProbeRequest = new MessageType("ProbeRequest", PRIORITY_HIGH) {
 		{
-			addField(HTL, Byte.class);
-			addField(UID, Long.class);
-			addField(TYPE, Byte.class);
+			this.addField(HTL, Byte.class);
+			this.addField(UID, Long.class);
+			this.addField(TYPE, Byte.class);
 		}
 	};
 
@@ -1349,8 +1359,8 @@ public class DMT {
 
 	public static final MessageType ProbeError = new MessageType("ProbeError", PRIORITY_HIGH) {
 		{
-			addField(UID, Long.class);
-			addField(TYPE, Byte.class);
+			this.addField(UID, Long.class);
+			this.addField(TYPE, Byte.class);
 		}
 	};
 
@@ -1369,7 +1379,7 @@ public class DMT {
 
 	public static final MessageType ProbeRefused = new MessageType("ProbeRefused", PRIORITY_HIGH) {
 		{
-			addField(DMT.UID, Long.class);
+			this.addField(DMT.UID, Long.class);
 		}
 	};
 
@@ -1387,8 +1397,8 @@ public class DMT {
 
 	public static final MessageType ProbeBandwidth = new MessageType("ProbeBandwidth", PRIORITY_HIGH) {
 		{
-			addField(UID, Long.class);
-			addField(OUTPUT_BANDWIDTH_UPPER_LIMIT, Float.class);
+			this.addField(UID, Long.class);
+			this.addField(OUTPUT_BANDWIDTH_UPPER_LIMIT, Float.class);
 		}
 	};
 
@@ -1407,8 +1417,8 @@ public class DMT {
 
 	public static final MessageType ProbeBuild = new MessageType("ProbeBuild", PRIORITY_HIGH) {
 		{
-			addField(UID, Long.class);
-			addField(BUILD, Integer.class);
+			this.addField(UID, Long.class);
+			this.addField(BUILD, Integer.class);
 		}
 	};
 
@@ -1427,9 +1437,9 @@ public class DMT {
 
 	public static final MessageType ProbeIdentifier = new MessageType("ProbeIdentifier", PRIORITY_HIGH) {
 		{
-			addField(UID, Long.class);
-			addField(PROBE_IDENTIFIER, Long.class);
-			addField(UPTIME_PERCENT, Byte.class);
+			this.addField(UID, Long.class);
+			this.addField(PROBE_IDENTIFIER, Long.class);
+			this.addField(UPTIME_PERCENT, Byte.class);
 		}
 	};
 
@@ -1450,8 +1460,8 @@ public class DMT {
 
 	public static final MessageType ProbeLinkLengths = new MessageType("ProbeLinkLengths", PRIORITY_HIGH) {
 		{
-			addField(UID, Long.class);
-			addField(LINK_LENGTHS, float[].class);
+			this.addField(UID, Long.class);
+			this.addField(LINK_LENGTHS, float[].class);
 		}
 	};
 
@@ -1470,8 +1480,8 @@ public class DMT {
 
 	public static final MessageType ProbeLocation = new MessageType("ProbeLocation", PRIORITY_HIGH) {
 		{
-			addField(UID, Long.class);
-			addField(LOCATION, Float.class);
+			this.addField(UID, Long.class);
+			this.addField(LOCATION, Float.class);
 		}
 	};
 
@@ -1490,8 +1500,8 @@ public class DMT {
 
 	public static final MessageType ProbeStoreSize = new MessageType("ProbeStoreSize", PRIORITY_HIGH) {
 		{
-			addField(UID, Long.class);
-			addField(STORE_SIZE, Float.class);
+			this.addField(UID, Long.class);
+			this.addField(STORE_SIZE, Float.class);
 		}
 	};
 
@@ -1510,8 +1520,8 @@ public class DMT {
 
 	public static final MessageType ProbeUptime = new MessageType("ProbeUptime", PRIORITY_HIGH) {
 		{
-			addField(UID, Long.class);
-			addField(UPTIME_PERCENT, Float.class);
+			this.addField(UID, Long.class);
+			this.addField(UPTIME_PERCENT, Float.class);
 		}
 	};
 
@@ -1531,8 +1541,8 @@ public class DMT {
 
 	public static final MessageType ProbeRejectStats = new MessageType("ProbeRejectStats", PRIORITY_HIGH) {
 		{
-			addField(UID, Long.class);
-			addField(REJECT_STATS, ShortBuffer.class);
+			this.addField(UID, Long.class);
+			this.addField(REJECT_STATS, ShortBuffer.class);
 		}
 	};
 
@@ -1555,20 +1565,20 @@ public class DMT {
 	public static final MessageType ProbeOverallBulkOutputCapacityUsage = new MessageType(
 			"ProbeOverallBulkOutputCapacityUsage", PRIORITY_HIGH) {
 		{
-			addField(UID, Long.class); // UID for the probe
-			addField(OUTPUT_BANDWIDTH_CLASS, Byte.class); // Approximate bandwidth,
-															// severely truncated.
-			addField(CAPACITY_USAGE, Float.class); // Noisy capacity usage.
+			this.addField(UID, Long.class); // UID for the probe
+			this.addField(OUTPUT_BANDWIDTH_CLASS, Byte.class); // Approximate bandwidth,
+																// severely truncated.
+			this.addField(CAPACITY_USAGE, Float.class); // Noisy capacity usage.
 		}
 	};
 
-	public static final byte bandwidthClassForCapacityUsage(int bandwidthLimit) {
+	public static byte bandwidthClassForCapacityUsage(int bandwidthLimit) {
 		bandwidthLimit /= CAPACITY_USAGE_MULTIPLIER;
 		bandwidthLimit = Math.min(bandwidthLimit, CAPACITY_USAGE_MAX);
 		return (byte) Math.max(bandwidthLimit, CAPACITY_USAGE_MIN);
 	}
 
-	public static final Message createProbeOverallBulkOutputCapacityUsage(long uid, byte outputBandwidthClass,
+	public static Message createProbeOverallBulkOutputCapacityUsage(long uid, byte outputBandwidthClass,
 			float capacityUsage) {
 		Message msg = new Message(ProbeOverallBulkOutputCapacityUsage);
 		msg.set(UID, uid);
@@ -1579,9 +1589,9 @@ public class DMT {
 
 	public static final MessageType FNPSwapRequest = new MessageType("FNPSwapRequest", PRIORITY_HIGH) {
 		{
-			addField(UID, Long.class);
-			addField(HASH, ShortBuffer.class);
-			addField(HTL, Integer.class);
+			this.addField(UID, Long.class);
+			this.addField(HASH, ShortBuffer.class);
+			this.addField(HTL, Integer.class);
 		}
 	};
 
@@ -1595,7 +1605,7 @@ public class DMT {
 
 	public static final MessageType FNPSwapRejected = new MessageType("FNPSwapRejected", PRIORITY_HIGH) {
 		{
-			addField(UID, Long.class);
+			this.addField(UID, Long.class);
 		}
 	};
 
@@ -1607,8 +1617,8 @@ public class DMT {
 
 	public static final MessageType FNPSwapReply = new MessageType("FNPSwapReply", PRIORITY_HIGH) {
 		{
-			addField(UID, Long.class);
-			addField(HASH, ShortBuffer.class);
+			this.addField(UID, Long.class);
+			this.addField(HASH, ShortBuffer.class);
 		}
 	};
 
@@ -1621,8 +1631,8 @@ public class DMT {
 
 	public static final MessageType FNPSwapCommit = new MessageType("FNPSwapCommit", PRIORITY_HIGH) {
 		{
-			addField(UID, Long.class);
-			addField(DATA, ShortBuffer.class);
+			this.addField(UID, Long.class);
+			this.addField(DATA, ShortBuffer.class);
 		}
 	};
 
@@ -1635,8 +1645,8 @@ public class DMT {
 
 	public static final MessageType FNPSwapComplete = new MessageType("FNPSwapComplete", PRIORITY_HIGH) {
 		{
-			addField(UID, Long.class);
-			addField(DATA, ShortBuffer.class);
+			this.addField(UID, Long.class);
+			this.addField(DATA, ShortBuffer.class);
 		}
 	};
 
@@ -1650,8 +1660,8 @@ public class DMT {
 	public static final MessageType FNPLocChangeNotificationNew = new MessageType("FNPLocationChangeNotification2",
 			PRIORITY_LOW) {
 		{
-			addField(LOCATION, Double.class);
-			addField(PEER_LOCATIONS, ShortBuffer.class);
+			this.addField(LOCATION, Double.class);
+			this.addField(PEER_LOCATIONS, ShortBuffer.class);
 		}
 	};
 
@@ -1666,8 +1676,8 @@ public class DMT {
 
 	public static final MessageType FNPRoutedPing = new MessageType("FNPRoutedPing", PRIORITY_LOW) {
 		{
-			addRoutedToNodeMessageFields();
-			addField(COUNTER, Integer.class);
+			this.addRoutedToNodeMessageFields();
+			this.addField(COUNTER, Integer.class);
 
 		}
 	};
@@ -1682,8 +1692,8 @@ public class DMT {
 
 	public static final MessageType FNPRoutedPong = new MessageType("FNPRoutedPong", PRIORITY_LOW) {
 		{
-			addField(UID, Long.class);
-			addField(COUNTER, Integer.class);
+			this.addField(UID, Long.class);
+			this.addField(COUNTER, Integer.class);
 		}
 	};
 
@@ -1696,8 +1706,8 @@ public class DMT {
 
 	public static final MessageType FNPRoutedRejected = new MessageType("FNPRoutedRejected", PRIORITY_UNSPECIFIED) {
 		{
-			addField(UID, Long.class);
-			addField(HTL, Short.class);
+			this.addField(UID, Long.class);
+			this.addField(HTL, Short.class);
 		}
 	};
 
@@ -1710,7 +1720,7 @@ public class DMT {
 
 	public static final MessageType FNPDetectedIPAddress = new MessageType("FNPDetectedIPAddress", PRIORITY_HIGH) {
 		{
-			addField(EXTERNAL_ADDRESS, Peer.class);
+			this.addField(EXTERNAL_ADDRESS, Peer.class);
 		}
 	};
 
@@ -1722,7 +1732,7 @@ public class DMT {
 
 	public static final MessageType FNPTime = new MessageType("FNPTime", PRIORITY_HIGH) {
 		{
-			addField(TIME, Long.class);
+			this.addField(TIME, Long.class);
 		}
 	};
 
@@ -1734,7 +1744,7 @@ public class DMT {
 
 	public static final MessageType FNPUptime = new MessageType("FNPUptime", PRIORITY_LOW) {
 		{
-			addField(UPTIME_PERCENT_48H, Byte.class);
+			this.addField(UPTIME_PERCENT_48H, Byte.class);
 		}
 	};
 
@@ -1746,7 +1756,7 @@ public class DMT {
 
 	public static final MessageType FNPVisibility = new MessageType("FNPVisibility", PRIORITY_HIGH) {
 		{
-			addField(FRIEND_VISIBILITY, Short.class);
+			this.addField(FRIEND_VISIBILITY, Short.class);
 		}
 	};
 
@@ -1759,20 +1769,16 @@ public class DMT {
 	// FIXME remove this message.
 	public static final MessageType FNPSentPackets = new MessageType("FNPSentPackets", PRIORITY_HIGH) {
 		{
-			addField(TIME_DELTAS, ShortBuffer.class);
-			addField(HASHES, ShortBuffer.class);
-			addField(TIME, Long.class);
+			this.addField(TIME_DELTAS, ShortBuffer.class);
+			this.addField(HASHES, ShortBuffer.class);
+			this.addField(TIME, Long.class);
 		}
 	};
 
-	public static final MessageType FNPVoid = new MessageType("FNPVoid", PRIORITY_LOW, false, true) {
-		{
-		}
-	};
+	public static final MessageType FNPVoid = new MessageType("FNPVoid", PRIORITY_LOW, false, true);
 
 	public static Message createFNPVoid() {
-		Message msg = new Message(FNPVoid);
-		return msg;
+		return new Message(FNPVoid);
 	}
 
 	public static final MessageType FNPDisconnect = new MessageType("FNPDisconnect", PRIORITY_HIGH) {
@@ -1780,15 +1786,15 @@ public class DMT {
 			// If true, remove from active routing table, likely to be down for a while.
 			// Otherwise just dump all current connection state and keep trying to
 			// connect.
-			addField(REMOVE, Boolean.class);
+			this.addField(REMOVE, Boolean.class);
 			// If true, purge all references to this node. Otherwise, we can keep the node
 			// around in secondary tables etc in order to more easily reconnect later.
 			// (Mostly used on opennet)
-			addField(PURGE, Boolean.class);
+			this.addField(PURGE, Boolean.class);
 			// Parting message, may be empty. A SimpleFieldSet in exactly the same format
 			// as an N2NTM.
-			addField(NODE_TO_NODE_MESSAGE_TYPE, Integer.class);
-			addField(NODE_TO_NODE_MESSAGE_DATA, ShortBuffer.class);
+			this.addField(NODE_TO_NODE_MESSAGE_TYPE, Integer.class);
+			this.addField(NODE_TO_NODE_MESSAGE_DATA, ShortBuffer.class);
 		}
 	};
 
@@ -1809,19 +1815,19 @@ public class DMT {
 
 	public static final MessageType UOMAnnouncement = new MessageType("UOMAnnouncement", PRIORITY_LOW) {
 		{
-			addField(MAIN_JAR_KEY, String.class);
-			addField(REVOCATION_KEY, String.class);
-			addField(HAVE_REVOCATION_KEY, Boolean.class);
-			addField(MAIN_JAR_VERSION, Long.class);
+			this.addField(MAIN_JAR_KEY, String.class);
+			this.addField(REVOCATION_KEY, String.class);
+			this.addField(HAVE_REVOCATION_KEY, Boolean.class);
+			this.addField(MAIN_JAR_VERSION, Long.class);
 			// Last time (ms ago) we had 3 DNFs in a row on the revocation checker.
-			addField(REVOCATION_KEY_TIME_LAST_TRIED, Long.class);
+			this.addField(REVOCATION_KEY_TIME_LAST_TRIED, Long.class);
 			// Number of DNFs so far this time.
-			addField(REVOCATION_KEY_DNF_COUNT, Integer.class);
+			this.addField(REVOCATION_KEY_DNF_COUNT, Integer.class);
 			// For convenience, may change
-			addField(REVOCATION_KEY_FILE_LENGTH, Long.class);
-			addField(MAIN_JAR_FILE_LENGTH, Long.class);
-			addField(PING_TIME, Integer.class);
-			addField(BWLIMIT_DELAY_TIME, Integer.class);
+			this.addField(REVOCATION_KEY_FILE_LENGTH, Long.class);
+			this.addField(MAIN_JAR_FILE_LENGTH, Long.class);
+			this.addField(PING_TIME, Integer.class);
+			this.addField(BWLIMIT_DELAY_TIME, Integer.class);
 		}
 	};
 
@@ -1846,7 +1852,7 @@ public class DMT {
 
 	public static final MessageType UOMRequestRevocation = new MessageType("UOMRequestRevocation", PRIORITY_HIGH) {
 		{
-			addField(UID, Long.class);
+			this.addField(UID, Long.class);
 		}
 	};
 
@@ -1859,7 +1865,7 @@ public class DMT {
 	// Used by new UOM.
 	public static final MessageType UOMRequestMainJar = new MessageType("UOMRequestMainJar", PRIORITY_LOW) {
 		{
-			addField(UID, Long.class);
+			this.addField(UID, Long.class);
 		}
 	};
 
@@ -1871,12 +1877,12 @@ public class DMT {
 
 	public static final MessageType UOMSendingRevocation = new MessageType("UOMSendingRevocation", PRIORITY_HIGH) {
 		{
-			addField(UID, Long.class);
+			this.addField(UID, Long.class);
 			// Probably excessive, but lengths are always long's, and wasting a few bytes
 			// here
 			// doesn't matter in the least, as it's very rarely called.
-			addField(FILE_LENGTH, Long.class);
-			addField(REVOCATION_KEY, String.class);
+			this.addField(FILE_LENGTH, Long.class);
+			this.addField(REVOCATION_KEY, String.class);
 		}
 	};
 
@@ -1891,10 +1897,10 @@ public class DMT {
 	// Used by new UOM. We need to distinguish them in NodeDispatcher.
 	public static final MessageType UOMSendingMainJar = new MessageType("UOMSendingMainJar", PRIORITY_LOW) {
 		{
-			addField(UID, Long.class);
-			addField(FILE_LENGTH, Long.class);
-			addField(MAIN_JAR_KEY, String.class);
-			addField(MAIN_JAR_VERSION, Integer.class);
+			this.addField(UID, Long.class);
+			this.addField(FILE_LENGTH, Long.class);
+			this.addField(MAIN_JAR_KEY, String.class);
+			this.addField(MAIN_JAR_VERSION, Integer.class);
 		}
 	};
 
@@ -1915,9 +1921,9 @@ public class DMT {
 	 */
 	public static final MessageType UOMFetchDependency = new MessageType("UOMFetchDependency", PRIORITY_LOW) {
 		{
-			addField(UID, Long.class); // This will be used for the transfer.
-			addField(EXPECTED_HASH, ShortBuffer.class); // Fetch by hash
-			addField(FILE_LENGTH, Long.class); // Length is known by both sides.
+			this.addField(UID, Long.class); // This will be used for the transfer.
+			this.addField(EXPECTED_HASH, ShortBuffer.class); // Fetch by hash
+			this.addField(FILE_LENGTH, Long.class); // Length is known by both sides.
 		}
 	};
 
@@ -1933,7 +1939,7 @@ public class DMT {
 
 	public static final MessageType FNPSwapNodeUIDs = new MessageType("FNPSwapNodeUIDs", PRIORITY_UNSPECIFIED) {
 		{
-			addField(NODE_UIDS, ShortBuffer.class);
+			this.addField(NODE_UIDS, ShortBuffer.class);
 		}
 	};
 
@@ -1951,7 +1957,7 @@ public class DMT {
 		{
 			// Maybe this should be some sort of typed array?
 			// It's just a bunch of double's anyway.
-			addField(BEST_LOCATIONS_NOT_VISITED, ShortBuffer.class);
+			this.addField(BEST_LOCATIONS_NOT_VISITED, ShortBuffer.class);
 		}
 	};
 
@@ -1967,14 +1973,15 @@ public class DMT {
 
 	public static Message createFNPBestRoutesNotTaken(Double[] doubles) {
 		double[] locs = new double[doubles.length];
-		for (int i = 0; i < locs.length; i++)
-			locs[i] = doubles[i].doubleValue();
+		for (int i = 0; i < locs.length; i++) {
+			locs[i] = doubles[i];
+		}
 		return createFNPBestRoutesNotTaken(locs);
 	}
 
 	public static final MessageType FNPRoutingStatus = new MessageType("FNPRoutingStatus", PRIORITY_HIGH) {
 		{
-			addField(ROUTING_ENABLED, Boolean.class);
+			this.addField(ROUTING_ENABLED, Boolean.class);
 		}
 	};
 
@@ -1988,7 +1995,7 @@ public class DMT {
 	public static final MessageType FNPSubInsertForkControl = new MessageType("FNPSubInsertForkControl",
 			PRIORITY_HIGH) {
 		{
-			addField(ENABLE_INSERT_FORK_WHEN_CACHEABLE, Boolean.class);
+			this.addField(ENABLE_INSERT_FORK_WHEN_CACHEABLE, Boolean.class);
 		}
 	};
 
@@ -2001,7 +2008,7 @@ public class DMT {
 	public static final MessageType FNPSubInsertPreferInsert = new MessageType("FNPSubInsertPreferInsert",
 			PRIORITY_HIGH) {
 		{
-			addField(PREFER_INSERT, Boolean.class);
+			this.addField(PREFER_INSERT, Boolean.class);
 		}
 	};
 
@@ -2015,7 +2022,7 @@ public class DMT {
 	public static final MessageType FNPSubInsertIgnoreLowBackoff = new MessageType("FNPSubInsertIgnoreLowBackoff",
 			PRIORITY_HIGH) {
 		{
-			addField(IGNORE_LOW_BACKOFF, Boolean.class);
+			this.addField(IGNORE_LOW_BACKOFF, Boolean.class);
 		}
 	};
 
@@ -2041,66 +2048,66 @@ public class DMT {
 	public static final MessageType FNPPeerLoadStatusByte = new MessageType("FNPPeerLoadStatusByte", PRIORITY_HIGH,
 			false, true) {
 		{
-			addField(OTHER_TRANSFERS_OUT_CHK, Byte.class);
-			addField(OTHER_TRANSFERS_IN_CHK, Byte.class);
-			addField(OTHER_TRANSFERS_OUT_SSK, Byte.class);
-			addField(OTHER_TRANSFERS_IN_SSK, Byte.class);
-			addField(AVERAGE_TRANSFERS_OUT_PER_INSERT, Byte.class);
-			addField(OUTPUT_BANDWIDTH_LOWER_LIMIT, Integer.class);
-			addField(OUTPUT_BANDWIDTH_UPPER_LIMIT, Integer.class);
-			addField(OUTPUT_BANDWIDTH_PEER_LIMIT, Integer.class);
-			addField(INPUT_BANDWIDTH_LOWER_LIMIT, Integer.class);
-			addField(INPUT_BANDWIDTH_UPPER_LIMIT, Integer.class);
-			addField(INPUT_BANDWIDTH_PEER_LIMIT, Integer.class);
-			addField(MAX_TRANSFERS_OUT, Byte.class);
-			addField(MAX_TRANSFERS_OUT_PEER_LIMIT, Byte.class);
-			addField(MAX_TRANSFERS_OUT_LOWER_LIMIT, Byte.class);
-			addField(MAX_TRANSFERS_OUT_UPPER_LIMIT, Byte.class);
-			addField(REAL_TIME_FLAG, Boolean.class);
+			this.addField(OTHER_TRANSFERS_OUT_CHK, Byte.class);
+			this.addField(OTHER_TRANSFERS_IN_CHK, Byte.class);
+			this.addField(OTHER_TRANSFERS_OUT_SSK, Byte.class);
+			this.addField(OTHER_TRANSFERS_IN_SSK, Byte.class);
+			this.addField(AVERAGE_TRANSFERS_OUT_PER_INSERT, Byte.class);
+			this.addField(OUTPUT_BANDWIDTH_LOWER_LIMIT, Integer.class);
+			this.addField(OUTPUT_BANDWIDTH_UPPER_LIMIT, Integer.class);
+			this.addField(OUTPUT_BANDWIDTH_PEER_LIMIT, Integer.class);
+			this.addField(INPUT_BANDWIDTH_LOWER_LIMIT, Integer.class);
+			this.addField(INPUT_BANDWIDTH_UPPER_LIMIT, Integer.class);
+			this.addField(INPUT_BANDWIDTH_PEER_LIMIT, Integer.class);
+			this.addField(MAX_TRANSFERS_OUT, Byte.class);
+			this.addField(MAX_TRANSFERS_OUT_PEER_LIMIT, Byte.class);
+			this.addField(MAX_TRANSFERS_OUT_LOWER_LIMIT, Byte.class);
+			this.addField(MAX_TRANSFERS_OUT_UPPER_LIMIT, Byte.class);
+			this.addField(REAL_TIME_FLAG, Boolean.class);
 		}
 	};
 
 	public static final MessageType FNPPeerLoadStatusShort = new MessageType("FNPPeerLoadStatusShort", PRIORITY_HIGH,
 			false, true) {
 		{
-			addField(OTHER_TRANSFERS_OUT_CHK, Short.class);
-			addField(OTHER_TRANSFERS_IN_CHK, Short.class);
-			addField(OTHER_TRANSFERS_OUT_SSK, Short.class);
-			addField(OTHER_TRANSFERS_IN_SSK, Short.class);
-			addField(AVERAGE_TRANSFERS_OUT_PER_INSERT, Short.class);
-			addField(OUTPUT_BANDWIDTH_LOWER_LIMIT, Integer.class);
-			addField(OUTPUT_BANDWIDTH_UPPER_LIMIT, Integer.class);
-			addField(OUTPUT_BANDWIDTH_PEER_LIMIT, Integer.class);
-			addField(INPUT_BANDWIDTH_LOWER_LIMIT, Integer.class);
-			addField(INPUT_BANDWIDTH_UPPER_LIMIT, Integer.class);
-			addField(INPUT_BANDWIDTH_PEER_LIMIT, Integer.class);
-			addField(MAX_TRANSFERS_OUT, Short.class);
-			addField(MAX_TRANSFERS_OUT_PEER_LIMIT, Short.class);
-			addField(MAX_TRANSFERS_OUT_LOWER_LIMIT, Short.class);
-			addField(MAX_TRANSFERS_OUT_UPPER_LIMIT, Short.class);
-			addField(REAL_TIME_FLAG, Boolean.class);
+			this.addField(OTHER_TRANSFERS_OUT_CHK, Short.class);
+			this.addField(OTHER_TRANSFERS_IN_CHK, Short.class);
+			this.addField(OTHER_TRANSFERS_OUT_SSK, Short.class);
+			this.addField(OTHER_TRANSFERS_IN_SSK, Short.class);
+			this.addField(AVERAGE_TRANSFERS_OUT_PER_INSERT, Short.class);
+			this.addField(OUTPUT_BANDWIDTH_LOWER_LIMIT, Integer.class);
+			this.addField(OUTPUT_BANDWIDTH_UPPER_LIMIT, Integer.class);
+			this.addField(OUTPUT_BANDWIDTH_PEER_LIMIT, Integer.class);
+			this.addField(INPUT_BANDWIDTH_LOWER_LIMIT, Integer.class);
+			this.addField(INPUT_BANDWIDTH_UPPER_LIMIT, Integer.class);
+			this.addField(INPUT_BANDWIDTH_PEER_LIMIT, Integer.class);
+			this.addField(MAX_TRANSFERS_OUT, Short.class);
+			this.addField(MAX_TRANSFERS_OUT_PEER_LIMIT, Short.class);
+			this.addField(MAX_TRANSFERS_OUT_LOWER_LIMIT, Short.class);
+			this.addField(MAX_TRANSFERS_OUT_UPPER_LIMIT, Short.class);
+			this.addField(REAL_TIME_FLAG, Boolean.class);
 		}
 	};
 
 	public static final MessageType FNPPeerLoadStatusInt = new MessageType("FNPPeerLoadStatusInt", PRIORITY_HIGH, false,
 			true) {
 		{
-			addField(OTHER_TRANSFERS_OUT_CHK, Integer.class);
-			addField(OTHER_TRANSFERS_IN_CHK, Integer.class);
-			addField(OTHER_TRANSFERS_OUT_SSK, Integer.class);
-			addField(OTHER_TRANSFERS_IN_SSK, Integer.class);
-			addField(AVERAGE_TRANSFERS_OUT_PER_INSERT, Integer.class);
-			addField(OUTPUT_BANDWIDTH_LOWER_LIMIT, Integer.class);
-			addField(OUTPUT_BANDWIDTH_UPPER_LIMIT, Integer.class);
-			addField(OUTPUT_BANDWIDTH_PEER_LIMIT, Integer.class);
-			addField(INPUT_BANDWIDTH_LOWER_LIMIT, Integer.class);
-			addField(INPUT_BANDWIDTH_UPPER_LIMIT, Integer.class);
-			addField(INPUT_BANDWIDTH_PEER_LIMIT, Integer.class);
-			addField(MAX_TRANSFERS_OUT, Integer.class);
-			addField(MAX_TRANSFERS_OUT_PEER_LIMIT, Integer.class);
-			addField(MAX_TRANSFERS_OUT_LOWER_LIMIT, Integer.class);
-			addField(MAX_TRANSFERS_OUT_UPPER_LIMIT, Integer.class);
-			addField(REAL_TIME_FLAG, Boolean.class);
+			this.addField(OTHER_TRANSFERS_OUT_CHK, Integer.class);
+			this.addField(OTHER_TRANSFERS_IN_CHK, Integer.class);
+			this.addField(OTHER_TRANSFERS_OUT_SSK, Integer.class);
+			this.addField(OTHER_TRANSFERS_IN_SSK, Integer.class);
+			this.addField(AVERAGE_TRANSFERS_OUT_PER_INSERT, Integer.class);
+			this.addField(OUTPUT_BANDWIDTH_LOWER_LIMIT, Integer.class);
+			this.addField(OUTPUT_BANDWIDTH_UPPER_LIMIT, Integer.class);
+			this.addField(OUTPUT_BANDWIDTH_PEER_LIMIT, Integer.class);
+			this.addField(INPUT_BANDWIDTH_LOWER_LIMIT, Integer.class);
+			this.addField(INPUT_BANDWIDTH_UPPER_LIMIT, Integer.class);
+			this.addField(INPUT_BANDWIDTH_PEER_LIMIT, Integer.class);
+			this.addField(MAX_TRANSFERS_OUT, Integer.class);
+			this.addField(MAX_TRANSFERS_OUT_PEER_LIMIT, Integer.class);
+			this.addField(MAX_TRANSFERS_OUT_LOWER_LIMIT, Integer.class);
+			this.addField(MAX_TRANSFERS_OUT_UPPER_LIMIT, Integer.class);
+			this.addField(REAL_TIME_FLAG, Boolean.class);
 		}
 	};
 
@@ -2210,7 +2217,7 @@ public class DMT {
 
 	public static final MessageType FNPRealTimeFlag = new MessageType("FNPRealTimeFlag", PRIORITY_HIGH) {
 		{
-			addField(REAL_TIME_FLAG, Boolean.class);
+			this.addField(REAL_TIME_FLAG, Boolean.class);
 		}
 	};
 
@@ -2222,8 +2229,9 @@ public class DMT {
 
 	public static boolean getRealTimeFlag(Message m) {
 		Message bulk = m.getSubMessage(FNPRealTimeFlag);
-		if (bulk == null)
+		if (bulk == null) {
 			return false;
+		}
 		return bulk.getBoolean(REAL_TIME_FLAG);
 	}
 
@@ -2242,24 +2250,22 @@ public class DMT {
 
 	public static final MessageType FNPCheckStillRunning = new MessageType("FNPCheckStillRunning", PRIORITY_HIGH) {
 		{
-			addField(UID, Long.class); // UID for this message, used to identify reply
-			addField(LIST_OF_UIDS, ShortBuffer.class);
+			this.addField(UID, Long.class); // UID for this message, used to identify
+											// reply
+			this.addField(LIST_OF_UIDS, ShortBuffer.class);
 		}
 	};
 
 	public static final MessageType FNPIsStillRunning = new MessageType("FNPIsStillRunning", PRIORITY_HIGH) {
 		{
-			addField(UID, Long.class);
-			addField(UID_STILL_RUNNING_FLAGS, BitArray.class);
+			this.addField(UID, Long.class);
+			this.addField(UID_STILL_RUNNING_FLAGS, BitArray.class);
 		}
 	};
 
 	// Friend-of-a-friend (FOAF) related messages
 
-	public static final MessageType FNPGetYourFullNoderef = new MessageType("FNPGetYourFullNoderef", PRIORITY_LOW) {
-		{
-		}
-	};
+	public static final MessageType FNPGetYourFullNoderef = new MessageType("FNPGetYourFullNoderef", PRIORITY_LOW);
 
 	public static Message createFNPGetYourFullNoderef() {
 		return new Message(FNPGetYourFullNoderef);
@@ -2267,13 +2273,13 @@ public class DMT {
 
 	public static final MessageType FNPMyFullNoderef = new MessageType("FNPMyFullNoderef", PRIORITY_LOW) {
 		{
-			addField(UID, Long.class);
+			this.addField(UID, Long.class);
 			// Not necessary to pad it since it's not propagated across the network.
 			// It might be relayed one hop, but there's enough padding elsewhere, don't
 			// worry about it.
 			// As opposed to opennet refs, which are relayed long distances, down request
 			// paths which they might reveal, so do need to be padded.
-			addField(NODEREF_LENGTH, Integer.class);
+			this.addField(NODEREF_LENGTH, Integer.class);
 		}
 	};
 
