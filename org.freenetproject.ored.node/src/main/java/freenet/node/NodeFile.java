@@ -1,3 +1,21 @@
+/*
+ * Copyright 1999-2022 The Freenet Project
+ * Copyright 2022 Marine Master
+ *
+ * This file is part of Oldenet.
+ *
+ * Oldenet is free software: you can redistribute it and/or modify it under the terms of
+ * the GNU General Public License as published by the Free Software Foundation, either
+ * version 3 of the License, or any later version.
+ *
+ * Oldenet is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with Oldenet.
+ * If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package freenet.node;
 
 import java.io.File;
@@ -7,9 +25,10 @@ import java.io.File;
  */
 public enum NodeFile {
 
-	Seednodes(InstallDirectory.Node, "seednodes.fref"), InstallerWindows(InstallDirectory.Run,
-			"freenet-latest-installer-windows.exe"), InstallerNonWindows(InstallDirectory.Run,
-					"freenet-latest-installer-nonwindows.jar"), IPv4ToCountry(InstallDirectory.Run, "IpToCountry.dat");
+	Seednodes(InstallDirectory.Node, "seednodes.fref"),
+	InstallerWindows(InstallDirectory.Run, "freenet-latest-installer-windows.exe"),
+	InstallerNonWindows(InstallDirectory.Run, "freenet-latest-installer-nonwindows.jar"),
+	IPv4ToCountry(InstallDirectory.Run, "IpToCountry.dat");
 
 	private final InstallDirectory dir;
 
@@ -19,24 +38,24 @@ public enum NodeFile {
 	 * Gets the absolute file path associated with this file for the given node instance.
 	 */
 	public File getFile(Node node) {
-		return dir.getDir(node).file(filename);
+		return this.dir.getDir(node).file(this.filename);
 	}
 
 	/**
 	 * Gets the filename associated with this file.
 	 */
 	public String getFilename() {
-		return filename;
+		return this.filename;
 	}
 
 	/**
 	 * Gets the base directory with this file for the given node instance.
 	 */
 	public ProgramDirectory getProgramDirectory(Node node) {
-		return dir.getDir(node);
+		return this.dir.getDir(node);
 	}
 
-	private NodeFile(InstallDirectory dir, String filename) {
+	NodeFile(InstallDirectory dir, String filename) {
 		this.dir = dir;
 		this.filename = filename;
 	}

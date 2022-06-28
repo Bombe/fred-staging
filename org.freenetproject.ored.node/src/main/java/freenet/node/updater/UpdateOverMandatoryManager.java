@@ -1,10 +1,22 @@
-/* This code is part of Freenet. It is distributed under the GNU General
- * Public License, version 2 (or at your option any later version). See
- * http://www.gnu.org/ for further details of the GPL. */
-package freenet.node.updater;
+/*
+ * Copyright 1999-2022 The Freenet Project
+ * Copyright 2022 Marine Master
+ *
+ * This file is part of Oldenet.
+ *
+ * Oldenet is free software: you can redistribute it and/or modify it under the terms of
+ * the GNU General Public License as published by the Free Software Foundation, either
+ * version 3 of the License, or any later version.
+ *
+ * Oldenet is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with Oldenet.
+ * If not, see <https://www.gnu.org/licenses/>.
+ */
 
-import static java.util.concurrent.TimeUnit.HOURS;
-import static java.util.concurrent.TimeUnit.SECONDS;
+package freenet.node.updater;
 
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
@@ -60,13 +72,13 @@ import freenet.keys.FreenetURI;
 import freenet.l10n.NodeL10n;
 import freenet.lockablebuffer.ByteArrayRandomAccessBuffer;
 import freenet.lockablebuffer.FileRandomAccessBuffer;
-import freenet.node.useralerts.BaseNodeUserAlert;
 import freenet.node.Node;
 import freenet.node.PeerNode;
 import freenet.node.Version;
+import freenet.node.useralerts.BaseNodeUserAlert;
+import freenet.nodelogger.Logger;
 import freenet.support.HTMLNode;
 import freenet.support.HexUtil;
-import freenet.nodelogger.Logger;
 import freenet.support.ShortBuffer;
 import freenet.support.SizeUtil;
 import freenet.support.TimeUtil;
@@ -138,10 +150,10 @@ public class UpdateOverMandatoryManager implements RequestClient {
 	static final int MAX_NODES_SENDING_JAR = 2;
 
 	/** Maximum time between asking for the main jar and it starting to transfer */
-	static final long REQUEST_MAIN_JAR_TIMEOUT = SECONDS.toMillis(60);
+	static final long REQUEST_MAIN_JAR_TIMEOUT = TimeUnit.SECONDS.toMillis(60);
 
 	// ** Grace time before we use UoM to update */
-	public static final long GRACE_TIME = HOURS.toMillis(3);
+	public static final long GRACE_TIME = TimeUnit.HOURS.toMillis(3);
 
 	private FCPUserAlert alert;
 
@@ -170,17 +182,17 @@ public class UpdateOverMandatoryManager implements RequestClient {
 
 	public UpdateOverMandatoryManager(NodeUpdateManager manager) {
 		this.updateManager = manager;
-		nodesSayKeyRevoked = new HashSet<PeerNode>();
-		nodesSayKeyRevokedFailedTransfer = new HashSet<PeerNode>();
-		nodesSayKeyRevokedTransferring = new HashSet<PeerNode>();
-		nodesOfferedMainJar = new HashSet<PeerNode>();
-		nodesSentMainJar = new HashSet<PeerNode>();
-		nodesAskedSendMainJar = new HashSet<PeerNode>();
-		nodesSendingMainJar = new HashSet<PeerNode>();
-		allNodesOfferedMainJar = new HashSet<PeerNode>();
-		dependencies = new HashMap<ShortBuffer, File>();
-		peersFetchingDependencies = new WeakHashMap<PeerNode, Integer>();
-		dependencyFetchers = new HashMap<ShortBuffer, UOMDependencyFetcher>();
+		this.nodesSayKeyRevoked = new HashSet<>();
+		this.nodesSayKeyRevokedFailedTransfer = new HashSet<>();
+		this.nodesSayKeyRevokedTransferring = new HashSet<>();
+		this.nodesOfferedMainJar = new HashSet<>();
+		this.nodesSentMainJar = new HashSet<>();
+		this.nodesAskedSendMainJar = new HashSet<>();
+		this.nodesSendingMainJar = new HashSet<>();
+		this.allNodesOfferedMainJar = new HashSet<>();
+		this.dependencies = new HashMap<>();
+		this.peersFetchingDependencies = new WeakHashMap<>();
+		this.dependencyFetchers = new HashMap<>();
 	}
 
 	/**
@@ -228,94 +240,100 @@ public class UpdateOverMandatoryManager implements RequestClient {
 
 		if (haveRevocationKey) {
 
-			if (updateManager.isBlown())
+			if (this.updateManager.isBlown()) {
 				return true; // We already know
+			}
 
 			// First, is the key the same as ours?
 			try {
 				FreenetURI revocationURI = new FreenetURI(revocationKey);
-				if (revocationURI.equals(updateManager.getRevocationURI())) {
+				if (revocationURI.equals(this.updateManager.getRevocationURI())) {
 
 					// Uh oh...
 
 					// Have to do this first to avoid race condition
 					synchronized (this) {
 						// If already transferring, don't start another transfer.
-						if (nodesSayKeyRevokedTransferring.contains(source))
+						if (this.nodesSayKeyRevokedTransferring.contains(source)) {
 							return true;
+						}
 						// If waiting for SendingRevocation, don't start another transfer.
-						if (nodesSayKeyRevoked.contains(source))
+						if (this.nodesSayKeyRevoked.contains(source)) {
 							return true;
-						nodesSayKeyRevoked.add(source);
+						}
+						this.nodesSayKeyRevoked.add(source);
 					}
 
 					// Disable the update
-					updateManager.peerClaimsKeyBlown();
+					this.updateManager.peerClaimsKeyBlown();
 
 					// Tell the user
-					alertUser();
+					this.alertUser();
 
 					System.err.println("Your peer " + source.userToString() + " (build #" + source.getSimpleVersion()
 							+ ") says that the auto-update key is blown!");
 					System.err.println("Attempting to fetch it...");
 
-					tryFetchRevocation(source);
+					this.tryFetchRevocation(source);
 
 				}
 				else {
 					// Should probably also be a useralert?
 					Logger.normal(this, "Node " + source
 							+ " sent us a UOM claiming that the auto-update key was blown, but it used a different key to us: \nour key="
-							+ updateManager.getRevocationURI() + "\nhis key=" + revocationURI);
+							+ this.updateManager.getRevocationURI() + "\nhis key=" + revocationURI);
 				}
 			}
-			catch (MalformedURLException e) {
+			catch (MalformedURLException ex) {
 				// Should maybe be a useralert?
 				Logger.error(this, "Node " + source
 						+ " sent us a UOMAnnouncement claiming that the auto-update key was blown, but it had an invalid revocation URI: "
-						+ revocationKey + " : " + e, e);
+						+ revocationKey + " : " + ex, ex);
 				System.err.println("Node " + source.userToString()
 						+ " sent us a UOMAnnouncement claiming that the revocation key was blown, but it had an invalid revocation URI: "
-						+ revocationKey + " : " + e);
+						+ revocationKey + " : " + ex);
 			}
-			catch (NotConnectedException e) {
+			catch (NotConnectedException ex) {
 				System.err.println("Node " + source
 						+ " says that the auto-update key was blown, but has now gone offline! Something bad may be happening!");
 				Logger.error(this, "Node " + source
 						+ " says that the auto-update key was blown, but has now gone offline! Something bad may be happening!");
 				synchronized (UpdateOverMandatoryManager.this) {
-					nodesSayKeyRevoked.remove(source);
+					this.nodesSayKeyRevoked.remove(source);
 					// Might be valid, but no way to tell except if other peers tell us.
 					// And there's a good chance it isn't.
 				}
-				maybeNotRevoked();
+				this.maybeNotRevoked();
 			}
 
 		}
 
-		tellFetchers(source);
+		this.tellFetchers(source);
 
-		if (updateManager.isBlown())
+		if (this.updateManager.isBlown()) {
 			return true; // We already know
+		}
 
-		if (!updateManager.isEnabled())
+		if (!this.updateManager.isEnabled()) {
 			return true; // Don't care if not enabled, except for the revocation URI
+		}
 
 		long now = System.currentTimeMillis();
 
-		handleMainJarOffer(now, mainJarFileLength, mainJarVersion, source, mainJarKey);
+		this.handleMainJarOffer(now, mainJarFileLength, mainJarVersion, source, mainJarKey);
 
 		return true;
 	}
 
 	private void tellFetchers(PeerNode source) {
 		HashSet<UOMDependencyFetcher> fetchList;
-		synchronized (dependencyFetchers) {
-			fetchList = new HashSet<UOMDependencyFetcher>(dependencyFetchers.values());
+		synchronized (this.dependencyFetchers) {
+			fetchList = new HashSet<>(this.dependencyFetchers.values());
 		}
 		for (UOMDependencyFetcher f : fetchList) {
-			if (source.isDarknet())
+			if (source.isDarknet()) {
 				f.peerMaybeFreeSlots(source);
+			}
 			f.start();
 		}
 	}
@@ -323,7 +341,7 @@ public class UpdateOverMandatoryManager implements RequestClient {
 	private void tryFetchRevocation(final PeerNode source) throws NotConnectedException {
 		// Try to transfer it.
 
-		Message msg = DMT.createUOMRequestRevocation(updateManager.node.random.nextLong());
+		Message msg = DMT.createUOMRequestRevocation(this.updateManager.node.random.nextLong());
 		source.sendAsync(msg, new AsyncMessageCallback() {
 
 			@Override
@@ -338,7 +356,7 @@ public class UpdateOverMandatoryManager implements RequestClient {
 						+ source.getSimpleVersion() + ") because it disconnected!");
 				source.failedRevocationTransfer();
 				synchronized (UpdateOverMandatoryManager.this) {
-					nodesSayKeyRevokedFailedTransfer.add(source);
+					UpdateOverMandatoryManager.this.nodesSayKeyRevokedFailedTransfer.add(source);
 				}
 			}
 
@@ -353,27 +371,25 @@ public class UpdateOverMandatoryManager implements RequestClient {
 			public void sent() {
 				// Cool
 			}
-		}, updateManager.ctr);
+		}, this.updateManager.ctr);
 
-		updateManager.node.getTicker().queueTimedJob(new Runnable() {
-
-			@Override
-			public void run() {
-				if (updateManager.isBlown())
-					return;
-				synchronized (UpdateOverMandatoryManager.this) {
-					if (nodesSayKeyRevokedFailedTransfer.contains(source))
-						return;
-					if (nodesSayKeyRevokedTransferring.contains(source))
-						return;
-					nodesSayKeyRevoked.remove(source);
-				}
-				System.err.println("Peer " + source + " (build #" + source.getSimpleVersion()
-						+ ") said that the auto-update key had been blown, but did not transfer the revocation certificate. The most likely explanation is that the key has not been blown (the node is buggy or malicious), so we are ignoring this.");
-				maybeNotRevoked();
+		this.updateManager.node.getTicker().queueTimedJob(() -> {
+			if (UpdateOverMandatoryManager.this.updateManager.isBlown()) {
+				return;
 			}
-
-		}, SECONDS.toMillis(60));
+			synchronized (UpdateOverMandatoryManager.this) {
+				if (UpdateOverMandatoryManager.this.nodesSayKeyRevokedFailedTransfer.contains(source)) {
+					return;
+				}
+				if (UpdateOverMandatoryManager.this.nodesSayKeyRevokedTransferring.contains(source)) {
+					return;
+				}
+				UpdateOverMandatoryManager.this.nodesSayKeyRevoked.remove(source);
+			}
+			System.err.println("Peer " + source + " (build #" + source.getSimpleVersion()
+					+ ") said that the auto-update key had been blown, but did not transfer the revocation certificate. The most likely explanation is that the key has not been blown (the node is buggy or malicious), so we are ignoring this.");
+			UpdateOverMandatoryManager.this.maybeNotRevoked();
+		}, TimeUnit.SECONDS.toMillis(60));
 
 		// The reply message will start the transfer. It includes the revocation URI
 		// so we can tell if anything wierd is happening.
@@ -383,26 +399,29 @@ public class UpdateOverMandatoryManager implements RequestClient {
 	private void handleMainJarOffer(long now, long mainJarFileLength, long mainJarVersion, PeerNode source,
 			String jarKey) {
 
-		long started = updateManager.getStartedFetchingNextMainJarTimestamp();
+		long started = this.updateManager.getStartedFetchingNextMainJarTimestamp();
 		long whenToTakeOverTheNormalUpdater;
-		if (started > 0)
+		if (started > 0) {
 			whenToTakeOverTheNormalUpdater = started + GRACE_TIME;
-		else
+		}
+		else {
 			whenToTakeOverTheNormalUpdater = System.currentTimeMillis() + GRACE_TIME;
-		boolean isOutdated = updateManager.node.isOudated();
+		}
+		boolean isOutdated = this.updateManager.node.isOudated();
 		// if the new build is self-mandatory or if the "normal" updater has been trying
 		// to update for more than one hour
 		Logger.normal(this,
 				"We received a valid UOMAnnouncement (main) : (isOutdated=" + isOutdated + " version=" + mainJarVersion
 						+ " whenToTakeOverTheNormalUpdater=" + TimeUtil.formatTime(whenToTakeOverTheNormalUpdater - now)
 						+ ") file length " + mainJarFileLength + " updateManager version "
-						+ updateManager.newMainJarVersion());
+						+ this.updateManager.newMainJarVersion());
 		if (mainJarVersion > Version.buildNumber() && mainJarFileLength > 0
-				&& mainJarVersion > updateManager.newMainJarVersion()) {
+				&& mainJarVersion > this.updateManager.newMainJarVersion()) {
 			source.setMainJarOfferedVersion(mainJarVersion);
 			// Offer is valid.
-			if (logMINOR)
+			if (logMINOR) {
 				Logger.minor(this, "Offer is valid");
+			}
 			if ((isOutdated) || whenToTakeOverTheNormalUpdater < now) {
 				// Take up the offer, subject to limits on number of simultaneous
 				// downloads.
@@ -416,56 +435,62 @@ public class UpdateOverMandatoryManager implements RequestClient {
 					System.out.println("The update process seems to have been stuck for " + howLong
 							+ "; let's switch to UoM! SHOULD NOT HAPPEN! (1)");
 				}
-				else if (logMINOR)
+				else if (logMINOR) {
 					Logger.minor(this, "Fetching via UOM as our build is deprecated");
+				}
 				// Fetch it
 				try {
 					FreenetURI mainJarURI = new FreenetURI(jarKey).setSuggestedEdition(mainJarVersion);
-					if (mainJarURI.equals(updateManager.getURI().setSuggestedEdition(mainJarVersion)))
-						sendUOMRequest(source, true);
-					else
+					if (mainJarURI.equals(this.updateManager.getURI().setSuggestedEdition(mainJarVersion))) {
+						this.sendUOMRequest(source, true);
+					}
+					else {
 						// FIXME don't log if it's the transitional version.
 						System.err.println("Node " + source.userToString() + " offered us a new main jar (version "
 								+ mainJarVersion + ") but his key was different to ours:\n" + "our key: "
-								+ updateManager.getURI() + "\nhis key:" + mainJarURI);
+								+ this.updateManager.getURI() + "\nhis key:" + mainJarURI);
+					}
 				}
-				catch (MalformedURLException e) {
+				catch (MalformedURLException ex) {
 					// Should maybe be a useralert?
 					Logger.error(this, "Node " + source
 							+ " sent us a UOMAnnouncement claiming to have a new ext jar, but it had an invalid URI: "
-							+ jarKey + " : " + e, e);
+							+ jarKey + " : " + ex, ex);
 					System.err.println("Node " + source.userToString()
 							+ " sent us a UOMAnnouncement claiming to have a new ext jar, but it had an invalid URI: "
-							+ jarKey + " : " + e);
+							+ jarKey + " : " + ex);
 				}
 				synchronized (this) {
-					allNodesOfferedMainJar.add(source);
+					this.allNodesOfferedMainJar.add(source);
 				}
 			}
 			else {
 				// Don't take up the offer. Add to nodesOfferedMainJar, so that we know
 				// where to fetch it from when we need it.
 				synchronized (this) {
-					nodesOfferedMainJar.add(source);
-					allNodesOfferedMainJar.add(source);
+					this.nodesOfferedMainJar.add(source);
+					this.allNodesOfferedMainJar.add(source);
 				}
-				updateManager.node.getTicker().queueTimedJob(new Runnable() {
+				this.updateManager.node.getTicker().queueTimedJob(new Runnable() {
 
 					@Override
 					public void run() {
-						if (updateManager.isBlown())
+						if (UpdateOverMandatoryManager.this.updateManager.isBlown()) {
 							return;
-						if (!updateManager.isEnabled())
+						}
+						if (!UpdateOverMandatoryManager.this.updateManager.isEnabled()) {
 							return;
-						if (updateManager.hasNewMainJar())
+						}
+						if (UpdateOverMandatoryManager.this.updateManager.hasNewMainJar()) {
 							return;
-						if (!updateManager.node.isOudated()) {
+						}
+						if (!UpdateOverMandatoryManager.this.updateManager.node.isOudated()) {
 							Logger.error(this,
 									"The update process seems to have been stuck for too long; let's switch to UoM! SHOULD NOT HAPPEN! (2) (ext)");
 							System.out.println(
 									"The update process seems to have been stuck for too long; let's switch to UoM! SHOULD NOT HAPPEN! (2) (ext)");
 						}
-						maybeRequestMainJar();
+						UpdateOverMandatoryManager.this.maybeRequestMainJar();
 					}
 				}, whenToTakeOverTheNormalUpdater - now);
 			}
@@ -474,74 +499,82 @@ public class UpdateOverMandatoryManager implements RequestClient {
 			// We may want the dependencies.
 			// These may be similar even if his url is different, so add unconditionally.
 			synchronized (this) {
-				allNodesOfferedMainJar.add(source);
+				this.allNodesOfferedMainJar.add(source);
 			}
 		}
-		startSomeDependencyFetchers();
+		this.startSomeDependencyFetchers();
 	}
 
 	private void sendUOMRequest(final PeerNode source, boolean addOnFail) {
 		final String name = "Main";
 		String lname = "main";
-		if (logMINOR)
+		if (logMINOR) {
 			Logger.minor(this, "sendUOMRequest" + name + "(" + source + "," + addOnFail + ")");
+		}
 		if (!source.isConnected() || source.isSeed()) {
-			if (logMINOR)
+			if (logMINOR) {
 				Logger.minor(this,
 						"Not sending UOM " + lname + " request to " + source + " (disconnected or seednode)");
+			}
 			return;
 		}
-		final HashSet<PeerNode> sendingJar = nodesSendingMainJar;
-		final HashSet<PeerNode> askedSendJar = nodesAskedSendMainJar;
-		boolean wasFetchingUOM = false;
+		final HashSet<PeerNode> sendingJar = this.nodesSendingMainJar;
+		final HashSet<PeerNode> askedSendJar = this.nodesAskedSendMainJar;
+		boolean wasFetchingUOM;
 		synchronized (this) {
 			long offeredVersion = source.getMainJarOfferedVersion();
-			long updateVersion = updateManager.newMainJarVersion();
+			long updateVersion = this.updateManager.newMainJarVersion();
 			if (offeredVersion < updateVersion) {
-				if (offeredVersion <= 0)
+				if (offeredVersion <= 0) {
 					Logger.error(this, "Not sending UOM " + lname + " request to " + source
 							+ " because it hasn't offered anything!");
-				else if (logMINOR)
+				}
+				else if (logMINOR) {
 					Logger.minor(this, "Not sending UOM " + lname + " request to " + source
 							+ " because we already have its offered version " + offeredVersion);
+				}
 				return;
 			}
-			int curVersion = updateManager.getMainVersion();
+			int curVersion = this.updateManager.getMainVersion();
 			if (curVersion >= offeredVersion) {
-				if (logMINOR)
+				if (logMINOR) {
 					Logger.minor(this, "Not fetching from " + source + " because current " + lname + " jar version "
 							+ curVersion + " is more recent than " + offeredVersion);
+				}
 				return;
 			}
 			if (askedSendJar.contains(source)) {
-				if (logMINOR)
+				if (logMINOR) {
 					Logger.minor(this, "Recently asked node " + source + " (" + lname + ") so not re-asking yet.");
+				}
 				return;
 			}
 			if (addOnFail && askedSendJar.size() + sendingJar.size() >= MAX_NODES_SENDING_JAR) {
-				HashSet<PeerNode> offeredJar = nodesOfferedMainJar;
-				if (offeredJar.add(source))
+				if (this.nodesOfferedMainJar.add(source)) {
 					System.err.println(
 							"Offered " + lname + " jar by " + source.userToString() + " (already fetching from "
 									+ sendingJar.size() + "), but will use this offer if our current fetches fail).");
+				}
 				return;
 			}
 			else {
 				if (sendingJar.contains(source)) {
-					if (logMINOR)
+					if (logMINOR) {
 						Logger.minor(this, "Not fetching " + lname + " jar from " + source.userToString()
 								+ " because already fetching from that node");
+					}
 					return;
 				}
 				sendingJar.add(source);
 			}
-			wasFetchingUOM = fetchingUOM;
-			fetchingUOM = true;
+			wasFetchingUOM = this.fetchingUOM;
+			this.fetchingUOM = true;
 		}
-		if (!wasFetchingUOM)
+		if (!wasFetchingUOM) {
 			this.updateManager.onStartFetchingUOM();
+		}
 
-		Message msg = DMT.createUOMRequestMainJar(updateManager.node.random.nextLong());
+		Message msg = DMT.createUOMRequestMainJar(this.updateManager.node.random.nextLong());
 
 		try {
 			System.err.println("Fetching " + lname + " jar from " + source.userToString());
@@ -559,7 +592,7 @@ public class UpdateOverMandatoryManager implements RequestClient {
 					synchronized (UpdateOverMandatoryManager.this) {
 						sendingJar.remove(source);
 					}
-					maybeRequestMainJar();
+					UpdateOverMandatoryManager.this.maybeRequestMainJar();
 				}
 
 				@Override
@@ -569,203 +602,85 @@ public class UpdateOverMandatoryManager implements RequestClient {
 					synchronized (UpdateOverMandatoryManager.this) {
 						askedSendJar.remove(source);
 					}
-					maybeRequestMainJar();
+					UpdateOverMandatoryManager.this.maybeRequestMainJar();
 				}
 
 				@Override
 				public void sent() {
 					// Timeout...
-					updateManager.node.ticker.queueTimedJob(new Runnable() {
-
-						@Override
-						public void run() {
-							synchronized (UpdateOverMandatoryManager.this) {
-								// free up a slot
-								if (!askedSendJar.remove(source))
-									return;
+					UpdateOverMandatoryManager.this.updateManager.node.ticker.queueTimedJob(() -> {
+						synchronized (UpdateOverMandatoryManager.this) {
+							// free up a slot
+							if (!askedSendJar.remove(source)) {
+								return;
 							}
-							maybeRequestMainJar();
 						}
+						UpdateOverMandatoryManager.this.maybeRequestMainJar();
 					}, REQUEST_MAIN_JAR_TIMEOUT);
 				}
-			}, updateManager.ctr);
+			}, this.updateManager.ctr);
 		}
-		catch (NotConnectedException e) {
+		catch (NotConnectedException ignored) {
 			synchronized (this) {
 				askedSendJar.remove(source);
 			}
-			maybeRequestMainJar();
+			this.maybeRequestMainJar();
 		}
 	}
 
 	protected void maybeRequestMainJar() {
 		PeerNode[] offers;
 		synchronized (this) {
-			if (nodesAskedSendMainJar.size() + nodesSendingMainJar.size() >= MAX_NODES_SENDING_JAR)
+			if (this.nodesAskedSendMainJar.size() + this.nodesSendingMainJar.size() >= MAX_NODES_SENDING_JAR) {
 				return;
-			if (nodesOfferedMainJar.isEmpty())
+			}
+			if (this.nodesOfferedMainJar.isEmpty()) {
 				return;
-			offers = nodesOfferedMainJar.toArray(new PeerNode[nodesOfferedMainJar.size()]);
+			}
+			offers = this.nodesOfferedMainJar.toArray(new PeerNode[0]);
 		}
 		for (PeerNode offer : offers) {
-			if (!offer.isConnected())
+			if (!offer.isConnected()) {
 				continue;
-			synchronized (this) {
-				if (nodesAskedSendMainJar.size() + nodesSendingMainJar.size() >= MAX_NODES_SENDING_JAR)
-					return;
-				if (nodesSendingMainJar.contains(offer))
-					continue;
-				if (nodesAskedSendMainJar.contains(offer))
-					continue;
 			}
-			sendUOMRequest(offer, false);
+			synchronized (this) {
+				if (this.nodesAskedSendMainJar.size() + this.nodesSendingMainJar.size() >= MAX_NODES_SENDING_JAR) {
+					return;
+				}
+				if (this.nodesSendingMainJar.contains(offer)) {
+					continue;
+				}
+				if (this.nodesAskedSendMainJar.contains(offer)) {
+					continue;
+				}
+			}
+			this.sendUOMRequest(offer, false);
 		}
 	}
 
 	private void alertUser() {
 		synchronized (this) {
-			if (alert != null)
+			if (this.alert != null) {
 				return;
-			alert = new PeersSayKeyBlownAlert();
-		}
-		updateManager.node.clientCore.alerts.register(alert);
-	}
-
-	private class PeersSayKeyBlownAlert extends BaseNodeUserAlert {
-
-		public PeersSayKeyBlownAlert() {
-			super(false, null, null, null, null, FCPUserAlert.WARNING, true, null, false, null);
-		}
-
-		@Override
-		public HTMLNode getHTMLText() {
-			HTMLNode div = new HTMLNode("div");
-
-			div.addChild("p").addChild("#", l10n("intro"));
-
-			PeerNode[][] nodes = getNodesSayBlown();
-			PeerNode[] nodesSayBlownConnected = nodes[0];
-			PeerNode[] nodesSayBlownDisconnected = nodes[1];
-			PeerNode[] nodesSayBlownFailedTransfer = nodes[2];
-
-			if (nodesSayBlownConnected.length > 0)
-				div.addChild("p").addChild("#", l10n("fetching"));
-			else
-				div.addChild("p").addChild("#", l10n("failedFetch"));
-
-			if (nodesSayBlownConnected.length > 0) {
-				div.addChild("p").addChild("#", l10n("connectedSayBlownLabel"));
-				HTMLNode list = div.addChild("ul");
-				for (PeerNode pn : nodesSayBlownConnected) {
-					list.addChild("li", pn.userToString() + " (" + pn.getPeer() + ")");
-				}
 			}
-
-			if (nodesSayBlownDisconnected.length > 0) {
-				div.addChild("p").addChild("#", l10n("disconnectedSayBlownLabel"));
-				HTMLNode list = div.addChild("ul");
-				for (PeerNode pn : nodesSayBlownDisconnected) {
-					list.addChild("li", pn.userToString() + " (" + pn.getPeer() + ")");
-				}
-			}
-
-			if (nodesSayBlownFailedTransfer.length > 0) {
-				div.addChild("p").addChild("#", l10n("failedTransferSayBlownLabel"));
-				HTMLNode list = div.addChild("ul");
-				for (PeerNode pn : nodesSayBlownFailedTransfer) {
-					list.addChild("li", pn.userToString() + " (" + pn.getPeer() + ")");
-				}
-			}
-
-			return div;
+			this.alert = new PeersSayKeyBlownAlert();
 		}
-
-		private String l10n(String key) {
-			return NodeL10n.getBase().getString("PeersSayKeyBlownAlert." + key);
-		}
-
-		private String l10n(String key, String pattern, String value) {
-			return NodeL10n.getBase().getString("PeersSayKeyBlownAlert." + key, pattern, value);
-		}
-
-		@Override
-		public String getText() {
-			StringBuilder sb = new StringBuilder();
-			sb.append(l10n("intro")).append("\n\n");
-			PeerNode[][] nodes = getNodesSayBlown();
-			PeerNode[] nodesSayBlownConnected = nodes[0];
-			PeerNode[] nodesSayBlownDisconnected = nodes[1];
-			PeerNode[] nodesSayBlownFailedTransfer = nodes[2];
-
-			if (nodesSayBlownConnected.length > 0)
-				sb.append(l10n("fetching")).append("\n\n");
-			else
-				sb.append(l10n("failedFetch")).append("\n\n");
-
-			if (nodesSayBlownConnected.length > 0) {
-				sb.append(l10n("connectedSayBlownLabel")).append("\n\n");
-				for (PeerNode pn : nodesSayBlownConnected) {
-					sb.append(pn.userToString() + " (" + pn.getPeer() + ")").append("\n");
-				}
-				sb.append("\n");
-			}
-
-			if (nodesSayBlownDisconnected.length > 0) {
-				sb.append(l10n("disconnectedSayBlownLabel"));
-
-				for (PeerNode pn : nodesSayBlownDisconnected) {
-					sb.append(pn.userToString() + " (" + pn.getPeer() + ")").append("\n");
-				}
-				sb.append("\n");
-			}
-
-			if (nodesSayBlownFailedTransfer.length > 0) {
-				sb.append(l10n("failedTransferSayBlownLabel"));
-
-				for (PeerNode pn : nodesSayBlownFailedTransfer) {
-					sb.append(pn.userToString() + " (" + pn.getPeer() + ")").append('\n');
-				}
-				sb.append("\n");
-			}
-
-			return sb.toString();
-		}
-
-		@Override
-		public String getTitle() {
-			return l10n("titleWithCount", "count", Integer.toString(nodesSayKeyRevoked.size()));
-		}
-
-		@Override
-		public void isValid(boolean validity) {
-			// Do nothing
-		}
-
-		@Override
-		public boolean isValid() {
-			if (updateManager.isBlown())
-				return false;
-			return mightBeRevoked();
-		}
-
-		@Override
-		public String getShortText() {
-			return l10n("short");
-		}
-
+		this.updateManager.node.clientCore.alerts.register(this.alert);
 	}
 
 	public PeerNode[][] getNodesSayBlown() {
-		List<PeerNode> nodesConnectedSayRevoked = new ArrayList<PeerNode>();
-		List<PeerNode> nodesDisconnectedSayRevoked = new ArrayList<PeerNode>();
-		List<PeerNode> nodesFailedSayRevoked = new ArrayList<PeerNode>();
+		List<PeerNode> nodesConnectedSayRevoked = new ArrayList<>();
+		List<PeerNode> nodesDisconnectedSayRevoked = new ArrayList<>();
+		List<PeerNode> nodesFailedSayRevoked = new ArrayList<>();
 		synchronized (this) {
-			PeerNode[] nodesSayRevoked = nodesSayKeyRevoked.toArray(new PeerNode[nodesSayKeyRevoked.size()]);
+			PeerNode[] nodesSayRevoked = this.nodesSayKeyRevoked.toArray(new PeerNode[0]);
 			for (PeerNode pn : nodesSayRevoked) {
-				if (nodesSayKeyRevokedFailedTransfer.contains(pn))
+				if (this.nodesSayKeyRevokedFailedTransfer.contains(pn)) {
 					nodesFailedSayRevoked.add(pn);
-				else
+				}
+				else {
 					nodesConnectedSayRevoked.add(pn);
+				}
 			}
 		}
 		for (int i = 0; i < nodesConnectedSayRevoked.size(); i++) {
@@ -774,12 +689,10 @@ public class UpdateOverMandatoryManager implements RequestClient {
 				nodesDisconnectedSayRevoked.add(pn);
 				nodesConnectedSayRevoked.remove(i);
 				i--;
-				continue;
 			}
 		}
-		return new PeerNode[][] { nodesConnectedSayRevoked.toArray(new PeerNode[nodesConnectedSayRevoked.size()]),
-				nodesDisconnectedSayRevoked.toArray(new PeerNode[nodesDisconnectedSayRevoked.size()]),
-				nodesFailedSayRevoked.toArray(new PeerNode[nodesFailedSayRevoked.size()]), };
+		return new PeerNode[][] { nodesConnectedSayRevoked.toArray(new PeerNode[0]),
+				nodesDisconnectedSayRevoked.toArray(new PeerNode[0]), nodesFailedSayRevoked.toArray(new PeerNode[0]), };
 	}
 
 	/**
@@ -791,7 +704,7 @@ public class UpdateOverMandatoryManager implements RequestClient {
 	public boolean handleRequestRevocation(Message m, final PeerNode source) {
 		// Do we have the data?
 
-		final RandomAccessBuffer data = updateManager.revocationChecker.getBlobBuffer();
+		final RandomAccessBuffer data = this.updateManager.revocationChecker.getBlobBuffer();
 
 		if (data == null) {
 			Logger.normal(this,
@@ -805,16 +718,16 @@ public class UpdateOverMandatoryManager implements RequestClient {
 		final PartiallyReceivedBulk prb;
 		long length;
 		length = data.size();
-		prb = new PartiallyReceivedBulk(updateManager.node.getUSM(), length, Node.PACKET_SIZE, data, true);
+		prb = new PartiallyReceivedBulk(this.updateManager.node.getUSM(), length, Node.PACKET_SIZE, data, true);
 
 		final BulkTransmitter bt;
 		try {
-			bt = new BulkTransmitter(prb, source, uid, false, updateManager.ctr, true);
+			bt = new BulkTransmitter(prb, source, uid, false, this.updateManager.ctr, true);
 		}
-		catch (DisconnectedException e) {
+		catch (DisconnectedException ex) {
 			Logger.error(this,
-					"Peer " + source + " asked us for the blob file for the revocation key, then disconnected: " + e,
-					e);
+					"Peer " + source + " asked us for the blob file for the revocation key, then disconnected: " + ex,
+					ex);
 			data.close();
 			return true;
 		}
@@ -824,13 +737,15 @@ public class UpdateOverMandatoryManager implements RequestClient {
 			@Override
 			public void run() {
 				try {
-					if (!bt.send())
+					if (!bt.send()) {
 						Logger.error(this, "Failed to send revocation key blob to " + source.userToString() + " : "
 								+ bt.getCancelReason());
-					else
+					}
+					else {
 						Logger.normal(this, "Sent revocation key blob to " + source.userToString());
+					}
 				}
-				catch (DisconnectedException e) {
+				catch (DisconnectedException ignored) {
 					// Not much we can do here either.
 					Logger.warning(this, "Failed to send revocation key blob (disconnected) to " + source.userToString()
 							+ " : " + bt.getCancelReason());
@@ -841,17 +756,18 @@ public class UpdateOverMandatoryManager implements RequestClient {
 			}
 		};
 
-		Message msg = DMT.createUOMSendingRevocation(uid, length, updateManager.getRevocationURI().toString());
+		Message msg = DMT.createUOMSendingRevocation(uid, length, this.updateManager.getRevocationURI().toString());
 
 		try {
 			source.sendAsync(msg, new AsyncMessageCallback() {
 
 				@Override
 				public void acknowledged() {
-					if (logMINOR)
+					if (logMINOR) {
 						Logger.minor(this, "Sending data...");
+					}
 					// Send the data
-					updateManager.node.executor.execute(r,
+					UpdateOverMandatoryManager.this.updateManager.node.executor.execute(r,
 							"Revocation key send for " + uid + " to " + source.userToString());
 				}
 
@@ -871,20 +787,21 @@ public class UpdateOverMandatoryManager implements RequestClient {
 
 				@Override
 				public void sent() {
-					if (logMINOR)
+					if (logMINOR) {
 						Logger.minor(this, "Message sent, data soon");
+					}
 				}
 
 				@Override
 				public String toString() {
 					return super.toString() + "(" + uid + ":" + source.getPeer() + ")";
 				}
-			}, updateManager.ctr);
+			}, this.updateManager.ctr);
 		}
-		catch (NotConnectedException e) {
+		catch (NotConnectedException ex) {
 			Logger.error(this, "Peer " + source
 					+ " asked us for the blob file for the revocation key, then disconnected when we tried to send the UOMSendingRevocation: "
-					+ e, e);
+					+ ex, ex);
 			return true;
 		}
 
@@ -900,42 +817,43 @@ public class UpdateOverMandatoryManager implements RequestClient {
 		try {
 			revocationURI = new FreenetURI(key);
 		}
-		catch (MalformedURLException e) {
-			Logger.error(this, "Failed receiving recovation because URI not parsable: " + e + " for " + key, e);
-			System.err.println("Failed receiving recovation because URI not parsable: " + e + " for " + key);
-			e.printStackTrace();
+		catch (MalformedURLException ex) {
+			Logger.error(this, "Failed receiving recovation because URI not parsable: " + ex + " for " + key, ex);
+			System.err.println("Failed receiving recovation because URI not parsable: " + ex + " for " + key);
+			ex.printStackTrace();
 			synchronized (this) {
 				// Wierd case of a failed transfer
 				// This is definitely not valid, don't add to
 				// nodesSayKeyRevokedFailedTransfer.
-				nodesSayKeyRevoked.remove(source);
-				nodesSayKeyRevokedTransferring.remove(source);
+				this.nodesSayKeyRevoked.remove(source);
+				this.nodesSayKeyRevokedTransferring.remove(source);
 			}
-			cancelSend(source, uid);
-			maybeNotRevoked();
+			this.cancelSend(source, uid);
+			this.maybeNotRevoked();
 			return true;
 		}
 
-		if (!revocationURI.equals(updateManager.getRevocationURI())) {
+		if (!revocationURI.equals(this.updateManager.getRevocationURI())) {
 			System.err.println("Node sending us a revocation certificate from the wrong URI:\n" + "Node: "
-					+ source.userToString() + "\n" + "Our   URI: " + updateManager.getRevocationURI() + "\n"
+					+ source.userToString() + "\n" + "Our   URI: " + this.updateManager.getRevocationURI() + "\n"
 					+ "Their URI: " + revocationURI);
 			synchronized (this) {
 				// Wierd case of a failed transfer
-				nodesSayKeyRevoked.remove(source);
+				this.nodesSayKeyRevoked.remove(source);
 				// This is definitely not valid, don't add to
 				// nodesSayKeyRevokedFailedTransfer.
-				nodesSayKeyRevokedTransferring.remove(source);
+				this.nodesSayKeyRevokedTransferring.remove(source);
 			}
-			cancelSend(source, uid);
-			maybeNotRevoked();
+			this.cancelSend(source, uid);
+			this.maybeNotRevoked();
 			return true;
 		}
 
-		if (updateManager.isBlown()) {
-			if (logMINOR)
+		if (this.updateManager.isBlown()) {
+			if (logMINOR) {
 				Logger.minor(this, "Already blown, so not receiving from " + source + "(" + uid + ")");
-			cancelSend(source, uid);
+			}
+			this.cancelSend(source, uid);
 			return true;
 		}
 
@@ -947,11 +865,11 @@ public class UpdateOverMandatoryManager implements RequestClient {
 					+ SizeUtil.formatSize(length)
 					+ " long. This is unacceptably long so we have refused the transfer. No real revocation cert would be this big.");
 			synchronized (UpdateOverMandatoryManager.this) {
-				nodesSayKeyRevoked.remove(source);
-				nodesSayKeyRevokedTransferring.remove(source);
+				this.nodesSayKeyRevoked.remove(source);
+				this.nodesSayKeyRevokedTransferring.remove(source);
 			}
-			cancelSend(source, uid);
-			maybeNotRevoked();
+			this.cancelSend(source, uid);
+			this.maybeNotRevoked();
 			return true;
 		}
 
@@ -959,13 +877,13 @@ public class UpdateOverMandatoryManager implements RequestClient {
 			System.err.println("Revocation key is zero bytes from " + source
 					+ " - ignoring as this is almost certainly a bug or an attack, it is definitely not valid.");
 			synchronized (UpdateOverMandatoryManager.this) {
-				nodesSayKeyRevoked.remove(source);
+				this.nodesSayKeyRevoked.remove(source);
 				// This is almost certainly not valid, don't add to
 				// nodesSayKeyRevokedFailedTransfer.
-				nodesSayKeyRevokedTransferring.remove(source);
+				this.nodesSayKeyRevokedTransferring.remove(source);
 			}
-			cancelSend(source, uid);
-			maybeNotRevoked();
+			this.cancelSend(source, uid);
+			this.maybeNotRevoked();
 			return true;
 		}
 
@@ -977,17 +895,17 @@ public class UpdateOverMandatoryManager implements RequestClient {
 
 		try {
 			temp = File.createTempFile("revocation-", ".fblob.tmp",
-					updateManager.node.clientCore.getPersistentTempDir());
+					this.updateManager.node.clientCore.getPersistentTempDir());
 			temp.deleteOnExit();
 		}
-		catch (IOException e) {
+		catch (IOException ex) {
 			System.err.println(
-					"Cannot save revocation certificate to disk and therefore cannot fetch it from our peer!: " + e);
-			e.printStackTrace();
-			updateManager.blow(
-					"Cannot fetch the revocation certificate from our peer because we cannot write it to disk: " + e,
+					"Cannot save revocation certificate to disk and therefore cannot fetch it from our peer!: " + ex);
+			ex.printStackTrace();
+			this.updateManager.blow(
+					"Cannot fetch the revocation certificate from our peer because we cannot write it to disk: " + ex,
 					true);
-			cancelSend(source, uid);
+			this.cancelSend(source, uid);
 			return true;
 		}
 
@@ -995,46 +913,47 @@ public class UpdateOverMandatoryManager implements RequestClient {
 		try {
 			raf = new FileRandomAccessBuffer(temp, length, false);
 		}
-		catch (FileNotFoundException e) {
+		catch (FileNotFoundException ex) {
 			Logger.error(this, "Peer " + source
 					+ " asked us for the blob file for the revocation key, we have downloaded it but don't have the file even though we did have it when we checked!: "
-					+ e, e);
-			updateManager.blow(
+					+ ex, ex);
+			this.updateManager.blow(
 					"Internal error after fetching the revocation certificate from our peer, maybe out of disk space, file disappeared "
-							+ temp + " : " + e,
+							+ temp + " : " + ex,
 					true);
 			return true;
 		}
-		catch (IOException e) {
+		catch (IOException ex) {
 			Logger.error(this, "Peer " + source
 					+ " asked us for the blob file for the revocation key, we have downloaded it but now can't read the file due to a disk I/O error: "
-					+ e, e);
-			updateManager.blow(
+					+ ex, ex);
+			this.updateManager.blow(
 					"Internal error after fetching the revocation certificate from our peer, maybe out of disk space or other disk I/O error, file disappeared "
-							+ temp + " : " + e,
+							+ temp + " : " + ex,
 					true);
 			return true;
 		}
 
 		// It isn't starting, it's transferring.
 		synchronized (this) {
-			nodesSayKeyRevokedTransferring.add(source);
-			nodesSayKeyRevoked.remove(source);
+			this.nodesSayKeyRevokedTransferring.add(source);
+			this.nodesSayKeyRevoked.remove(source);
 		}
 
-		PartiallyReceivedBulk prb = new PartiallyReceivedBulk(updateManager.node.getUSM(), length, Node.PACKET_SIZE,
-				raf, false);
+		PartiallyReceivedBulk prb = new PartiallyReceivedBulk(this.updateManager.node.getUSM(), length,
+				Node.PACKET_SIZE, raf, false);
 
-		final BulkReceiver br = new BulkReceiver(prb, source, uid, updateManager.ctr);
+		final BulkReceiver br = new BulkReceiver(prb, source, uid, this.updateManager.ctr);
 
-		updateManager.node.executor.execute(new Runnable() {
+		this.updateManager.node.executor.execute(new Runnable() {
 
 			@Override
 			public void run() {
 				try {
-					if (br.receive())
+					if (br.receive()) {
 						// Success!
-						processRevocationBlob(temp, source);
+						UpdateOverMandatoryManager.this.processRevocationBlob(temp, source);
+					}
 					else {
 						Logger.error(this, "Failed to transfer revocation certificate from " + source);
 						System.err.println("Failed to transfer revocation certificate from " + source);
@@ -1042,30 +961,34 @@ public class UpdateOverMandatoryManager implements RequestClient {
 						int count = source.countFailedRevocationTransfers();
 						boolean retry = count < 3;
 						synchronized (UpdateOverMandatoryManager.this) {
-							nodesSayKeyRevokedFailedTransfer.add(source);
-							nodesSayKeyRevokedTransferring.remove(source);
+							UpdateOverMandatoryManager.this.nodesSayKeyRevokedFailedTransfer.add(source);
+							UpdateOverMandatoryManager.this.nodesSayKeyRevokedTransferring.remove(source);
 							if (retry) {
-								if (nodesSayKeyRevoked.contains(source))
+								if (UpdateOverMandatoryManager.this.nodesSayKeyRevoked.contains(source)) {
 									retry = false;
-								else
-									nodesSayKeyRevoked.add(source);
+								}
+								else {
+									UpdateOverMandatoryManager.this.nodesSayKeyRevoked.add(source);
+								}
 							}
 						}
-						maybeNotRevoked();
-						if (retry)
-							tryFetchRevocation(source);
+						UpdateOverMandatoryManager.this.maybeNotRevoked();
+						if (retry) {
+							UpdateOverMandatoryManager.this.tryFetchRevocation(source);
+						}
 					}
 				}
-				catch (Throwable t) {
+				catch (Throwable ex) {
 					Logger.error(this,
-							"Caught error while transferring revocation certificate from " + source + " : " + t, t);
+							"Caught error while transferring revocation certificate from " + source + " : " + ex, ex);
 					System.err.println("Peer " + source
 							+ " said that the revocation key has been blown, but we got an internal error while transferring it:");
-					t.printStackTrace();
-					updateManager.blow("Internal error while fetching the revocation certificate from our peer "
-							+ source + " : " + t, true);
+					ex.printStackTrace();
+					UpdateOverMandatoryManager.this.updateManager
+							.blow("Internal error while fetching the revocation certificate from our peer " + source
+									+ " : " + ex, true);
 					synchronized (UpdateOverMandatoryManager.this) {
-						nodesSayKeyRevokedTransferring.remove(source);
+						UpdateOverMandatoryManager.this.nodesSayKeyRevokedTransferring.remove(source);
 					}
 				}
 			}
@@ -1076,11 +999,13 @@ public class UpdateOverMandatoryManager implements RequestClient {
 
 	protected void maybeNotRevoked() {
 		synchronized (this) {
-			if (!updateManager.peersSayBlown())
+			if (!this.updateManager.peersSayBlown()) {
 				return;
-			if (mightBeRevoked())
+			}
+			if (this.mightBeRevoked()) {
 				return;
-			updateManager.notPeerClaimsKeyBlown();
+			}
+			this.updateManager.notPeerClaimsKeyBlown();
 		}
 	}
 
@@ -1088,31 +1013,35 @@ public class UpdateOverMandatoryManager implements RequestClient {
 		PeerNode[] started;
 		PeerNode[] transferring;
 		synchronized (this) {
-			started = nodesSayKeyRevoked.toArray(new PeerNode[nodesSayKeyRevoked.size()]);
-			transferring = nodesSayKeyRevokedTransferring.toArray(new PeerNode[nodesSayKeyRevokedTransferring.size()]);
+			started = this.nodesSayKeyRevoked.toArray(new PeerNode[0]);
+			transferring = this.nodesSayKeyRevokedTransferring.toArray(new PeerNode[0]);
 		}
 		// If a peer is not connected, ignore it.
 		// If a peer has already tried 3 times to send the revocation cert, ignore it,
 		// because it is probably evil.
 		for (PeerNode peer : started) {
-			if (!peer.isConnected())
+			if (!peer.isConnected()) {
 				continue;
-			if (peer.countFailedRevocationTransfers() > 3)
+			}
+			if (peer.countFailedRevocationTransfers() > 3) {
 				continue;
+			}
 			return true;
 		}
 		for (PeerNode peer : transferring) {
-			if (!peer.isConnected())
+			if (!peer.isConnected()) {
 				continue;
-			if (peer.countFailedRevocationTransfers() > 3)
+			}
+			if (peer.countFailedRevocationTransfers() > 3) {
 				continue;
+			}
 			return true;
 		}
 		return false;
 	}
 
 	void processRevocationBlob(final File temp, PeerNode source) {
-		processRevocationBlob(new FileBucket(temp, true, false, false, true), source.userToString(), false);
+		this.processRevocationBlob(new FileBucket(temp, true, false, false, true), source.userToString(), false);
 	}
 
 	/**
@@ -1123,73 +1052,67 @@ public class UpdateOverMandatoryManager implements RequestClient {
 
 		SimpleBlockSet blocks = new SimpleBlockSet();
 
-		DataInputStream dis = null;
-		try {
-			dis = new DataInputStream(temp.getInputStream());
+		try (DataInputStream dis = new DataInputStream(temp.getInputStream())) {
 			BinaryBlob.readBinaryBlob(dis, blocks, true);
 		}
-		catch (FileNotFoundException e) {
+		catch (FileNotFoundException ex) {
 			Logger.error(this,
 					"Somebody deleted " + temp + " ? We lost the revocation certificate from " + source + "!");
 			System.err
 					.println("Somebody deleted " + temp + " ? We lost the revocation certificate from " + source + "!");
-			if (!fromDisk)
-				updateManager.blow(
+			if (!fromDisk) {
+				this.updateManager.blow(
 						"Somebody deleted " + temp + " ? We lost the revocation certificate from " + source + "!",
 						true);
+			}
 			return;
 		}
-		catch (EOFException e) {
+		catch (EOFException ex) {
 			Logger.error(this,
 					"Peer " + source
-							+ " sent us an invalid revocation certificate! (data too short, might be truncated): " + e
+							+ " sent us an invalid revocation certificate! (data too short, might be truncated): " + ex
 							+ " (data in " + temp + ")",
-					e);
+					ex);
 			System.err.println("Peer " + source
-					+ " sent us an invalid revocation certificate! (data too short, might be truncated): " + e
+					+ " sent us an invalid revocation certificate! (data too short, might be truncated): " + ex
 					+ " (data in " + temp + ")");
 			// Probably malicious, might just be buggy, either way, it's not blown
-			e.printStackTrace();
+			ex.printStackTrace();
 			// FIXME file will be kept until exit for debugging purposes
 			return;
 		}
-		catch (BinaryBlobFormatException e) {
+		catch (BinaryBlobFormatException ex) {
 			Logger.error(this,
-					"Peer " + source + " sent us an invalid revocation certificate!: " + e + " (data in " + temp + ")",
-					e);
-			System.err.println(
-					"Peer " + source + " sent us an invalid revocation certificate!: " + e + " (data in " + temp + ")");
+					"Peer " + source + " sent us an invalid revocation certificate!: " + ex + " (data in " + temp + ")",
+					ex);
+			System.err.println("Peer " + source + " sent us an invalid revocation certificate!: " + ex + " (data in "
+					+ temp + ")");
 			// Probably malicious, might just be buggy, either way, it's not blown
-			e.printStackTrace();
+			ex.printStackTrace();
 			// FIXME file will be kept until exit for debugging purposes
 			return;
 		}
-		catch (IOException e) {
+		catch (IOException ex) {
 			Logger.error(this,
-					"Could not read revocation cert from temp file " + temp + " from node " + source + " ! : " + e, e);
+					"Could not read revocation cert from temp file " + temp + " from node " + source + " ! : " + ex,
+					ex);
 			System.err.println(
-					"Could not read revocation cert from temp file " + temp + " from node " + source + " ! : " + e);
-			e.printStackTrace();
-			if (!fromDisk)
-				updateManager.blow(
-						"Could not read revocation cert from temp file " + temp + " from node " + source + " ! : " + e,
+					"Could not read revocation cert from temp file " + temp + " from node " + source + " ! : " + ex);
+			ex.printStackTrace();
+			if (!fromDisk) {
+				this.updateManager.blow(
+						"Could not read revocation cert from temp file " + temp + " from node " + source + " ! : " + ex,
 						true);
+			}
 			// FIXME will be kept until exit for debugging purposes
 			return;
 		}
-		finally {
-			if (dis != null)
-				try {
-					dis.close();
-				}
-				catch (IOException e) {
-					// Ignore
-				}
-		}
+		// Ignore
 
 		// Fetch our revocation key from the datastore plus the binary blob
 
-		FetchContext seedContext = updateManager.node.clientCore.makeClient((short) 0, true, false).getFetchContext();
+		FetchContext seedContext = this.updateManager.node.clientCore.makeClient((short) 0, true, false)
+				.getFetchContext();
 		FetchContext tempContext = new FetchContext(seedContext, FetchContext.IDENTICAL_MASK, true, blocks);
 		// If it is too big, we get a TOO_BIG. This is fatal so we will blow, which is the
 		// right thing as it means the top block is valid.
@@ -1218,14 +1141,16 @@ public class UpdateOverMandatoryManager implements RequestClient {
 					System.err.println("Got revocation certificate from " + source
 							+ " (fatal error i.e. someone with the key inserted bad data) : " + e);
 					// Blow the update, and propagate the revocation certificate.
-					updateManager.revocationChecker.onFailure(e, state, cleanedBlob);
+					UpdateOverMandatoryManager.this.updateManager.revocationChecker.onFailure(e, state, cleanedBlob);
 					// Don't delete it if it's from disk, as it's already in the right
 					// place.
-					if (!fromDisk)
+					if (!fromDisk) {
 						temp.free();
+					}
 
-					insertBlob(updateManager.revocationChecker.getBlobBucket(), "revocation",
-							PriorityClasses.INTERACTIVE_PRIORITY_CLASS);
+					UpdateOverMandatoryManager.this.insertBlob(
+							UpdateOverMandatoryManager.this.updateManager.revocationChecker.getBlobBucket(),
+							"revocation", PriorityClasses.INTERACTIVE_PRIORITY_CLASS);
 				}
 				else {
 					String message = "Failed to fetch revocation certificate from blob from " + source + " : " + e
@@ -1243,10 +1168,12 @@ public class UpdateOverMandatoryManager implements RequestClient {
 			@Override
 			public void onSuccess(FetchResult result, ClientGetter state) {
 				System.err.println("Got revocation certificate from " + source);
-				updateManager.revocationChecker.onSuccess(result, state, cleanedBlob);
-				if (!fromDisk)
+				UpdateOverMandatoryManager.this.updateManager.revocationChecker.onSuccess(result, state, cleanedBlob);
+				if (!fromDisk) {
 					temp.free();
-				insertBlob(updateManager.revocationChecker.getBlobBucket(), "revocation",
+				}
+				UpdateOverMandatoryManager.this.insertBlob(
+						UpdateOverMandatoryManager.this.updateManager.revocationChecker.getBlobBucket(), "revocation",
 						PriorityClasses.INTERACTIVE_PRIORITY_CLASS);
 			}
 
@@ -1261,18 +1188,18 @@ public class UpdateOverMandatoryManager implements RequestClient {
 			}
 		};
 
-		ClientGetter cg = new ClientGetter(myCallback, updateManager.getRevocationURI(), tempContext, (short) 0, null,
-				new BinaryBlobWriter(cleanedBlob), null);
+		ClientGetter cg = new ClientGetter(myCallback, this.updateManager.getRevocationURI(), tempContext, (short) 0,
+				null, new BinaryBlobWriter(cleanedBlob), null);
 
 		try {
-			updateManager.node.clientCore.clientContext.start(cg);
+			this.updateManager.node.clientCore.clientContext.start(cg);
 		}
 		catch (FetchException e1) {
 			System.err.println("Failed to decode UOM blob: " + e1);
 			e1.printStackTrace();
 			myCallback.onFailure(e1, cg);
 		}
-		catch (PersistenceDisabledException e) {
+		catch (PersistenceDisabledException ignored) {
 			// Impossible
 		}
 
@@ -1321,17 +1248,17 @@ public class UpdateOverMandatoryManager implements RequestClient {
 		};
 		// We are inserting a binary blob so we don't need to worry about
 		// CompatibilityMode etc.
-		InsertContext ctx = updateManager.node.clientCore
+		InsertContext ctx = this.updateManager.node.clientCore
 				.makeClient(PriorityClasses.INTERACTIVE_PRIORITY_CLASS, false, false).getInsertContext(true);
 		ClientPutter putter = new ClientPutter(callback, bucket, FreenetURI.EMPTY_CHK_URI, null, ctx, priority, false,
-				null, true, updateManager.node.clientCore.clientContext, null, -1);
+				null, true, this.updateManager.node.clientCore.clientContext, null, -1);
 		try {
-			updateManager.node.clientCore.clientContext.start(putter);
+			this.updateManager.node.clientCore.clientContext.start(putter);
 		}
 		catch (InsertException e1) {
 			Logger.error(this, "Failed to start insert of " + type + " binary blob: " + e1, e1);
 		}
-		catch (PersistenceDisabledException e) {
+		catch (PersistenceDisabledException ignored) {
 			// Impossible
 		}
 	}
@@ -1339,7 +1266,7 @@ public class UpdateOverMandatoryManager implements RequestClient {
 	private void cancelSend(PeerNode source, long uid) {
 		Message msg = DMT.createFNPBulkReceiveAborted(uid);
 		try {
-			source.sendAsync(msg, null, updateManager.ctr);
+			source.sendAsync(msg, null, this.updateManager.ctr);
 		}
 		catch (NotConnectedException e1) {
 			// Ignore
@@ -1347,7 +1274,7 @@ public class UpdateOverMandatoryManager implements RequestClient {
 	}
 
 	public void killAlert() {
-		updateManager.node.clientCore.alerts.unregister(alert);
+		this.updateManager.node.clientCore.alerts.unregister(this.alert);
 	}
 
 	public void handleRequestJar(Message m, final PeerNode source) {
@@ -1357,7 +1284,7 @@ public class UpdateOverMandatoryManager implements RequestClient {
 		final BulkTransmitter bt;
 		final FileRandomAccessBuffer raf;
 
-		if (source.isOpennet() && updateManager.dontAllowUOM()) {
+		if (source.isOpennet() && this.updateManager.dontAllowUOM()) {
 			Logger.normal(this, "Peer " + source + " asked us for the blob file for " + name
 					+ "; We are a seenode, so we ignore it!");
 			return;
@@ -1368,14 +1295,14 @@ public class UpdateOverMandatoryManager implements RequestClient {
 		int version;
 		FreenetURI uri;
 		if (source.getVersionNumber() < NodeUpdateManager.TRANSITION_VERSION) {
-			data = updateManager.getTransitionMainBlob();
+			data = this.updateManager.getTransitionMainBlob();
 			version = NodeUpdateManager.TRANSITION_VERSION;
 			uri = NodeUpdateManager.previousMainJarUSK;
 		}
 		else {
-			data = updateManager.getCurrentVersionBlobFile();
+			data = this.updateManager.getCurrentVersionBlobFile();
 			version = Version.buildNumber();
-			uri = updateManager.getURI();
+			uri = this.updateManager.getURI();
 		}
 
 		if (data == null) {
@@ -1397,31 +1324,31 @@ public class UpdateOverMandatoryManager implements RequestClient {
 			try {
 				raf = new FileRandomAccessBuffer(data, true);
 			}
-			catch (FileNotFoundException e) {
+			catch (FileNotFoundException ex) {
 				Logger.error(this, "Peer " + source + " asked us for the blob file for the " + name
 						+ " jar, we have downloaded it but don't have the file even though we did have it when we checked!: "
-						+ e, e);
+						+ ex, ex);
 				return;
 			}
-			catch (IOException e) {
+			catch (IOException ex) {
 				Logger.error(this,
 						"Peer " + source + " asked us for the blob file for the " + name
-								+ " jar, we have downloaded it but can't read the file due to a disk I/O error: " + e,
-						e);
+								+ " jar, we have downloaded it but can't read the file due to a disk I/O error: " + ex,
+						ex);
 				return;
 			}
 
 			final PartiallyReceivedBulk prb;
 			long length;
 			length = raf.size();
-			prb = new PartiallyReceivedBulk(updateManager.node.getUSM(), length, Node.PACKET_SIZE, raf, true);
+			prb = new PartiallyReceivedBulk(this.updateManager.node.getUSM(), length, Node.PACKET_SIZE, raf, true);
 
 			try {
-				bt = new BulkTransmitter(prb, source, uid, false, updateManager.ctr, true);
+				bt = new BulkTransmitter(prb, source, uid, false, this.updateManager.ctr, true);
 			}
-			catch (DisconnectedException e) {
+			catch (DisconnectedException ex) {
 				Logger.error(this, "Peer " + source + " asked us for the blob file for the " + name
-						+ " jar, then disconnected: " + e, e);
+						+ " jar, then disconnected: " + ex, ex);
 				raf.close();
 				return;
 			}
@@ -1429,13 +1356,9 @@ public class UpdateOverMandatoryManager implements RequestClient {
 			msg = DMT.createUOMSendingMainJar(uid, length, uri.toString(), version);
 
 		}
-		catch (RuntimeException e) {
+		catch (RuntimeException | Error ex) {
 			source.finishedSendingUOMJar(false);
-			throw e;
-		}
-		catch (Error e) {
-			source.finishedSendingUOMJar(false);
-			throw e;
+			throw ex;
 		}
 
 		final Runnable r = new Runnable() {
@@ -1443,14 +1366,16 @@ public class UpdateOverMandatoryManager implements RequestClient {
 			@Override
 			public void run() {
 				try {
-					if (!bt.send())
+					if (!bt.send()) {
 						Logger.error(this, "Failed to send " + name + " jar blob to " + source.userToString() + " : "
 								+ bt.getCancelReason());
-					else
+					}
+					else {
 						Logger.normal(this, "Sent " + name + " jar blob to " + source.userToString());
+					}
 					raf.close();
 				}
-				catch (DisconnectedException e) {
+				catch (DisconnectedException ignored) {
 					// Not much we can do.
 				}
 				finally {
@@ -1465,11 +1390,12 @@ public class UpdateOverMandatoryManager implements RequestClient {
 
 				@Override
 				public void acknowledged() {
-					if (logMINOR)
+					if (logMINOR) {
 						Logger.minor(this, "Sending data...");
+					}
 					// Send the data
 
-					updateManager.node.executor.execute(r,
+					UpdateOverMandatoryManager.this.updateManager.node.executor.execute(r,
 							name + " jar send for " + uid + " to " + source.userToString());
 				}
 
@@ -1491,28 +1417,24 @@ public class UpdateOverMandatoryManager implements RequestClient {
 
 				@Override
 				public void sent() {
-					if (logMINOR)
+					if (logMINOR) {
 						Logger.minor(this, "Message sent, data soon");
+					}
 				}
 
 				@Override
 				public String toString() {
 					return super.toString() + "(" + uid + ":" + source.getPeer() + ")";
 				}
-			}, updateManager.ctr);
+			}, this.updateManager.ctr);
 		}
-		catch (NotConnectedException e) {
+		catch (NotConnectedException ex) {
 			Logger.error(this, "Peer " + source + " asked us for the blob file for the " + name
-					+ " jar, then disconnected when we tried to send the UOMSendingMainJar: " + e, e);
-			return;
+					+ " jar, then disconnected when we tried to send the UOMSendingMainJar: " + ex, ex);
 		}
-		catch (RuntimeException e) {
+		catch (RuntimeException | Error ex) {
 			source.finishedSendingUOMJar(false);
-			throw e;
-		}
-		catch (Error e) {
-			source.finishedSendingUOMJar(false);
-			throw e;
+			throw ex;
 		}
 
 	}
@@ -1526,34 +1448,35 @@ public class UpdateOverMandatoryManager implements RequestClient {
 		try {
 			jarURI = new FreenetURI(key).setSuggestedEdition(version);
 		}
-		catch (MalformedURLException e) {
+		catch (MalformedURLException ex) {
 			Logger.error(this,
-					"Failed receiving main jar " + version + " because URI not parsable: " + e + " for " + key, e);
+					"Failed receiving main jar " + version + " because URI not parsable: " + ex + " for " + key, ex);
 			System.err.println(
-					"Failed receiving main jar " + version + " because URI not parsable: " + e + " for " + key);
-			e.printStackTrace();
-			cancelSend(source, uid);
+					"Failed receiving main jar " + version + " because URI not parsable: " + ex + " for " + key);
+			ex.printStackTrace();
+			this.cancelSend(source, uid);
 			synchronized (this) {
 				this.nodesAskedSendMainJar.remove(source);
 			}
 			return true;
 		}
 
-		if (!jarURI.equals(updateManager.getURI().setSuggestedEdition(version))) {
+		if (!jarURI.equals(this.updateManager.getURI().setSuggestedEdition(version))) {
 			System.err.println("Node sending us a main jar update (" + version + ") from the wrong URI:\n" + "Node: "
-					+ source.userToString() + "\n" + "Our   URI: " + updateManager.getURI() + "\n" + "Their URI: "
+					+ source.userToString() + "\n" + "Our   URI: " + this.updateManager.getURI() + "\n" + "Their URI: "
 					+ jarURI);
-			cancelSend(source, uid);
+			this.cancelSend(source, uid);
 			synchronized (this) {
 				this.nodesAskedSendMainJar.remove(source);
 			}
 			return true;
 		}
 
-		if (updateManager.isBlown()) {
-			if (logMINOR)
+		if (this.updateManager.isBlown()) {
+			if (logMINOR) {
 				Logger.minor(this, "Key blown, so not receiving main jar from " + source + "(" + uid + ")");
-			cancelSend(source, uid);
+			}
+			this.cancelSend(source, uid);
 			synchronized (this) {
 				this.nodesAskedSendMainJar.remove(source);
 			}
@@ -1569,7 +1492,7 @@ public class UpdateOverMandatoryManager implements RequestClient {
 							+ SizeUtil.formatSize(length)
 							+ " long. This is unacceptably long so we have refused the transfer.");
 			// If the transfer fails, we don't try again.
-			cancelSend(source, uid);
+			this.cancelSend(source, uid);
 			synchronized (this) {
 				this.nodesAskedSendMainJar.remove(source);
 			}
@@ -1582,13 +1505,14 @@ public class UpdateOverMandatoryManager implements RequestClient {
 		final File temp;
 
 		try {
-			temp = File.createTempFile("main-", ".fblob.tmp", updateManager.node.clientCore.getPersistentTempDir());
+			temp = File.createTempFile("main-", ".fblob.tmp",
+					this.updateManager.node.clientCore.getPersistentTempDir());
 			temp.deleteOnExit();
 		}
-		catch (IOException e) {
-			System.err.println("Cannot save new main jar to disk and therefore cannot fetch it from our peer!: " + e);
-			e.printStackTrace();
-			cancelSend(source, uid);
+		catch (IOException ex) {
+			System.err.println("Cannot save new main jar to disk and therefore cannot fetch it from our peer!: " + ex);
+			ex.printStackTrace();
+			this.cancelSend(source, uid);
 			synchronized (this) {
 				this.nodesAskedSendMainJar.remove(source);
 			}
@@ -1599,46 +1523,49 @@ public class UpdateOverMandatoryManager implements RequestClient {
 		try {
 			raf = new FileRandomAccessBuffer(temp, length, false);
 		}
-		catch (IOException e) {
+		catch (IOException ex) {
 			Logger.error(this, "Peer " + source + " sending us a main jar binary blob, but we "
-					+ ((e instanceof FileNotFoundException) ? "lost the temp file " : "cannot read the temp file ")
-					+ temp + " : " + e, e);
+					+ ((ex instanceof FileNotFoundException) ? "lost the temp file " : "cannot read the temp file ")
+					+ temp + " : " + ex, ex);
 			synchronized (this) {
 				this.nodesAskedSendMainJar.remove(source);
 			}
 			return true;
 		}
 
-		PartiallyReceivedBulk prb = new PartiallyReceivedBulk(updateManager.node.getUSM(), length, Node.PACKET_SIZE,
-				raf, false);
+		PartiallyReceivedBulk prb = new PartiallyReceivedBulk(this.updateManager.node.getUSM(), length,
+				Node.PACKET_SIZE, raf, false);
 
-		final BulkReceiver br = new BulkReceiver(prb, source, uid, updateManager.ctr);
+		final BulkReceiver br = new BulkReceiver(prb, source, uid, this.updateManager.ctr);
 
-		updateManager.node.executor.execute(new Runnable() {
+		this.updateManager.node.executor.execute(new Runnable() {
 
 			@Override
 			public void run() {
 				boolean success = false;
 				try {
 					synchronized (UpdateOverMandatoryManager.class) {
-						nodesAskedSendMainJar.remove(source);
-						nodesSendingMainJar.add(source);
+						UpdateOverMandatoryManager.this.nodesAskedSendMainJar.remove(source);
+						UpdateOverMandatoryManager.this.nodesSendingMainJar.add(source);
 					}
 					success = br.receive();
-					if (success)
+					if (success) {
 						// Success!
-						processMainJarBlob(temp, source, version, jarURI);
+						UpdateOverMandatoryManager.this.processMainJarBlob(temp, source, version, jarURI);
+					}
 					else {
 						Logger.error(this, "Failed to transfer main jar " + version + " from " + source);
 						System.err.println("Failed to transfer main jar " + version + " from " + source);
+						// noinspection ResultOfMethodCallIgnored
 						temp.delete();
 					}
 				}
 				finally {
 					synchronized (UpdateOverMandatoryManager.class) {
-						nodesSendingMainJar.remove(source);
-						if (success)
-							nodesSentMainJar.add(source);
+						UpdateOverMandatoryManager.this.nodesSendingMainJar.remove(source);
+						if (success) {
+							UpdateOverMandatoryManager.this.nodesSentMainJar.add(source);
+						}
 					}
 				}
 			}
@@ -1649,21 +1576,19 @@ public class UpdateOverMandatoryManager implements RequestClient {
 
 	protected void processMainJarBlob(final File temp, final PeerNode source, final int version, FreenetURI uri) {
 		SimpleBlockSet blocks = new SimpleBlockSet();
-		final String toString = source == null ? "(local)" : source.userToString();
+		final String toString = (source != null) ? source.userToString() : "(local)";
 
-		DataInputStream dis = null;
-		try {
-			dis = new DataInputStream(new BufferedInputStream(new FileInputStream(temp)));
+		try (DataInputStream dis = new DataInputStream(new BufferedInputStream(new FileInputStream(temp)))) {
 			BinaryBlob.readBinaryBlob(dis, blocks, true);
 		}
-		catch (FileNotFoundException e) {
+		catch (FileNotFoundException ex) {
 			Logger.error(this,
 					"Somebody deleted " + temp + " ? We lost the main jar (" + version + ") from " + toString + "!");
 			System.err.println(
 					"Somebody deleted " + temp + " ? We lost the main jar (" + version + ") from " + toString + "!");
 			return;
 		}
-		catch (IOException e) {
+		catch (IOException ex) {
 			Logger.error(this, "Could not read main jar (" + version + ") from temp file " + temp + " from node "
 					+ toString + " !");
 			System.err.println("Could not read main jar (" + version + ") from temp file " + temp + " from node "
@@ -1671,42 +1596,35 @@ public class UpdateOverMandatoryManager implements RequestClient {
 			// FIXME will be kept until exit for debugging purposes
 			return;
 		}
-		catch (BinaryBlobFormatException e) {
-			Logger.error(this, "Peer " + toString + " sent us an invalid main jar (" + version + ")!: " + e, e);
-			System.err.println("Peer " + toString + " sent us an invalid main jar (" + version + ")!: " + e);
-			e.printStackTrace();
+		catch (BinaryBlobFormatException ex) {
+			Logger.error(this, "Peer " + toString + " sent us an invalid main jar (" + version + ")!: " + ex, ex);
+			System.err.println("Peer " + toString + " sent us an invalid main jar (" + version + ")!: " + ex);
+			ex.printStackTrace();
 			// FIXME will be kept until exit for debugging purposes
 			return;
 		}
-		finally {
-			if (dis != null)
-				try {
-					dis.close();
-				}
-				catch (IOException e) {
-					// Ignore
-				}
-		}
+		// Ignore
 
 		// Fetch the jar from the datastore plus the binary blob
 
-		FetchContext seedContext = updateManager.node.clientCore.makeClient((short) 0, true, false).getFetchContext();
+		FetchContext seedContext = this.updateManager.node.clientCore.makeClient((short) 0, true, false)
+				.getFetchContext();
 		FetchContext tempContext = new FetchContext(seedContext, FetchContext.IDENTICAL_MASK, true, blocks);
 		tempContext.localRequestOnly = true;
 
 		File f;
-		FileBucket b = null;
+		FileBucket b;
 		try {
-			f = File.createTempFile("main-", ".fblob.tmp", updateManager.node.clientCore.getPersistentTempDir());
+			f = File.createTempFile("main-", ".fblob.tmp", this.updateManager.node.clientCore.getPersistentTempDir());
 			f.deleteOnExit();
 			b = new FileBucket(f, false, false, true, true);
 		}
-		catch (IOException e) {
+		catch (IOException ex) {
 			Logger.error(this, "Cannot share main jar from " + toString
-					+ " with our peers because cannot write the cleaned version to disk: " + e, e);
+					+ " with our peers because cannot write the cleaned version to disk: " + ex, ex);
 			System.err.println("Cannot share main jar from " + toString
-					+ " with our peers because cannot write the cleaned version to disk: " + e);
-			e.printStackTrace();
+					+ " with our peers because cannot write the cleaned version to disk: " + ex);
+			ex.printStackTrace();
 			b = null;
 			f = null;
 		}
@@ -1715,6 +1633,7 @@ public class UpdateOverMandatoryManager implements RequestClient {
 
 		ClientGetCallback myCallback = new ClientGetCallback() {
 
+			@SuppressWarnings("ResultOfMethodCallIgnored")
 			@Override
 			public void onFailure(FetchException e, ClientGetter state) {
 				if (e.mode == FetchExceptionMode.CANCELLED) {
@@ -1752,15 +1671,16 @@ public class UpdateOverMandatoryManager implements RequestClient {
 					return;
 				}
 
-				NodeUpdater mainUpdater = updateManager.getMainUpdater();
+				NodeUpdater mainUpdater = UpdateOverMandatoryManager.this.updateManager.getMainUpdater();
 				if (mainUpdater == null) {
 					System.err.println("Not updating because updater is disabled!");
 					return;
 				}
 				mainUpdater.onSuccess(result, state, cleanedBlobFile, version);
+				// noinspection ResultOfMethodCallIgnored
 				temp.delete();
 
-				maybeInsertMainJar(mainUpdater, source, version);
+				UpdateOverMandatoryManager.this.maybeInsertMainJar(mainUpdater, source, version);
 			}
 
 			@Override
@@ -1779,12 +1699,12 @@ public class UpdateOverMandatoryManager implements RequestClient {
 				new BinaryBlobWriter(cleanedBlob), null);
 
 		try {
-			updateManager.node.clientCore.clientContext.start(cg);
+			this.updateManager.node.clientCore.clientContext.start(cg);
 		}
 		catch (FetchException e1) {
 			myCallback.onFailure(e1, cg);
 		}
-		catch (PersistenceDisabledException e) {
+		catch (PersistenceDisabledException ignored) {
 			// Impossible
 		}
 
@@ -1797,21 +1717,22 @@ public class UpdateOverMandatoryManager implements RequestClient {
 			// We got it from another node.
 			priority = PriorityClasses.IMMEDIATE_SPLITFILE_PRIORITY_CLASS;
 		}
-		else if (updateManager.node.lastVersion > 0 && updateManager.node.lastVersion != version) {
+		else if (this.updateManager.node.lastVersion > 0 && this.updateManager.node.lastVersion != version) {
 			// We just restarted after updating.
 			priority = PriorityClasses.IMMEDIATE_SPLITFILE_PRIORITY_CLASS;
 		}
-		else if (updateManager.node.fastWeakRandom.nextInt(RANDOM_INSERT_BLOB) != 0) {
+		else if (this.updateManager.node.fastWeakRandom.nextInt(RANDOM_INSERT_BLOB) != 0) {
 			// 1 in RANDOM_INSERT_BLOB chance of inserting anyway at bulk priority.
 			return;
 		}
-		insertBlob(mainUpdater.getBlobBucket(version), "main jar", priority);
+		this.insertBlob(mainUpdater.getBlobBucket(version), "main jar", priority);
 	}
 
 	protected boolean removeOldTempFiles() {
-		File oldTempFilesPeerDir = updateManager.node.clientCore.getPersistentTempDir();
-		if (!oldTempFilesPeerDir.exists())
+		File oldTempFilesPeerDir = this.updateManager.node.clientCore.getPersistentTempDir();
+		if (!oldTempFilesPeerDir.exists()) {
 			return false;
+		}
 		if (!oldTempFilesPeerDir.isDirectory()) {
 			Logger.error(this,
 					"Persistent temporary files location is not a directory: " + oldTempFilesPeerDir.getPath());
@@ -1827,8 +1748,9 @@ public class UpdateOverMandatoryManager implements RequestClient {
 			public boolean accept(File file) {
 				String fileName = file.getName();
 
-				if (fileName.startsWith("revocation-") && fileName.endsWith(".fblob.tmp"))
+				if (fileName.startsWith("revocation-") && fileName.endsWith(".fblob.tmp")) {
 					return true;
+				}
 
 				String buildNumberStr;
 				int buildNumber;
@@ -1836,37 +1758,47 @@ public class UpdateOverMandatoryManager implements RequestClient {
 				Matcher mainTempBuildNumberMatcher = mainTempBuildNumberPattern.matcher(fileName);
 				Matcher revocationTempBuildNumberMatcher = revocationTempBuildNumberPattern.matcher(fileName);
 
+				// Temporary file, can be deleted
 				if (mainBuildNumberMatcher.matches()) {
 					try {
 						buildNumberStr = mainBuildNumberMatcher.group(1);
 						buildNumber = Integer.parseInt(buildNumberStr);
-						if (buildNumber < lastGoodMainBuildNumber)
+						if (buildNumber < this.lastGoodMainBuildNumber) {
 							return true;
+						}
 					}
-					catch (NumberFormatException e) {
+					catch (NumberFormatException ex) {
 						Logger.error(this, "Wierd file in persistent temp: " + fileName);
 						return false;
 					}
 				}
-				else if (mainTempBuildNumberMatcher.matches() || revocationTempBuildNumberMatcher.matches()) {
-					// Temporary file, can be deleted
-					return true;
+				else {
+					return mainTempBuildNumberMatcher.matches() || revocationTempBuildNumberMatcher.matches();
 				}
 
 				return false;
 			}
 		});
 
-		for (File fileToDelete : oldTempFiles) {
-			String fileToDeleteName = fileToDelete.getName();
-			if (!fileToDelete.delete()) {
-				if (fileToDelete.exists())
-					Logger.error(this, "Cannot delete temporary persistent file " + fileToDeleteName
-							+ " even though it exists: must be TOO persistent :)");
-				else
-					Logger.normal(this, "Temporary persistent file does not exist when deleting: " + fileToDeleteName);
-				gotError = true;
+		if (oldTempFiles != null) {
+			for (File fileToDelete : oldTempFiles) {
+				String fileToDeleteName = fileToDelete.getName();
+				if (!fileToDelete.delete()) {
+					if (fileToDelete.exists()) {
+						Logger.error(this, "Cannot delete temporary persistent file " + fileToDeleteName
+								+ " even though it exists: must be TOO persistent :)");
+					}
+					else {
+						Logger.normal(this,
+								"Temporary persistent file does not exist when deleting: " + fileToDeleteName);
+					}
+					gotError = true;
+				}
 			}
+		}
+		else {
+			Logger.error(this, "Failed to list temporary persistent files");
+			gotError = true;
 		}
 
 		return !gotError;
@@ -1879,16 +1811,16 @@ public class UpdateOverMandatoryManager implements RequestClient {
 
 	public void disconnected(PeerNode pn) {
 		synchronized (this) {
-			nodesSayKeyRevoked.remove(pn);
-			nodesSayKeyRevokedFailedTransfer.remove(pn);
-			nodesSayKeyRevokedTransferring.remove(pn);
-			nodesOfferedMainJar.remove(pn);
-			allNodesOfferedMainJar.remove(pn);
-			nodesSentMainJar.remove(pn);
-			nodesAskedSendMainJar.remove(pn);
-			nodesSendingMainJar.remove(pn);
+			this.nodesSayKeyRevoked.remove(pn);
+			this.nodesSayKeyRevokedFailedTransfer.remove(pn);
+			this.nodesSayKeyRevokedTransferring.remove(pn);
+			this.nodesOfferedMainJar.remove(pn);
+			this.allNodesOfferedMainJar.remove(pn);
+			this.nodesSentMainJar.remove(pn);
+			this.nodesAskedSendMainJar.remove(pn);
+			this.nodesSendingMainJar.remove(pn);
 		}
-		maybeNotRevoked();
+		this.maybeNotRevoked();
 	}
 
 	public boolean fetchingFromTwo() {
@@ -1904,15 +1836,16 @@ public class UpdateOverMandatoryManager implements RequestClient {
 
 	public boolean isFetchingMain() {
 		synchronized (this) {
-			return nodesSendingMainJar.size() > 0;
+			return this.nodesSendingMainJar.size() > 0;
 		}
 	}
 
 	public void addDependency(byte[] expectedHash, File filename) {
-		if (logMINOR)
+		if (logMINOR) {
 			Logger.minor(this, "Add dependency: " + filename + " for " + HexUtil.bytesToHex(expectedHash));
-		synchronized (dependencies) {
-			dependencies.put(new ShortBuffer(expectedHash), filename);
+		}
+		synchronized (this.dependencies) {
+			this.dependencies.put(new ShortBuffer(expectedHash), filename);
 		}
 	}
 
@@ -1923,29 +1856,30 @@ public class UpdateOverMandatoryManager implements RequestClient {
 		final ShortBuffer buf = (ShortBuffer) m.getObject(DMT.EXPECTED_HASH);
 		long length = m.getLong(DMT.FILE_LENGTH);
 		long uid = m.getLong(DMT.UID);
-		synchronized (dependencies) {
-			data = dependencies.get(buf);
+		synchronized (this.dependencies) {
+			data = this.dependencies.get(buf);
 		}
-		boolean fail = !incrementDependencies(source);
+		boolean fail = !this.incrementDependencies(source);
 		FileRandomAccessBuffer raf;
 		final BulkTransmitter bt;
 
 		try {
-			if (data != null)
+			if (data != null) {
 				raf = new FileRandomAccessBuffer(data, true);
+			}
 			else {
 				Logger.error(this, "Dependency with hash " + HexUtil.bytesToHex(buf.getData()) + " not found!");
 				fail = true;
 				raf = null;
 			}
 		}
-		catch (IOException e) {
+		catch (IOException ex) {
 			Logger.error(this,
 					"Peer " + source + " asked us for the dependency with hash " + HexUtil.bytesToHex(buf.getData())
 							+ " jar, we have downloaded it but "
-							+ (e instanceof FileNotFoundException ? "don't have the file" : "can't read the file")
-							+ " even though we did have it when we checked!: " + e,
-					e);
+							+ ((ex instanceof FileNotFoundException) ? "don't have the file" : "can't read the file")
+							+ " even though we did have it when we checked!: " + ex,
+					ex);
 			raf = null;
 			fail = true;
 		}
@@ -1953,50 +1887,50 @@ public class UpdateOverMandatoryManager implements RequestClient {
 		PartiallyReceivedBulk prb;
 		if (raf != null) {
 			long thisLength = raf.size();
-			prb = new PartiallyReceivedBulk(updateManager.node.getUSM(), thisLength, Node.PACKET_SIZE, raf, true);
+			prb = new PartiallyReceivedBulk(this.updateManager.node.getUSM(), thisLength, Node.PACKET_SIZE, raf, true);
 			if (length != thisLength) {
 				fail = true;
 			}
 		}
 		else {
-			prb = new PartiallyReceivedBulk(updateManager.node.getUSM(), 0, Node.PACKET_SIZE,
+			prb = new PartiallyReceivedBulk(this.updateManager.node.getUSM(), 0, Node.PACKET_SIZE,
 					new ByteArrayRandomAccessBuffer(new byte[0]), true);
-			fail = true;
 		}
 
 		try {
-			bt = new BulkTransmitter(prb, source, uid, false, updateManager.ctr, true);
+			bt = new BulkTransmitter(prb, source, uid, false, this.updateManager.ctr, true);
 		}
-		catch (DisconnectedException e) {
+		catch (DisconnectedException ex) {
 			Logger.error(this, "Peer " + source + " asked us for the dependency with hash "
-					+ HexUtil.bytesToHex(buf.getData()) + " jar then disconnected", e);
-			raf.close();
-			decrementDependencies(source);
+					+ HexUtil.bytesToHex(buf.getData()) + " jar then disconnected", ex);
+			if (raf != null) {
+				raf.close();
+			}
+			this.decrementDependencies(source);
 			return;
 		}
 
 		if (fail) {
-			cancelSend(source, uid);
-			decrementDependencies(source);
+			this.cancelSend(source, uid);
+			this.decrementDependencies(source);
 		}
 		else {
-			final FileRandomAccessBuffer r = raf;
-			updateManager.node.executor.execute(new Runnable() {
+			FileRandomAccessBuffer finalRaf = raf;
+			this.updateManager.node.executor.execute(new Runnable() {
 
 				@Override
 				public void run() {
 					source.incrementUOMSends();
-					try {
+					try (FileRandomAccessBuffer ignored = finalRaf) {
 						bt.send();
 					}
-					catch (DisconnectedException e) {
+					catch (DisconnectedException ex) {
 						Logger.normal(this, "Disconnected while sending dependency with hash "
 								+ HexUtil.bytesToHex(buf.getData()) + " to " + source);
 					}
 					finally {
 						source.decrementUOMSends();
-						decrementDependencies(source);
-						r.close();
+						UpdateOverMandatoryManager.this.decrementDependencies(source);
 					}
 				}
 
@@ -2005,20 +1939,20 @@ public class UpdateOverMandatoryManager implements RequestClient {
 	}
 
 	private void decrementDependencies(PeerNode source) {
-		synchronized (peersFetchingDependencies) {
-			Integer x = peersFetchingDependencies.get(source);
+		synchronized (this.peersFetchingDependencies) {
+			Integer x = this.peersFetchingDependencies.get(source);
 			if (x == null) {
 				Logger.error(this, "Inconsistent dependency counting? Should not be null for " + source);
 			}
 			else if (x == 1) {
-				peersFetchingDependencies.remove(source);
+				this.peersFetchingDependencies.remove(source);
 			}
 			else if (x <= 0) {
 				Logger.error(this, "Inconsistent dependency counting? Counter is " + x + " for " + source);
-				peersFetchingDependencies.remove(source);
+				this.peersFetchingDependencies.remove(source);
 			}
 			else {
-				peersFetchingDependencies.put(source, x - 1);
+				this.peersFetchingDependencies.put(source, x - 1);
 			}
 		}
 	}
@@ -2028,29 +1962,25 @@ public class UpdateOverMandatoryManager implements RequestClient {
 	 * the transfer.
 	 */
 	private boolean incrementDependencies(PeerNode source) {
-		synchronized (peersFetchingDependencies) {
-			Integer x = peersFetchingDependencies.get(source);
-			if (x == null)
+		synchronized (this.peersFetchingDependencies) {
+			Integer x = this.peersFetchingDependencies.get(source);
+			if (x == null) {
 				x = 0;
+			}
 			x++;
 			if (x > MAX_TRANSFERS_PER_PEER) {
 				Logger.normal(this, "Too many dependency transfers for peer " + source + " - rejecting");
 				return false;
 			}
-			else
-				peersFetchingDependencies.put(source, x);
+			else {
+				this.peersFetchingDependencies.put(source, x);
+			}
 			return true;
 		}
 	}
 
 	boolean fetchingUOM() {
-		return fetchingUOM;
-	}
-
-	public interface UOMDependencyFetcherCallback {
-
-		void onSuccess();
-
+		return this.fetchingUOM;
 	}
 
 	/**
@@ -2065,16 +1995,9 @@ public class UpdateOverMandatoryManager implements RequestClient {
 			UOMDependencyFetcherCallback cb) {
 		final UOMDependencyFetcher f = new UOMDependencyFetcher(expectedHash, size, saveTo, executable, cb);
 		synchronized (this) {
-			dependencyFetchers.put(f.expectedHashBuffer, f);
+			this.dependencyFetchers.put(f.expectedHashBuffer, f);
 		}
-		this.updateManager.node.executor.execute(new Runnable() {
-
-			@Override
-			public void run() {
-				f.start();
-			}
-
-		});
+		this.updateManager.node.executor.execute(f::start);
 		f.start();
 		return f;
 	}
@@ -2082,7 +2005,7 @@ public class UpdateOverMandatoryManager implements RequestClient {
 	protected void startSomeDependencyFetchers() {
 		UOMDependencyFetcher[] fetchers;
 		synchronized (this) {
-			fetchers = dependencyFetchers.values().toArray(new UOMDependencyFetcher[dependencyFetchers.size()]);
+			fetchers = this.dependencyFetchers.values().toArray(new UOMDependencyFetcher[0]);
 		}
 		for (UOMDependencyFetcher f : fetchers) {
 			f.start();
@@ -2097,14 +2020,14 @@ public class UpdateOverMandatoryManager implements RequestClient {
 	protected void peerMaybeFreeAllSlots(PeerNode fetchFrom) {
 		UOMDependencyFetcher[] fetchers;
 		synchronized (this) {
-			fetchers = dependencyFetchers.values().toArray(new UOMDependencyFetcher[dependencyFetchers.size()]);
+			fetchers = this.dependencyFetchers.values().toArray(new UOMDependencyFetcher[0]);
 		}
 		for (UOMDependencyFetcher f : fetchers) {
 			f.peerMaybeFreeSlots(fetchFrom);
 		}
 	}
 
-	class UOMDependencyFetcher {
+	final class UOMDependencyFetcher {
 
 		final byte[] expectedHash;
 
@@ -2127,80 +2050,85 @@ public class UpdateOverMandatoryManager implements RequestClient {
 		private UOMDependencyFetcher(byte[] expectedHash, long size, File saveTo, boolean executable,
 				UOMDependencyFetcherCallback callback) {
 			this.expectedHash = expectedHash;
-			expectedHashBuffer = new ShortBuffer(expectedHash);
+			this.expectedHashBuffer = new ShortBuffer(expectedHash);
 			this.size = size;
 			this.executable = executable;
 			this.saveTo = saveTo;
-			cb = callback;
-			peersFailed = new WeakHashSet<PeerNode>();
-			peersFetching = new HashSet<PeerNode>();
+			this.cb = callback;
+			this.peersFailed = new WeakHashSet<>();
+			this.peersFetching = new HashSet<>();
 		}
 
 		/** If a transfer has failed from this peer, retry it. */
 		private void peerMaybeFreeSlots(PeerNode fetchFrom) {
 			synchronized (this) {
-				if (!peersFailed.remove(fetchFrom))
+				if (!this.peersFailed.remove(fetchFrom)) {
 					return;
-				if (completed)
+				}
+				if (this.completed) {
 					return;
+				}
 			}
-			start();
+			this.start();
 		}
 
 		private boolean maybeFetch() {
 			boolean tryEverything = false;
-			PeerNode chosen = null;
+			PeerNode chosen;
 			while (true) {
 				synchronized (this) {
-					if (peersFetching.size() >= MAX_NODES_SENDING_JAR) {
-						if (logMINOR)
-							Logger.minor(this, "Already fetching jar from 2 peers " + peersFetching);
+					if (this.peersFetching.size() >= MAX_NODES_SENDING_JAR) {
+						if (logMINOR) {
+							Logger.minor(this, "Already fetching jar from 2 peers " + this.peersFetching);
+						}
 						return false;
 					}
-					if (completed)
+					if (this.completed) {
 						return false;
+					}
 				}
 				HashSet<PeerNode> uomPeers;
 				synchronized (UpdateOverMandatoryManager.this) {
-					uomPeers = new HashSet<PeerNode>(nodesSentMainJar);
+					uomPeers = new HashSet<>(UpdateOverMandatoryManager.this.nodesSentMainJar);
 				}
-				chosen = chooseRandomPeer(uomPeers);
-				if (chosen != null)
+				chosen = this.chooseRandomPeer(uomPeers);
+				if (chosen != null) {
 					break;
+				}
 				synchronized (UpdateOverMandatoryManager.this) {
-					uomPeers = new HashSet<PeerNode>(nodesSendingMainJar);
+					uomPeers = new HashSet<>(UpdateOverMandatoryManager.this.nodesSendingMainJar);
 				}
-				chosen = chooseRandomPeer(uomPeers);
-				if (chosen != null)
+				chosen = this.chooseRandomPeer(uomPeers);
+				if (chosen != null) {
 					break;
+				}
 				synchronized (UpdateOverMandatoryManager.this) {
-					uomPeers = new HashSet<PeerNode>(allNodesOfferedMainJar);
+					uomPeers = new HashSet<>(UpdateOverMandatoryManager.this.allNodesOfferedMainJar);
 				}
-				chosen = chooseRandomPeer(uomPeers);
-				if (chosen != null)
+				chosen = this.chooseRandomPeer(uomPeers);
+				if (chosen != null) {
 					break;
+				}
 				if (tryEverything) {
-					Logger.minor(this, "Could not find a peer to send request to for " + saveTo);
+					Logger.minor(this, "Could not find a peer to send request to for " + this.saveTo);
 					return false;
 				}
 				synchronized (this) {
-					if (peersFailed.size() != 0) {
-						System.out.println("UOM trying peers which have failed downloads for " + saveTo.getName()
+					if (this.peersFailed.size() != 0) {
+						System.out.println("UOM trying peers which have failed downloads for " + this.saveTo.getName()
 								+ " because nowhere else to go ...");
-						peersFailed.clear();
+						this.peersFailed.clear();
 						tryEverything = true;
 					}
 				}
 				if (!tryEverything) {
-					Logger.minor(this, "Could not find a peer to send request to for " + saveTo);
+					Logger.minor(this, "Could not find a peer to send request to for " + this.saveTo);
 					return false;
 				}
 			}
-			if (chosen == null)
-				return false;
 
 			final PeerNode fetchFrom = chosen;
-			updateManager.node.executor.execute(new Runnable() {
+			UpdateOverMandatoryManager.this.updateManager.node.executor.execute(new Runnable() {
 
 				@Override
 				public void run() {
@@ -2208,106 +2136,111 @@ public class UpdateOverMandatoryManager implements RequestClient {
 					File tmp = null;
 					FileRandomAccessBuffer raf = null;
 					try {
-						System.out.println("Fetching " + saveTo + " from " + fetchFrom);
-						long uid = updateManager.node.fastWeakRandom.nextLong();
-						fetchFrom.sendAsync(DMT.createUOMFetchDependency(uid, expectedHash, size), null,
-								updateManager.ctr);
-						tmp = FileUtil.createTempFile(saveTo.getName(), NodeUpdateManager.TEMP_FILE_SUFFIX,
-								saveTo.getParentFile());
-						raf = new FileRandomAccessBuffer(tmp, size, false);
-						PartiallyReceivedBulk prb = new PartiallyReceivedBulk(updateManager.node.getUSM(), size,
-								Node.PACKET_SIZE, raf, false);
-						BulkReceiver br = new BulkReceiver(prb, fetchFrom, uid, updateManager.ctr);
+						System.out.println("Fetching " + UOMDependencyFetcher.this.saveTo + " from " + fetchFrom);
+						long uid = UpdateOverMandatoryManager.this.updateManager.node.fastWeakRandom.nextLong();
+						fetchFrom.sendAsync(
+								DMT.createUOMFetchDependency(uid, UOMDependencyFetcher.this.expectedHash,
+										UOMDependencyFetcher.this.size),
+								null, UpdateOverMandatoryManager.this.updateManager.ctr);
+						tmp = FileUtil.createTempFile(UOMDependencyFetcher.this.saveTo.getName(),
+								NodeUpdateManager.TEMP_FILE_SUFFIX, UOMDependencyFetcher.this.saveTo.getParentFile());
+						raf = new FileRandomAccessBuffer(tmp, UOMDependencyFetcher.this.size, false);
+						PartiallyReceivedBulk prb = new PartiallyReceivedBulk(
+								UpdateOverMandatoryManager.this.updateManager.node.getUSM(),
+								UOMDependencyFetcher.this.size, Node.PACKET_SIZE, raf, false);
+						BulkReceiver br = new BulkReceiver(prb, fetchFrom, uid,
+								UpdateOverMandatoryManager.this.updateManager.ctr);
 						failed = !br.receive();
 						raf.close();
 						raf = null;
 						if (!failed) {
 							// Check the hash.
-							if (MainJarDependenciesChecker.validFile(tmp, expectedHash, size, executable)) {
-								if (FileUtil.renameTo(tmp, saveTo)) {
+							if (MainJarDependenciesChecker.validFile(tmp, UOMDependencyFetcher.this.expectedHash,
+									UOMDependencyFetcher.this.size, UOMDependencyFetcher.this.executable)) {
+								if (FileUtil.renameTo(tmp, UOMDependencyFetcher.this.saveTo)) {
 									synchronized (UOMDependencyFetcher.this) {
-										if (completed)
+										if (UOMDependencyFetcher.this.completed) {
 											return;
-										completed = true;
+										}
+										UOMDependencyFetcher.this.completed = true;
 									}
 									synchronized (UpdateOverMandatoryManager.this) {
-										dependencyFetchers.remove(expectedHashBuffer);
+										UpdateOverMandatoryManager.this.dependencyFetchers
+												.remove(UOMDependencyFetcher.this.expectedHashBuffer);
 									}
-									cb.onSuccess();
+									UOMDependencyFetcher.this.cb.onSuccess();
 								}
 								else {
 									synchronized (UOMDependencyFetcher.this) {
-										if (completed)
+										if (UOMDependencyFetcher.this.completed) {
 											return;
+										}
 									}
 									failed = true;
-									System.err.println("Update failing: Saved dependency to " + tmp + " for " + saveTo
+									System.err.println("Update failing: Saved dependency to " + tmp + " for "
+											+ UOMDependencyFetcher.this.saveTo
 											+ " but cannot rename it! Permissions problems?");
 								}
-								peerMaybeFreeAllSlots(fetchFrom);
+								UpdateOverMandatoryManager.this.peerMaybeFreeAllSlots(fetchFrom);
 							}
 							else {
 								synchronized (UOMDependencyFetcher.this) {
-									if (completed)
+									if (UOMDependencyFetcher.this.completed) {
 										return;
+									}
 								}
 								failed = true;
-								System.err.println("Update failing: Downloaded file " + saveTo + " from " + fetchFrom
-										+ " but file does not match expected hash.");
+								System.err.println("Update failing: Downloaded file " + UOMDependencyFetcher.this.saveTo
+										+ " from " + fetchFrom + " but file does not match expected hash.");
 								// Wrong length -> transfer would have failed.
 							}
 						}
 						else {
-							System.out.println("Download failed: " + saveTo + " from " + fetchFrom);
-							failed = true;
+							System.out.println(
+									"Download failed: " + UOMDependencyFetcher.this.saveTo + " from " + fetchFrom);
 						}
 					}
-					catch (NotConnectedException e) {
+					catch (NotConnectedException ex) {
 						// Not counting this as a failure.
-						System.out.println("Disconnected while downloading " + saveTo + " from " + fetchFrom);
+						System.out.println("Disconnected while downloading " + UOMDependencyFetcher.this.saveTo
+								+ " from " + fetchFrom);
 					}
-					catch (IOException e) {
+					catch (IOException ex) {
 						// This isn't their fault either.
 						// User might be able to understand and fix this.
-						System.out
-								.println("IOException while downloading " + saveTo + " from " + fetchFrom + " : " + e);
-						Logger.error(this, "IOException while downloading " + saveTo + " from " + fetchFrom + " : " + e,
-								e);
+						System.out.println("IOException while downloading " + UOMDependencyFetcher.this.saveTo
+								+ " from " + fetchFrom + " : " + ex);
+						Logger.error(this, "IOException while downloading " + UOMDependencyFetcher.this.saveTo
+								+ " from " + fetchFrom + " : " + ex, ex);
 					}
-					catch (RuntimeException e) {
-						Logger.error(this, "Caught fetching " + saveTo + " from " + fetchFrom + " : " + e, e);
-						System.err.println("Fetch failed due to internal error (bug or severe local problem?): " + e);
-						e.printStackTrace();
-					}
-					catch (Error e) {
-						Logger.error(this, "Caught fetching " + saveTo + " from " + fetchFrom + " : " + e, e);
-						System.err.println("Fetch failed due to internal error (bug or severe local problem?): " + e);
-						e.printStackTrace();
+					catch (RuntimeException | Error ex) {
+						Logger.error(this, "Caught fetching " + UOMDependencyFetcher.this.saveTo + " from " + fetchFrom
+								+ " : " + ex, ex);
+						System.err.println("Fetch failed due to internal error (bug or severe local problem?): " + ex);
+						ex.printStackTrace();
 					}
 					finally {
 						boolean connected = fetchFrom.isConnected();
 						boolean addFailed = failed && connected;
 						synchronized (UOMDependencyFetcher.this) {
-							if (addFailed)
-								peersFailed.add(fetchFrom);
-							peersFetching.remove(fetchFrom);
+							if (addFailed) {
+								UOMDependencyFetcher.this.peersFailed.add(fetchFrom);
+							}
+							UOMDependencyFetcher.this.peersFetching.remove(fetchFrom);
 						}
 						Closer.close(raf);
-						if (tmp != null)
+						if (tmp != null) {
+							// noinspection ResultOfMethodCallIgnored
 							tmp.delete();
+						}
 						if (failed) {
-							start();
+							UOMDependencyFetcher.this.start();
 							if (fetchFrom.isConnected() && fetchFrom.isDarknet()) {
 								// Darknet peers only: Try again in an hour.
 								// On opennet we'll just keep announcing until we succeed.
-								updateManager.node.getTicker().queueTimedJob(new Runnable() {
-
-									@Override
-									public void run() {
-										peerMaybeFreeSlots(fetchFrom);
-									}
-
-								}, TimeUnit.HOURS.toMillis(1));
+								UpdateOverMandatoryManager.this.updateManager.node.getTicker().queueTimedJob(
+										() -> UOMDependencyFetcher.this.peerMaybeFreeSlots(fetchFrom),
+										TimeUnit.HOURS.toMillis(1));
 							}
 						}
 					}
@@ -2318,59 +2251,206 @@ public class UpdateOverMandatoryManager implements RequestClient {
 		}
 
 		private synchronized PeerNode chooseRandomPeer(HashSet<PeerNode> uomPeers) {
-			if (completed)
-				return null;
-			if (peersFetching.size() >= MAX_NODES_SENDING_JAR) {
-				if (logMINOR)
-					Logger.minor(this, "Already fetching jar from 2 peers " + peersFetching);
+			if (this.completed) {
 				return null;
 			}
-			if (logMINOR)
+			if (this.peersFetching.size() >= MAX_NODES_SENDING_JAR) {
+				if (logMINOR) {
+					Logger.minor(this, "Already fetching jar from 2 peers " + this.peersFetching);
+				}
+				return null;
+			}
+			if (logMINOR) {
 				Logger.minor(this, "Trying to choose peer from " + uomPeers.size());
+			}
 			ArrayList<PeerNode> notTried = null;
 			for (PeerNode pn : uomPeers) {
-				if (peersFetching.contains(pn)) {
-					if (logMINOR)
+				if (this.peersFetching.contains(pn)) {
+					if (logMINOR) {
 						Logger.minor(this, "Already fetching from " + pn);
+					}
 					continue;
 				}
-				if (peersFailed.contains(pn)) {
-					if (logMINOR)
-						Logger.minor(this, "Peer already failed for " + saveTo + " : " + pn);
+				if (this.peersFailed.contains(pn)) {
+					if (logMINOR) {
+						Logger.minor(this, "Peer already failed for " + this.saveTo + " : " + pn);
+					}
 					continue;
 				}
 				if (!pn.isConnected()) {
-					if (logMINOR)
+					if (logMINOR) {
 						Logger.minor(this, "Peer not connected: " + pn);
+					}
 					continue;
 				}
-				if (notTried == null)
-					notTried = new ArrayList<PeerNode>();
+				if (notTried == null) {
+					notTried = new ArrayList<>();
+				}
 				notTried.add(pn);
 			}
 			if (notTried == null) {
-				if (logMINOR)
-					Logger.minor(this, "No peers to ask for " + saveTo);
+				if (logMINOR) {
+					Logger.minor(this, "No peers to ask for " + this.saveTo);
+				}
 				return null;
 			}
-			PeerNode fetchFrom = notTried.get(updateManager.node.fastWeakRandom.nextInt(notTried.size()));
-			peersFetching.add(fetchFrom);
+			PeerNode fetchFrom = notTried
+					.get(UpdateOverMandatoryManager.this.updateManager.node.fastWeakRandom.nextInt(notTried.size()));
+			this.peersFetching.add(fetchFrom);
 			return fetchFrom;
 		}
 
 		void start() {
-			while (maybeFetch())
-				;
+			// noinspection StatementWithEmptyBody
+			while (this.maybeFetch()) {
+				// Do nothing
+			}
 		}
 
-		public void cancel() {
+		void cancel() {
 			synchronized (this) {
-				completed = true;
+				this.completed = true;
 			}
 			synchronized (UpdateOverMandatoryManager.this) {
-				dependencyFetchers.remove(expectedHashBuffer);
+				UpdateOverMandatoryManager.this.dependencyFetchers.remove(this.expectedHashBuffer);
 			}
 		}
+
+	}
+
+	private class PeersSayKeyBlownAlert extends BaseNodeUserAlert {
+
+		PeersSayKeyBlownAlert() {
+			super(false, null, null, null, null, FCPUserAlert.WARNING, true, null, false, null);
+		}
+
+		@Override
+		public HTMLNode getHTMLText() {
+			HTMLNode div = new HTMLNode("div");
+
+			div.addChild("p").addChild("#", this.l10n("intro"));
+
+			PeerNode[][] nodes = UpdateOverMandatoryManager.this.getNodesSayBlown();
+			PeerNode[] nodesSayBlownConnected = nodes[0];
+			PeerNode[] nodesSayBlownDisconnected = nodes[1];
+			PeerNode[] nodesSayBlownFailedTransfer = nodes[2];
+
+			if (nodesSayBlownConnected.length > 0) {
+				div.addChild("p").addChild("#", this.l10n("fetching"));
+			}
+			else {
+				div.addChild("p").addChild("#", this.l10n("failedFetch"));
+			}
+
+			if (nodesSayBlownConnected.length > 0) {
+				div.addChild("p").addChild("#", this.l10n("connectedSayBlownLabel"));
+				HTMLNode list = div.addChild("ul");
+				for (PeerNode pn : nodesSayBlownConnected) {
+					list.addChild("li", pn.userToString() + " (" + pn.getPeer() + ")");
+				}
+			}
+
+			if (nodesSayBlownDisconnected.length > 0) {
+				div.addChild("p").addChild("#", this.l10n("disconnectedSayBlownLabel"));
+				HTMLNode list = div.addChild("ul");
+				for (PeerNode pn : nodesSayBlownDisconnected) {
+					list.addChild("li", pn.userToString() + " (" + pn.getPeer() + ")");
+				}
+			}
+
+			if (nodesSayBlownFailedTransfer.length > 0) {
+				div.addChild("p").addChild("#", this.l10n("failedTransferSayBlownLabel"));
+				HTMLNode list = div.addChild("ul");
+				for (PeerNode pn : nodesSayBlownFailedTransfer) {
+					list.addChild("li", pn.userToString() + " (" + pn.getPeer() + ")");
+				}
+			}
+
+			return div;
+		}
+
+		private String l10n(String key) {
+			return NodeL10n.getBase().getString("PeersSayKeyBlownAlert." + key);
+		}
+
+		private String l10n(String key, String pattern, String value) {
+			return NodeL10n.getBase().getString("PeersSayKeyBlownAlert." + key, pattern, value);
+		}
+
+		@Override
+		public String getText() {
+			StringBuilder sb = new StringBuilder();
+			sb.append(this.l10n("intro")).append("\n\n");
+			PeerNode[][] nodes = UpdateOverMandatoryManager.this.getNodesSayBlown();
+			PeerNode[] nodesSayBlownConnected = nodes[0];
+			PeerNode[] nodesSayBlownDisconnected = nodes[1];
+			PeerNode[] nodesSayBlownFailedTransfer = nodes[2];
+
+			if (nodesSayBlownConnected.length > 0) {
+				sb.append(this.l10n("fetching")).append("\n\n");
+			}
+			else {
+				sb.append(this.l10n("failedFetch")).append("\n\n");
+			}
+
+			if (nodesSayBlownConnected.length > 0) {
+				sb.append(this.l10n("connectedSayBlownLabel")).append("\n\n");
+				for (PeerNode pn : nodesSayBlownConnected) {
+					sb.append(pn.userToString()).append(" (").append(pn.getPeer()).append(")").append("\n");
+				}
+				sb.append("\n");
+			}
+
+			if (nodesSayBlownDisconnected.length > 0) {
+				sb.append(this.l10n("disconnectedSayBlownLabel"));
+
+				for (PeerNode pn : nodesSayBlownDisconnected) {
+					sb.append(pn.userToString()).append(" (").append(pn.getPeer()).append(")").append("\n");
+				}
+				sb.append("\n");
+			}
+
+			if (nodesSayBlownFailedTransfer.length > 0) {
+				sb.append(this.l10n("failedTransferSayBlownLabel"));
+
+				for (PeerNode pn : nodesSayBlownFailedTransfer) {
+					sb.append(pn.userToString()).append(" (").append(pn.getPeer()).append(")").append('\n');
+				}
+				sb.append("\n");
+			}
+
+			return sb.toString();
+		}
+
+		@Override
+		public String getTitle() {
+			return this.l10n("titleWithCount", "count",
+					Integer.toString(UpdateOverMandatoryManager.this.nodesSayKeyRevoked.size()));
+		}
+
+		@Override
+		public void isValid(boolean validity) {
+			// Do nothing
+		}
+
+		@Override
+		public boolean isValid() {
+			if (UpdateOverMandatoryManager.this.updateManager.isBlown()) {
+				return false;
+			}
+			return UpdateOverMandatoryManager.this.mightBeRevoked();
+		}
+
+		@Override
+		public String getShortText() {
+			return this.l10n("short");
+		}
+
+	}
+
+	public interface UOMDependencyFetcherCallback {
+
+		void onSuccess();
 
 	}
 
