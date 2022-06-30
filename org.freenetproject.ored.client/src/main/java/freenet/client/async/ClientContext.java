@@ -242,8 +242,8 @@ public class ClientContext {
 				try {
 					inserter.start(false, context);
 				}
-				catch (InsertException e) {
-					inserter.client.onFailure(e, inserter);
+				catch (InsertException ex) {
+					inserter.client.onFailure(ex, inserter);
 				}
 				return true;
 			}, NativeThread.NORM_PRIORITY);
