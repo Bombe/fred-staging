@@ -1,6 +1,21 @@
-/* This code is part of Freenet. It is distributed under the GNU General
- * Public License, version 2 (or at your option any later version). See
- * http://www.gnu.org/ for further details of the GPL. */
+/*
+ * Copyright 1999-2022 The Freenet Project
+ * Copyright 2022 Marine Master
+ *
+ * This file is part of Oldenet.
+ *
+ * Oldenet is free software: you can redistribute it and/or modify it under the terms of
+ * the GNU General Public License as published by the Free Software Foundation, either
+ * version 3 of the License, or any later version.
+ *
+ * Oldenet is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with Oldenet.
+ * If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package freenet.client.request;
 
 /**
@@ -17,7 +32,7 @@ public interface RequestClient {
 	/**
 	 * Is this request persistent? **Must not change!**
 	 */
-	public boolean persistent();
+	boolean persistent();
 
 	/**
 	 * Send the request with the real time flag enabled? Real-time requests are given a
@@ -25,6 +40,6 @@ public interface RequestClient {
 	 * optimised for latency rather than throughput, and are expected to be bursty rather
 	 * than continual. **Must not change!**
 	 */
-	public boolean realTimeFlag();
+	boolean realTimeFlag();
 
 }
