@@ -35,8 +35,9 @@ public class FetchResult {
 	final Bucket data;
 
 	public FetchResult(ClientMetadata dm, Bucket fetched) {
-		if (dm == null)
+		if (dm == null) {
 			throw new IllegalArgumentException();
+		}
 		assert (fetched != null);
 		this.metadata = dm;
 		this.data = fetched;
