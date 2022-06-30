@@ -1,6 +1,21 @@
-/* This code is part of Freenet. It is distributed under the GNU General
- * Public License, version 2 (or at your option any later version). See
- * http://www.gnu.org/ for further details of the GPL. */
+/*
+ * Copyright 1999-2022 The Freenet Project
+ * Copyright 2022 Marine Master
+ *
+ * This file is part of Oldenet.
+ *
+ * Oldenet is free software: you can redistribute it and/or modify it under the terms of
+ * the GNU General Public License as published by the Free Software Foundation, either
+ * version 3 of the License, or any later version.
+ *
+ * Oldenet is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with Oldenet.
+ * If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package freenet.client.async;
 
 import java.util.Random;
@@ -57,46 +72,46 @@ public class ClientContext {
 	private transient UserAlertRegister alertRegister;
 
 	/** The main Executor for the node. Jobs for transient requests run here. */
-	public transient final Executor mainExecutor;
+	public final transient Executor mainExecutor;
 
 	/**
 	 * We need to be able to suspend execution of jobs changing persistent state in order
 	 * to write it to disk consistently. Also, some jobs may want to request immediate
 	 * serialization.
 	 */
-	public transient final PersistentJobRunner jobRunner;
+	public final transient PersistentJobRunner jobRunner;
 
-	public transient final RandomSource random;
+	public final transient RandomSource random;
 
-	public transient final ArchiveManager archiveManager;
+	public final transient ArchiveManager archiveManager;
 
-	public transient final PersistentTempBucketFactory persistentBucketFactory;
+	public final transient PersistentTempBucketFactory persistentBucketFactory;
 
 	public transient PersistentFileTracker persistentFileTracker;
 
-	public transient final TempBucketFactory tempBucketFactory;
+	public final transient TempBucketFactory tempBucketFactory;
 
-	public transient final LockableRandomAccessBufferFactory tempRAFFactory;
+	public final transient LockableRandomAccessBufferFactory tempRAFFactory;
 
-	public transient final LockableRandomAccessBufferFactory persistentRAFFactory;
+	public final transient LockableRandomAccessBufferFactory persistentRAFFactory;
 
-	public transient final HealingQueue healingQueue;
+	public final transient HealingQueue healingQueue;
 
-	public transient final USKManager uskManager;
+	public final transient USKManager uskManager;
 
-	public transient final Random fastWeakRandom;
+	public final transient Random fastWeakRandom;
 
-	public transient final long bootID;
+	public final transient long bootID;
 
-	public transient final Ticker ticker;
+	public final transient Ticker ticker;
 
-	public transient final BucketFilenameGenerator fg;
+	public final transient BucketFilenameGenerator fg;
 
-	public transient final BucketFilenameGenerator persistentFG;
+	public final transient BucketFilenameGenerator persistentFG;
 
-	public transient final RealCompressor rc;
+	public final transient RealCompressor rc;
 
-	public transient final DatastoreChecker checker;
+	public final transient DatastoreChecker checker;
 
 	public transient DownloadCache downloadCache;
 
@@ -105,24 +120,24 @@ public class ClientContext {
 	 * do disk I/O and we don't guarantee to serialise them. The new splitfile code does
 	 * FEC decodes entirely in memory, which saves a lot of seeks and improves robustness.
 	 */
-	public transient final MemoryLimitedJobRunner memoryLimitedJobRunner;
+	public final transient MemoryLimitedJobRunner memoryLimitedJobRunner;
 
-	public transient final PersistentRequestChecker persistentRequestChecker;
+	public final transient PersistentRequestChecker persistentRequestChecker;
 
-	private transient FetchContext defaultPersistentFetchContext;
+	private final transient FetchContext defaultPersistentFetchContext;
 
-	private transient InsertContext defaultPersistentInsertContext;
+	private final transient InsertContext defaultPersistentInsertContext;
 
-	public transient final MasterSecret cryptoSecretTransient;
+	public final transient MasterSecret cryptoSecretTransient;
 
 	private transient MasterSecret cryptoSecretPersistent;
 
-	private transient FileRandomAccessBufferFactory fileRAFTransient;
+	private final transient FileRandomAccessBufferFactory fileRAFTransient;
 
-	private transient FileRandomAccessBufferFactory fileRAFPersistent;
+	private final transient FileRandomAccessBufferFactory fileRAFPersistent;
 
 	/** Provider for link filter exceptions. */
-	public transient final LinkFilterExceptionProvider linkFilterExceptionProvider;
+	public final transient LinkFilterExceptionProvider linkFilterExceptionProvider;
 
 	/**
 	 * Transient version of the PersistentJobRunner, just starts stuff immediately.
@@ -130,9 +145,9 @@ public class ClientContext {
 	 */
 	public PersistentJobRunner dummyJobRunner;
 
-	private transient final Config config;
+	private final transient Config config;
 
-	public transient final int maxBackgroundUSKFetchers;
+	public final transient int maxBackgroundUSKFetchers;
 
 	public ClientContext(long bootID, ClientLayerPersister jobRunner, Executor mainExecutor,
 			ArchiveManager archiveManager, PersistentTempBucketFactory ptbf, TempBucketFactory tbf,
@@ -193,23 +208,23 @@ public class ClientContext {
 	}
 
 	public synchronized MasterSecret getPersistentMasterSecret() {
-		return cryptoSecretPersistent;
+		return this.cryptoSecretPersistent;
 	}
 
 	public ClientRequestScheduler getSskFetchScheduler(boolean realTime) {
-		return realTime ? sskFetchSchedulerRT : sskFetchSchedulerBulk;
+		return realTime ? this.sskFetchSchedulerRT : this.sskFetchSchedulerBulk;
 	}
 
 	public ClientRequestScheduler getChkFetchScheduler(boolean realTime) {
-		return realTime ? chkFetchSchedulerRT : chkFetchSchedulerBulk;
+		return realTime ? this.chkFetchSchedulerRT : this.chkFetchSchedulerBulk;
 	}
 
 	public ClientRequestScheduler getSskInsertScheduler(boolean realTime) {
-		return realTime ? sskInsertSchedulerRT : sskInsertSchedulerBulk;
+		return realTime ? this.sskInsertSchedulerRT : this.sskInsertSchedulerBulk;
 	}
 
 	public ClientRequestScheduler getChkInsertScheduler(boolean realTime) {
-		return realTime ? chkInsertSchedulerRT : chkInsertSchedulerBulk;
+		return realTime ? this.chkInsertSchedulerRT : this.chkInsertSchedulerBulk;
 	}
 
 	/**
@@ -223,19 +238,14 @@ public class ClientContext {
 	 */
 	public void start(final ClientPutter inserter) throws InsertException, PersistenceDisabledException {
 		if (inserter.persistent()) {
-			jobRunner.queue(new PersistentJob() {
-
-				@Override
-				public boolean run(ClientContext context) {
-					try {
-						inserter.start(false, context);
-					}
-					catch (InsertException e) {
-						inserter.client.onFailure(e, inserter);
-					}
-					return true;
+			this.jobRunner.queue((context) -> {
+				try {
+					inserter.start(false, context);
 				}
-
+				catch (InsertException e) {
+					inserter.client.onFailure(e, inserter);
+				}
+				return true;
 			}, NativeThread.NORM_PRIORITY);
 		}
 		else {
@@ -253,19 +263,15 @@ public class ClientContext {
 	 */
 	public void start(final ClientGetter getter) throws FetchException, PersistenceDisabledException {
 		if (getter.persistent()) {
-			jobRunner.queue(new PersistentJob() {
-
-				@Override
-				public boolean run(ClientContext context) {
-					try {
-						getter.start(context);
-					}
-					catch (FetchException e) {
-						getter.clientCallback.onFailure(e, getter);
-					}
-					return true;
+			this.jobRunner.queue((context) -> {
+				try {
+					getter.start(context);
 				}
-
+				catch (FetchException ex) {
+					assert getter.clientCallback != null;
+					getter.clientCallback.onFailure(ex, getter);
+				}
+				return true;
 			}, NativeThread.NORM_PRIORITY);
 		}
 		else {
@@ -283,19 +289,14 @@ public class ClientContext {
 	 */
 	public void start(final BaseManifestPutter inserter) throws InsertException, PersistenceDisabledException {
 		if (inserter.persistent()) {
-			jobRunner.queue(new PersistentJob() {
-
-				@Override
-				public boolean run(ClientContext context) {
-					try {
-						inserter.start(context);
-					}
-					catch (InsertException e) {
-						inserter.cb.onFailure(e, inserter);
-					}
-					return true;
+			this.jobRunner.queue((context) -> {
+				try {
+					inserter.start(context);
 				}
-
+				catch (InsertException ex) {
+					inserter.cb.onFailure(ex, inserter);
+				}
+				return true;
 			}, NativeThread.NORM_PRIORITY);
 		}
 		else {
@@ -311,10 +312,12 @@ public class ClientContext {
 	 * is restarted.
 	 */
 	public BucketFactory getBucketFactory(boolean persistent) {
-		if (persistent)
-			return persistentBucketFactory;
-		else
-			return tempBucketFactory;
+		if (persistent) {
+			return this.persistentBucketFactory;
+		}
+		else {
+			return this.tempBucketFactory;
+		}
 	}
 
 	/**
@@ -324,25 +327,20 @@ public class ClientContext {
 	 * scheduler.
 	 */
 	public RequestScheduler getFetchScheduler(boolean ssk, boolean realTime) {
-		if (ssk)
-			return realTime ? sskFetchSchedulerRT : sskFetchSchedulerBulk;
-		return realTime ? chkFetchSchedulerRT : chkFetchSchedulerBulk;
+		if (ssk) {
+			return realTime ? this.sskFetchSchedulerRT : this.sskFetchSchedulerBulk;
+		}
+		return realTime ? this.chkFetchSchedulerRT : this.chkFetchSchedulerBulk;
 	}
 
 	public void postUserAlert(final UserAlert alert) {
-		if (alertRegister == null) {
+		if (this.alertRegister == null) {
 			// Wait until after startup
-			ticker.queueTimedJob(new Runnable() {
-
-				@Override
-				public void run() {
-					alertRegister.register(alert);
-				}
-
-			}, "Post alert", 0L, false, false);
+			this.ticker.queueTimedJob(() -> ClientContext.this.alertRegister.register(alert), "Post alert", 0L, false,
+					false);
 		}
 		else {
-			alertRegister.register(alert);
+			this.alertRegister.register(alert);
 		}
 	}
 
@@ -351,28 +349,28 @@ public class ClientContext {
 	}
 
 	public FetchContext getDefaultPersistentFetchContext() {
-		return new FetchContext(defaultPersistentFetchContext, FetchContext.IDENTICAL_MASK);
+		return new FetchContext(this.defaultPersistentFetchContext, FetchContext.IDENTICAL_MASK);
 	}
 
 	public InsertContext getDefaultPersistentInsertContext() {
-		return new InsertContext(defaultPersistentInsertContext, new SimpleEventProducer());
+		return new InsertContext(this.defaultPersistentInsertContext, new SimpleEventProducer());
 	}
 
 	public PersistentJobRunner getJobRunner(boolean persistent) {
-		return persistent ? jobRunner : dummyJobRunner;
+		return persistent ? this.jobRunner : this.dummyJobRunner;
 	}
 
 	public FileRandomAccessBufferFactory getFileRandomAccessBufferFactory(boolean persistent) {
-		return persistent ? fileRAFPersistent : fileRAFTransient;
+		return persistent ? this.fileRAFPersistent : this.fileRAFTransient;
 
 	}
 
 	public LockableRandomAccessBufferFactory getRandomAccessBufferFactory(boolean persistent) {
-		return persistent ? persistentRAFFactory : tempBucketFactory;
+		return persistent ? this.persistentRAFFactory : this.tempBucketFactory;
 	}
 
 	public Config getConfig() {
-		return config;
+		return this.config;
 	}
 
 }
