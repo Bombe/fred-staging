@@ -1,6 +1,21 @@
-/* This code is part of Freenet. It is distributed under the GNU General
- * Public License, version 2 (or at your option any later version). See
- * http://www.gnu.org/ for further details of the GPL. */
+/*
+ * Copyright 1999-2022 The Freenet Project
+ * Copyright 2022 Marine Master
+ *
+ * This file is part of Oldenet.
+ *
+ * Oldenet is free software: you can redistribute it and/or modify it under the terms of
+ * the GNU General Public License as published by the Free Software Foundation, either
+ * version 3 of the License, or any later version.
+ *
+ * Oldenet is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with Oldenet.
+ * If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package freenet.client;
 
 import java.io.IOException;
@@ -23,8 +38,8 @@ public class FetchResult {
 		if (dm == null)
 			throw new IllegalArgumentException();
 		assert (fetched != null);
-		metadata = dm;
-		data = fetched;
+		this.metadata = dm;
+		this.data = fetched;
 	}
 
 	/**
@@ -41,19 +56,19 @@ public class FetchResult {
 	 * application/octet-stream.
 	 */
 	public String getMimeType() {
-		return metadata.getMIMEType();
+		return this.metadata.getMIMEType();
 	}
 
 	/** Get the client-level metadata. */
 	public ClientMetadata getMetadata() {
-		return metadata;
+		return this.metadata;
 	}
 
 	/**
 	 * @return The size of the data fetched, in bytes.
 	 */
 	public long size() {
-		return data.size();
+		return this.data.size();
 	}
 
 	/**
@@ -62,7 +77,7 @@ public class FetchResult {
 	 * @throws IOException If it was not possible to read the data.
 	 */
 	public byte[] asByteArray() throws IOException {
-		return BucketTools.toByteArray(data);
+		return BucketTools.toByteArray(this.data);
 	}
 
 	/**
@@ -72,7 +87,7 @@ public class FetchResult {
 	 * resource leakage!
 	 */
 	public Bucket asBucket() {
-		return data;
+		return this.data;
 	}
 
 }
