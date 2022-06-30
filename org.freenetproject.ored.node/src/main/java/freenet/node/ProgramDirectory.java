@@ -1,15 +1,30 @@
-/* This code is part of Freenet. It is distributed under the GNU General
- * Public License, version 2 (or at your option any later version). See
- * http://www.gnu.org/ for further details of the GPL. */
+/*
+ * Copyright 1999-2022 The Freenet Project
+ * Copyright 2022 Marine Master
+ *
+ * This file is part of Oldenet.
+ *
+ * Oldenet is free software: you can redistribute it and/or modify it under the terms of
+ * the GNU General Public License as published by the Free Software Foundation, either
+ * version 3 of the License, or any later version.
+ *
+ * Oldenet is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with Oldenet.
+ * If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package freenet.node;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.HashSet;
 
 import freenet.config.InvalidConfigValueException;
 import freenet.config.StringCallback;
 import freenet.l10n.NodeL10n;
-
-import java.util.HashSet;
-import java.io.File;
-import java.io.IOException;
 
 /**
  ** Represents a program directory, and keeps track of the files that freenet stores there.
@@ -26,11 +41,11 @@ public class ProgramDirectory {
 	protected File dir = null;
 
 	/** Keeps track of all the files saved in this directory */
-	final protected HashSet<String> files = new HashSet<String>();
+	protected final HashSet<String> files = new HashSet<>();
 
-	final private StringCallback callback;
+	private final StringCallback callback;
 
-	final private String moveErrMsg;
+	private final String moveErrMsg;
 
 	private static int sortOrder = 0;
 
@@ -64,24 +79,41 @@ public class ProgramDirectory {
 	}
 
 	public StringCallback getStringCallback() {
-		return callback;
+		return this.callback;
+	}
+
+	/**
+	 ** Return a {@link File} object from the given string basename.
+	 */
+	public File file(String base) {
+		this.files.add(base);
+		return new File(this.dir, base);
+	}
+
+	public File dir() {
+		return this.dir;
+	}
+
+	private static String l10n(String key) {
+		return NodeL10n.getBase().getString(key);
 	}
 
 	public class DirectoryCallback extends StringCallback {
 
 		@Override
 		public String get() {
-			return dir.getPath();
+			return ProgramDirectory.this.dir.getPath();
 		}
 
 		@Override
 		public void set(String val) throws InvalidConfigValueException {
-			if (dir == null) {
-				dir = new File(val);
+			if (ProgramDirectory.this.dir == null) {
+				ProgramDirectory.this.dir = new File(val);
 				return;
 			}
-			if (dir.equals(new File(val)))
+			if (ProgramDirectory.this.dir.equals(new File(val))) {
 				return;
+			}
 			// FIXME support it
 			// Don't need to translate the below as very few users will use it.
 			throw new InvalidConfigValueException("Moving program directory on the fly not supported at present");
@@ -98,18 +130,20 @@ public class ProgramDirectory {
 
 		@Override
 		public void set(String val) throws InvalidConfigValueException {
-			if (dir == null) {
-				dir = new File(val);
+			if (ProgramDirectory.this.dir == null) {
+				ProgramDirectory.this.dir = new File(val);
 				return;
 			}
-			if (dir.equals(new File(val)))
+			if (ProgramDirectory.this.dir.equals(new File(val))) {
 				return;
+			}
 			File f = new File(val);
-			if (!((f.exists() && f.isDirectory()) || (f.mkdir())))
+			if (!((f.exists() && f.isDirectory()) || (f.mkdir()))) {
 				// Relatively commonly used, despite being advanced (i.e. not something we
 				// want to show to newbies). So translate it.
-				throw new InvalidConfigValueException(l10n(moveErrMsg));
-			dir = new File(val);
+				throw new InvalidConfigValueException(l10n(ProgramDirectory.this.moveErrMsg));
+			}
+			ProgramDirectory.this.dir = new File(val);
 		}
 
 		@Override
@@ -117,22 +151,6 @@ public class ProgramDirectory {
 			return false;
 		}
 
-	}
-
-	/**
-	 ** Return a {@link File} object from the given string basename.
-	 */
-	public File file(String base) {
-		files.add(base);
-		return new File(dir, base);
-	}
-
-	public File dir() {
-		return dir;
-	}
-
-	private static String l10n(String key) {
-		return NodeL10n.getBase().getString(key);
 	}
 
 }
