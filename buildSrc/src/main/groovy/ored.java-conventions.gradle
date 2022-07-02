@@ -21,23 +21,24 @@ if (hasProperty('buildScan')) {
 dependencies {
     implementation files("$rootDir/lib/wrapper/lib/wrapper.jar")
 
-    testImplementation platform('org.junit:junit-bom:5.8.2')
-    testImplementation 'org.junit.jupiter:junit-jupiter'
-    testCompileOnly 'junit:junit:4.13'
-    testRuntimeOnly 'org.junit.vintage:junit-vintage-engine'
-    testImplementation 'org.mockito:mockito-core:4.5.1'
+    testImplementation platform(libs.junit.bom)
+    testImplementation libs.junit.jupiter
+    testCompileOnly libs.junit
+    testRuntimeOnly libs.junit.vintage.engine
+    testImplementation libs.mockito.core
+    testImplementation libs.mockito.core
 
-    checkstyle("io.spring.javaformat:spring-javaformat-checkstyle:0.0.34")
+    checkstyle(libs.spring.javaformat.checkstyle)
 }
 
 checkstyle {
-    toolVersion = "8.45.1"
+    toolVersion = libs.versions.checkstyle.get()
     configDirectory = file("$rootDir/checkstyle")
 }
 
 extraJavaModuleInfo {
     failOnMissingModuleInfo.set(false)
-    module('wrapper.jar', 'org.tanukisoftware.wrapper', '3.5.49') {
+    module('wrapper.jar', 'org.tanukisoftware.wrapper', libs.versions.wrapper.get()) {
         exports 'org.tanukisoftware.wrapper'
         exports 'org.tanukisoftware.wrapper.jmx'
     }

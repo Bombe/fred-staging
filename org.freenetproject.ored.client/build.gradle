@@ -8,7 +8,7 @@ dependencies {
     implementation project(':org.freenetproject.ored.crypt')
     implementation project(':org.freenetproject.ored.l10n')
     implementation project(':org.freenetproject.ored.config')
-    implementation 'org.bouncycastle:bcprov-jdk18on:1.71'
+    implementation libs.bcprov
     implementation 'org.apache.commons:commons-compress:1.21'
     implementation project(path: ':org.freenetproject.ext', configuration: 'shadow')
 

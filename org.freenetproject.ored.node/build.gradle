@@ -1,7 +1,7 @@
 plugins {
-    id 'org.beryx.jlink' version '2.25.0'
+    alias(libs.plugins.jlink)
     id 'ored.java-conventions'
-    id "com.google.osdetector" version "1.7.0"
+    alias(libs.plugins.osdetector)
 }
 
 dependencies {
@@ -14,9 +14,8 @@ dependencies {
     implementation project(':org.freenetproject.ored.cli')
     implementation project(path: ':org.freenetproject.ext', configuration: 'shadow')
 
-    implementation 'net.java.dev.jna:jna-jpms:5.11.0'
-    implementation 'net.java.dev.jna:jna-platform-jpms:5.11.0'
-    implementation('net.harawata:appdirs:1.2.1') {
+    implementation libs.bundles.jna
+    implementation(libs.appdirs) {
         exclude group: 'net.java.dev.jna', module: 'jna-platform'
     }
 

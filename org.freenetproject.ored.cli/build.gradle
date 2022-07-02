@@ -6,12 +6,11 @@ plugins {
 dependencies {
     implementation project(':org.freenetproject.ored.support')
 
-    implementation 'info.picocli:picocli:4.6.3'
-    implementation('net.harawata:appdirs:1.2.1') {
+    implementation libs.picocli
+    implementation(libs.appdirs) {
         exclude group: 'net.java.dev.jna', module: 'jna-platform'
     }
-    implementation 'net.java.dev.jna:jna-jpms:5.11.0'
-    implementation 'net.java.dev.jna:jna-platform-jpms:5.11.0'
+    implementation libs.bundles.jna
 }
 
 application {

@@ -7,14 +7,13 @@ plugins {
 dependencies {
     implementation project(path: ':org.freenetproject.ext', configuration: 'shadow')
 
-    implementation 'org.bouncycastle:bcprov-jdk18on:1.71'
-    implementation 'net.java.dev.jna:jna-jpms:5.11.0'
-    implementation 'net.java.dev.jna:jna-platform-jpms:5.11.0'
+    implementation libs.bcprov
+    implementation libs.bundles.jna
 
-    testFixturesImplementation platform('org.junit:junit-bom:5.8.2')
-    testFixturesImplementation 'org.junit.jupiter:junit-jupiter'
-    testFixturesCompileOnly 'junit:junit:4.13'
-    testFixturesRuntimeOnly 'org.junit.vintage:junit-vintage-engine'
+    testFixturesImplementation platform(libs.junit.bom)
+    testFixturesImplementation libs.junit.jupiter
+    testFixturesCompileOnly libs.junit
+    testFixturesRuntimeOnly libs.junit.vintage.engine
     // Required by class TestProperty
     testFixturesRuntimeOnly files(project(":org.freenetproject.ored.l10n").sourceSets.test.resources.srcDirs)
 }

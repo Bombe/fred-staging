@@ -1,0 +1,32 @@
+[versions]
+jna = "5.11.0"
+spring-javaformat = "0.0.34"
+checkstyle = "9.3"
+wrapper = "3.5.49"
+
+[libraries]
+jna = { module = "net.java.dev.jna:jna-jpms", version.ref = "jna" }
+jna-platform = { module = "net.java.dev.jna:jna-platform-jpms", version.ref = "jna" }
+appdirs = "net.harawata:appdirs:1.2.1"
+bcprov = "org.bouncycastle:bcprov-jdk18on:1.71"
+picocli = "info.picocli:picocli:4.6.3"
+
+# Test Libs
+junit-bom = "org.junit:junit-bom:5.8.2"
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
+junit = 'junit:junit:4.13'
+junit-vintage-engine = { module = "org.junit.vintage:junit-vintage-engine" }
+mockito-core = "org.mockito:mockito-core:4.5.1"
+
+# Build Libs
+extra-java-module-info = "de.jjohannes.gradle:extra-java-module-info:0.12"
+spring-javaformat-gradle-plugin = { module = "io.spring.javaformat:spring-javaformat-gradle-plugin", version.ref = "spring-javaformat" }
+spring-javaformat-checkstyle = { module = "io.spring.javaformat:spring-javaformat-checkstyle", version.ref = "spring-javaformat" }
+
+[bundles]
+jna = ["jna", "jna-platform"]
+
+[plugins]
+shadow = { id = "com.github.johnrengelman.shadow", version = "7.1.2" }
+jlink = { id = "org.beryx.jlink", version = "2.25.0" }
+osdetector = { id = "com.google.osdetector", version = "1.7.0" }
