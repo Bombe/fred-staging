@@ -1,5 +1,5 @@
 [versions]
-jna = "5.11.0"
+jna = "5.12.1"
 spring-javaformat = "0.0.34"
 checkstyle = "9.3"
 wrapper = "3.5.49"
@@ -14,9 +14,9 @@ picocli = "info.picocli:picocli:4.6.3"
 # Test Libs
 junit-bom = "org.junit:junit-bom:5.8.2"
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
-junit = 'junit:junit:4.13'
+junit = 'junit:junit:4.13.2'
 junit-vintage-engine = { module = "org.junit.vintage:junit-vintage-engine" }
-mockito-core = "org.mockito:mockito-core:4.5.1"
+mockito-core = "org.mockito:mockito-core:4.6.1"
 
 # Build Libs
 extra-java-module-info = "de.jjohannes.gradle:extra-java-module-info:0.12"
