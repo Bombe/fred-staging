@@ -1,14 +1,30 @@
-/* This code is part of Freenet. It is distributed under the GNU General
- * Public License, version 2 (or at your option any later version). See
- * http://www.gnu.org/ for further details of the GPL. */
+/*
+ * Copyright 1999-2022 The Freenet Project
+ * Copyright 2022 Marine Master
+ *
+ * This file is part of Oldenet.
+ *
+ * Oldenet is free software: you can redistribute it and/or modify it under the terms of
+ * the GNU General Public License as published by the Free Software Foundation, either
+ * version 3 of the License, or any later version.
+ *
+ * Oldenet is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with Oldenet.
+ * If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package freenet.client;
 
+import java.io.Serial;
 import java.util.HashMap;
 
 import freenet.client.filter.DataFilterException;
+import freenet.clientlogger.Logger;
 import freenet.keys.FreenetURI;
 import freenet.l10n.NodeL10n;
-import freenet.clientlogger.Logger;
 
 /**
  * Thrown when a high-level request (fetch) fails. Indicates why, whether it is worth
@@ -24,6 +40,7 @@ public class FetchException extends Exception implements Cloneable {
 		Logger.registerClass(FetchException.class);
 	}
 
+	@Serial
 	private static final long serialVersionUID = -1106716067841151962L;
 
 	/** Failure mode */
@@ -51,12 +68,12 @@ public class FetchException extends Exception implements Cloneable {
 
 	/** Do we know the expected MIME type of the data? */
 	public String getExpectedMimeType() {
-		return expectedMimeType;
+		return this.expectedMimeType;
 	}
 
 	/** Do we have any idea of the final size of the data? */
 	public boolean finalizedSize() {
-		return finalizedSizeAndMimeType;
+		return this.finalizedSizeAndMimeType;
 	}
 
 	/**
@@ -70,160 +87,178 @@ public class FetchException extends Exception implements Cloneable {
 
 	/** Get the failure mode. */
 	public FetchExceptionMode getMode() {
-		return mode;
+		return this.mode;
 	}
 
 	public FetchException(FetchExceptionMode m) {
 		super(getMessage(m));
-		extraMessage = null;
-		mode = m;
-		errorCodes = null;
-		newURI = null;
-		expectedSize = -1;
-		if (mode == FetchExceptionMode.INTERNAL_ERROR)
+		this.extraMessage = null;
+		this.mode = m;
+		this.errorCodes = null;
+		this.newURI = null;
+		this.expectedSize = -1;
+		if (this.mode == FetchExceptionMode.INTERNAL_ERROR) {
 			Logger.error(this, "Internal error: " + this);
-		else if (logMINOR)
-			Logger.minor(this, "FetchException(" + getMessage(mode) + ')', this);
+		}
+		else if (logMINOR) {
+			Logger.minor(this, "FetchException(" + getMessage(this.mode) + ')', this);
+		}
 	}
 
 	public FetchException(FetchExceptionMode m, long expectedSize, boolean finalizedSize, String expectedMimeType) {
 		super(getMessage(m));
-		extraMessage = null;
+		this.extraMessage = null;
 		this.finalizedSizeAndMimeType = finalizedSize;
-		mode = m;
-		errorCodes = null;
-		newURI = null;
+		this.mode = m;
+		this.errorCodes = null;
+		this.newURI = null;
 		this.expectedSize = expectedSize;
 		this.expectedMimeType = expectedMimeType;
-		if (mode == FetchExceptionMode.INTERNAL_ERROR)
+		if (this.mode == FetchExceptionMode.INTERNAL_ERROR) {
 			Logger.error(this, "Internal error: " + this);
-		else if (logMINOR)
-			Logger.minor(this, "FetchException(" + getMessage(mode) + ')', this);
+		}
+		else if (logMINOR) {
+			Logger.minor(this, "FetchException(" + getMessage(this.mode) + ')', this);
+		}
 	}
 
 	public FetchException(FetchExceptionMode m, long expectedSize, boolean finalizedSize, String expectedMimeType,
 			FreenetURI uri) {
 		super(getMessage(m));
-		extraMessage = null;
+		this.extraMessage = null;
 		this.finalizedSizeAndMimeType = finalizedSize;
-		mode = m;
-		errorCodes = null;
-		newURI = uri;
+		this.mode = m;
+		this.errorCodes = null;
+		this.newURI = uri;
 		this.expectedSize = expectedSize;
 		this.expectedMimeType = expectedMimeType;
-		if (mode == FetchExceptionMode.INTERNAL_ERROR)
+		if (this.mode == FetchExceptionMode.INTERNAL_ERROR) {
 			Logger.error(this, "Internal error: " + this);
-		else if (logMINOR)
-			Logger.minor(this, "FetchException(" + getMessage(mode) + ')', this);
+		}
+		else if (logMINOR) {
+			Logger.minor(this, "FetchException(" + getMessage(this.mode) + ')', this);
+		}
 	}
 
 	public FetchException(MetadataParseException e) {
 		super(getMessage(FetchExceptionMode.INVALID_METADATA) + ": " + e.getMessage());
-		extraMessage = e.getMessage();
-		mode = FetchExceptionMode.INVALID_METADATA;
-		errorCodes = null;
-		initCause(e);
-		newURI = null;
-		expectedSize = -1;
-		if (logMINOR)
-			Logger.minor(this, "FetchException(" + getMessage(mode) + ')', this);
+		this.extraMessage = e.getMessage();
+		this.mode = FetchExceptionMode.INVALID_METADATA;
+		this.errorCodes = null;
+		this.initCause(e);
+		this.newURI = null;
+		this.expectedSize = -1;
+		if (logMINOR) {
+			Logger.minor(this, "FetchException(" + getMessage(this.mode) + ')', this);
+		}
 	}
 
 	public FetchException(ArchiveFailureException e) {
 		super(getMessage(FetchExceptionMode.ARCHIVE_FAILURE) + ": " + e.getMessage());
-		extraMessage = e.getMessage();
-		mode = FetchExceptionMode.ARCHIVE_FAILURE;
-		errorCodes = null;
-		newURI = null;
-		initCause(e);
-		expectedSize = -1;
-		if (logMINOR)
-			Logger.minor(this, "FetchException(" + getMessage(mode) + ')', this);
+		this.extraMessage = e.getMessage();
+		this.mode = FetchExceptionMode.ARCHIVE_FAILURE;
+		this.errorCodes = null;
+		this.newURI = null;
+		this.initCause(e);
+		this.expectedSize = -1;
+		if (logMINOR) {
+			Logger.minor(this, "FetchException(" + getMessage(this.mode) + ')', this);
+		}
 	}
 
 	public FetchException(ArchiveRestartException e) {
 		super(getMessage(FetchExceptionMode.ARCHIVE_RESTART) + ": " + e.getMessage());
-		extraMessage = e.getMessage();
-		mode = FetchExceptionMode.ARCHIVE_FAILURE;
-		errorCodes = null;
-		initCause(e);
-		newURI = null;
-		expectedSize = -1;
-		if (logMINOR)
-			Logger.minor(this, "FetchException(" + getMessage(mode) + ')', this);
+		this.extraMessage = e.getMessage();
+		this.mode = FetchExceptionMode.ARCHIVE_FAILURE;
+		this.errorCodes = null;
+		this.initCause(e);
+		this.newURI = null;
+		this.expectedSize = -1;
+		if (logMINOR) {
+			Logger.minor(this, "FetchException(" + getMessage(this.mode) + ')', this);
+		}
 	}
 
 	public FetchException(FetchExceptionMode mode, Throwable t) {
 		super(getMessage(mode) + ": " + t.getMessage());
-		extraMessage = t.getMessage();
+		this.extraMessage = t.getMessage();
 		this.mode = mode;
-		errorCodes = null;
-		initCause(t);
-		newURI = null;
-		expectedSize = -1;
-		if (mode == FetchExceptionMode.INTERNAL_ERROR)
+		this.errorCodes = null;
+		this.initCause(t);
+		this.newURI = null;
+		this.expectedSize = -1;
+		if (mode == FetchExceptionMode.INTERNAL_ERROR) {
 			Logger.error(this, "Internal error: " + this);
-		else if (logMINOR)
+		}
+		else if (logMINOR) {
 			Logger.minor(this, "FetchException(" + getMessage(mode) + ')', this);
+		}
 	}
 
 	public FetchException(FetchExceptionMode mode, String reason, Throwable t) {
 		super(reason + " : " + getMessage(mode) + ": " + t.getMessage());
-		extraMessage = t.getMessage();
+		this.extraMessage = t.getMessage();
 		this.mode = mode;
-		errorCodes = null;
-		initCause(t);
-		newURI = null;
-		expectedSize = -1;
-		if (mode == FetchExceptionMode.INTERNAL_ERROR)
+		this.errorCodes = null;
+		this.initCause(t);
+		this.newURI = null;
+		this.expectedSize = -1;
+		if (mode == FetchExceptionMode.INTERNAL_ERROR) {
 			Logger.error(this, "Internal error: " + this);
-		else if (logMINOR)
+		}
+		else if (logMINOR) {
 			Logger.minor(this, "FetchException(" + getMessage(mode) + ')', this);
+		}
 	}
 
 	public FetchException(FetchExceptionMode mode, long expectedSize, String reason, Throwable t,
 			String expectedMimeType) {
 		super(reason + " : " + getMessage(mode) + ": " + t.getMessage());
-		extraMessage = t.getMessage();
+		this.extraMessage = t.getMessage();
 		this.mode = mode;
 		this.expectedSize = expectedSize;
 		this.expectedMimeType = expectedMimeType;
-		errorCodes = null;
-		initCause(t);
-		newURI = null;
-		if (mode == FetchExceptionMode.INTERNAL_ERROR)
+		this.errorCodes = null;
+		this.initCause(t);
+		this.newURI = null;
+		if (mode == FetchExceptionMode.INTERNAL_ERROR) {
 			Logger.error(this, "Internal error: " + this);
-		else if (logMINOR)
+		}
+		else if (logMINOR) {
 			Logger.minor(this, "FetchException(" + getMessage(mode) + ')', this);
+		}
 	}
 
 	public FetchException(long expectedSize, DataFilterException t, String expectedMimeType) {
 		super(getMessage(FetchExceptionMode.CONTENT_VALIDATION_FAILED) + " "
 				+ NodeL10n.getBase().getString("FetchException.unsafeContentDetails") + " " + t.getMessage());
-		extraMessage = t.getMessage();
+		this.extraMessage = t.getMessage();
 		this.mode = FetchExceptionMode.CONTENT_VALIDATION_FAILED;
 		this.expectedSize = expectedSize;
 		this.expectedMimeType = expectedMimeType;
-		errorCodes = null;
-		initCause(t);
-		newURI = null;
-		if (logMINOR)
-			Logger.minor(this, "FetchException(" + getMessage(mode) + ')', this);
+		this.errorCodes = null;
+		this.initCause(t);
+		this.newURI = null;
+		if (logMINOR) {
+			Logger.minor(this, "FetchException(" + getMessage(this.mode) + ')', this);
+		}
 	}
 
 	public FetchException(FetchExceptionMode mode, long expectedSize, Throwable t, String expectedMimeType) {
 		super(getMessage(mode) + ": " + t.getMessage());
-		extraMessage = t.getMessage();
+		this.extraMessage = t.getMessage();
 		this.mode = mode;
 		this.expectedSize = expectedSize;
 		this.expectedMimeType = expectedMimeType;
-		errorCodes = null;
-		initCause(t);
-		newURI = null;
-		if (mode == FetchExceptionMode.INTERNAL_ERROR)
+		this.errorCodes = null;
+		this.initCause(t);
+		this.newURI = null;
+		if (mode == FetchExceptionMode.INTERNAL_ERROR) {
 			Logger.error(this, "Internal error: " + this);
-		else if (logMINOR)
+		}
+		else if (logMINOR) {
 			Logger.minor(this, "FetchException(" + getMessage(mode) + ')', this);
+		}
 	}
 
 	public FetchException(FetchExceptionMode mode, FailureCodeTracker errorCodes) {
@@ -231,15 +266,17 @@ public class FetchException extends Exception implements Cloneable {
 		if (errorCodes.isEmpty()) {
 			Logger.error(this, "Failing with no error codes?!", new Exception("error"));
 		}
-		extraMessage = null;
+		this.extraMessage = null;
 		this.mode = mode;
 		this.errorCodes = errorCodes;
-		newURI = null;
-		expectedSize = -1;
-		if (mode == FetchExceptionMode.INTERNAL_ERROR)
+		this.newURI = null;
+		this.expectedSize = -1;
+		if (mode == FetchExceptionMode.INTERNAL_ERROR) {
 			Logger.error(this, "Internal error: " + this);
-		else if (logMINOR)
+		}
+		else if (logMINOR) {
 			Logger.minor(this, "FetchException(" + getMessage(mode) + ')', this);
+		}
 	}
 
 	public FetchException(FetchExceptionMode mode, FailureCodeTracker errorCodes, String msg) {
@@ -247,58 +284,66 @@ public class FetchException extends Exception implements Cloneable {
 		if (errorCodes.isEmpty()) {
 			Logger.error(this, "Failing with no error codes?!", new Exception("error"));
 		}
-		extraMessage = msg;
+		this.extraMessage = msg;
 		this.mode = mode;
 		this.errorCodes = errorCodes;
-		newURI = null;
-		expectedSize = -1;
-		if (mode == FetchExceptionMode.INTERNAL_ERROR)
+		this.newURI = null;
+		this.expectedSize = -1;
+		if (mode == FetchExceptionMode.INTERNAL_ERROR) {
 			Logger.error(this, "Internal error: " + this);
-		else if (logMINOR)
+		}
+		else if (logMINOR) {
 			Logger.minor(this, "FetchException(" + getMessage(mode) + ')', this);
+		}
 	}
 
 	public FetchException(FetchExceptionMode mode, String msg) {
 		super(getMessage(mode) + ": " + msg);
-		extraMessage = msg;
-		errorCodes = null;
+		this.extraMessage = msg;
+		this.errorCodes = null;
 		this.mode = mode;
-		newURI = null;
-		expectedSize = -1;
-		if (mode == FetchExceptionMode.INTERNAL_ERROR)
+		this.newURI = null;
+		this.expectedSize = -1;
+		if (mode == FetchExceptionMode.INTERNAL_ERROR) {
 			Logger.error(this, "Internal error: " + this);
-		else if (logMINOR)
+		}
+		else if (logMINOR) {
 			Logger.minor(this, "FetchException(" + getMessage(mode) + ')', this);
+		}
 	}
 
 	public FetchException(FetchExceptionMode mode, FreenetURI newURI) {
 		super(getMessage(mode));
-		extraMessage = null;
+		this.extraMessage = null;
 		this.mode = mode;
-		errorCodes = null;
+		this.errorCodes = null;
 		this.newURI = newURI;
-		expectedSize = -1;
-		if (mode == FetchExceptionMode.INTERNAL_ERROR)
+		this.expectedSize = -1;
+		if (mode == FetchExceptionMode.INTERNAL_ERROR) {
 			Logger.error(this, "Internal error: " + this);
-		else if (logMINOR)
+		}
+		else if (logMINOR) {
 			Logger.minor(this, "FetchException(" + getMessage(mode) + ')', this);
+		}
 	}
 
 	public FetchException(FetchExceptionMode mode, String msg, FreenetURI uri) {
 		super(getMessage(mode) + ": " + msg);
-		extraMessage = msg;
-		errorCodes = null;
+		this.extraMessage = msg;
+		this.errorCodes = null;
 		this.mode = mode;
-		newURI = uri;
-		expectedSize = -1;
-		if (mode == FetchExceptionMode.INTERNAL_ERROR)
+		this.newURI = uri;
+		this.expectedSize = -1;
+		if (mode == FetchExceptionMode.INTERNAL_ERROR) {
 			Logger.error(this, "Internal error: " + this);
-		else if (logMINOR)
+		}
+		else if (logMINOR) {
 			Logger.minor(this, "FetchException(" + getMessage(mode) + ')', this);
+		}
 	}
 
 	public FetchException(FetchException e, FetchExceptionMode newMode) {
-		super(getMessage(newMode) + (e.extraMessage != null ? ": " + e.extraMessage : ""));
+		super(getMessage(newMode) + ((e.extraMessage != null) ? ": " + e.extraMessage : ""));
 		this.mode = newMode;
 		this.newURI = e.newURI;
 		this.errorCodes = e.errorCodes;
@@ -306,16 +351,19 @@ public class FetchException extends Exception implements Cloneable {
 		this.expectedSize = e.expectedSize;
 		this.extraMessage = e.extraMessage;
 		this.finalizedSizeAndMimeType = e.finalizedSizeAndMimeType;
-		if (mode == FetchExceptionMode.INTERNAL_ERROR)
+		if (this.mode == FetchExceptionMode.INTERNAL_ERROR) {
 			Logger.error(this, "Internal error: " + this);
-		else if (logMINOR)
-			Logger.minor(this, "FetchException(" + getMessage(mode) + ')', this);
+		}
+		else if (logMINOR) {
+			Logger.minor(this, "FetchException(" + getMessage(this.mode) + ')', this);
+		}
 	}
 
 	public FetchException(FetchException e, FreenetURI uri) {
 		super(e.getMessage());
-		if (e.getCause() != null)
-			initCause(e.getCause());
+		if (e.getCause() != null) {
+			this.initCause(e.getCause());
+		}
 		this.mode = e.mode;
 		this.newURI = uri;
 		this.errorCodes = e.errorCodes;
@@ -323,42 +371,48 @@ public class FetchException extends Exception implements Cloneable {
 		this.expectedSize = e.expectedSize;
 		this.extraMessage = e.extraMessage;
 		this.finalizedSizeAndMimeType = e.finalizedSizeAndMimeType;
-		if (mode == FetchExceptionMode.INTERNAL_ERROR)
+		if (this.mode == FetchExceptionMode.INTERNAL_ERROR) {
 			Logger.error(this, "Internal error: " + this);
-		else if (logMINOR)
-			Logger.minor(this, "FetchException(" + getMessage(mode) + ')', this);
+		}
+		else if (logMINOR) {
+			Logger.minor(this, "FetchException(" + getMessage(this.mode) + ')', this);
+		}
 	}
 
 	public FetchException(FetchException e) {
 		super(e.getMessage());
-		initCause(e);
+		this.initCause(e);
 		this.mode = e.mode;
 		this.newURI = e.newURI;
-		this.errorCodes = e.errorCodes == null ? null : e.errorCodes.clone();
+		this.errorCodes = (e.errorCodes != null) ? e.errorCodes.clone() : null;
 		this.expectedMimeType = e.expectedMimeType;
 		this.expectedSize = e.expectedSize;
 		this.extraMessage = e.extraMessage;
 		this.finalizedSizeAndMimeType = e.finalizedSizeAndMimeType;
-		if (mode == FetchExceptionMode.INTERNAL_ERROR)
+		if (this.mode == FetchExceptionMode.INTERNAL_ERROR) {
 			Logger.error(this, "Internal error: " + this);
-		else if (logMINOR)
-			Logger.minor(this, "FetchException(" + getMessage(mode) + ')', this);
+		}
+		else if (logMINOR) {
+			Logger.minor(this, "FetchException(" + getMessage(this.mode) + ')', this);
+		}
 	}
 
 	protected FetchException() {
 		// For serialization.
-		mode = null;
-		newURI = null;
-		errorCodes = null;
-		extraMessage = null;
+		this.mode = null;
+		this.newURI = null;
+		this.errorCodes = null;
+		this.extraMessage = null;
 	}
 
 	/** Get the short name of this exception's failure. */
 	public String getShortMessage() {
-		if (getCause() == null)
-			return getShortMessage(mode);
-		else
-			return getCause().toString();
+		if (this.getCause() == null) {
+			return getShortMessage(this.mode);
+		}
+		else {
+			return this.getCause().toString();
+		}
 	}
 
 	/** Get the (localised) short name of this failure mode. */
@@ -366,56 +420,50 @@ public class FetchException extends Exception implements Cloneable {
 		// FIXME change the l10n to use the names rather than codes
 		int code = mode.code;
 		String ret = NodeL10n.getBase().getString("FetchException.shortError." + code);
-		if (ret == null || ret.equals(""))
+		if (ret == null || ret.equals("")) {
 			return "Unknown code " + mode;
-		else
+		}
+		else {
 			return ret;
+		}
 	}
 
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder(200);
-		sb.append("FetchException:");
-		sb.append(getMessage(mode));
-		sb.append(':');
-		sb.append(newURI);
-		sb.append(':');
-		sb.append(expectedSize);
-		sb.append(':');
-		sb.append(expectedMimeType);
-		sb.append(':');
-		sb.append(finalizedSizeAndMimeType);
-		sb.append(':');
-		sb.append(errorCodes);
-		sb.append(':');
-		sb.append(extraMessage);
-		return sb.toString();
+		return "FetchException:" + getMessage(this.mode) + ':' + this.newURI + ':' + this.expectedSize + ':'
+				+ this.expectedMimeType + ':' + this.finalizedSizeAndMimeType + ':' + this.errorCodes + ':'
+				+ this.extraMessage;
 	}
 
 	public String toUserFriendlyString() {
-		if (extraMessage == null)
-			return getShortMessage(mode);
-		else
-			return getShortMessage(mode) + " : " + extraMessage;
+		if (this.extraMessage == null) {
+			return getShortMessage(this.mode);
+		}
+		else {
+			return getShortMessage(this.mode) + " : " + this.extraMessage;
+		}
 	}
 
 	/** Get the (localised) long explanation for this failure mode. */
 	public static String getMessage(FetchExceptionMode mode) {
-		if (mode == null)
+		if (mode == null) {
 			throw new NullPointerException();
+		}
 		int code = mode.code;
 		// FIXME change the l10n to use the names rather than codes
 		String ret = NodeL10n.getBase().getString("FetchException.longError." + code);
-		if (ret == null)
+		if (ret == null) {
 			return "Unknown fetch error code: " + mode;
-		else
+		}
+		else {
 			return ret;
+		}
 	}
 
-	private static final HashMap<Integer, FetchExceptionMode> modes = new HashMap<Integer, FetchExceptionMode>();
+	private static final HashMap<Integer, FetchExceptionMode> modes = new HashMap<>();
 
 	// Modes should stay the same even if we remove some elements.
-	public static enum FetchExceptionMode {
+	public enum FetchExceptionMode {
 
 		// FIXME many of these are not used any more
 
@@ -523,18 +571,22 @@ public class FetchException extends Exception implements Cloneable {
 
 		FetchExceptionMode(int code) {
 			this.code = code;
-			if (code < 0 || code >= UPPER_LIMIT_ERROR_CODE)
+			if (code < 0 || code >= UPPER_LIMIT_ERROR_CODE) {
 				throw new IllegalArgumentException();
-			if (modes.containsKey(code))
+			}
+			if (modes.containsKey(code)) {
 				throw new IllegalArgumentException();
+			}
 			modes.put(code, this);
-			if (code > MAX_ERROR_CODE)
+			if (code > MAX_ERROR_CODE) {
 				MAX_ERROR_CODE = code;
+			}
 		}
 
 		public static FetchExceptionMode getByCode(int code) {
-			if (modes.get(code) == null)
+			if (modes.get(code) == null) {
 				throw new IllegalArgumentException();
+			}
 			return modes.get(code);
 		}
 
@@ -550,140 +602,140 @@ public class FetchException extends Exception implements Cloneable {
 
 	/** Is an error fatal i.e. is there no point retrying? */
 	public boolean isFatal() {
-		return isFatal(mode);
+		return isFatal(this.mode);
 	}
 
 	/** Is an error mode fatal i.e. is there no point retrying? */
 	public static boolean isFatal(FetchExceptionMode mode) {
 		switch (mode) {
-		// Problems with the data as inserted, or the URI given. No point retrying.
-		case ARCHIVE_FAILURE:
-		case BLOCK_DECODE_ERROR:
-		case TOO_MANY_PATH_COMPONENTS:
-		case NOT_ENOUGH_PATH_COMPONENTS:
-		case INVALID_METADATA:
-		case NOT_IN_ARCHIVE:
-		case TOO_DEEP_ARCHIVE_RECURSION:
-		case TOO_MANY_ARCHIVE_RESTARTS:
-		case TOO_MANY_METADATA_LEVELS:
-		case TOO_MANY_REDIRECTS:
-		case TOO_MUCH_RECURSION:
-		case UNKNOWN_METADATA:
-		case UNKNOWN_SPLITFILE_METADATA:
-		case INVALID_URI:
-		case TOO_BIG:
-		case TOO_BIG_METADATA:
-		case TOO_MANY_BLOCKS_PER_SEGMENT:
-		case CONTENT_HASH_FAILED:
-		case SPLITFILE_DECODE_ERROR:
-			return true;
+			// Problems with the data as inserted, or the URI given. No point retrying.
+			case ARCHIVE_FAILURE:
+			case BLOCK_DECODE_ERROR:
+			case TOO_MANY_PATH_COMPONENTS:
+			case NOT_ENOUGH_PATH_COMPONENTS:
+			case INVALID_METADATA:
+			case NOT_IN_ARCHIVE:
+			case TOO_DEEP_ARCHIVE_RECURSION:
+			case TOO_MANY_ARCHIVE_RESTARTS:
+			case TOO_MANY_METADATA_LEVELS:
+			case TOO_MANY_REDIRECTS:
+			case TOO_MUCH_RECURSION:
+			case UNKNOWN_METADATA:
+			case UNKNOWN_SPLITFILE_METADATA:
+			case INVALID_URI:
+			case TOO_BIG:
+			case TOO_BIG_METADATA:
+			case TOO_MANY_BLOCKS_PER_SEGMENT:
+			case CONTENT_HASH_FAILED:
+			case SPLITFILE_DECODE_ERROR:
+				return true;
 
-		// Low level errors, can be retried
-		case DATA_NOT_FOUND:
-		case ROUTE_NOT_FOUND:
-		case REJECTED_OVERLOAD:
-		case TRANSFER_FAILED:
-		case ALL_DATA_NOT_FOUND:
-		case RECENTLY_FAILED: // wait a bit, but fine
-			// Not usually fatal
-		case SPLITFILE_ERROR:
-			return false;
+			// Low level errors, can be retried
+			case DATA_NOT_FOUND:
+			case ROUTE_NOT_FOUND:
+			case REJECTED_OVERLOAD:
+			case TRANSFER_FAILED:
+			case ALL_DATA_NOT_FOUND:
+			case RECENTLY_FAILED: // wait a bit, but fine
+				// Not usually fatal
+			case SPLITFILE_ERROR:
+				return false;
 
-		case BUCKET_ERROR:
-		case INTERNAL_ERROR:
-		case NOT_ENOUGH_DISK_SPACE:
-			// No point retrying.
-			return true;
+			case BUCKET_ERROR:
+			case INTERNAL_ERROR:
+			case NOT_ENOUGH_DISK_SPACE:
+				// No point retrying.
+				return true;
 
-		// The ContentFilter failed to validate the data. Retrying won't fix this.
-		case CONTENT_VALIDATION_FAILED:
-		case CONTENT_VALIDATION_UNKNOWN_MIME:
-		case CONTENT_VALIDATION_BAD_MIME:
-		case MIME_INCOMPATIBLE_WITH_EXTENSION:
-			return true;
+			// The ContentFilter failed to validate the data. Retrying won't fix this.
+			case CONTENT_VALIDATION_FAILED:
+			case CONTENT_VALIDATION_UNKNOWN_MIME:
+			case CONTENT_VALIDATION_BAD_MIME:
+			case MIME_INCOMPATIBLE_WITH_EXTENSION:
+				return true;
 
-		// Wierd ones
-		case CANCELLED:
-		case ARCHIVE_RESTART:
-		case PERMANENT_REDIRECT:
-		case WRONG_MIME_TYPE:
-			// Fatal
-			return true;
+			// Wierd ones
+			case CANCELLED:
+			case ARCHIVE_RESTART:
+			case PERMANENT_REDIRECT:
+			case WRONG_MIME_TYPE:
+				// Fatal
+				return true;
 
-		default:
-			Logger.error(FetchException.class, "Do not know if error code is fatal: " + getMessage(mode));
-			return false; // assume it isn't
+			default:
+				Logger.error(FetchException.class, "Do not know if error code is fatal: " + getMessage(mode));
+				return false; // assume it isn't
 		}
 	}
 
 	public boolean isDefinitelyFatal() {
-		return isDefinitelyFatal(mode);
+		return isDefinitelyFatal(this.mode);
 	}
 
 	public static boolean isDefinitelyFatal(FetchExceptionMode mode) {
 		switch (mode) {
-		// Problems with the data as inserted, or the URI given. No point retrying.
-		case ARCHIVE_FAILURE:
-		case BLOCK_DECODE_ERROR:
-		case TOO_MANY_PATH_COMPONENTS:
-		case NOT_ENOUGH_PATH_COMPONENTS:
-		case INVALID_METADATA:
-		case NOT_IN_ARCHIVE:
-		case TOO_DEEP_ARCHIVE_RECURSION:
-		case TOO_MANY_ARCHIVE_RESTARTS:
-		case TOO_MANY_METADATA_LEVELS:
-		case TOO_MANY_REDIRECTS:
-		case TOO_MUCH_RECURSION:
-		case UNKNOWN_METADATA:
-		case UNKNOWN_SPLITFILE_METADATA:
-		case INVALID_URI:
-		case TOO_BIG:
-		case TOO_BIG_METADATA:
-		case TOO_MANY_BLOCKS_PER_SEGMENT:
-		case CONTENT_HASH_FAILED:
-		case SPLITFILE_DECODE_ERROR:
-			return true;
+			// Problems with the data as inserted, or the URI given. No point retrying.
+			case ARCHIVE_FAILURE:
+			case BLOCK_DECODE_ERROR:
+			case TOO_MANY_PATH_COMPONENTS:
+			case NOT_ENOUGH_PATH_COMPONENTS:
+			case INVALID_METADATA:
+			case NOT_IN_ARCHIVE:
+			case TOO_DEEP_ARCHIVE_RECURSION:
+			case TOO_MANY_ARCHIVE_RESTARTS:
+			case TOO_MANY_METADATA_LEVELS:
+			case TOO_MANY_REDIRECTS:
+			case TOO_MUCH_RECURSION:
+			case UNKNOWN_METADATA:
+			case UNKNOWN_SPLITFILE_METADATA:
+			case INVALID_URI:
+			case TOO_BIG:
+			case TOO_BIG_METADATA:
+			case TOO_MANY_BLOCKS_PER_SEGMENT:
+			case CONTENT_HASH_FAILED:
+			case SPLITFILE_DECODE_ERROR:
+				return true;
 
-		// Low level errors, can be retried
-		case DATA_NOT_FOUND:
-		case ROUTE_NOT_FOUND:
-		case REJECTED_OVERLOAD:
-		case TRANSFER_FAILED:
-		case ALL_DATA_NOT_FOUND:
-		case RECENTLY_FAILED: // wait a bit, but fine
-			// Not usually fatal
-		case SPLITFILE_ERROR:
-			return false;
+			// Low level errors, can be retried
+			case DATA_NOT_FOUND:
+			case ROUTE_NOT_FOUND:
+			case REJECTED_OVERLOAD:
+			case TRANSFER_FAILED:
+			case ALL_DATA_NOT_FOUND:
+			case RECENTLY_FAILED: // wait a bit, but fine
+				// Not usually fatal
+			case SPLITFILE_ERROR:
+				return false;
 
-		case BUCKET_ERROR:
-		case INTERNAL_ERROR:
-		case NOT_ENOUGH_DISK_SPACE:
-			// No point retrying.
-			// But it's not really fatal. I.e. it's not necessarily a problem with the
-			// inserted data.
-			return false;
+			case BUCKET_ERROR:
+			case INTERNAL_ERROR:
+			case NOT_ENOUGH_DISK_SPACE:
+				// No point retrying.
+				// But it's not really fatal. I.e. it's not necessarily a problem with the
+				// inserted data.
+				return false;
 
-		// The ContentFilter failed to validate the data. Retrying won't fix this.
-		case CONTENT_VALIDATION_FAILED:
-		case CONTENT_VALIDATION_UNKNOWN_MIME:
-		case CONTENT_VALIDATION_BAD_MIME:
-		case MIME_INCOMPATIBLE_WITH_EXTENSION:
-			return true;
+			// The ContentFilter failed to validate the data. Retrying won't fix this.
+			case CONTENT_VALIDATION_FAILED:
+			case CONTENT_VALIDATION_UNKNOWN_MIME:
+			case CONTENT_VALIDATION_BAD_MIME:
+			case MIME_INCOMPATIBLE_WITH_EXTENSION:
+				return true;
 
-		// Wierd ones
-		// Not necessarily a problem with the inserted data.
-		case CANCELLED:
-			return false;
+			// Wierd ones
+			// Not necessarily a problem with the inserted data.
+			case CANCELLED:
+				return false;
 
-		case ARCHIVE_RESTART:
-		case PERMANENT_REDIRECT:
-		case WRONG_MIME_TYPE:
-			// Fatal
-			return true;
+			case ARCHIVE_RESTART:
+			case PERMANENT_REDIRECT:
+			case WRONG_MIME_TYPE:
+				// Fatal
+				return true;
 
-		default:
-			Logger.error(FetchException.class, "Do not know if error code is fatal: " + getMessage(mode));
-			return false; // assume it isn't
+			default:
+				Logger.error(FetchException.class, "Do not know if error code is fatal: " + getMessage(mode));
+				return false; // assume it isn't
 		}
 	}
 
@@ -699,51 +751,28 @@ public class FetchException extends Exception implements Cloneable {
 	}
 
 	public boolean isDataFound() {
-		return isDataFound(mode, errorCodes);
+		return isDataFound(this.mode, this.errorCodes);
 	}
 
 	public static boolean isDataFound(FetchExceptionMode mode, FailureCodeTracker errorCodes) {
-		switch (mode) {
-		case TOO_DEEP_ARCHIVE_RECURSION:
-		case UNKNOWN_SPLITFILE_METADATA:
-		case TOO_MANY_REDIRECTS:
-		case UNKNOWN_METADATA:
-		case INVALID_METADATA:
-		case ARCHIVE_FAILURE:
-		case BLOCK_DECODE_ERROR:
-		case TOO_MANY_METADATA_LEVELS:
-		case TOO_MANY_ARCHIVE_RESTARTS:
-		case TOO_MUCH_RECURSION:
-		case NOT_IN_ARCHIVE:
-		case TOO_MANY_PATH_COMPONENTS:
-		case TOO_BIG:
-		case TOO_BIG_METADATA:
-		case TOO_MANY_BLOCKS_PER_SEGMENT:
-		case NOT_ENOUGH_PATH_COMPONENTS:
-		case ARCHIVE_RESTART:
-		case CONTENT_VALIDATION_FAILED:
-		case CONTENT_VALIDATION_UNKNOWN_MIME:
-		case CONTENT_VALIDATION_BAD_MIME:
-		case CONTENT_HASH_FAILED:
-		case SPLITFILE_DECODE_ERROR:
-		case NOT_ENOUGH_DISK_SPACE:
-			return true;
-		case SPLITFILE_ERROR:
-			return errorCodes.isDataFound();
-		default:
-			return false;
-		}
+		return switch (mode) {
+			case TOO_DEEP_ARCHIVE_RECURSION, UNKNOWN_SPLITFILE_METADATA, TOO_MANY_REDIRECTS, UNKNOWN_METADATA,
+					INVALID_METADATA, ARCHIVE_FAILURE, BLOCK_DECODE_ERROR, TOO_MANY_METADATA_LEVELS,
+					TOO_MANY_ARCHIVE_RESTARTS, TOO_MUCH_RECURSION, NOT_IN_ARCHIVE, TOO_MANY_PATH_COMPONENTS, TOO_BIG,
+					TOO_BIG_METADATA, TOO_MANY_BLOCKS_PER_SEGMENT, NOT_ENOUGH_PATH_COMPONENTS, ARCHIVE_RESTART,
+					CONTENT_VALIDATION_FAILED, CONTENT_VALIDATION_UNKNOWN_MIME, CONTENT_VALIDATION_BAD_MIME,
+					CONTENT_HASH_FAILED, SPLITFILE_DECODE_ERROR, NOT_ENOUGH_DISK_SPACE ->
+				true;
+			case SPLITFILE_ERROR -> errorCodes.isDataFound();
+			default -> false;
+		};
 	}
 
 	public boolean isDNF() {
-		switch (mode) {
-		case DATA_NOT_FOUND:
-		case ALL_DATA_NOT_FOUND:
-		case RECENTLY_FAILED:
-			return true;
-		default:
-			return false;
-		}
+		return switch (this.mode) {
+			case DATA_NOT_FOUND, ALL_DATA_NOT_FOUND, RECENTLY_FAILED -> true;
+			default -> false;
+		};
 	}
 
 	public static boolean isErrorCode(int code) {
