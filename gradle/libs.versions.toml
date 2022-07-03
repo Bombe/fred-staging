@@ -30,3 +30,4 @@ jna = ["jna", "jna-platform"]
 shadow = { id = "com.github.johnrengelman.shadow", version = "7.1.2" }
 jlink = { id = "org.beryx.jlink", version = "2.25.0" }
 osdetector = { id = "com.google.osdetector", version = "1.7.0" }
+taskinfo = { id = "org.barfuin.gradle.taskinfo", version = "1.4.0" }

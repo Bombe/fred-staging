@@ -1,3 +1,9 @@
 plugins {
-    id 'org.barfuin.gradle.taskinfo' version '1.4.0'
+    alias(libs.plugins.taskinfo)
 }
+
+tasks.named('wrapper') {
+    gradleVersion = "7.4.2"
+    distributionType = Wrapper.DistributionType.ALL
+}
+
