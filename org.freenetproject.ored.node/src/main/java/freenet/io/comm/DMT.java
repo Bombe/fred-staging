@@ -158,17 +158,13 @@ public final class DMT {
 
 	public static final String BEST_LOCATIONS_NOT_VISITED = "bestLocationsNotVisited";
 
-	public static final String MAIN_JAR_KEY = "mainJarKey";
-
-	public static final String EXTRA_JAR_KEY = "extraJarKey";
+	public static final String MAIN_MANIFEST_KEY = "mainManifestKey";
 
 	public static final String REVOCATION_KEY = "revocationKey";
 
 	public static final String HAVE_REVOCATION_KEY = "haveRevocationKey";
 
-	public static final String MAIN_JAR_VERSION = "mainJarVersion";
-
-	public static final String EXTRA_JAR_VERSION = "extJarVersion";
+	public static final String MAIN_MANIFEST_VERSION = "mainManifestVersion";
 
 	public static final String REVOCATION_KEY_TIME_LAST_TRIED = "revocationKeyTimeLastTried";
 
@@ -176,9 +172,7 @@ public final class DMT {
 
 	public static final String REVOCATION_KEY_FILE_LENGTH = "revocationKeyFileLength";
 
-	public static final String MAIN_JAR_FILE_LENGTH = "mainJarFileLength";
-
-	public static final String EXTRA_JAR_FILE_LENGTH = "extraJarFileLength";
+	public static final String MAIN_MANIFEST_FILE_LENGTH = "mainManifestFileLength";
 
 	public static final String PING_TIME = "pingTime";
 
@@ -1808,74 +1802,81 @@ public final class DMT {
 	}
 
 	// Update over mandatory. Not strictly part of FNP. Only goes between nodes at the
-	// link
-	// level, and will be sent, and parsed, even if the node is out of date. Should be
-	// stable
-	// long-term.
+	// link level, and will be sent, and parsed, even if the node is out of date. Should
+	// be stable long-term.
 
-	public static final MessageType UOMAnnouncement = new MessageType("UOMAnnouncement", PRIORITY_LOW) {
+	// Ored only. Jar related message types are all removed. The name of message types is
+	// different from Freenet's to avoid conflicts.
+
+	// Was UOMAnnouncement in Freenet.
+	public static final MessageType UOMAnnounceManifest = new MessageType("UOMAnnounceManifest", PRIORITY_LOW) {
 		{
-			this.addField(MAIN_JAR_KEY, String.class);
+			this.addField(MAIN_MANIFEST_KEY, String.class);
 			this.addField(REVOCATION_KEY, String.class);
 			this.addField(HAVE_REVOCATION_KEY, Boolean.class);
-			this.addField(MAIN_JAR_VERSION, Long.class);
+			this.addField(MAIN_MANIFEST_VERSION, Long.class);
 			// Last time (ms ago) we had 3 DNFs in a row on the revocation checker.
 			this.addField(REVOCATION_KEY_TIME_LAST_TRIED, Long.class);
 			// Number of DNFs so far this time.
 			this.addField(REVOCATION_KEY_DNF_COUNT, Integer.class);
 			// For convenience, may change
 			this.addField(REVOCATION_KEY_FILE_LENGTH, Long.class);
-			this.addField(MAIN_JAR_FILE_LENGTH, Long.class);
+			this.addField(MAIN_MANIFEST_FILE_LENGTH, Long.class);
 			this.addField(PING_TIME, Integer.class);
 			this.addField(BWLIMIT_DELAY_TIME, Integer.class);
 		}
 	};
 
-	public static Message createUOMAnnouncement(String mainKey, String revocationKey, boolean haveRevocation,
-			long mainJarVersion, long timeLastTriedRevocationFetch, int revocationDNFCount, long revocationKeyLength,
-			long mainJarLength, int pingTime, int bwlimitDelayTime) {
-		Message msg = new Message(UOMAnnouncement);
+	public static Message createUOMAnnounceManifest(String mainKey, String revocationKey, boolean haveRevocation,
+			long mainManifestVersion, long timeLastTriedRevocationFetch, int revocationDNFCount,
+			long revocationKeyLength, long mainManifestLength, int pingTime, int bwlimitDelayTime) {
+		Message msg = new Message(UOMAnnounceManifest);
 
-		msg.set(MAIN_JAR_KEY, mainKey);
+		msg.set(MAIN_MANIFEST_KEY, mainKey);
 		msg.set(REVOCATION_KEY, revocationKey);
 		msg.set(HAVE_REVOCATION_KEY, haveRevocation);
-		msg.set(MAIN_JAR_VERSION, mainJarVersion);
+		msg.set(MAIN_MANIFEST_VERSION, mainManifestVersion);
 		msg.set(REVOCATION_KEY_TIME_LAST_TRIED, timeLastTriedRevocationFetch);
 		msg.set(REVOCATION_KEY_DNF_COUNT, revocationDNFCount);
 		msg.set(REVOCATION_KEY_FILE_LENGTH, revocationKeyLength);
-		msg.set(MAIN_JAR_FILE_LENGTH, mainJarLength);
+		msg.set(MAIN_MANIFEST_FILE_LENGTH, mainManifestLength);
 		msg.set(PING_TIME, pingTime);
 		msg.set(BWLIMIT_DELAY_TIME, bwlimitDelayTime);
 
 		return msg;
 	}
 
-	public static final MessageType UOMRequestRevocation = new MessageType("UOMRequestRevocation", PRIORITY_HIGH) {
+	// Was UOMRequestRevocation in Freenet.
+	public static final MessageType UOMRequestRevocationManifest = new MessageType("UOMRequestRevocationManifest",
+			PRIORITY_HIGH) {
 		{
 			this.addField(UID, Long.class);
 		}
 	};
 
-	public static Message createUOMRequestRevocation(long uid) {
-		Message msg = new Message(UOMRequestRevocation);
+	public static Message createUOMRequestRevocationManifest(long uid) {
+		Message msg = new Message(UOMRequestRevocationManifest);
 		msg.set(UID, uid);
 		return msg;
 	}
 
+	// Was UOMRequestMainJar in Freenet.
 	// Used by new UOM.
-	public static final MessageType UOMRequestMainJar = new MessageType("UOMRequestMainJar", PRIORITY_LOW) {
+	public static final MessageType UOMRequestManifest = new MessageType("UOMRequestManifest", PRIORITY_LOW) {
 		{
 			this.addField(UID, Long.class);
 		}
 	};
 
-	public static Message createUOMRequestMainJar(long uid) {
-		Message msg = new Message(UOMRequestMainJar);
+	public static Message createUOMRequestManifest(long uid) {
+		Message msg = new Message(UOMRequestManifest);
 		msg.set(UID, uid);
 		return msg;
 	}
 
-	public static final MessageType UOMSendingRevocation = new MessageType("UOMSendingRevocation", PRIORITY_HIGH) {
+	// Was UOMSendingRevocation in Freenet.
+	public static final MessageType UOMSendingRevocationManifest = new MessageType("UOMSendingRevocationManifest",
+			PRIORITY_HIGH) {
 		{
 			this.addField(UID, Long.class);
 			// Probably excessive, but lengths are always long's, and wasting a few bytes
@@ -1886,40 +1887,42 @@ public final class DMT {
 		}
 	};
 
-	public static Message createUOMSendingRevocation(long uid, long length, String key) {
-		Message msg = new Message(UOMSendingRevocation);
+	public static Message createUOMSendingRevocationManifest(long uid, long length, String key) {
+		Message msg = new Message(UOMSendingRevocationManifest);
 		msg.set(UID, uid);
 		msg.set(FILE_LENGTH, length);
 		msg.set(REVOCATION_KEY, key);
 		return msg;
 	}
 
+	// Was UOMSendingMainJar in Freenet.
 	// Used by new UOM. We need to distinguish them in NodeDispatcher.
-	public static final MessageType UOMSendingMainJar = new MessageType("UOMSendingMainJar", PRIORITY_LOW) {
+	public static final MessageType UOMSendingManifest = new MessageType("UOMSendingManifest", PRIORITY_LOW) {
 		{
 			this.addField(UID, Long.class);
 			this.addField(FILE_LENGTH, Long.class);
-			this.addField(MAIN_JAR_KEY, String.class);
-			this.addField(MAIN_JAR_VERSION, Integer.class);
+			this.addField(MAIN_MANIFEST_KEY, String.class);
+			this.addField(MAIN_MANIFEST_VERSION, Integer.class);
 		}
 	};
 
-	public static Message createUOMSendingMainJar(long uid, long length, String key, int version) {
-		Message msg = new Message(UOMSendingMainJar);
+	public static Message createUOMSendingManifest(long uid, long length, String key, int version) {
+		Message msg = new Message(UOMSendingManifest);
 		msg.set(UID, uid);
 		msg.set(FILE_LENGTH, length);
-		msg.set(MAIN_JAR_KEY, key);
-		msg.set(MAIN_JAR_VERSION, version);
+		msg.set(MAIN_MANIFEST_KEY, key);
+		msg.set(MAIN_MANIFEST_VERSION, version);
 		return msg;
 	}
 
 	/**
-	 * Used to fetch a file required for deploying an update. The client knows both the
-	 * size and hash of the file. If we don't want to send the data we should send an
-	 * FNPBulkReceiveAborted, otherwise we just send the data as a BulkTransmitter
-	 * transfer.
+	 * Used to fetch an installation package file required for deploying an update. The
+	 * client knows both the size and hash of the file. If we don't want to send the data
+	 * we should send an FNPBulkReceiveAborted, otherwise we just send the data as a
+	 * BulkTransmitter transfer.
 	 */
-	public static final MessageType UOMFetchDependency = new MessageType("UOMFetchDependency", PRIORITY_LOW) {
+	// Was UOMFetchDependency in Freenet.
+	public static final MessageType UOMFetchPackage = new MessageType("UOMFetchPackage", PRIORITY_LOW) {
 		{
 			this.addField(UID, Long.class); // This will be used for the transfer.
 			this.addField(EXPECTED_HASH, ShortBuffer.class); // Fetch by hash
@@ -1927,8 +1930,8 @@ public final class DMT {
 		}
 	};
 
-	public static Message createUOMFetchDependency(long uid, byte[] hash, long length) {
-		Message msg = new Message(UOMFetchDependency);
+	public static Message createUOMFetchPackage(long uid, byte[] hash, long length) {
+		Message msg = new Message(UOMFetchPackage);
 		msg.set(UID, uid);
 		msg.set(EXPECTED_HASH, new ShortBuffer(hash));
 		msg.set(FILE_LENGTH, length);

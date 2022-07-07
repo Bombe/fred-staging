@@ -15,6 +15,7 @@ dependencies {
     implementation project(path: ':org.freenetproject.ext', configuration: 'shadow')
 
     implementation libs.bundles.jna
+    implementation libs.eventbus
     implementation(libs.appdirs) {
         exclude group: 'net.java.dev.jna', module: 'jna-platform'
     }

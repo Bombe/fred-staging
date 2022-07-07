@@ -16,8 +16,11 @@ module org.freenetproject.ored.node {
     requires com.sun.jna;
     requires com.sun.jna.platform;
     requires net.harawata.appdirs;
+    requires org.greenrobot.eventbus;
 
     exports freenet.pluginmanager;
     exports freenet.clients.http;
     exports freenet.clients.fcp;
+
+    opens freenet.node to org.greenrobot.eventbus;
 }

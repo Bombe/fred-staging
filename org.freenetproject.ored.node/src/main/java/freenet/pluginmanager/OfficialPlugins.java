@@ -1,15 +1,15 @@
 package freenet.pluginmanager;
 
-import static java.util.Collections.unmodifiableCollection;
-
 import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 import freenet.keys.FreenetURI;
-import freenet.node.updater.NodeUpdater;
+import freenet.node.updater.AbstractFileUpdater;
 import freenet.node.updater.PluginJarUpdater;
+
+import static java.util.Collections.unmodifiableCollection;
 
 /**
  * Container for Freenet’s official plugins.
@@ -281,7 +281,7 @@ public class OfficialPlugins {
 		/**
 		 * FreenetURI to get the latest version from.<br>
 		 * Typically a CHK, not USK, since updates are deployed using the main Freenet USK
-		 * of {@link NodeUpdater}'s subclass {@link PluginJarUpdater}.<br>
+		 * of {@link AbstractFileUpdater}'s subclass {@link PluginJarUpdater}.<br>
 		 * <br>
 		 *
 		 * To allow people to insert plugin updates without giving them write access to
@@ -299,9 +299,10 @@ public class OfficialPlugins {
 		 * USK supports live updates; and also there is no revocation mechanism for the
 		 * USKs. Instead of using USKs here, a CHK should be preferred, and new plugin
 		 * versions then should be inserted at the main Freenet update USK of the the
-		 * {@link NodeUpdater}. A typical usecase for nevertheless using an USK here is to
-		 * allow individual plugin developers to push testing versions of their plugin on
-		 * their own without giving them write-access to the main Freenet update USK.
+		 * {@link AbstractFileUpdater}. A typical usecase for nevertheless using an USK
+		 * here is to allow individual plugin developers to push testing versions of their
+		 * plugin on their own without giving them write-access to the main Freenet update
+		 * USK.
 		 */
 		public final FreenetURI uri;
 

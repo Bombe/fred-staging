@@ -26,7 +26,7 @@ import java.io.File;
 public enum NodeFile {
 
 	Seednodes(InstallDirectory.Node, "seednodes.fref"),
-	InstallerWindows(InstallDirectory.Run, "freenet-latest-installer-windows.exe"),
+	InstallerWindows(InstallDirectory.Run, "ored-latest-installer-windows.msi"),
 	InstallerNonWindows(InstallDirectory.Run, "freenet-latest-installer-nonwindows.jar"),
 	IPv4ToCountry(InstallDirectory.Run, "IpToCountry.dat");
 

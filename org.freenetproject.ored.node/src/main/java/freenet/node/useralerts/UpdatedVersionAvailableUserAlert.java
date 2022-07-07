@@ -10,8 +10,8 @@ import freenet.l10n.NodeL10n;
 import freenet.node.Node;
 import freenet.node.updater.NodeUpdateManager;
 import freenet.node.updater.RevocationChecker;
-import freenet.support.HTMLNode;
 import freenet.nodelogger.Logger;
+import freenet.support.HTMLNode;
 import freenet.support.TimeUtil;
 
 public class UpdatedVersionAvailableUserAlert extends BaseNodeUserAlert {
@@ -106,7 +106,7 @@ public class UpdatedVersionAvailableUserAlert extends BaseNodeUserAlert {
 
 		int version;
 		if (updater.hasNewMainJar()) {
-			version = updater.newMainJarVersion();
+			version = updater.newManifestVersion();
 		}
 		else if (updater.fetchingNewMainJar()) {
 			version = updater.fetchingNewMainJarVersion();
@@ -142,7 +142,7 @@ public class UpdatedVersionAvailableUserAlert extends BaseNodeUserAlert {
 			String formText;
 			if (updater.canUpdateNow()) {
 				if (updater.hasNewMainJar()) {
-					sb.append(l10n("downloadedNewJar", "version", Integer.toString(updater.newMainJarVersion())));
+					sb.append(l10n("downloadedNewJar", "version", Integer.toString(updater.newManifestVersion())));
 					sb.append(' ');
 				}
 				if (updater.canUpdateImmediately()) {
@@ -176,7 +176,7 @@ public class UpdatedVersionAvailableUserAlert extends BaseNodeUserAlert {
 
 			if (updater.brokenDependencies()) {
 				sb.append(" ");
-				sb.append(l10n("brokenDependencies", "version", Integer.toString(updater.newMainJarVersion())));
+				sb.append(l10n("brokenDependencies", "version", Integer.toString(updater.newManifestVersion())));
 			}
 
 			return new UpdateThingy(sb.toString(), formText);

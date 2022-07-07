@@ -246,24 +246,24 @@ public class NodeDispatcher implements Dispatcher, Runnable {
 			this.node.receivedNodeToNodeMessage(m, source);
 			return true;
 		}
-		else if (spec == DMT.UOMAnnouncement && source.isRealConnection()) {
-			return this.node.nodeUpdater.uom.handleAnnounce(m, source);
+		else if (spec == DMT.UOMAnnounceManifest && source.isRealConnection()) {
+			return this.node.nodeUpdater.uom.handleAnnounceManifest(m, source);
 		}
-		else if (spec == DMT.UOMRequestRevocation && source.isRealConnection()) {
-			return this.node.nodeUpdater.uom.handleRequestRevocation(m, source);
+		else if (spec == DMT.UOMRequestRevocationManifest && source.isRealConnection()) {
+			return this.node.nodeUpdater.uom.handleRequestRevocationManifest(m, source);
 		}
-		else if (spec == DMT.UOMSendingRevocation && source.isRealConnection()) {
-			return this.node.nodeUpdater.uom.handleSendingRevocation(m, source);
+		else if (spec == DMT.UOMSendingRevocationManifest && source.isRealConnection()) {
+			return this.node.nodeUpdater.uom.handleSendingRevocationManifest(m, source);
 		}
-		else if (spec == DMT.UOMRequestMainJar && this.node.nodeUpdater.isEnabled() && source.isRealConnection()) {
-			this.node.nodeUpdater.uom.handleRequestJar(m, source);
+		else if (spec == DMT.UOMRequestManifest && this.node.nodeUpdater.isEnabled() && source.isRealConnection()) {
+			this.node.nodeUpdater.uom.handleRequestManifest(m, source);
 			return true;
 		}
-		else if (spec == DMT.UOMSendingMainJar && this.node.nodeUpdater.isEnabled() && source.isRealConnection()) {
-			return this.node.nodeUpdater.uom.handleSendingMain(m, source);
+		else if (spec == DMT.UOMSendingManifest && this.node.nodeUpdater.isEnabled() && source.isRealConnection()) {
+			return this.node.nodeUpdater.uom.handleSendingManifest(m, source);
 		}
-		else if (spec == DMT.UOMFetchDependency && this.node.nodeUpdater.isEnabled() && source.isRealConnection()) {
-			this.node.nodeUpdater.uom.handleFetchDependency(m, source);
+		else if (spec == DMT.UOMFetchPackage && this.node.nodeUpdater.isEnabled() && source.isRealConnection()) {
+			this.node.nodeUpdater.uom.handleFetchPackage(m, source);
 			return true;
 		}
 		else if (spec == DMT.FNPOpennetAnnounceRequest) {

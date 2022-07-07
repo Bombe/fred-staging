@@ -82,6 +82,8 @@ import freenet.keys.ClientSSK;
 import freenet.keys.FreenetURI;
 import freenet.keys.Key;
 import freenet.keys.USK;
+import freenet.node.event.DiffNoderefProcessedEvent;
+import freenet.node.event.EventBus;
 import freenet.node.math.TimeDecayingRunningAverage;
 import freenet.nodelogger.Logger;
 import freenet.support.Base64;
@@ -2410,7 +2412,7 @@ public abstract class PeerNode implements USKRetrieverCallback, BasePeerNode, Pe
 				// sent as
 				// connection initial messages by maybeOnConnect().
 				messagesTellDisconnected = this.grabQueuedMessageItems();
-				this.offeredMainJarVersion = 0;
+				this.offeredManifestVersion = 0;
 				oldPacketFormat = this.packetFormat;
 				this.packetFormat = null;
 			} // else it's a rekey
@@ -2715,10 +2717,7 @@ public abstract class PeerNode implements USKRetrieverCallback, BasePeerNode, Pe
 	 */
 	public void processDiffNoderef(SimpleFieldSet fs) throws FSParseException {
 		this.processNewNoderef(fs, false, true, false);
-		// Send UOMAnnouncement only *after* we know what the other side's version.
-		if (this.isRealConnection()) {
-			this.node.nodeUpdater.maybeSendUOMAnnounce(this);
-		}
+		EventBus.get().post(new DiffNoderefProcessedEvent(this));
 	}
 
 	/**
@@ -4918,14 +4917,14 @@ public abstract class PeerNode implements USKRetrieverCallback, BasePeerNode, Pe
 		return this.countSelectionsSinceConnected / (double) timeSinceConnected;
 	}
 
-	private volatile long offeredMainJarVersion;
+	private volatile long offeredManifestVersion;
 
-	public void setMainJarOfferedVersion(long mainJarVersion) {
-		this.offeredMainJarVersion = mainJarVersion;
+	public void setManifestOfferedVersion(long mainJarVersion) {
+		this.offeredManifestVersion = mainJarVersion;
 	}
 
-	public long getMainJarOfferedVersion() {
-		return this.offeredMainJarVersion;
+	public long getManifestOfferedVersion() {
+		return this.offeredManifestVersion;
 	}
 
 	/**

@@ -1,14 +1,29 @@
-/* This code is part of Freenet. It is distributed under the GNU General
- * Public License, version 2 (or at your option any later version). See
- * http://www.gnu.org/ for further details of the GPL. */
+/*
+ * Copyright 1999-2022 The Freenet Project
+ * Copyright 2022 Marine Master
+ *
+ * This file is part of Oldenet.
+ *
+ * Oldenet is free software: you can redistribute it and/or modify it under the terms of
+ * the GNU General Public License as published by the Free Software Foundation, either
+ * version 3 of the License, or any later version.
+ *
+ * Oldenet is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with Oldenet.
+ * If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package freenet.node;
 
 import java.util.Calendar;
 import java.util.TimeZone;
 
+import freenet.nodelogger.Logger;
 import freenet.support.Fields;
 import freenet.support.LogThresholdCallback;
-import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;
 
 /**
@@ -16,7 +31,7 @@ import freenet.support.Logger.LogLevel;
  *
  * Note: when using the fields of this class, you must note that the Java compiler
  * compiles <b>constant final static</b> fields into the class definitions of classes that
- * use them. This might not be the most appropriate behaviour when, eg. creating a class
+ * use them. This might not be the most appropriate behaviour when, e.g. creating a class
  * that reports statistics.
  *
  * A final static field can be made "non-constant" in the eyes of the compiler by
@@ -31,10 +46,13 @@ import freenet.support.Logger.LogLevel;
  * this.
  *
  */
-public class Version {
+public final class Version {
 
-	/** FReenet Reference Daemon */
-	public static final String nodeName = "Fred";
+	private Version() {
+	}
+
+	/** Oldenet Reference Daemon */
+	public static final String nodeName = "Ored";
 
 	/**
 	 * The current tree version. FIXME: This is part of the node compatibility
@@ -46,13 +64,16 @@ public class Version {
 	 * The version for publicity purposes i.e. the version of the node that has been
 	 * released.
 	 */
-	public static final String publicVersion = "0.7.5";
+	public static final String publicVersion = "1";
 
 	/** The protocol version supported */
 	public static final String protocolVersion = "1.0";
 
 	/** The build number of the current revision */
-	private static final int buildNumber = 1493;
+	private static final int buildNumber = 0;
+
+	/** The freenet build number which the current oldenet revision based on */
+	private static final int fredBuildNumber = 1493;
 
 	/** Oldest build of fred we will talk to *before* _cal */
 	private static final int oldLastGoodBuild = 1474;
@@ -71,6 +92,7 @@ public class Version {
 	private static volatile boolean logMINOR;
 
 	private static volatile boolean logDEBUG;
+
 	static {
 		Logger.registerLogThresholdCallback(new LogThresholdCallback() {
 			@Override
@@ -95,6 +117,10 @@ public class Version {
 		return buildNumber;
 	}
 
+	public static int fredBuildNumber() {
+		return fredBuildNumber;
+	}
+
 	/**
 	 * Analogous to {@link #buildNumber()} but for {@link #publicVersion}.
 	 */
@@ -114,10 +140,12 @@ public class Version {
 	 * normally.
 	 */
 	public static int lastGoodBuild() {
-		if (System.currentTimeMillis() >= transitionTime)
+		if (System.currentTimeMillis() >= transitionTime) {
 			return newLastGoodBuild;
-		else
+		}
+		else {
 			return oldLastGoodBuild;
+		}
 	}
 
 	/** The highest reported build of fred */
@@ -146,13 +174,11 @@ public class Version {
 	 * @return the node's version designators as an array
 	 */
 	public static String[] getVersion() {
-		String[] ret = { nodeName, nodeVersion, protocolVersion, String.valueOf(buildNumber) };
-		return ret;
+		return new String[] { nodeName, nodeVersion, protocolVersion, String.valueOf(buildNumber) };
 	}
 
 	public static String[] getLastGoodVersion() {
-		String[] ret = { nodeName, nodeVersion, protocolVersion, String.valueOf(lastGoodBuild()) };
-		return ret;
+		return new String[] { nodeName, nodeVersion, protocolVersion, String.valueOf(lastGoodBuild()) };
 	}
 
 	/**
@@ -177,8 +203,9 @@ public class Version {
 		if (prot.equals(protocolVersion)
 		// uncomment next line to accept stable, see also explainBadVersion() below
 		// || prot.equals(stableProtocolVersion)
-		)
+		) {
 			return true;
+		}
 		return false;
 	}
 
@@ -201,15 +228,17 @@ public class Version {
 				int build = Integer.parseInt(v[3]);
 				int req = lastGoodBuild();
 				if (build < req) {
-					if (logDEBUG)
+					if (logDEBUG) {
 						Logger.debug(Version.class,
 								"Not accepting unstable from version: " + version + "(lastGoodBuild=" + req + ')');
+					}
 					return false;
 				}
 			}
-			catch (NumberFormatException e) {
-				if (logMINOR)
-					Logger.minor(Version.class, "Not accepting (" + e + ") from " + version);
+			catch (NumberFormatException ex) {
+				if (logMINOR) {
+					Logger.minor(Version.class, "Not accepting (" + ex + ") from " + version);
+				}
 				return false;
 			}
 		}
@@ -217,19 +246,21 @@ public class Version {
 			try {
 				int build = Integer.parseInt(v[3]);
 				if (build < lastGoodStableBuild) {
-					if (logDEBUG)
+					if (logDEBUG) {
 						Logger.debug(Version.class, "Not accepting stable from version" + version
 								+ "(lastGoodStableBuild=" + lastGoodStableBuild + ')');
+					}
 					return false;
 				}
 			}
-			catch (NumberFormatException e) {
-				Logger.minor(Version.class, "Not accepting (" + e + ") from " + version);
+			catch (NumberFormatException ex) {
+				Logger.minor(Version.class, "Not accepting (" + ex + ") from " + version);
 				return false;
 			}
 		}
-		if (logDEBUG)
+		if (logDEBUG) {
 			Logger.minor(Version.class, "Accepting: " + version);
+		}
 		return true;
 	}
 
@@ -260,16 +291,18 @@ public class Version {
 				int build = Integer.parseInt(v[3]);
 				int min_build = Integer.parseInt(lgv[3]);
 				if (build < min_build) {
-					if (logDEBUG)
+					if (logDEBUG) {
 						Logger.debug(Version.class, "Not accepting unstable from version: " + version
 								+ "(lastGoodVersion=" + lastGoodVersion + ')');
+					}
 					return false;
 				}
 			}
-			catch (NumberFormatException e) {
-				if (logMINOR)
+			catch (NumberFormatException ex) {
+				if (logMINOR) {
 					Logger.minor(Version.class,
-							"Not accepting (" + e + ") from " + version + " and/or " + lastGoodVersion);
+							"Not accepting (" + ex + ") from " + version + " and/or " + lastGoodVersion);
+				}
 				return false;
 			}
 		}
@@ -277,19 +310,21 @@ public class Version {
 			try {
 				int build = Integer.parseInt(v[3]);
 				if (build < lastGoodStableBuild) {
-					if (logDEBUG)
+					if (logDEBUG) {
 						Logger.debug(Version.class, "Not accepting stable from version" + version
 								+ "(lastGoodStableBuild=" + lastGoodStableBuild + ')');
+					}
 					return false;
 				}
 			}
-			catch (NumberFormatException e) {
-				Logger.minor(Version.class, "Not accepting (" + e + ") from " + version);
+			catch (NumberFormatException ex) {
+				Logger.minor(Version.class, "Not accepting (" + ex + ") from " + version);
 				return false;
 			}
 		}
-		if (logDEBUG)
+		if (logDEBUG) {
 			Logger.minor(Version.class, "Accepting: " + version);
+		}
 		return true;
 	}
 
@@ -300,29 +335,30 @@ public class Version {
 		String[] v = Fields.commaList(version);
 
 		if ((v.length < 3) || !goodProtocol(v[2])) {
-			return "Required protocol version is " + protocolVersion
+			return "Required protocol version is " + protocolVersion;
 			// uncomment next line if accepting stable, see also goodProtocol() above
 			// + " or " + stableProtocolVersion
-			;
 		}
 		if (sameVersion(v)) {
 			try {
 				int build = Integer.parseInt(v[3]);
 				int req = lastGoodBuild();
-				if (build < req)
+				if (build < req) {
 					return "Build older than last good build " + req;
+				}
 			}
-			catch (NumberFormatException e) {
+			catch (NumberFormatException ex) {
 				return "Build number not numeric.";
 			}
 		}
 		if (stableVersion(v)) {
 			try {
 				int build = Integer.parseInt(v[3]);
-				if (build < lastGoodStableBuild)
+				if (build < lastGoodStableBuild) {
 					return "Build older than last good stable build " + lastGoodStableBuild;
+				}
 			}
-			catch (NumberFormatException e) {
+			catch (NumberFormatException ex) {
 				return "Build number not numeric.";
 			}
 		}
@@ -345,9 +381,9 @@ public class Version {
 		try {
 			return Integer.parseInt(v[3]);
 		}
-		catch (NumberFormatException e) {
+		catch (NumberFormatException ex) {
 			throw (VersionParseException) new VersionParseException(
-					"Got NumberFormatException on " + v[3] + " : " + e + " for " + version).initCause(e);
+					"Got NumberFormatException on " + v[3] + " : " + ex + " for " + version).initCause(ex);
 		}
 	}
 
@@ -355,7 +391,7 @@ public class Version {
 		try {
 			return getArbitraryBuildNumber(version);
 		}
-		catch (VersionParseException e) {
+		catch (VersionParseException ex) {
 			return defaultValue;
 		}
 	}
@@ -367,8 +403,9 @@ public class Version {
 	public static void seenVersion(String version) {
 		String[] v = Fields.commaList(version);
 
-		if ((v == null) || (v.length < 3))
+		if ((v == null) || (v.length < 3)) {
 			return; // bad, but that will be discovered elsewhere
+		}
 
 		if (sameVersion(v)) {
 
@@ -376,7 +413,7 @@ public class Version {
 			try {
 				buildNo = Integer.parseInt(v[3]);
 			}
-			catch (NumberFormatException e) {
+			catch (NumberFormatException ex) {
 				return;
 			}
 			if (buildNo > highestSeenBuild) {

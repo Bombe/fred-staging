@@ -12,14 +12,14 @@ import freenet.clients.fcp.FCPUserAlert;
 import freenet.clients.http.PproxyToadlet;
 import freenet.keys.FreenetURI;
 import freenet.l10n.NodeL10n;
-import freenet.node.useralerts.BaseNodeUserAlert;
 import freenet.node.Version;
+import freenet.node.useralerts.BaseNodeUserAlert;
+import freenet.nodelogger.Logger;
 import freenet.pluginmanager.PluginInfoWrapper;
 import freenet.pluginmanager.PluginManager;
 import freenet.support.HTMLNode;
-import freenet.nodelogger.Logger;
 
-public class PluginJarUpdater extends NodeUpdater {
+public class PluginJarUpdater extends AbstractJarUpdater {
 
 	final String pluginName;
 
@@ -96,7 +96,7 @@ public class PluginJarUpdater extends NodeUpdater {
 	}
 
 	@Override
-	public String jarName() {
+	public String fileName() {
 		return pluginName;
 	}
 
@@ -123,11 +123,14 @@ public class PluginJarUpdater extends NodeUpdater {
 
 	@Override
 	protected void onStartFetching() {
+		super.onStartFetching();
 		System.err.println("Starting to fetch plugin " + pluginName);
 	}
 
 	@Override
 	protected void processSuccess(int build, FetchResult result, File blob) {
+		super.processSuccess(build, result, blob);
+
 		Bucket oldResult = null;
 		synchronized (this) {
 			if (requiredNodeVersion > Version.buildNumber()) {
@@ -246,7 +249,7 @@ public class PluginJarUpdater extends NodeUpdater {
 		synchronized (this) {
 			writtenVersion = fetched;
 		}
-		System.err.println("Written " + jarName() + " to " + fNew);
+		System.err.println("Written " + fileName() + " to " + fNew);
 	}
 
 	void writeJar() throws IOException {
@@ -270,6 +273,11 @@ public class PluginJarUpdater extends NodeUpdater {
 		}
 		if (a != null)
 			node.clientCore.alerts.unregister(a);
+	}
+
+	@Override
+	public void cleanup() {
+
 	}
 
 	public synchronized void arm(boolean wasRunning) {

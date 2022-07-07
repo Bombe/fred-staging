@@ -49,6 +49,12 @@ extraJavaModuleInfo {
         requires 'com.sun.jna'
         requires 'com.sun.jna.platform'
     }
+
+    module('org.greenrobot:eventbus-java', 'org.greenrobot.eventbus') {
+        exports 'org.greenrobot.eventbus'
+        exports 'org.greenrobot.eventbus.util'
+        exports 'org.greenrobot.eventbus.meta'
+    }
 }
 
 test {
