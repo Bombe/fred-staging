@@ -75,6 +75,9 @@ import freenet.lockablebuffer.FileRandomAccessBuffer;
 import freenet.node.Node;
 import freenet.node.PeerNode;
 import freenet.node.Version;
+import freenet.node.event.EventBus;
+import freenet.node.event.update.UOMManifestRequestSuccessEvent;
+import freenet.node.updater.usk.ManifestUSKUpdateFileFetcher;
 import freenet.node.useralerts.BaseNodeUserAlert;
 import freenet.nodelogger.Logger;
 import freenet.support.HTMLNode;
@@ -115,53 +118,6 @@ public class UpdateOverMandatoryManager implements RequestClient {
 
 	final NodeUpdateManager updateManager;
 
-	/**
-	 * Set of PeerNode's which say (or said before they disconnected) the key has been
-	 * revoked
-	 */
-	private final HashSet<PeerNode> nodesSayKeyRevoked;
-
-	/**
-	 * Set of PeerNode's which say the key has been revoked but failed to transfer the
-	 * revocation key.
-	 */
-	private final HashSet<PeerNode> nodesSayKeyRevokedFailedTransfer;
-
-	/**
-	 * Set of PeerNode's which say the key has been revoked and are transferring the
-	 * revocation certificate.
-	 */
-	private final HashSet<PeerNode> nodesSayKeyRevokedTransferring;
-
-	/**
-	 * PeerNode's which have offered the main jar which we are not fetching it from right
-	 * now
-	 */
-	private final HashSet<PeerNode> nodesOfferedManifest;
-
-	/**
-	 * PeerNode's which have offered the ext jar which we are not fetching it from right
-	 * now
-	 */
-	private final HashSet<PeerNode> nodesAskedSendManifest;
-
-	/** PeerNode's sending us the main jar */
-	private final HashSet<PeerNode> nodesSendingManifest;
-
-	/** PeerNode's that we've successfully fetched a jar from */
-	private final HashSet<PeerNode> nodesSentMainJar;
-
-	/**
-	 * All PeerNode's that offered the main jar, regardless of what happened after that.
-	 */
-	private final HashSet<PeerNode> allNodesOfferedManifest;
-
-	// 2 for reliability, no more as gets very slow/wasteful
-	static final int MAX_NODES_SENDING_MANIFEST = 2;
-
-	/** Maximum time between asking for the manifest and it starting to transfer */
-	static final long REQUEST_MANIFEST_TIMEOUT = TimeUnit.SECONDS.toMillis(60);
-
 	// ** Grace time before we use UoM to update */
 	public static final long GRACE_TIME = TimeUnit.HOURS.toMillis(3);
 
@@ -175,13 +131,6 @@ public class UpdateOverMandatoryManager implements RequestClient {
 	private static final Pattern revocationTempBuildNumberPattern = Pattern
 			.compile("^revocation(?:-jar)?-(\\d+-)?(\\d+)\\.fblob\\.tmp*$");
 
-	/**
-	 * If we fetched the main jar locally, there is a 1 in RANDOM_INSERT_BLOB chance of
-	 * inserting it. We always insert it if we downloaded it via UOM. We always reinsert
-	 * revocations.
-	 */
-	protected static final int RANDOM_INSERT_BLOB = 10;
-
 	private boolean fetchingUOM;
 
 	private final HashMap<ShortBuffer, File> dependencies;
@@ -192,14 +141,6 @@ public class UpdateOverMandatoryManager implements RequestClient {
 
 	public UpdateOverMandatoryManager(NodeUpdateManager manager) {
 		this.updateManager = manager;
-		this.nodesSayKeyRevoked = new HashSet<>();
-		this.nodesSayKeyRevokedFailedTransfer = new HashSet<>();
-		this.nodesSayKeyRevokedTransferring = new HashSet<>();
-		this.nodesOfferedManifest = new HashSet<>();
-		this.nodesSentMainJar = new HashSet<>();
-		this.nodesAskedSendManifest = new HashSet<>();
-		this.nodesSendingManifest = new HashSet<>();
-		this.allNodesOfferedManifest = new HashSet<>();
 		this.dependencies = new HashMap<>();
 		this.peersFetchingDependencies = new WeakHashMap<>();
 		this.dependencyFetchers = new HashMap<>();
@@ -214,14 +155,14 @@ public class UpdateOverMandatoryManager implements RequestClient {
 	 */
 	public boolean handleAnnounceManifest(Message m, final PeerNode source) {
 
-		String mainManifestKey = m.getString(DMT.MAIN_MANIFEST_KEY);
+		String mainManifestKey = m.getString(DMT.UPDATE_FILE_KEY);
 		String revocationKey = m.getString(DMT.REVOCATION_KEY);
 		boolean haveRevocationKey = m.getBoolean(DMT.HAVE_REVOCATION_KEY);
-		long mainManifestVersion = m.getLong(DMT.MAIN_MANIFEST_VERSION);
+		long mainManifestVersion = m.getLong(DMT.UPDATE_FILE_VERSION);
 		long revocationKeyLastTried = m.getLong(DMT.REVOCATION_KEY_TIME_LAST_TRIED);
 		int revocationKeyDNFs = m.getInt(DMT.REVOCATION_KEY_DNF_COUNT);
 		long revocationKeyFileLength = m.getLong(DMT.REVOCATION_KEY_FILE_LENGTH);
-		long mainManifestFileLength = m.getLong(DMT.MAIN_MANIFEST_FILE_LENGTH);
+		long mainManifestFileLength = m.getLong(DMT.UPDATE_FILE_LENGTH);
 		int pingTime = m.getInt(DMT.PING_TIME);
 		int delayTime = m.getInt(DMT.BWLIMIT_DELAY_TIME);
 
@@ -425,9 +366,9 @@ public class UpdateOverMandatoryManager implements RequestClient {
 				"We received a valid UOMAnnounceManifest (main) : (isOutdated=" + isOutdated + " version="
 						+ mainManifestVersion + " whenToTakeOverTheNormalUpdater="
 						+ TimeUtil.formatTime(whenToTakeOverTheNormalUpdater - now) + ") file length "
-						+ mainManifestFileLength + " updateManager version " + this.updateManager.newManifestVersion());
+						+ mainManifestFileLength + " updateManager version " + this.updateManager.getNewVersion());
 		if (mainManifestVersion > Version.buildNumber() && mainManifestFileLength > 0
-				&& mainManifestVersion > this.updateManager.newManifestVersion()) {
+				&& mainManifestVersion > this.updateManager.getNewVersion()) {
 			source.setManifestOfferedVersion(mainManifestVersion);
 			// Offer is valid.
 			if (logMINOR) {
@@ -452,14 +393,15 @@ public class UpdateOverMandatoryManager implements RequestClient {
 				// Fetch it
 				try {
 					FreenetURI manifestURI = new FreenetURI(manifestKey).setSuggestedEdition(mainManifestVersion);
-					if (manifestURI.equals(this.updateManager.getURI().setSuggestedEdition(mainManifestVersion))) {
+					if (manifestURI
+							.equals(this.updateManager.getUpdateURI().setSuggestedEdition(mainManifestVersion))) {
 						this.sendUOMRequestManifest(source, true);
 					}
 					else {
 						// FIXME don't log if it's the transitional version.
 						System.err.println("Node " + source.userToString() + " offered us a new main jar (version "
 								+ mainManifestVersion + ") but his key was different to ours:\n" + "our key: "
-								+ this.updateManager.getURI() + "\nhis key:" + manifestURI);
+								+ this.updateManager.getUpdateURI() + "\nhis key:" + manifestURI);
 					}
 				}
 				catch (MalformedURLException ex) {
@@ -492,7 +434,7 @@ public class UpdateOverMandatoryManager implements RequestClient {
 						if (!UpdateOverMandatoryManager.this.updateManager.isEnabled()) {
 							return;
 						}
-						if (UpdateOverMandatoryManager.this.updateManager.hasNewMainJar()) {
+						if (UpdateOverMandatoryManager.this.updateManager.isHasNewFile()) {
 							return;
 						}
 						if (!UpdateOverMandatoryManager.this.updateManager.node.isOudated()) {
@@ -535,7 +477,7 @@ public class UpdateOverMandatoryManager implements RequestClient {
 		boolean wasFetchingUOM;
 		synchronized (this) {
 			long offeredVersion = source.getManifestOfferedVersion();
-			long updateVersion = this.updateManager.newManifestVersion();
+			long updateVersion = this.updateManager.getNewVersion();
 			if (offeredVersion < updateVersion) {
 				if (offeredVersion <= 0) {
 					Logger.error(this, "Not sending UOM " + lname + " request to " + source
@@ -1291,163 +1233,11 @@ public class UpdateOverMandatoryManager implements RequestClient {
 		this.updateManager.node.clientCore.alerts.unregister(this.alert);
 	}
 
-	public void handleRequestManifest(Message m, final PeerNode source) {
-		final String name = "main";
-
-		Message msg;
-		final BulkTransmitter bt;
-		final FileRandomAccessBuffer raf;
-
-		if (source.isOpennet() && this.updateManager.dontAllowUOM()) {
-			Logger.normal(this, "Peer " + source + " asked us for the blob file for " + name
-					+ "; We are a seenode, so we ignore it!");
-			return;
-		}
-		// Do we have the data?
-
-		File data = this.updateManager.getCurrentVersionBlobFile();
-		int version = Version.buildNumber();
-		FreenetURI uri = this.updateManager.getURI();
-
-		if (data == null) {
-			Logger.normal(this,
-					"Peer " + source + " asked us for the blob file for the " + name + " jar but we don't have it!");
-			// Probably a race condition on reconnect, hopefully we'll be asked again
-			return;
-		}
-
-		final long uid = m.getLong(DMT.UID);
-
-		if (!source.sendingUOMJar(false)) {
-			Logger.error(this, "Peer " + source + " asked for UOM main jar twice");
-			return;
-		}
-
-		try {
-
-			try {
-				raf = new FileRandomAccessBuffer(data, true);
-			}
-			catch (FileNotFoundException ex) {
-				Logger.error(this, "Peer " + source + " asked us for the blob file for the " + name
-						+ " jar, we have downloaded it but don't have the file even though we did have it when we checked!: "
-						+ ex, ex);
-				return;
-			}
-			catch (IOException ex) {
-				Logger.error(this,
-						"Peer " + source + " asked us for the blob file for the " + name
-								+ " jar, we have downloaded it but can't read the file due to a disk I/O error: " + ex,
-						ex);
-				return;
-			}
-
-			final PartiallyReceivedBulk prb;
-			long length;
-			length = raf.size();
-			prb = new PartiallyReceivedBulk(this.updateManager.node.getUSM(), length, Node.PACKET_SIZE, raf, true);
-
-			try {
-				bt = new BulkTransmitter(prb, source, uid, false, this.updateManager.ctr, true);
-			}
-			catch (DisconnectedException ex) {
-				Logger.error(this, "Peer " + source + " asked us for the blob file for the " + name
-						+ " jar, then disconnected: " + ex, ex);
-				raf.close();
-				return;
-			}
-
-			msg = DMT.createUOMSendingManifest(uid, length, uri.toString(), version);
-
-		}
-		catch (RuntimeException | Error ex) {
-			source.finishedSendingUOMJar(false);
-			throw ex;
-		}
-
-		final Runnable r = new Runnable() {
-
-			@Override
-			public void run() {
-				try {
-					if (!bt.send()) {
-						Logger.error(this, "Failed to send " + name + " jar blob to " + source.userToString() + " : "
-								+ bt.getCancelReason());
-					}
-					else {
-						Logger.normal(this, "Sent " + name + " jar blob to " + source.userToString());
-					}
-					raf.close();
-				}
-				catch (DisconnectedException ignored) {
-					// Not much we can do.
-				}
-				finally {
-					source.finishedSendingUOMJar(false);
-					raf.close();
-				}
-			}
-		};
-
-		try {
-			source.sendAsync(msg, new AsyncMessageCallback() {
-
-				@Override
-				public void acknowledged() {
-					if (logMINOR) {
-						Logger.minor(this, "Sending data...");
-					}
-					// Send the data
-
-					UpdateOverMandatoryManager.this.updateManager.node.executor.execute(r,
-							name + " jar send for " + uid + " to " + source.userToString());
-				}
-
-				@Override
-				public void disconnected() {
-					// Argh
-					Logger.error(this, "Peer " + source + " asked us for the blob file for the " + name
-							+ " jar, then disconnected when we tried to send the UOMSendingMainJar");
-					source.finishedSendingUOMJar(false);
-				}
-
-				@Override
-				public void fatalError() {
-					// Argh
-					Logger.error(this, "Peer " + source + " asked us for the blob file for the " + name
-							+ " jar, then got a fatal error when we tried to send the UOMSendingMainJar");
-					source.finishedSendingUOMJar(false);
-				}
-
-				@Override
-				public void sent() {
-					if (logMINOR) {
-						Logger.minor(this, "Message sent, data soon");
-					}
-				}
-
-				@Override
-				public String toString() {
-					return super.toString() + "(" + uid + ":" + source.getPeer() + ")";
-				}
-			}, this.updateManager.ctr);
-		}
-		catch (NotConnectedException ex) {
-			Logger.error(this, "Peer " + source + " asked us for the blob file for the " + name
-					+ " jar, then disconnected when we tried to send the UOMSendingMainJar: " + ex, ex);
-		}
-		catch (RuntimeException | Error ex) {
-			source.finishedSendingUOMJar(false);
-			throw ex;
-		}
-
-	}
-
 	public boolean handleSendingManifest(Message m, final PeerNode source) {
 		final long uid = m.getLong(DMT.UID);
 		final long length = m.getLong(DMT.FILE_LENGTH);
-		String key = m.getString(DMT.MAIN_MANIFEST_KEY);
-		final int version = m.getInt(DMT.MAIN_MANIFEST_VERSION);
+		String key = m.getString(DMT.UPDATE_FILE_KEY);
+		final int version = m.getInt(DMT.UPDATE_FILE_VERSION);
 		final FreenetURI manifestURI;
 		try {
 			manifestURI = new FreenetURI(key).setSuggestedEdition(version);
@@ -1465,10 +1255,10 @@ public class UpdateOverMandatoryManager implements RequestClient {
 			return true;
 		}
 
-		if (!manifestURI.equals(this.updateManager.getURI().setSuggestedEdition(version))) {
+		if (!manifestURI.equals(this.updateManager.getUpdateURI().setSuggestedEdition(version))) {
 			System.err.println("Node sending us a manifest update (" + version + ") from the wrong URI:\n" + "Node: "
-					+ source.userToString() + "\n" + "Our   URI: " + this.updateManager.getURI() + "\n" + "Their URI: "
-					+ manifestURI);
+					+ source.userToString() + "\n" + "Our   URI: " + this.updateManager.getUpdateURI() + "\n"
+					+ "Their URI: " + manifestURI);
 			this.cancelSend(source, uid);
 			synchronized (this) {
 				this.nodesAskedSendManifest.remove(source);
@@ -1487,7 +1277,7 @@ public class UpdateOverMandatoryManager implements RequestClient {
 			return true;
 		}
 
-		if (length > ManifestUpdater.MAX_MANIFEST_LENGTH) {
+		if (length > ManifestUSKUpdateFileFetcher.MAX_MANIFEST_LENGTH) {
 			System.err.println("Node " + source.userToString() + " offered us a manifest (" + version + ") "
 					+ SizeUtil.formatSize(length)
 					+ " long. This is unacceptably long so we have refused the transfer.");
@@ -1568,7 +1358,7 @@ public class UpdateOverMandatoryManager implements RequestClient {
 					synchronized (UpdateOverMandatoryManager.class) {
 						UpdateOverMandatoryManager.this.nodesSendingManifest.remove(source);
 						if (success) {
-							UpdateOverMandatoryManager.this.nodesSentMainJar.add(source);
+							UpdateOverMandatoryManager.this.nodesSentManifest.add(source);
 						}
 					}
 				}
@@ -1675,16 +1465,10 @@ public class UpdateOverMandatoryManager implements RequestClient {
 					return;
 				}
 
-				AbstractFileUpdater mainUpdater = UpdateOverMandatoryManager.this.updateManager.getManifestUpdater();
-				if (mainUpdater == null) {
-					System.err.println("Not updating because updater is disabled!");
-					return;
-				}
-				mainUpdater.onSuccess(result, state, cleanedBlobFile, version);
+				EventBus.get()
+						.post(new UOMManifestRequestSuccessEvent(result, state, cleanedBlobFile, version, source));
 				// noinspection ResultOfMethodCallIgnored
 				temp.delete();
-
-				UpdateOverMandatoryManager.this.maybeInsertManifest(mainUpdater, source, version);
 			}
 
 			@Override
@@ -1714,24 +1498,39 @@ public class UpdateOverMandatoryManager implements RequestClient {
 
 	}
 
-	/** Maybe insert the main jar blob. If so, compute the appropriate priority. */
-	protected void maybeInsertManifest(AbstractFileUpdater mainUpdater, PeerNode source, int version) {
-		short priority = PriorityClasses.BULK_SPLITFILE_PRIORITY_CLASS;
-		if (source != null) {
-			// We got it from another node.
-			priority = PriorityClasses.IMMEDIATE_SPLITFILE_PRIORITY_CLASS;
+	protected void maybeProcessOldBlob(File oldBlob, FreenetURI uri, int currentVersion) {
+
+		if (oldBlob.exists()) {
+			File temp;
+			try {
+				temp = File.createTempFile("manifest" + currentVersion + "-", ".fblob.tmp",
+						this.updateManager.node.clientCore.getPersistentTempDir());
+			}
+			catch (IOException ex) {
+				Logger.error(this, "Unable to process old blob: " + ex, ex);
+				return;
+			}
+			if (oldBlob.renameTo(temp)) {
+				uri = uri.sskForUSK();
+				try {
+					this.processManifestBlob(temp, null, currentVersion, uri);
+				}
+				catch (Throwable ex) {
+					// Don't disrupt startup.
+					Logger.error(this, "Unable to process old blob, caught " + ex, ex);
+				}
+				// noinspection ResultOfMethodCallIgnored
+				temp.delete();
+			}
+			else {
+				Logger.error(this,
+						"Unable to rename old blob file " + oldBlob + " to " + temp + " so can't process it.");
+			}
 		}
-		else if (this.updateManager.node.lastVersion > 0 && this.updateManager.node.lastVersion != version) {
-			// We just restarted after updating.
-			priority = PriorityClasses.IMMEDIATE_SPLITFILE_PRIORITY_CLASS;
-		}
-		else if (this.updateManager.node.fastWeakRandom.nextInt(RANDOM_INSERT_BLOB) != 0) {
-			// 1 in RANDOM_INSERT_BLOB chance of inserting anyway at bulk priority.
-			return;
-		}
-		this.insertBlob(mainUpdater.getBlobBucket(version), "manifest", priority);
+
 	}
 
+	@SuppressWarnings("UnusedReturnValue")
 	protected boolean removeOldTempFiles() {
 		File oldTempFilesPeerDir = this.updateManager.node.clientCore.getPersistentTempDir();
 		if (!oldTempFilesPeerDir.exists()) {
@@ -1820,7 +1619,7 @@ public class UpdateOverMandatoryManager implements RequestClient {
 			this.nodesSayKeyRevokedTransferring.remove(pn);
 			this.nodesOfferedManifest.remove(pn);
 			this.allNodesOfferedManifest.remove(pn);
-			this.nodesSentMainJar.remove(pn);
+			this.nodesSentManifest.remove(pn);
 			this.nodesAskedSendManifest.remove(pn);
 			this.nodesSendingManifest.remove(pn);
 		}
@@ -2093,7 +1892,7 @@ public class UpdateOverMandatoryManager implements RequestClient {
 				}
 				HashSet<PeerNode> uomPeers;
 				synchronized (UpdateOverMandatoryManager.this) {
-					uomPeers = new HashSet<>(UpdateOverMandatoryManager.this.nodesSentMainJar);
+					uomPeers = new HashSet<>(UpdateOverMandatoryManager.this.nodesSentManifest);
 				}
 				chosen = this.chooseRandomPeer(uomPeers);
 				if (chosen != null) {

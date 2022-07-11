@@ -19,7 +19,7 @@ import freenet.pluginmanager.PluginInfoWrapper;
 import freenet.pluginmanager.PluginManager;
 import freenet.support.HTMLNode;
 
-public class PluginJarUpdater extends AbstractJarUpdater {
+public class PluginJarUpdateFileFetcher extends AbstractJarUpdateFileFetcher {
 
 	final String pluginName;
 
@@ -88,7 +88,7 @@ public class PluginJarUpdater extends AbstractJarUpdater {
 		return false;
 	}
 
-	PluginJarUpdater(NodeUpdateManager manager, FreenetURI URI, int current, int min, int max,
+	PluginJarUpdateFileFetcher(NodeUpdateManager manager, FreenetURI URI, int current, int min, int max,
 			String blobFilenamePrefix, String pluginName, PluginManager pm, boolean autoDeployOnRestart) {
 		super(manager, URI, current, min, max, blobFilenamePrefix);
 		this.pluginName = pluginName;
@@ -176,7 +176,7 @@ public class PluginJarUpdater extends AbstractJarUpdater {
 
 				@Override
 				public void onDismiss() {
-					synchronized (PluginJarUpdater.this) {
+					synchronized (PluginJarUpdateFileFetcher.this) {
 						alert = null;
 					}
 				}

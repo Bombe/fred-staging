@@ -6,8 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import freenet.keys.FreenetURI;
-import freenet.node.updater.AbstractFileUpdater;
-import freenet.node.updater.PluginJarUpdater;
+import freenet.node.updater.PluginJarUpdateFileFetcher;
+import freenet.node.updater.usk.AbstractUSKUpdateFileFetcher;
 
 import static java.util.Collections.unmodifiableCollection;
 
@@ -262,16 +262,16 @@ public class OfficialPlugins {
 		 *
 		 * This is for being used together with plugins which are fetched from a USK
 		 * {@link #uri}, and which are not included in the official main Freenet update
-		 * USK which {@link PluginJarUpdater} watches.<br>
+		 * USK which {@link PluginJarUpdateFileFetcher} watches.<br>
 		 * For plugins which are in the main Freenet update USK, setting this to true is
-		 * usually not necessary: The {@link PluginJarUpdater} will update the plugin if
-		 * there is a new version.<br>
+		 * usually not necessary: The {@link PluginJarUpdateFileFetcher} will update the
+		 * plugin if there is a new version.<br>
 		 * <br>
 		 *
 		 * In other words: Plugins which are NOT in the official USK but have their own
-		 * USK will not have the {@link PluginJarUpdater} monitor their USK, it only
-		 * monitors the main USK. Thus, the only chance to update them is during startup
-		 * by ignoring the JAR and causing a re-download of it.
+		 * USK will not have the {@link PluginJarUpdateFileFetcher} monitor their USK, it
+		 * only monitors the main USK. Thus, the only chance to update them is during
+		 * startup by ignoring the JAR and causing a re-download of it.
 		 */
 		public final boolean alwaysFetchLatestVersion;
 
@@ -281,7 +281,8 @@ public class OfficialPlugins {
 		/**
 		 * FreenetURI to get the latest version from.<br>
 		 * Typically a CHK, not USK, since updates are deployed using the main Freenet USK
-		 * of {@link AbstractFileUpdater}'s subclass {@link PluginJarUpdater}.<br>
+		 * of {@link AbstractUSKUpdateFileFetcher}'s subclass
+		 * {@link PluginJarUpdateFileFetcher}.<br>
 		 * <br>
 		 *
 		 * To allow people to insert plugin updates without giving them write access to
@@ -299,10 +300,10 @@ public class OfficialPlugins {
 		 * USK supports live updates; and also there is no revocation mechanism for the
 		 * USKs. Instead of using USKs here, a CHK should be preferred, and new plugin
 		 * versions then should be inserted at the main Freenet update USK of the the
-		 * {@link AbstractFileUpdater}. A typical usecase for nevertheless using an USK
-		 * here is to allow individual plugin developers to push testing versions of their
-		 * plugin on their own without giving them write-access to the main Freenet update
-		 * USK.
+		 * {@link AbstractUSKUpdateFileFetcher}. A typical usecase for nevertheless using
+		 * an USK here is to allow individual plugin developers to push testing versions
+		 * of their plugin on their own without giving them write-access to the main
+		 * Freenet update USK.
 		 */
 		public final FreenetURI uri;
 

@@ -246,7 +246,7 @@ public class NodeDispatcher implements Dispatcher, Runnable {
 			this.node.receivedNodeToNodeMessage(m, source);
 			return true;
 		}
-		else if (spec == DMT.UOMAnnounceManifest && source.isRealConnection()) {
+		else if (spec == DMT.UOMAnnounceUpdateFile && source.isRealConnection()) {
 			return this.node.nodeUpdater.uom.handleAnnounceManifest(m, source);
 		}
 		else if (spec == DMT.UOMRequestRevocationManifest && source.isRealConnection()) {
@@ -256,7 +256,7 @@ public class NodeDispatcher implements Dispatcher, Runnable {
 			return this.node.nodeUpdater.uom.handleSendingRevocationManifest(m, source);
 		}
 		else if (spec == DMT.UOMRequestManifest && this.node.nodeUpdater.isEnabled() && source.isRealConnection()) {
-			this.node.nodeUpdater.uom.handleRequestManifest(m, source);
+			this.node.nodeUpdater.getManifestUpdater().handleRequestManifest(m, source);
 			return true;
 		}
 		else if (spec == DMT.UOMSendingManifest && this.node.nodeUpdater.isEnabled() && source.isRealConnection()) {

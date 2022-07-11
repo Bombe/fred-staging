@@ -21,6 +21,7 @@ package freenet.node.updater;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -35,19 +36,19 @@ import freenet.config.NodeNeedRestartException;
 import freenet.config.StringCallback;
 import freenet.config.SubConfig;
 import freenet.io.comm.ByteCounter;
-import freenet.io.comm.DMT;
-import freenet.io.comm.Message;
-import freenet.io.comm.NotConnectedException;
 import freenet.keys.FreenetURI;
 import freenet.l10n.NodeL10n;
 import freenet.node.Node;
 import freenet.node.NodeFile;
 import freenet.node.NodeStarter;
 import freenet.node.OpennetManager;
-import freenet.node.PeerNode;
 import freenet.node.Version;
-import freenet.node.event.DiffNoderefProcessedEvent;
 import freenet.node.event.EventBus;
+import freenet.node.event.update.BlownEvent;
+import freenet.node.event.update.UpdateManagerStatusUpdatedEvent;
+import freenet.node.event.update.UpdateManagerStatusUpdatedEvent.StatusType;
+import freenet.node.updater.usk.ManifestUSKUpdateFileFetcher;
+import freenet.node.updater.usk.UpdateOverUSKManager;
 import freenet.node.useralerts.RevocationKeyFoundUserAlert;
 import freenet.node.useralerts.SimpleUserAlert;
 import freenet.node.useralerts.UpdatedVersionAvailableUserAlert;
@@ -100,18 +101,75 @@ public class NodeUpdateManager {
 	public static final long MAX_IP_TO_COUNTRY_LENGTH = 24 * 1024 * 1024;
 
 	public static final long MAX_SEEDNODES_LENGTH = 3 * 1024 * 1024;
+	static final String TEMP_BLOB_SUFFIX = ".updater.fblob.tmp";
+	static final String TEMP_FILE_SUFFIX = ".updater.tmp";
+
+	private static final Object deployLock = new Object();
+
+	private static final long WAIT_FOR_SECOND_FETCH_TO_COMPLETE = TimeUnit.MINUTES.toMillis(4);
+
+	private static final long RECENT_REVOCATION_INTERVAL = TimeUnit.MINUTES.toMillis(2);
+
+	/**
+	 * After 5 minutes, deploy the update even if we haven't got 3 DNFs on the revocation
+	 * key yet. Reason: we want to be able to deploy UOM updates on nodes with all TOO NEW
+	 * or leaf nodes whose peers are overloaded/broken. Note that with UOM, revocation
+	 * certs are automatically propagated node to node, so this should be *relatively*
+	 * safe. Any better ideas, tell us.
+	 */
+	private static final long REVOCATION_FETCH_TIMEOUT = TimeUnit.MINUTES.toMillis(5);
+
+	private static volatile boolean logMINOR;
+
+	static {
+		Logger.registerClass(NodeUpdateManager.class);
+	}
+
+	public final Node node;
+
+	public UpdateOverMandatoryManager uom;
+
+	// TODO
+	// public final UpdateOverMandatoryManager uom;
+
+	RevocationChecker revocationChecker;
+
+	final ByteCounter ctr = new ByteCounter() {
+
+		@Override
+		public void receivedBytes(int x) {
+			// FIXME
+		}
+
+		@Override
+		public void sentBytes(int x) {
+			NodeUpdateManager.this.node.nodeStats.reportUOMBytesSent(x);
+		}
+
+		@Override
+		public void sentPayload(int x) {
+			// Ignore. It will be reported to sentBytes() as well.
+		}
+
+	};
+
+	private final boolean wasEnabledOnStartup;
+
+	// FIXME make configurable
+	private final boolean updateIPToCountry = true;
+
+	// Update alert
+	private final UpdatedVersionAvailableUserAlert alert;
 
 	private FreenetURI updateURI;
 
 	private FreenetURI revocationURI;
 
-	private ManifestUpdater manifestUpdater;
+	private UpdateOverUSKManager updateOverUSKManager;
 
-	private Map<String, PluginJarUpdater> pluginUpdaters;
+	private Map<String, PluginJarUpdateFileFetcher> pluginUpdaters;
 
 	private boolean autoDeployPluginsOnRestart;
-
-	private final boolean wasEnabledOnStartup;
 
 	/** Is auto-update enabled? */
 	private volatile boolean isAutoUpdateAllowed;
@@ -127,52 +185,35 @@ public class NodeUpdateManager {
 	 */
 	private boolean isDeployingUpdate;
 
-	private final Object broadcastUOMAnnounceManifestSync = new Object();
-
-	private boolean broadcastUOMAnnounceManifest = false;
-
-	public final Node node;
-
-	final RevocationChecker revocationChecker;
-
 	private String revocationMessage;
-
-	private volatile boolean hasBeenBlown;
 
 	private volatile boolean peersSayBlown;
 
-	private boolean updateSeednodes;
+	private volatile boolean hasBeenBlown;
 
-	// FIXME make configurable
-	private final boolean updateIPToCountry = true;
+	private boolean updateSeednodes;
 
 	// Revocation alert
 	private RevocationKeyFoundUserAlert revocationAlert;
 
-	// Update alert
-	private final UpdatedVersionAvailableUserAlert alert;
-
-	public final UpdateOverMandatoryManager uom;
-
-	private static volatile boolean logMINOR;
-
-	static {
-		Logger.registerClass(NodeUpdateManager.class);
-	}
-
 	/** True if update is disabled for this session. */
 	private boolean disabledThisSession;
 
-	private static final Object deployLock = new Object();
+	private boolean disabledNotBlown;
 
-	static final String TEMP_BLOB_SUFFIX = ".updater.fblob.tmp";
-	static final String TEMP_FILE_SUFFIX = ".updater.tmp";
+	private volatile boolean hasNewFile;
+
+	/** The blob file for the current version, for UOM */
+	protected File currentVersionBlobFile;
 
 	public NodeUpdateManager(Node node, Config config) throws InvalidConfigValueException {
 		EventBus.get().register(this);
 
 		this.node = node;
 		this.hasBeenBlown = false;
+		// Post blown event
+		this.postStatusUpdatedEvent();
+
 		this.alert = new UpdatedVersionAvailableUserAlert(this);
 		this.alert.isValid(false);
 
@@ -245,58 +286,67 @@ public class NodeUpdateManager {
 		this.updateSeednodes = updaterConfig.getBoolean("updateSeednodes");
 
 		updaterConfig.finishedInitialization();
-
-		this.revocationChecker = new RevocationChecker(this,
-				new File(node.clientCore.getPersistentTempDir(), "revocation-key.fblob"));
-
-		this.uom = new UpdateOverMandatoryManager(this);
-		this.uom.removeOldTempFiles();
 	}
 
+	/**
+	 * Create a NodeUpdateManager. Called by node constructor.
+	 * @param node The node object.
+	 * @param config The global config object. Options will be added to a subconfig called
+	 * node.updater.
+	 * @return A new NodeUpdateManager
+	 * @throws InvalidConfigValueException If there is an error in the config.
+	 */
+	public static NodeUpdateManager maybeCreate(Node node, Config config) throws InvalidConfigValueException {
+		return new NodeUpdateManager(node, config);
+	}
+
+	/**
+	 * Use this lock when deploying an update of any kind which will require us to
+	 * restart. If the update succeeds, you should call waitForever() if you don't
+	 * immediately exit. There could be rather nasty race conditions if we deploy two
+	 * updates at once.
+	 * @return A mutex for serialising update deployments.
+	 */
+	static Object deployLock() {
+		return deployLock;
+	}
+
+	/**
+	 * Does not return. Should be called, inside the deployLock(), if you are in a
+	 * situation where you've deployed an update but the exit hasn't actually happened
+	 * yet.
+	 */
+	static void waitForever() {
+		// noinspection InfiniteLoopStatement
+		while (true) {
+			System.err.println("Waiting for shutdown after deployed update...");
+			try {
+				// noinspection BusyWait
+				Thread.sleep(60 * 1000);
+			}
+			catch (InterruptedException ignored) {
+				// Ignore.
+			}
+		}
+	}
+
+	// region EventBus
+	// ================================================================================
 	@Subscribe
-	public void onDiffNoderefProcessed(DiffNoderefProcessedEvent event) {
-		// Send UOMAnnouncement only *after* we know what the other side's version.
-		var pn = event.getPn();
-		if (pn.isRealConnection()) {
-			this.maybeSendUOMAnnounceManifest(pn);
-		}
+	public void onBlown(BlownEvent event) {
+		this.blow(event.message(), event.disabledNotBlown());
 	}
 
-	public File getInstallerWindows() {
-		File f = NodeFile.InstallerWindows.getFile(this.node);
-		if (!(f.exists() && f.canRead() && f.length() > 0)) {
-			return null;
-		}
-		else {
-			return f;
-		}
-	}
+	private void postStatusUpdatedEvent() {
+		EnumMap<StatusType, Boolean> map = new EnumMap<>(StatusType.class);
+		map.put(StatusType.ENABLED, this.isEnabled());
+		map.put(StatusType.BLOWN, this.isBlown());
+		map.put(StatusType.DEPLOYING, this.isDeployingUpdate());
 
-	public File getInstallerNonWindows() {
-		File f = NodeFile.InstallerNonWindows.getFile(this.node);
-		if (!(f.exists() && f.canRead() && f.length() > 0)) {
-			return null;
-		}
-		else {
-			return f;
-		}
+		EventBus.get().postSticky(new UpdateManagerStatusUpdatedEvent(map));
 	}
-
-	public FreenetURI getSeednodesURI() {
-		return this.updateURI.sskForUSK().setDocName("seednodes-" + Version.buildNumber());
-	}
-
-	public FreenetURI getInstallerNonWindowsURI() {
-		return this.updateURI.sskForUSK().setDocName("installer-" + Version.buildNumber());
-	}
-
-	public FreenetURI getInstallerWindowsURI() {
-		return this.updateURI.sskForUSK().setDocName("wininstaller-" + Version.buildNumber());
-	}
-
-	public FreenetURI getIPv4ToCountryURI() {
-		return this.updateURI.sskForUSK().setDocName("iptocountryv4-" + Version.buildNumber());
-	}
+	// ================================================================================
+	// endregion
 
 	public void start() throws InvalidConfigValueException {
 
@@ -319,97 +369,11 @@ public class NodeUpdateManager {
 
 	}
 
-	void broadcastUOMAnnounceManifest() {
-		if (logMINOR) {
-			Logger.minor(this, "Broadcast UOM announcements (new)");
-		}
-		long size = this.canUOMAnnounceManifest();
-		Message msg;
-		if (size <= 0 && !this.hasBeenBlown) {
-			return;
-		}
-		synchronized (this.broadcastUOMAnnounceManifestSync) {
-			if (this.broadcastUOMAnnounceManifest && !this.hasBeenBlown) {
-				return;
-			}
-			this.broadcastUOMAnnounceManifest = true;
-			msg = this.getUOMAnnounceManifest(size);
-		}
-		if (logMINOR) {
-			Logger.minor(this, "Broadcasting UOM announcements (new)");
-		}
-		this.node.peers.localBroadcast(msg, true, true, this.ctr, 0, Integer.MAX_VALUE);
-	}
-
-	/** Return the length of the data fetched for the current version, or -1. */
-	private long canUOMAnnounceManifest() {
-		Bucket data;
-		synchronized (this) {
-			if (this.manifestUpdater.isHasNewFile() && this.armed) {
-				if (logMINOR) {
-					Logger.minor(this, "Will update soon, not offering UOM.");
-				}
-				return -1;
-			}
-			if (this.manifestUpdater.getFetchedFileVersion() <= 0) {
-				if (logMINOR) {
-					Logger.minor(this, "Not fetched yet");
-				}
-				return -1;
-			}
-			else if (this.manifestUpdater.getFetchedFileVersion() != Version.buildNumber()) {
-				// Don't announce UOM unless we've successfully updated ored.
-				if (logMINOR) {
-					Logger.minor(this, "Downloaded a different version than the one we are running, not offering UOM.");
-				}
-				return -1;
-			}
-			data = this.manifestUpdater.getFetchedFileData();
-		}
-		if (logMINOR) {
-			Logger.minor(this, "Got data for UOM: " + data + " size " + data.size());
-		}
-		return data.size();
-	}
-
-	private Message getUOMAnnounceManifest(long blobSize) {
-		int fetchedVersion = (blobSize <= 0) ? -1 : Version.buildNumber();
-		return DMT.createUOMAnnounceManifest(this.updateURI.toString(), this.revocationURI.toString(),
-				this.revocationChecker.hasBlown(), fetchedVersion, this.revocationChecker.lastSucceededDelta(),
-				this.revocationChecker.getRevocationDNFCounter(), this.revocationChecker.getBlobSize(), blobSize,
-				(int) this.node.nodeStats.getNodeAveragePingTime(), (int) this.node.nodeStats.getBwlimitDelayTime());
-	}
-
-	public void maybeSendUOMAnnounceManifest(PeerNode peer) {
-		synchronized (this.broadcastUOMAnnounceManifestSync) {
-			if (!this.broadcastUOMAnnounceManifest) {
-				if (logMINOR) {
-					Logger.minor(this, "Not sending UOM (any) on connect: Nothing worth announcing yet");
-				}
-				return; // nothing worth announcing yet
-			}
-		}
-		if (this.hasBeenBlown && !this.revocationChecker.hasBlown()) {
-			if (logMINOR) {
-				Logger.minor(this, "Not sending UOM (any) on connect: Local problem causing blown key");
-			}
-			// Local problem, don't broadcast.
-			return;
-		}
-		long size = this.canUOMAnnounceManifest();
-		try {
-			peer.sendAsync(this.getUOMAnnounceManifest(size), null, this.ctr);
-		}
-		catch (NotConnectedException ignored) {
-			// Sad, but ignore it
-		}
-	}
-
 	/**
 	 * Is auto-update enabled?
 	 */
 	public synchronized boolean isEnabled() {
-		return (this.manifestUpdater != null);
+		return (this.updateOverUSKManager != null);
 	}
 
 	/**
@@ -417,8 +381,10 @@ public class NodeUpdateManager {
 	 * @param enable Whether auto-update should be enabled.
 	 */
 	void enable(boolean enable) {
-		AbstractFileUpdater main = null;
-		Map<String, PluginJarUpdater> oldPluginUpdaters = null;
+		UpdateOverUSKManager oldUpdateOverUSKManager = null;
+		UpdateOverMandatoryManager oldUOM = null;
+		RevocationChecker oldRevocationChecker = null;
+		Map<String, PluginJarUpdateFileFetcher> oldPluginUpdaters = null;
 
 		// We need to run the revocation checker even if auto-update is
 		// disabled.
@@ -429,38 +395,60 @@ public class NodeUpdateManager {
 		this.revocationChecker.start(false);
 
 		synchronized (this) {
-			boolean enabled = (this.manifestUpdater != null);
+			boolean enabled = (this.updateOverUSKManager != null);
 			if (enabled == enable) {
 				return;
 			}
 			if (!enable) {
 				// Kill it
-				this.manifestUpdater.preKill();
-				main = this.manifestUpdater;
-				this.manifestUpdater = null;
+				this.updateOverUSKManager.preKill();
+				oldUpdateOverUSKManager = this.updateOverUSKManager;
+				this.updateOverUSKManager = null;
+
+				oldUOM = this.uom;
+				this.uom = null;
+
+				oldRevocationChecker = this.revocationChecker;
+				this.revocationChecker = null;
+
 				oldPluginUpdaters = this.pluginUpdaters;
 				this.pluginUpdaters = null;
+
 				this.disabledNotBlown = false;
 			}
 			else {
 				// Start it
-				this.manifestUpdater = new ManifestUpdater(this, this.updateURI, Version.buildNumber(), -1,
-						Integer.MAX_VALUE, "manifest-");
+				this.updateOverUSKManager = new UpdateOverUSKManager(this);
+
+				// TODO: Start it only when USK failed
+				this.uom = new UpdateOverMandatoryManager(this);
+				this.uom.removeOldTempFiles();
+
+				this.revocationChecker = new RevocationChecker(this,
+						new File(this.node.clientCore.getPersistentTempDir(), "revocation-key.fblob"));
+
+				// TODO
 				this.pluginUpdaters = new HashMap<>();
 			}
+			// Post enabled event
+			this.postStatusUpdatedEvent();
 		}
 		if (!enable) {
-			if (main != null) {
-				main.kill();
+			if (oldUpdateOverUSKManager != null) {
+				oldUpdateOverUSKManager.kill();
 			}
-			this.stopPluginUpdaters(oldPluginUpdaters);
+			if (oldRevocationChecker != null) {
+				oldRevocationChecker.kill();
+			}
+			// TODO
+			// this.stopPluginUpdaters(oldPluginUpdaters);
 		}
 		else {
 			// FIXME copy it, dodgy locking.
 			try {
 				// Must be run before starting everything else as it cleans up tempfiles
 				// too.
-				this.manifestUpdater.cleanup();
+				this.updateOverUSKManager.cleanup();
 			}
 			catch (Throwable ex) {
 				// Don't let it block startup, but be very loud!
@@ -468,11 +456,14 @@ public class NodeUpdateManager {
 				System.err.println("Updater error: " + ex);
 				ex.printStackTrace();
 			}
-			this.manifestUpdater.start();
-			this.startPluginUpdaters();
+			this.updateOverUSKManager.start();
+			// TODO
+			// this.startPluginUpdaters();
 		}
 	}
 
+	// region Plugin Updater
+	// ================================================================================
 	private void startPluginUpdaters() {
 		for (OfficialPluginDescription plugin : this.node.getPluginManager().getOfficialPlugins()) {
 			this.startPluginUpdater(plugin.name);
@@ -516,7 +507,7 @@ public class NodeUpdateManager {
 			minVer = Math.max(minVer, info.getPluginLongVersion());
 		}
 		FreenetURI uri = this.updateURI.setDocName(name).setSuggestedEdition(minVer);
-		PluginJarUpdater updater = new PluginJarUpdater(this, uri, (int) minVer, -1,
+		PluginJarUpdateFileFetcher updater = new PluginJarUpdateFileFetcher(this, uri, (int) minVer, -1,
 				(plugin.essential ? (int) minVer : Integer.MAX_VALUE), name + "-", name, this.node.pluginManager,
 				this.autoDeployPluginsOnRestart);
 		synchronized (this) {
@@ -543,7 +534,7 @@ public class NodeUpdateManager {
 		if (plugin == null) {
 			return; // Not an official plugin
 		}
-		PluginJarUpdater updater;
+		PluginJarUpdateFileFetcher updater;
 		synchronized (this) {
 			if (this.pluginUpdaters == null) {
 				if (logMINOR) {
@@ -558,29 +549,68 @@ public class NodeUpdateManager {
 		}
 	}
 
-	private void stopPluginUpdaters(Map<String, PluginJarUpdater> oldPluginUpdaters) {
-		for (PluginJarUpdater u : oldPluginUpdaters.values()) {
+	private void stopPluginUpdaters(Map<String, PluginJarUpdateFileFetcher> oldPluginUpdaters) {
+		for (PluginJarUpdateFileFetcher u : oldPluginUpdaters.values()) {
 			u.kill();
 		}
 	}
 
-	/**
-	 * Create a NodeUpdateManager. Called by node constructor.
-	 * @param node The node object.
-	 * @param config The global config object. Options will be added to a subconfig called
-	 * node.updater.
-	 * @return A new NodeUpdateManager
-	 * @throws InvalidConfigValueException If there is an error in the config.
-	 */
-	public static NodeUpdateManager maybeCreate(Node node, Config config) throws InvalidConfigValueException {
-		return new NodeUpdateManager(node, config);
+	private void deployPluginUpdates() {
+		PluginJarUpdateFileFetcher[] updaters = null;
+		synchronized (this) {
+			if (this.pluginUpdaters != null) {
+				updaters = this.pluginUpdaters.values().toArray(new PluginJarUpdateFileFetcher[0]);
+			}
+		}
+		boolean restartRevocationFetcher = false;
+		if (updaters != null) {
+			for (PluginJarUpdateFileFetcher u : updaters) {
+				if (u.onNoRevocation()) {
+					restartRevocationFetcher = true;
+				}
+			}
+		}
+		if (restartRevocationFetcher) {
+			this.revocationChecker.start(true, true);
+		}
 	}
+	// ================================================================================
+	// endregion
 
+	// region Getter/Setter for all kinds of URIs
+	// ================================================================================
 	/**
 	 * Get the URI for update manifest.
 	 */
-	public synchronized FreenetURI getURI() {
+	public synchronized FreenetURI getUpdateURI() {
 		return this.updateURI;
+	}
+
+	/**
+	 * Set the URI update manifest file should be updated from.
+	 * @param uri The URI to set.
+	 */
+	public void setUpdateURI(FreenetURI uri) {
+		// FIXME plugins!!
+		UpdateOverUSKManager updateOverUSKManager;
+		Map<String, PluginJarUpdateFileFetcher> oldPluginUpdaters;
+		synchronized (this) {
+			if (this.updateURI.equals(uri)) {
+				return;
+			}
+			this.updateURI = uri;
+			this.updateURI = this.updateURI.setSuggestedEdition(Version.buildNumber());
+			updateOverUSKManager = this.updateOverUSKManager;
+			oldPluginUpdaters = this.pluginUpdaters;
+			this.pluginUpdaters = new HashMap<>();
+			if (updateOverUSKManager == null) {
+				return;
+			}
+		}
+		updateOverUSKManager.onChangeURI(uri);
+		// TODO
+		// this.stopPluginUpdaters(oldPluginUpdaters);
+		// this.startPluginUpdaters();
 	}
 
 	/**
@@ -594,46 +624,12 @@ public class NodeUpdateManager {
 		return this.updateURI.setDocName("fullchangelog");
 	}
 
-	/**
-	 * Add links to the changelog for the given version to the given node.
-	 * @param version USK edition to point to
-	 * @param node to add links to
-	 */
-	public synchronized void addChangelogLinks(long version, HTMLNode node) {
-		String changelogUri = this.getChangelogURI().setSuggestedEdition(version).sskForUSK().toASCIIString();
-		String developerDetailsUri = this.getDeveloperChangelogURI().setSuggestedEdition(version).sskForUSK()
-				.toASCIIString();
-		node.addChild("a", "href", '/' + changelogUri + "?type=text/plain",
-				NodeL10n.getBase().getString("UpdatedVersionAvailableUserAlert.changelog"));
-		node.addChild("br");
-		node.addChild("a", "href", '/' + developerDetailsUri + "?type=text/plain",
-				NodeL10n.getBase().getString("UpdatedVersionAvailableUserAlert.devchangelog"));
+	public FreenetURI getSeednodesURI() {
+		return this.updateURI.sskForUSK().setDocName("seednodes-" + Version.buildNumber());
 	}
 
-	/**
-	 * Set the URI update manifest file should be updated from.
-	 * @param uri The URI to set.
-	 */
-	public void setURI(FreenetURI uri) {
-		// FIXME plugins!!
-		AbstractFileUpdater updater;
-		Map<String, PluginJarUpdater> oldPluginUpdaters;
-		synchronized (this) {
-			if (this.updateURI.equals(uri)) {
-				return;
-			}
-			this.updateURI = uri;
-			this.updateURI = this.updateURI.setSuggestedEdition(Version.buildNumber());
-			updater = this.manifestUpdater;
-			oldPluginUpdaters = this.pluginUpdaters;
-			this.pluginUpdaters = new HashMap<>();
-			if (updater == null) {
-				return;
-			}
-		}
-		updater.onChangeURI(uri);
-		this.stopPluginUpdaters(oldPluginUpdaters);
-		this.startPluginUpdaters();
+	public FreenetURI getIPv4ToCountryURI() {
+		return this.updateURI.sskForUSK().setDocName("iptocountryv4-" + Version.buildNumber());
 	}
 
 	/**
@@ -655,6 +651,24 @@ public class NodeUpdateManager {
 			this.revocationURI = uri;
 		}
 		this.revocationChecker.onChangeRevocationURI();
+	}
+	// ================================================================================
+	// endregion
+
+	/**
+	 * Add links to the changelog for the given version to the given node.
+	 * @param version USK edition to point to
+	 * @param node to add links to
+	 */
+	public synchronized void addChangelogLinks(long version, HTMLNode node) {
+		String changelogUri = this.getChangelogURI().setSuggestedEdition(version).sskForUSK().toASCIIString();
+		String developerDetailsUri = this.getDeveloperChangelogURI().setSuggestedEdition(version).sskForUSK()
+				.toASCIIString();
+		node.addChild("a", "href", '/' + changelogUri + "?type=text/plain",
+				NodeL10n.getBase().getString("UpdatedVersionAvailableUserAlert.changelog"));
+		node.addChild("br");
+		node.addChild("a", "href", '/' + developerDetailsUri + "?type=text/plain",
+				NodeL10n.getBase().getString("UpdatedVersionAvailableUserAlert.devchangelog"));
 	}
 
 	/**
@@ -687,19 +701,6 @@ public class NodeUpdateManager {
 		this.deployOffThread(0, false);
 	}
 
-	private static final long WAIT_FOR_SECOND_FETCH_TO_COMPLETE = TimeUnit.MINUTES.toMillis(4);
-
-	private static final long RECENT_REVOCATION_INTERVAL = TimeUnit.MINUTES.toMillis(2);
-
-	/**
-	 * After 5 minutes, deploy the update even if we haven't got 3 DNFs on the revocation
-	 * key yet. Reason: we want to be able to deploy UOM updates on nodes with all TOO NEW
-	 * or leaf nodes whose peers are overloaded/broken. Note that with UOM, revocation
-	 * certs are automatically propagated node to node, so this should be *relatively*
-	 * safe. Any better ideas, tell us.
-	 */
-	private static final long REVOCATION_FETCH_TIMEOUT = TimeUnit.MINUTES.toMillis(5);
-
 	/**
 	 * Does the updater have an update ready to deploy? May be called synchronized(this).
 	 * @param ignoreRevocation If true, return whether we will deploy when the revocation
@@ -710,14 +711,17 @@ public class NodeUpdateManager {
 		long now = System.currentTimeMillis();
 		int waitForNextFile = -1;
 		synchronized (this) {
-			if (this.manifestUpdater == null) {
+			if (this.updateOverUSKManager == null) {
+				// updater is not enabled
 				return false;
 			}
-			if (!(this.manifestUpdater.isHasNewFile())) {
-				return false; // no new file fetched
+			if (!this.hasNewFile) {
+				// no new file fetched
+				return false;
 			}
 			if (this.hasBeenBlown) {
-				return false; // Duh
+				// this version has been blown
+				return false;
 			}
 			if (this.peersSayBlown) {
 				if (logMINOR) {
@@ -726,8 +730,8 @@ public class NodeUpdateManager {
 				return false;
 			}
 			// Don't immediately deploy if still fetching
-			if (this.manifestUpdater.getStartedFetchingNextFile() > 0) {
-				waitForNextFile = (int) (this.manifestUpdater.getStartedFetchingNextFile()
+			if (this.updateOverUSKManager.getStartedFetchingNextFile() > 0) {
+				waitForNextFile = (int) (this.updateOverUSKManager.getStartedFetchingNextFile()
 						+ WAIT_FOR_SECOND_FETCH_TO_COMPLETE - now);
 				if (waitForNextFile > 0) {
 					if (logMINOR) {
@@ -746,8 +750,8 @@ public class NodeUpdateManager {
 						}
 						return true;
 					}
-					if (this.manifestUpdater.getGotFileTime() > 0
-							&& now - this.manifestUpdater.getGotFileTime() >= REVOCATION_FETCH_TIMEOUT) {
+					if (this.updateOverUSKManager.getGotFileTime() > 0
+							&& now - this.updateOverUSKManager.getGotFileTime() >= REVOCATION_FETCH_TIMEOUT) {
 						if (logMINOR) {
 							Logger.minor(this, "Ready to deploy (got jar before timeout)");
 						}
@@ -828,6 +832,8 @@ public class NodeUpdateManager {
 				}
 				started = true;
 				this.isDeployingUpdate = true;
+				// Post deploying event
+				this.postStatusUpdatedEvent();
 			}
 
 			synchronized (deployLock()) {
@@ -855,48 +861,23 @@ public class NodeUpdateManager {
 				Bucket toFree = null;
 				synchronized (this) {
 					this.isDeployingUpdate = false;
-					if (this.manifestUpdater.getMaybeNextFileVersion() > this.manifestUpdater.getFetchedFileVersion()) {
+					// Post deploying event
+					this.postStatusUpdatedEvent();
+
+					if (this.updateOverUSKManager.getMaybeNextFileVersion() > this.updateOverUSKManager
+							.getFetchedFileVersion()) {
 						// A newer version has been fetched in the meantime.
-						toFree = this.manifestUpdater.getFetchedFileData();
-						this.manifestUpdater.setFetchedFileVersion(this.manifestUpdater.getMaybeNextFileVersion());
-						this.manifestUpdater.setFetchedFileData(this.manifestUpdater.getMaybeNextFileData());
-						this.manifestUpdater.setMaybeNextFileVersion(-1);
-						this.manifestUpdater.setMaybeNextFileData(null);
+						toFree = this.updateOverUSKManager.getFetchedFileData();
+						this.updateOverUSKManager
+								.setFetchedFileVersion(this.updateOverUSKManager.getMaybeNextFileVersion());
+						this.updateOverUSKManager.setFetchedFileData(this.updateOverUSKManager.getMaybeNextFileData());
+						this.updateOverUSKManager.setMaybeNextFileVersion(-1);
+						this.updateOverUSKManager.setMaybeNextFileData(null);
 					}
 				}
 				if (toFree != null) {
 					toFree.free();
 				}
-			}
-		}
-	}
-
-	/**
-	 * Use this lock when deploying an update of any kind which will require us to
-	 * restart. If the update succeeds, you should call waitForever() if you don't
-	 * immediately exit. There could be rather nasty race conditions if we deploy two
-	 * updates at once.
-	 * @return A mutex for serialising update deployments.
-	 */
-	static Object deployLock() {
-		return deployLock;
-	}
-
-	/**
-	 * Does not return. Should be called, inside the deployLock(), if you are in a
-	 * situation where you've deployed an update but the exit hasn't actually happened
-	 * yet.
-	 */
-	static void waitForever() {
-		// noinspection InfiniteLoopStatement
-		while (true) {
-			System.err.println("Waiting for shutdown after deployed update...");
-			try {
-				// noinspection BusyWait
-				Thread.sleep(60 * 1000);
-			}
-			catch (InterruptedException ignored) {
-				// Ignore.
 			}
 		}
 	}
@@ -942,8 +923,6 @@ public class NodeUpdateManager {
 		return NodeL10n.getBase().getString("NodeUpdateManager." + key, pattern, value);
 	}
 
-	private boolean disabledNotBlown;
-
 	/**
 	 * @param msg
 	 * @param disabledNotBlown If true, the auto-updating system is broken, and should be
@@ -951,7 +930,7 @@ public class NodeUpdateManager {
 	 * us a revocation certificate.
 	 */
 	public void blow(String msg, boolean disabledNotBlown) {
-		AbstractFileUpdater main;
+		UpdateOverUSKManager updateOverUSKManager;
 		synchronized (this) {
 			if (this.hasBeenBlown) {
 				if (this.disabledNotBlown && !disabledNotBlown) {
@@ -964,6 +943,9 @@ public class NodeUpdateManager {
 			else {
 				this.revocationMessage = msg;
 				this.hasBeenBlown = true;
+				// Post blown event
+				this.postStatusUpdatedEvent();
+
 				this.disabledNotBlown = disabledNotBlown;
 				// We must get to the lower part, and show the user the message
 				try {
@@ -987,14 +969,14 @@ public class NodeUpdateManager {
 					}
 				}
 			}
-			main = this.manifestUpdater;
-			if (main != null) {
-				main.preKill();
+			updateOverUSKManager = this.updateOverUSKManager;
+			if (updateOverUSKManager != null) {
+				updateOverUSKManager.preKill();
 			}
-			this.manifestUpdater = null;
+			this.updateOverUSKManager = null;
 		}
-		if (main != null) {
-			main.kill();
+		if (updateOverUSKManager != null) {
+			updateOverUSKManager.kill();
 		}
 		if (this.revocationAlert == null) {
 			this.revocationAlert = new RevocationKeyFoundUserAlert(msg, disabledNotBlown);
@@ -1002,8 +984,9 @@ public class NodeUpdateManager {
 			// we don't need to advertize updates : we are not going to do them
 			this.killUpdateAlerts();
 		}
-		this.uom.killAlert();
-		this.broadcastUOMAnnounceManifest();
+		// TODO
+		// this.uom.killAlert();
+		// this.broadcastUOMAnnounceManifest();
 	}
 
 	/**
@@ -1018,29 +1001,10 @@ public class NodeUpdateManager {
 		this.deployUpdate(); // May have been waiting for the revocation.
 		this.deployPluginUpdates();
 		// If we're still here, we didn't update.
-		this.broadcastUOMAnnounceManifest();
+		// TODO
+		// this.broadcastUOMAnnounceManifest();
 		this.node.ticker.queueTimedJob(() -> NodeUpdateManager.this.revocationChecker.start(false),
 				this.node.random.nextInt((int) TimeUnit.DAYS.toMillis(1)));
-	}
-
-	private void deployPluginUpdates() {
-		PluginJarUpdater[] updaters = null;
-		synchronized (this) {
-			if (this.pluginUpdaters != null) {
-				updaters = this.pluginUpdaters.values().toArray(new PluginJarUpdater[0]);
-			}
-		}
-		boolean restartRevocationFetcher = false;
-		if (updaters != null) {
-			for (PluginJarUpdater u : updaters) {
-				if (u.onNoRevocation()) {
-					restartRevocationFetcher = true;
-				}
-			}
-		}
-		if (restartRevocationFetcher) {
-			this.revocationChecker.start(true, true);
-		}
 	}
 
 	public void arm() {
@@ -1050,8 +1014,8 @@ public class NodeUpdateManager {
 			if (om.waitingForUpdater()) {
 				synchronized (this) {
 					// Reannounce and count it from now.
-					if (this.manifestUpdater.getGotFileTime() > 0) {
-						this.manifestUpdater.setGotFileTime(System.currentTimeMillis());
+					if (this.updateOverUSKManager.getGotFileTime() > 0) {
+						this.updateOverUSKManager.setGotFileTime(System.currentTimeMillis());
 					}
 				}
 				om.reannounce();
@@ -1094,7 +1058,8 @@ public class NodeUpdateManager {
 			Logger.minor(this, "Maybe broadcast UOM announces new (2)");
 		}
 		// If the node has no peers, noRevocationFound will never be called.
-		this.broadcastUOMAnnounceManifest();
+		// TODO
+		// this.broadcastUOMAnnounceManifest();
 	}
 
 	/**
@@ -1104,8 +1069,8 @@ public class NodeUpdateManager {
 		return this.hasBeenBlown;
 	}
 
-	public boolean hasNewMainJar() {
-		return this.manifestUpdater.isHasNewFile();
+	public boolean isHasNewFile() {
+		return this.hasNewFile;
 	}
 
 	/**
@@ -1114,22 +1079,22 @@ public class NodeUpdateManager {
 	 * This includes manifest file fetched via UOM, because the UOM code feeds its results
 	 * through the mainUpdater.
 	 */
-	public int newManifestVersion() {
-		if (this.manifestUpdater == null) {
+	public int getNewVersion() {
+		if (this.updateOverUSKManager == null) {
 			return -1;
 		}
-		return this.manifestUpdater.getFetchedVersion();
+		return this.updateOverUSKManager.getFetchedVersion();
 	}
 
 	public boolean fetchingNewMainJar() {
-		return (this.manifestUpdater != null && this.manifestUpdater.isFetching());
+		return (this.updateOverUSKManager != null && this.updateOverUSKManager.isFetching());
 	}
 
 	public int fetchingNewMainJarVersion() {
-		if (this.manifestUpdater == null) {
+		if (this.updateOverUSKManager == null) {
 			return -1;
 		}
-		return this.manifestUpdater.fetchingVersion();
+		return this.updateOverUSKManager.fetchingVersion();
 	}
 
 	public boolean inFinalCheck() {
@@ -1195,58 +1160,41 @@ public class NodeUpdateManager {
 		return this.peersSayBlown;
 	}
 
-	public File getMainBlob(int version) {
-		AbstractFileUpdater updater;
-		synchronized (this) {
-			if (this.hasBeenBlown) {
-				return null;
-			}
-			updater = this.manifestUpdater;
-			if (updater == null) {
-				return null;
-			}
-		}
-		return updater.getBlobFile(version);
-	}
+	// TODO
+	// public File getMainBlob(int version) {
+	// AbstractUSKUpdateFileFetcher updater;
+	// synchronized (this) {
+	// if (this.hasBeenBlown) {
+	// return null;
+	// }
+	// updater = this.manifestUSKUpdater;
+	// if (updater == null) {
+	// return null;
+	// }
+	// }
+	// return updater.getBlobFile(version);
+	// }
 
 	public synchronized long timeRemainingOnCheck() {
 		long now = System.currentTimeMillis();
-		return Math.max(0, REVOCATION_FETCH_TIMEOUT - (now - this.manifestUpdater.getGotFileTime()));
+		return Math.max(0, REVOCATION_FETCH_TIMEOUT - (now - this.updateOverUSKManager.getGotFileTime()));
 	}
-
-	final ByteCounter ctr = new ByteCounter() {
-
-		@Override
-		public void receivedBytes(int x) {
-			// FIXME
-		}
-
-		@Override
-		public void sentBytes(int x) {
-			NodeUpdateManager.this.node.nodeStats.reportUOMBytesSent(x);
-		}
-
-		@Override
-		public void sentPayload(int x) {
-			// Ignore. It will be reported to sentBytes() as well.
-		}
-
-	};
 
 	public void disableThisSession() {
 		this.disabledThisSession = true;
 	}
 
 	protected long getStartedFetchingNextManifestTimestamp() {
-		return this.manifestUpdater.getStartedFetchingNextFile();
+		return this.updateOverUSKManager.getStartedFetchingNextFile();
 	}
 
-	public void disconnected(PeerNode pn) {
-		this.uom.disconnected(pn);
-	}
+	// TODO
+	// public void disconnected(PeerNode pn) {
+	// this.uom.disconnected(pn);
+	// }
 
 	public void deployPlugin(String fn) throws IOException {
-		PluginJarUpdater updater;
+		PluginJarUpdateFileFetcher updater;
 		synchronized (this) {
 			if (this.hasBeenBlown) {
 				Logger.error(this, "Not deploying update for " + fn + " because revocation key has been blown!");
@@ -1258,7 +1206,7 @@ public class NodeUpdateManager {
 	}
 
 	public void deployPluginWhenReady(String fn) {
-		PluginJarUpdater updater;
+		PluginJarUpdateFileFetcher updater;
 		synchronized (this) {
 			if (this.hasBeenBlown) {
 				Logger.error(this, "Not deploying update for " + fn + " because revocation key has been blown!");
@@ -1281,37 +1229,125 @@ public class NodeUpdateManager {
 		return false;
 	}
 
-	public boolean fetchingFromUOM() {
-		return this.uom.isFetchingMain();
+	// TODO
+	// public boolean fetchingFromUOM() {
+	// return this.uom.isFetchingMain();
+	// }
+
+	/** Show the progress of individual dependencies if possible */
+	public void renderProgress(HTMLNode alertNode) {
+		// TODO
+		// MainJarUpdater m;
+		// synchronized (this) {
+		// if(this.fetchedMainJarData == null) return;
+		// m = mainUpdater;
+		// if(m == null) return;
+		// }
+		// m.renderProperties(alertNode);
 	}
 
-	public void onStartFetchingUOM() {
-		ManifestUpdater m;
-		synchronized (this) {
-			m = this.manifestUpdater;
-			if (m == null) {
-				return;
-			}
-		}
-		m.onStartFetchingUOM();
+	public boolean brokenDependencies() {
+		return false;
+		// TODO
+		// MainJarUpdater m;
+		// synchronized (this) {
+		// m = mainUpdater;
+		// if(m == null) return false;
+		// }
+		// return m.brokenDependencies();
 	}
 
-	public synchronized File getCurrentVersionBlobFile() {
-		if (this.hasNewMainJar) {
-			return null;
-		}
-		if (this.isDeployingUpdate) {
-			return null;
-		}
-		if (this.fetchedMainJarVersion != Version.buildNumber()) {
-			return null;
-		}
-		return this.currentVersionBlobFile;
+	// TODO
+	// public void onStartFetchingUOM() {
+	// ManifestUSKUpdateFileFetcher m;
+	// synchronized (this) {
+	// m = this.manifestUSKUpdater;
+	// if (m == null) {
+	// return;
+	// }
+	// }
+	// m.onStartFetchingUOM();
+	// }
+
+	public ManifestUSKUpdateFileFetcher getManifestUpdater() {
+		return this.updateOverUSKManager;
 	}
 
-	ManifestUpdater getManifestUpdater() {
-		return this.manifestUpdater;
+	public boolean isDeployingUpdate() {
+		return this.isDeployingUpdate;
 	}
+
+	public void setHasNewFile(boolean hasNewFile) {
+		this.hasNewFile = hasNewFile;
+	}
+
+	// Config callbacks
+
+	// TODO
+	// private void parseManifest(int fetched, FetchResult result) {
+	// try (var is = result.asBucket().getInputStream()) {
+	// var fieldSet = new SimpleFieldSet(new BufferedReader(new InputStreamReader(is,
+	// StandardCharsets.UTF_8)),
+	// false, true);
+	//
+	// var count = 0;
+	// var iter = fieldSet.keyIterator();
+	// while (iter.hasNext()) {
+	// count++;
+	// iter.next();
+	// }
+	//
+	// fieldSet.keyIterator().forEachRemaining((key) -> {
+	// // TODO: UoM
+	// try {
+	// String filenameForMe = null;
+	// switch (Platform.getOSType()) {
+	// case Platform.WINDOWS:
+	// filenameForMe = "windows." + Platform.ARCH + ".exe";
+	// break;
+	// case Platform.LINUX:
+	// // TODO
+	// break;
+	// case Platform.MAC:
+	// // TODO
+	// break;
+	// default:
+	// Logger.error(this, "Unsupported OS");
+	// }
+	// final String finalFilenameForMe = filenameForMe;
+	// var puller = new SimplePuller(this.node, new FreenetURI(fieldSet.get(key)), fetched
+	// + "/" + key,
+	// this.node.runDir(), (pullerResult, state) -> {
+	// if (key.equals(finalFilenameForMe)) {
+	// // TODO: make isReadyToDeployUpdate return true
+	// this.hasNewPackageFile = true;
+	// }
+	// }, (ex, state) -> {
+	// if (key.equals(finalFilenameForMe)) {
+	// // We just care about this platform. Ignore errors of
+	// // fetching other packages
+	// if (ex instanceof FetchException fetchException) {
+	// ManifestUSKUpdateFileFetcher.this.onFailure(fetchException, state);
+	// }
+	// else {
+	// var fe = new FetchException(FetchException.FetchExceptionMode.INTERNAL_ERROR);
+	// ManifestUSKUpdateFileFetcher.this.onFailure(fe, state);
+	// }
+	// }
+	// });
+	// puller.start(PriorityClasses.IMMEDIATE_SPLITFILE_PRIORITY_CLASS,
+	// MAX_PACKAGE_LENGTH);
+	// }
+	// catch (MalformedURLException ex) {
+	// throw new RuntimeException(ex);
+	// }
+	// });
+	//
+	// }
+	// catch (IOException ex) {
+	// Logger.error(this, "IOException trying to read manifest on update");
+	// }
+	// }
 
 	private static class UpdateFailedException extends Exception {
 
@@ -1320,8 +1356,6 @@ public class NodeUpdateManager {
 		}
 
 	}
-
-	// Config callbacks
 
 	class UpdaterEnabledCallback extends BooleanCallback {
 
@@ -1345,10 +1379,6 @@ public class NodeUpdateManager {
 
 	}
 
-	public boolean isDeployingUpdate() {
-		return this.isDeployingUpdate;
-	}
-
 	class AutoUpdateAllowedCallback extends BooleanCallback {
 
 		@Override
@@ -1367,7 +1397,7 @@ public class NodeUpdateManager {
 
 		@Override
 		public String get() {
-			return NodeUpdateManager.this.getURI().toString(false, false);
+			return NodeUpdateManager.this.getUpdateURI().toString(false, false);
 		}
 
 		@Override
@@ -1386,7 +1416,7 @@ public class NodeUpdateManager {
 			if (!uri.isUSK()) {
 				throw new InvalidConfigValueException(NodeUpdateManager.this.l10n("updateURIMustBeAUSK"));
 			}
-			NodeUpdateManager.this.setURI(uri);
+			NodeUpdateManager.this.setUpdateURI(uri);
 		}
 
 	}

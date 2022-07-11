@@ -4184,8 +4184,7 @@ public abstract class PeerNode implements USKRetrieverCallback, BasePeerNode, Pe
 		synchronized (this) {
 			this.uomCount = 0;
 			this.lastSentUOM = -1;
-			this.sendingUOMMainJar = false;
-			this.sendingUOMLegacyExtJar = false;
+			this.sendingUOMManifest = false;
 		}
 		OpennetManager om = this.node.getOpennet();
 		if (om != null) {
@@ -5375,11 +5374,8 @@ public abstract class PeerNode implements USKRetrieverCallback, BasePeerNode, Pe
 		}
 	}
 
-	/** Whether we are sending the main jar to this peer */
-	protected boolean sendingUOMMainJar;
-
-	/** Whether we are sending the ext jar (legacy) to this peer */
-	protected boolean sendingUOMLegacyExtJar;
+	/** Whether we are sending the manifest to this peer */
+	protected boolean sendingUOMManifest;
 
 	/**
 	 * The number of UOM transfers in progress to this peer. Note that there are
@@ -5397,43 +5393,27 @@ public abstract class PeerNode implements USKRetrieverCallback, BasePeerNode, Pe
 	// transfer failures happen naturally anyway.
 
 	/**
-	 * Start sending a UOM jar to this peer.
+	 * Start sending a UOM manifest to this peer.
 	 * @return True unless it was already sending, in which case the caller should reject
 	 * it.
 	 */
-	public synchronized boolean sendingUOMJar(boolean isExt) {
-		if (isExt) {
-			if (this.sendingUOMLegacyExtJar) {
-				return false;
-			}
-			this.sendingUOMLegacyExtJar = true;
+	public synchronized boolean sendingUOMManifest() {
+		if (this.sendingUOMManifest) {
+			return false;
 		}
-		else {
-			if (this.sendingUOMMainJar) {
-				return false;
-			}
-			this.sendingUOMMainJar = true;
-		}
+		this.sendingUOMManifest = true;
 		return true;
 	}
 
-	public synchronized void finishedSendingUOMJar(boolean isExt) {
-		if (isExt) {
-			this.sendingUOMLegacyExtJar = false;
-			if (!(this.sendingUOMMainJar || this.uomCount > 0)) {
-				this.lastSentUOM = System.currentTimeMillis();
-			}
-		}
-		else {
-			this.sendingUOMMainJar = false;
-			if (!(this.sendingUOMLegacyExtJar || this.uomCount > 0)) {
-				this.lastSentUOM = System.currentTimeMillis();
-			}
+	public synchronized void finishedSendingUOMManifest() {
+		this.sendingUOMManifest = false;
+		if (this.uomCount <= 0) {
+			this.lastSentUOM = System.currentTimeMillis();
 		}
 	}
 
 	protected synchronized long timeSinceSentUOM() {
-		if (this.sendingUOMMainJar || this.sendingUOMLegacyExtJar) {
+		if (this.sendingUOMManifest) {
 			return 0;
 		}
 		if (this.uomCount > 0) {
@@ -5451,7 +5431,7 @@ public abstract class PeerNode implements USKRetrieverCallback, BasePeerNode, Pe
 
 	public synchronized void decrementUOMSends() {
 		this.uomCount--;
-		if (this.uomCount == 0 && (!this.sendingUOMMainJar) && (!this.sendingUOMLegacyExtJar)) {
+		if (this.uomCount == 0 && (!this.sendingUOMManifest)) {
 			this.lastSentUOM = System.currentTimeMillis();
 		}
 	}

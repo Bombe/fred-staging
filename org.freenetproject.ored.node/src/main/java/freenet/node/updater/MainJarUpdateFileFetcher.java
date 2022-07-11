@@ -51,12 +51,13 @@ import freenet.support.io.Closer;
 import freenet.support.io.FileUtil;
 import freenet.support.io.InsufficientDiskSpaceException;
 
-public class MainJarUpdater extends AbstractJarUpdater implements MainJarDependenciesChecker.Deployer {
+public class MainJarUpdateFileFetcher extends AbstractJarUpdateFileFetcher
+		implements MainJarDependenciesChecker.Deployer {
 
 	private static volatile boolean logMINOR;
 
 	static {
-		Logger.registerClass(MainJarUpdater.class);
+		Logger.registerClass(MainJarUpdateFileFetcher.class);
 	}
 
 	public static final long MAX_MAIN_JAR_LENGTH = 48 * 1024 * 1024; // 48MiB
@@ -67,7 +68,7 @@ public class MainJarUpdater extends AbstractJarUpdater implements MainJarDepende
 
 	private MainJarDependenciesChecker.MainJarDependencies latestMainJarDependencies;
 
-	MainJarUpdater(NodeUpdateManager manager, FreenetURI URI, int current, int min, int max,
+	MainJarUpdateFileFetcher(NodeUpdateManager manager, FreenetURI URI, int current, int min, int max,
 			String blobFilenamePrefix) {
 		super(manager, URI, current, min, max, blobFilenamePrefix);
 		this.dependencyCtx = this.core.makeClient((short) 0, true, false).getFetchContext();
@@ -87,7 +88,7 @@ public class MainJarUpdater extends AbstractJarUpdater implements MainJarDepende
 	}
 
 	public void start() {
-		this.maybeProcessOldBlob();
+		// this.maybeProcessOldBlob();
 		super.start();
 	}
 
@@ -100,7 +101,7 @@ public class MainJarUpdater extends AbstractJarUpdater implements MainJarDepende
 	protected void processSuccess(int fetched, FetchResult result, File blob) {
 		super.processSuccess(fetched, result, blob);
 
-		this.manager.onDownloadedNewJar(result.asBucket(), fetched, blob);
+		// this.manager.onDownloadedNewJar(result.asBucket(), fetched, blob);
 		// NodeUpdateManager expects us to dependencies *AFTER* we tell it about the new
 		// jar.
 		this.parseDependencies(result, fetched);
@@ -108,7 +109,7 @@ public class MainJarUpdater extends AbstractJarUpdater implements MainJarDepende
 
 	@Override
 	protected void onStartFetching() {
-		this.manager.onStartFetching();
+		// this.manager.onStartFetching();
 	}
 
 	// Dependency handling.
@@ -123,13 +124,13 @@ public class MainJarUpdater extends AbstractJarUpdater implements MainJarDepende
 		}
 		MainJarDependenciesChecker.MainJarDependencies deps = this.dependencies.handle(props, build);
 		if (deps != null) {
-			this.manager.onDependenciesReady(deps);
+			// this.manager.onDependenciesReady(deps);
 		}
 	}
 
 	@Override
 	public void deploy(MainJarDependenciesChecker.MainJarDependencies deps) {
-		this.manager.onDependenciesReady(deps);
+		// this.manager.onDependenciesReady(deps);
 	}
 
 	@Override
@@ -351,7 +352,8 @@ public class MainJarUpdater extends AbstractJarUpdater implements MainJarDepende
 		DependencyJarFetcher(File filename, FreenetURI chk, long expectedLength, byte[] expectedHash,
 				MainJarDependenciesChecker.JarFetcherCallback cb, boolean essential, boolean executable)
 				throws FetchException {
-			FetchContext myCtx = new FetchContext(MainJarUpdater.this.dependencyCtx, FetchContext.IDENTICAL_MASK);
+			FetchContext myCtx = new FetchContext(MainJarUpdateFileFetcher.this.dependencyCtx,
+					FetchContext.IDENTICAL_MASK);
 			File parent = filename.getParentFile();
 			if (parent == null) {
 				parent = new File(".");
@@ -384,8 +386,8 @@ public class MainJarUpdater extends AbstractJarUpdater implements MainJarDepende
 				this.fetched = true;
 				f = this.uomFetcher;
 			}
-			MainJarUpdater.this.node.executor.execute(() -> {
-				DependencyJarFetcher.this.getter.cancel(MainJarUpdater.this.clientContext);
+			MainJarUpdateFileFetcher.this.node.executor.execute(() -> {
+				DependencyJarFetcher.this.getter.cancel(MainJarUpdateFileFetcher.this.clientContext);
 				if (f != null) {
 					f.cancel();
 				}
@@ -464,7 +466,7 @@ public class MainJarUpdater extends AbstractJarUpdater implements MainJarDepende
 		}
 
 		private void start() throws FetchException {
-			this.getter.start(MainJarUpdater.this.clientContext);
+			this.getter.start(MainJarUpdateFileFetcher.this.clientContext);
 		}
 
 		synchronized HTMLNode renderRow() {
@@ -472,7 +474,7 @@ public class MainJarUpdater extends AbstractJarUpdater implements MainJarDepende
 			row.addChild("td").addChild("p", this.filename.toString());
 
 			if (this.uomFetcher != null) {
-				row.addChild("td").addChild("#", MainJarUpdater.this.l10n("fetchingFromUOM"));
+				row.addChild("td").addChild("#", MainJarUpdateFileFetcher.this.l10n("fetchingFromUOM"));
 			}
 			else if (this.lastProgress == null) {
 				row.addChild(QueueToadlet.createProgressCell(false, true, COMPRESS_STATE.WORKING, 0, 0, 0, 0, 0, false,
@@ -496,7 +498,7 @@ public class MainJarUpdater extends AbstractJarUpdater implements MainJarDepende
 					return;
 				}
 			}
-			UOMDependencyFetcher f = MainJarUpdater.this.manager.uom.fetchDependency(this.expectedHash,
+			UOMDependencyFetcher f = MainJarUpdateFileFetcher.this.manager.uom.fetchDependency(this.expectedHash,
 					this.expectedLength, this.filename, this.executable, () -> {
 						synchronized (DependencyJarFetcher.this) {
 							if (DependencyJarFetcher.this.fetched) {

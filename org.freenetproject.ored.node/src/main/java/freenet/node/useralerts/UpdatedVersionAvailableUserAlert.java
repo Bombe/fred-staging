@@ -1,3 +1,20 @@
+/*
+ * Copyright 2022 Marine Master
+ *
+ * This file is part of Oldenet.
+ *
+ * Oldenet is free software: you can redistribute it and/or modify it under the terms of
+ * the GNU General Public License as published by the Free Software Foundation, either
+ * version 3 of the License, or any later version.
+ *
+ * Oldenet is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with Oldenet.
+ * If not, see <https://www.gnu.org/licenses/>.
+ */
+
 /* This code is part of Freenet. It is distributed under the GNU General
  * Public License, version 2 (or at your option any later version). See
  * http://www.gnu.org/ for further details of the GPL. */
@@ -105,8 +122,8 @@ public class UpdatedVersionAvailableUserAlert extends BaseNodeUserAlert {
 		}
 
 		int version;
-		if (updater.hasNewMainJar()) {
-			version = updater.newManifestVersion();
+		if (updater.isHasNewFile()) {
+			version = updater.getNewVersion();
 		}
 		else if (updater.fetchingNewMainJar()) {
 			version = updater.fetchingNewMainJarVersion();
@@ -141,8 +158,8 @@ public class UpdatedVersionAvailableUserAlert extends BaseNodeUserAlert {
 		else {
 			String formText;
 			if (updater.canUpdateNow()) {
-				if (updater.hasNewMainJar()) {
-					sb.append(l10n("downloadedNewJar", "version", Integer.toString(updater.newManifestVersion())));
+				if (updater.isHasNewFile()) {
+					sb.append(l10n("downloadedNewJar", "version", Integer.toString(updater.getNewVersion())));
 					sb.append(' ');
 				}
 				if (updater.canUpdateImmediately()) {
@@ -176,7 +193,7 @@ public class UpdatedVersionAvailableUserAlert extends BaseNodeUserAlert {
 
 			if (updater.brokenDependencies()) {
 				sb.append(" ");
-				sb.append(l10n("brokenDependencies", "version", Integer.toString(updater.newManifestVersion())));
+				sb.append(l10n("brokenDependencies", "version", Integer.toString(updater.getNewVersion())));
 			}
 
 			return new UpdateThingy(sb.toString(), formText);
@@ -216,7 +233,7 @@ public class UpdatedVersionAvailableUserAlert extends BaseNodeUserAlert {
 	@Override
 	public boolean isValid() {
 		return updater.isEnabled() && (!updater.isBlown())
-				&& (updater.fetchingNewMainJar() || updater.hasNewMainJar() || updater.fetchingFromUOM());
+				&& (updater.fetchingNewMainJar() || updater.isHasNewFile() || updater.fetchingFromUOM());
 	}
 
 	@Override

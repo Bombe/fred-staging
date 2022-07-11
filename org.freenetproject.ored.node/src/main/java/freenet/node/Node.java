@@ -692,7 +692,7 @@ public class Node implements TimeSkewDetectorCallback, KeyBlockStore, Persistent
 	// ULPRs, RecentlyFailed, per node failure tables, are all managed by FailureTable.
 	final FailureTable failureTable;
 
-	// The version we were before we restarted.
+	/** The version we were before we restarted. */
 	public int lastVersion;
 
 	/** NodeUpdater **/

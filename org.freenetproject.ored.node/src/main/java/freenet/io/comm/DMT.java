@@ -158,13 +158,15 @@ public final class DMT {
 
 	public static final String BEST_LOCATIONS_NOT_VISITED = "bestLocationsNotVisited";
 
-	public static final String MAIN_MANIFEST_KEY = "mainManifestKey";
+	public static final String UPDATE_FILE_TYPE = "updateFileType";
+
+	public static final String UPDATE_FILE_KEY = "updateFileKey";
 
 	public static final String REVOCATION_KEY = "revocationKey";
 
 	public static final String HAVE_REVOCATION_KEY = "haveRevocationKey";
 
-	public static final String MAIN_MANIFEST_VERSION = "mainManifestVersion";
+	public static final String UPDATE_FILE_VERSION = "updateFileVersion";
 
 	public static final String REVOCATION_KEY_TIME_LAST_TRIED = "revocationKeyTimeLastTried";
 
@@ -172,7 +174,7 @@ public final class DMT {
 
 	public static final String REVOCATION_KEY_FILE_LENGTH = "revocationKeyFileLength";
 
-	public static final String MAIN_MANIFEST_FILE_LENGTH = "mainManifestFileLength";
+	public static final String UPDATE_FILE_LENGTH = "updateFileLength";
 
 	public static final String PING_TIME = "pingTime";
 
@@ -1809,37 +1811,39 @@ public final class DMT {
 	// different from Freenet's to avoid conflicts.
 
 	// Was UOMAnnouncement in Freenet.
-	public static final MessageType UOMAnnounceManifest = new MessageType("UOMAnnounceManifest", PRIORITY_LOW) {
+	public static final MessageType UOMAnnounceUpdateFile = new MessageType("UOMAnnounceUpdateFile", PRIORITY_LOW) {
 		{
-			this.addField(MAIN_MANIFEST_KEY, String.class);
+			this.addField(UPDATE_FILE_TYPE, String.class);
+			this.addField(UPDATE_FILE_KEY, String.class);
 			this.addField(REVOCATION_KEY, String.class);
 			this.addField(HAVE_REVOCATION_KEY, Boolean.class);
-			this.addField(MAIN_MANIFEST_VERSION, Long.class);
+			this.addField(UPDATE_FILE_VERSION, Long.class);
 			// Last time (ms ago) we had 3 DNFs in a row on the revocation checker.
 			this.addField(REVOCATION_KEY_TIME_LAST_TRIED, Long.class);
 			// Number of DNFs so far this time.
 			this.addField(REVOCATION_KEY_DNF_COUNT, Integer.class);
 			// For convenience, may change
 			this.addField(REVOCATION_KEY_FILE_LENGTH, Long.class);
-			this.addField(MAIN_MANIFEST_FILE_LENGTH, Long.class);
+			this.addField(UPDATE_FILE_LENGTH, Long.class);
 			this.addField(PING_TIME, Integer.class);
 			this.addField(BWLIMIT_DELAY_TIME, Integer.class);
 		}
 	};
 
-	public static Message createUOMAnnounceManifest(String mainKey, String revocationKey, boolean haveRevocation,
-			long mainManifestVersion, long timeLastTriedRevocationFetch, int revocationDNFCount,
-			long revocationKeyLength, long mainManifestLength, int pingTime, int bwlimitDelayTime) {
-		Message msg = new Message(UOMAnnounceManifest);
+	public static Message createUOMAnnounceUpdateFile(String fileType, String fileKey, String revocationKey,
+			boolean haveRevocation, long fileVersion, long timeLastTriedRevocationFetch, int revocationDNFCount,
+			long revocationKeyLength, long fileLength, int pingTime, int bwlimitDelayTime) {
+		Message msg = new Message(UOMAnnounceUpdateFile);
 
-		msg.set(MAIN_MANIFEST_KEY, mainKey);
+		msg.set(UPDATE_FILE_TYPE, fileType);
+		msg.set(UPDATE_FILE_KEY, fileKey);
 		msg.set(REVOCATION_KEY, revocationKey);
 		msg.set(HAVE_REVOCATION_KEY, haveRevocation);
-		msg.set(MAIN_MANIFEST_VERSION, mainManifestVersion);
+		msg.set(UPDATE_FILE_VERSION, fileVersion);
 		msg.set(REVOCATION_KEY_TIME_LAST_TRIED, timeLastTriedRevocationFetch);
 		msg.set(REVOCATION_KEY_DNF_COUNT, revocationDNFCount);
 		msg.set(REVOCATION_KEY_FILE_LENGTH, revocationKeyLength);
-		msg.set(MAIN_MANIFEST_FILE_LENGTH, mainManifestLength);
+		msg.set(UPDATE_FILE_LENGTH, fileLength);
 		msg.set(PING_TIME, pingTime);
 		msg.set(BWLIMIT_DELAY_TIME, bwlimitDelayTime);
 
@@ -1901,8 +1905,8 @@ public final class DMT {
 		{
 			this.addField(UID, Long.class);
 			this.addField(FILE_LENGTH, Long.class);
-			this.addField(MAIN_MANIFEST_KEY, String.class);
-			this.addField(MAIN_MANIFEST_VERSION, Integer.class);
+			this.addField(UPDATE_FILE_KEY, String.class);
+			this.addField(UPDATE_FILE_VERSION, Integer.class);
 		}
 	};
 
@@ -1910,8 +1914,8 @@ public final class DMT {
 		Message msg = new Message(UOMSendingManifest);
 		msg.set(UID, uid);
 		msg.set(FILE_LENGTH, length);
-		msg.set(MAIN_MANIFEST_KEY, key);
-		msg.set(MAIN_MANIFEST_VERSION, version);
+		msg.set(UPDATE_FILE_KEY, key);
+		msg.set(UPDATE_FILE_VERSION, version);
 		return msg;
 	}
 
