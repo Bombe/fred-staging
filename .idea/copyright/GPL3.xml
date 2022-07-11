@@ -1,0 +1,7 @@
+<component name="CopyrightManager">
+  <copyright>
+    <option name="allowReplaceRegexp" value="Marine Master" />
+    <option name="notice" value="#set( &amp;#36;check = &amp;#36;originalComment.getText().contains(&quot;Copyright 1999&quot;) )&#10;#if( &amp;#36;check )Copyright 1999-2022 The Freenet Project&#10;#end&#10;Copyright &amp;#36;originalComment.match(&quot;Copyright (\d+)&quot;, 1, &quot;-&quot;, &quot;2022&quot;)&amp;#36;today.year Marine Master&#10;&#10;This file is part of Oldenet.&#10;&#10;Oldenet is free software: you can redistribute it and/or modify it under the terms of&#10;the GNU General Public License as published by the Free Software Foundation, either&#10;version 3 of the License, or any later version.&#10;&#10;Oldenet is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;&#10;without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.&#10;See the GNU General Public License for more details.&#10;&#10;You should have received a copy of the GNU General Public License along with Oldenet.&#10;If not, see &lt;https://www.gnu.org/licenses/&gt;." />
+    <option name="myName" value="GPL3" />
+  </copyright>
+</component>
