@@ -15,26 +15,31 @@
  * If not, see <https://www.gnu.org/licenses/>.
  */
 
-package freenet.node.event.update;
+package freenet.node.updater;
 
-import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.Map;
 
-public class UpdateManagerStatusUpdatedEvent {
+public enum InstallPackageType {
 
-	public enum StatusType {
+	MSI_X86_64("msi_x86_64");
 
-		ENABLED, BLOWN, DEPLOYING, ARMED
+	public final String label;
 
+	private static final Map<String, InstallPackageType> BY_LABEL = new HashMap<>();
+
+	static {
+		for (InstallPackageType e : values()) {
+			BY_LABEL.put(e.label, e);
+		}
 	}
 
-	private final EnumMap<StatusType, Boolean> statusMap;
-
-	public UpdateManagerStatusUpdatedEvent(EnumMap<StatusType, Boolean> statusMap) {
-		this.statusMap = statusMap;
+	InstallPackageType(String label) {
+		this.label = label;
 	}
 
-	public boolean getStatus(StatusType type) {
-		return this.statusMap.getOrDefault(type, false);
+	public static InstallPackageType valueOfLabel(String label) {
+		return BY_LABEL.get(label);
 	}
 
 }

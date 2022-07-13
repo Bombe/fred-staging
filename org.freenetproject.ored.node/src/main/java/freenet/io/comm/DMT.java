@@ -1866,14 +1866,14 @@ public final class DMT {
 
 	// Was UOMRequestMainJar in Freenet.
 	// Used by new UOM.
-	public static final MessageType UOMRequestManifest = new MessageType("UOMRequestManifest", PRIORITY_LOW) {
+	public static final MessageType UOMRequestUpdateFile = new MessageType("UOMRequestUpdateFile", PRIORITY_LOW) {
 		{
 			this.addField(UID, Long.class);
 		}
 	};
 
-	public static Message createUOMRequestManifest(long uid) {
-		Message msg = new Message(UOMRequestManifest);
+	public static Message createUOMRequestUpdateFile(long uid) {
+		Message msg = new Message(UOMRequestUpdateFile);
 		msg.set(UID, uid);
 		return msg;
 	}

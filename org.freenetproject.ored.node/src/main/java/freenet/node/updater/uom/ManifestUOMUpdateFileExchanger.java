@@ -1,9 +1,25 @@
+/*
+ * Copyright 2022 Marine Master
+ *
+ * This file is part of Oldenet.
+ *
+ * Oldenet is free software: you can redistribute it and/or modify it under the terms of
+ * the GNU General Public License as published by the Free Software Foundation, either
+ * version 3 of the License, or any later version.
+ *
+ * Oldenet is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with Oldenet.
+ * If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package freenet.node.updater.uom;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
 import freenet.client.request.PriorityClasses;
 import freenet.io.comm.AsyncMessageCallback;
@@ -16,7 +32,6 @@ import freenet.io.xfer.PartiallyReceivedBulk;
 import freenet.keys.FreenetURI;
 import freenet.lockablebuffer.FileRandomAccessBuffer;
 import freenet.node.Node;
-import freenet.node.NodeStats;
 import freenet.node.PeerNode;
 import freenet.node.Version;
 import freenet.node.event.update.UOMManifestRequestSuccessEvent;
@@ -34,18 +49,11 @@ public class ManifestUOMUpdateFileExchanger extends AbstractUOMUpdateFileExchang
 		Logger.registerClass(UpdateOverMandatoryManager.class);
 	}
 
-	// 2 for reliability, no more as gets very slow/wasteful
-	static final int MAX_NODES_SENDING_MANIFEST = 2;
+	public ManifestUOMUpdateFileExchanger(Node node, int currentVersion, int minDeployVersion, int maxDeployVersion,
+			FreenetURI updateURI, FreenetURI revocationURI, RevocationChecker revocationChecker) {
 
-	/** Maximum time between asking for the manifest and it starting to transfer */
-	static final long REQUEST_MANIFEST_TIMEOUT = TimeUnit.SECONDS.toMillis(60);
-
-	public ManifestUOMUpdateFileExchanger(Node node, String fileType, int currentVersion, int minDeployVersion,
-			int maxDeployVersion, FreenetURI updateURI, FreenetURI revocationURI, RevocationChecker revocationChecker,
-			NodeStats nodeStats) {
-
-		super(node, fileType, currentVersion, minDeployVersion, maxDeployVersion, updateURI, revocationURI,
-				revocationChecker, nodeStats);
+		super(node, "manifest", currentVersion, minDeployVersion, maxDeployVersion, updateURI, revocationURI,
+				revocationChecker);
 	}
 
 	/**

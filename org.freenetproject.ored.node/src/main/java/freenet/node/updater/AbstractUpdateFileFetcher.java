@@ -103,7 +103,7 @@ public abstract class AbstractUpdateFileFetcher {
 	protected Bucket fetchedFileData;
 
 	/** If another file is being fetched, when did the fetch start? */
-	private long startedFetchingNextFile;
+	protected long startedFetchingNextFile;
 
 	/** Time when we got the file */
 	private long gotFileTime;
@@ -127,6 +127,9 @@ public abstract class AbstractUpdateFileFetcher {
 	/** Whether update is being deployed. */
 	protected volatile boolean updateDeploying;
 
+	/** Whether user triggered the update. */
+	protected volatile boolean updateArmed;
+
 	protected AbstractUpdateFileFetcher(Node node, String fileType, int currentVersion, int minDeployVersion,
 			int maxDeployVersion) {
 
@@ -149,6 +152,7 @@ public abstract class AbstractUpdateFileFetcher {
 		this.updateEnabled = event.getStatus(StatusType.ENABLED);
 		this.updateBlown = event.getStatus(StatusType.BLOWN);
 		this.updateDeploying = event.getStatus(StatusType.DEPLOYING);
+		this.updateArmed = event.getStatus(StatusType.ARMED);
 	}
 
 	/**

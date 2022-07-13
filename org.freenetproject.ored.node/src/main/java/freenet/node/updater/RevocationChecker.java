@@ -18,6 +18,8 @@
 
 package freenet.node.updater;
 
+import java.io.DataInputStream;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -32,17 +34,27 @@ import freenet.client.FetchContext;
 import freenet.client.FetchException;
 import freenet.client.FetchException.FetchExceptionMode;
 import freenet.client.FetchResult;
+import freenet.client.InsertContext;
+import freenet.client.InsertException;
+import freenet.client.async.BaseClientPutter;
+import freenet.client.async.BinaryBlob;
+import freenet.client.async.BinaryBlobFormatException;
 import freenet.client.async.BinaryBlobWriter;
 import freenet.client.async.ClientContext;
 import freenet.client.async.ClientGetCallback;
 import freenet.client.async.ClientGetter;
+import freenet.client.async.ClientPutCallback;
+import freenet.client.async.ClientPutter;
 import freenet.client.async.PersistenceDisabledException;
+import freenet.client.async.SimpleBlockSet;
 import freenet.client.request.PriorityClasses;
 import freenet.client.request.RequestClient;
+import freenet.keys.FreenetURI;
 import freenet.l10n.NodeL10n;
 import freenet.lockablebuffer.ByteArrayRandomAccessBuffer;
 import freenet.lockablebuffer.FileRandomAccessBuffer;
 import freenet.node.NodeClientCore;
+import freenet.node.PeerNode;
 import freenet.nodelogger.Logger;
 import freenet.support.Logger.LogLevel;
 import freenet.support.MediaType;
@@ -91,10 +103,13 @@ public class RevocationChecker implements ClientGetCallback, RequestClient {
 		this.logMINOR = Logger.shouldLog(LogLevel.MINOR, this);
 		this.ctxRevocation = this.core.makeClient((short) 0, true, false).getFetchContext();
 		// Do not allow redirects etc.
+		//
 		// If we allow redirects then it will take too long to download the revocation.
 		// Anyone inserting it should be aware of this fact!
+		//
 		// You must insert with no content type, and be less than the size limit, and less
 		// than the block size after compression!
+		//
 		// If it doesn't fit, we'll still tell the user, but the message may not be easily
 		// readable.
 		this.ctxRevocation.allowSplitfiles = false;
@@ -103,12 +118,11 @@ public class RevocationChecker implements ClientGetCallback, RequestClient {
 		// big enough ?
 		this.ctxRevocation.maxOutputLength = NodeUpdateManager.MAX_REVOCATION_KEY_LENGTH;
 		this.ctxRevocation.maxTempLength = NodeUpdateManager.MAX_REVOCATION_KEY_TEMP_LENGTH;
-		this.ctxRevocation.maxSplitfileBlockRetries = -1; // if we find content, try
-															// forever to
-															// get it; not used because of
-															// the
-															// above size limits.
-		this.ctxRevocation.maxNonSplitfileRetries = 0; // but return quickly normally
+		// if we find content, try forever to get it; not used because of the above size
+		// limits.
+		this.ctxRevocation.maxSplitfileBlockRetries = -1;
+		// but return quickly normally
+		this.ctxRevocation.maxNonSplitfileRetries = 0;
 	}
 
 	public int getRevocationDNFCounter() {
@@ -122,7 +136,7 @@ public class RevocationChecker implements ClientGetCallback, RequestClient {
 			try {
 				BucketTools.copy(new FileBucket(this.blobFile, true, false, false, true), bucket);
 				// Allow to free if bogus.
-				this.manager.uom.processRevocationBlob(bucket, "disk", true);
+				this.processRevocationBlob(bucket, "disk", true);
 			}
 			catch (IOException ex) {
 				Logger.error(this, "Failed to read old revocation blob: " + ex, ex);
@@ -424,6 +438,226 @@ public class RevocationChecker implements ClientGetCallback, RequestClient {
 	public void kill() {
 		if (this.revocationGetter != null) {
 			this.revocationGetter.cancel(this.core.clientContext);
+		}
+	}
+
+	void processRevocationBlob(final File temp, PeerNode source) {
+		this.processRevocationBlob(new FileBucket(temp, true, false, false, true), source.userToString(), false);
+	}
+
+	/**
+	 * Process a binary blob for a revocation certificate (the revocation key).
+	 * @param temp The file it was written to.
+	 */
+	void processRevocationBlob(final Bucket temp, final String source, final boolean fromDisk) {
+
+		SimpleBlockSet blocks = new SimpleBlockSet();
+
+		try (DataInputStream dis = new DataInputStream(temp.getInputStream())) {
+			BinaryBlob.readBinaryBlob(dis, blocks, true);
+		}
+		catch (FileNotFoundException ex) {
+			Logger.error(this,
+					"Somebody deleted " + temp + " ? We lost the revocation certificate from " + source + "!");
+			System.err
+					.println("Somebody deleted " + temp + " ? We lost the revocation certificate from " + source + "!");
+			if (!fromDisk) {
+				this.manager.blow(
+						"Somebody deleted " + temp + " ? We lost the revocation certificate from " + source + "!",
+						true);
+			}
+			return;
+		}
+		catch (EOFException ex) {
+			Logger.error(this,
+					"Peer " + source
+							+ " sent us an invalid revocation certificate! (data too short, might be truncated): " + ex
+							+ " (data in " + temp + ")",
+					ex);
+			System.err.println("Peer " + source
+					+ " sent us an invalid revocation certificate! (data too short, might be truncated): " + ex
+					+ " (data in " + temp + ")");
+			// Probably malicious, might just be buggy, either way, it's not blown
+			ex.printStackTrace();
+			// FIXME file will be kept until exit for debugging purposes
+			return;
+		}
+		catch (BinaryBlobFormatException ex) {
+			Logger.error(this,
+					"Peer " + source + " sent us an invalid revocation certificate!: " + ex + " (data in " + temp + ")",
+					ex);
+			System.err.println("Peer " + source + " sent us an invalid revocation certificate!: " + ex + " (data in "
+					+ temp + ")");
+			// Probably malicious, might just be buggy, either way, it's not blown
+			ex.printStackTrace();
+			// FIXME file will be kept until exit for debugging purposes
+			return;
+		}
+		catch (IOException ex) {
+			Logger.error(this,
+					"Could not read revocation cert from temp file " + temp + " from node " + source + " ! : " + ex,
+					ex);
+			System.err.println(
+					"Could not read revocation cert from temp file " + temp + " from node " + source + " ! : " + ex);
+			ex.printStackTrace();
+			if (!fromDisk) {
+				this.manager.blow(
+						"Could not read revocation cert from temp file " + temp + " from node " + source + " ! : " + ex,
+						true);
+			}
+			// FIXME will be kept until exit for debugging purposes
+			return;
+		}
+		// Ignore
+
+		// Fetch our revocation key from the datastore plus the binary blob
+
+		FetchContext seedContext = this.manager.node.clientCore.makeClient((short) 0, true, false).getFetchContext();
+		FetchContext tempContext = new FetchContext(seedContext, FetchContext.IDENTICAL_MASK, true, blocks);
+		// If it is too big, we get a TOO_BIG. This is fatal so we will blow, which is the
+		// right thing as it means the top block is valid.
+		tempContext.maxOutputLength = NodeUpdateManager.MAX_REVOCATION_KEY_LENGTH;
+		tempContext.maxTempLength = NodeUpdateManager.MAX_REVOCATION_KEY_TEMP_LENGTH;
+		tempContext.localRequestOnly = true;
+
+		final ArrayBucket cleanedBlob = new ArrayBucket();
+
+		ClientGetCallback myCallback = new ClientGetCallback() {
+
+			@Override
+			public void onFailure(FetchException e, ClientGetter state) {
+				if (e.mode == FetchExceptionMode.CANCELLED) {
+					// Eh?
+					Logger.error(this, "Cancelled fetch from store/blob of revocation certificate from " + source);
+					System.err.println("Cancelled fetch from store/blob of revocation certificate from " + source
+							+ " to " + temp + " - please report to developers");
+					// Probably best to keep files around for now.
+				}
+				else if (e.isFatal()) {
+					// Blown: somebody inserted a revocation message, but it was corrupt
+					// as inserted
+					// However it had valid signatures etc.
+
+					System.err.println("Got revocation certificate from " + source
+							+ " (fatal error i.e. someone with the key inserted bad data) : " + e);
+					// Blow the update, and propagate the revocation certificate.
+					RevocationChecker.this.manager.revocationChecker.onFailure(e, state, cleanedBlob);
+					// Don't delete it if it's from disk, as it's already in the right
+					// place.
+					if (!fromDisk) {
+						temp.free();
+					}
+
+					RevocationChecker.this.insertBlob(RevocationChecker.this.manager.revocationChecker.getBlobBucket(),
+							"revocation", PriorityClasses.INTERACTIVE_PRIORITY_CLASS);
+				}
+				else {
+					String message = "Failed to fetch revocation certificate from blob from " + source + " : " + e
+							+ (fromDisk ? " : did you change the revocation key?"
+									: " : this is almost certainly bogus i.e. the auto-update is fine but the node is broken.");
+					Logger.error(this, message);
+					System.err.println(message);
+					// This is almost certainly bogus.
+					// Delete it, even if it's fromDisk.
+					temp.free();
+					cleanedBlob.free();
+				}
+			}
+
+			@Override
+			public void onSuccess(FetchResult result, ClientGetter state) {
+				System.err.println("Got revocation certificate from " + source);
+				RevocationChecker.this.manager.revocationChecker.onSuccess(result, state, cleanedBlob);
+				if (!fromDisk) {
+					temp.free();
+				}
+				RevocationChecker.this.insertBlob(RevocationChecker.this.manager.revocationChecker.getBlobBucket(),
+						"revocation", PriorityClasses.INTERACTIVE_PRIORITY_CLASS);
+			}
+
+			@Override
+			public void onResume(ClientContext context) {
+				// Not persistent.
+			}
+
+			@Override
+			public RequestClient getRequestClient() {
+				return RevocationChecker.this;
+			}
+		};
+
+		ClientGetter cg = new ClientGetter(myCallback, this.manager.getRevocationURI(), tempContext, (short) 0, null,
+				new BinaryBlobWriter(cleanedBlob), null);
+
+		try {
+			this.manager.node.clientCore.clientContext.start(cg);
+		}
+		catch (FetchException e1) {
+			System.err.println("Failed to decode UOM blob: " + e1);
+			e1.printStackTrace();
+			myCallback.onFailure(e1, cg);
+		}
+		catch (PersistenceDisabledException ignored) {
+			// Impossible
+		}
+
+	}
+
+	protected void insertBlob(final RandomAccessBucket bucket, final String type, short priority) {
+		ClientPutCallback callback = new ClientPutCallback() {
+
+			@Override
+			public void onFailure(InsertException e, BaseClientPutter state) {
+				Logger.error(this, "Failed to insert " + type + " binary blob: " + e, e);
+			}
+
+			@Override
+			public void onFetchable(BaseClientPutter state) {
+				// Ignore
+			}
+
+			@Override
+			public void onGeneratedURI(FreenetURI uri, BaseClientPutter state) {
+				// Ignore
+			}
+
+			@Override
+			public void onSuccess(BaseClientPutter state) {
+				// All done. Cool.
+				Logger.normal(this, "Inserted " + type + " binary blob");
+			}
+
+			@Override
+			public void onGeneratedMetadata(Bucket metadata, BaseClientPutter state) {
+				Logger.error(this, "Got onGeneratedMetadata inserting blob from " + state, new Exception("error"));
+				metadata.free();
+			}
+
+			@Override
+			public void onResume(ClientContext context) {
+				// Not persistent.
+			}
+
+			@Override
+			public RequestClient getRequestClient() {
+				return RevocationChecker.this;
+			}
+
+		};
+		// We are inserting a binary blob so we don't need to worry about
+		// CompatibilityMode etc.
+		InsertContext ctx = this.manager.node.clientCore
+				.makeClient(PriorityClasses.INTERACTIVE_PRIORITY_CLASS, false, false).getInsertContext(true);
+		ClientPutter putter = new ClientPutter(callback, bucket, FreenetURI.EMPTY_CHK_URI, null, ctx, priority, false,
+				null, true, this.manager.node.clientCore.clientContext, null, -1);
+		try {
+			this.manager.node.clientCore.clientContext.start(putter);
+		}
+		catch (InsertException e1) {
+			Logger.error(this, "Failed to start insert of " + type + " binary blob: " + e1, e1);
+		}
+		catch (PersistenceDisabledException ignored) {
+			// Impossible
 		}
 	}
 

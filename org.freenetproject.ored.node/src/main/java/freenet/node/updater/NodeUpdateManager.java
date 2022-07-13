@@ -35,7 +35,6 @@ import freenet.config.InvalidConfigValueException;
 import freenet.config.NodeNeedRestartException;
 import freenet.config.StringCallback;
 import freenet.config.SubConfig;
-import freenet.io.comm.ByteCounter;
 import freenet.keys.FreenetURI;
 import freenet.l10n.NodeL10n;
 import freenet.node.Node;
@@ -134,25 +133,6 @@ public class NodeUpdateManager {
 
 	RevocationChecker revocationChecker;
 
-	final ByteCounter ctr = new ByteCounter() {
-
-		@Override
-		public void receivedBytes(int x) {
-			// FIXME
-		}
-
-		@Override
-		public void sentBytes(int x) {
-			NodeUpdateManager.this.node.nodeStats.reportUOMBytesSent(x);
-		}
-
-		@Override
-		public void sentPayload(int x) {
-			// Ignore. It will be reported to sentBytes() as well.
-		}
-
-	};
-
 	private final boolean wasEnabledOnStartup;
 
 	// FIXME make configurable
@@ -201,7 +181,11 @@ public class NodeUpdateManager {
 
 	private boolean disabledNotBlown;
 
-	private volatile boolean hasNewFile;
+	/**
+	 * Best version fetched by fetchers. Best version is the version that is: 1) the
+	 * latest 2) not revoked
+	 */
+	private int bestFetchedVersion;
 
 	/** The blob file for the current version, for UOM */
 	protected File currentVersionBlobFile;
@@ -1009,6 +993,8 @@ public class NodeUpdateManager {
 
 	public void arm() {
 		this.armed = true;
+		this.postStatusUpdatedEvent();
+
 		OpennetManager om = this.node.getOpennet();
 		if (om != null) {
 			if (om.waitingForUpdater()) {
@@ -1184,10 +1170,6 @@ public class NodeUpdateManager {
 		this.disabledThisSession = true;
 	}
 
-	protected long getStartedFetchingNextManifestTimestamp() {
-		return this.updateOverUSKManager.getStartedFetchingNextFile();
-	}
-
 	// TODO
 	// public void disconnected(PeerNode pn) {
 	// this.uom.disconnected(pn);
@@ -1275,10 +1257,6 @@ public class NodeUpdateManager {
 
 	public boolean isDeployingUpdate() {
 		return this.isDeployingUpdate;
-	}
-
-	public void setHasNewFile(boolean hasNewFile) {
-		this.hasNewFile = hasNewFile;
 	}
 
 	// Config callbacks
