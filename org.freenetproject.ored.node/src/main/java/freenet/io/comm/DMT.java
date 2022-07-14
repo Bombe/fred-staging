@@ -26,6 +26,7 @@ import freenet.keys.NodeSSK;
 import freenet.node.NodeStats.PeerLoadStats;
 import freenet.node.probe.Error;
 import freenet.node.probe.Type;
+import freenet.node.updater.UpdateFileType;
 import freenet.support.BitArray;
 import freenet.support.Fields;
 import freenet.support.ShortBuffer;
@@ -1830,12 +1831,12 @@ public final class DMT {
 		}
 	};
 
-	public static Message createUOMAnnounceUpdateFile(String fileType, String fileKey, String revocationKey,
+	public static Message createUOMAnnounceUpdateFile(UpdateFileType fileType, String fileKey, String revocationKey,
 			boolean haveRevocation, long fileVersion, long timeLastTriedRevocationFetch, int revocationDNFCount,
 			long revocationKeyLength, long fileLength, int pingTime, int bwlimitDelayTime) {
 		Message msg = new Message(UOMAnnounceUpdateFile);
 
-		msg.set(UPDATE_FILE_TYPE, fileType);
+		msg.set(UPDATE_FILE_TYPE, fileType.name());
 		msg.set(UPDATE_FILE_KEY, fileKey);
 		msg.set(REVOCATION_KEY, revocationKey);
 		msg.set(HAVE_REVOCATION_KEY, haveRevocation);
@@ -1851,16 +1852,18 @@ public final class DMT {
 	}
 
 	// Was UOMRequestRevocation in Freenet.
-	public static final MessageType UOMRequestRevocationManifest = new MessageType("UOMRequestRevocationManifest",
+	public static final MessageType UOMRequestRevocationUpdateFile = new MessageType("UOMRequestRevocationUpdateFile",
 			PRIORITY_HIGH) {
 		{
 			this.addField(UID, Long.class);
+			this.addField(UPDATE_FILE_TYPE, String.class);
 		}
 	};
 
-	public static Message createUOMRequestRevocationManifest(long uid) {
-		Message msg = new Message(UOMRequestRevocationManifest);
+	public static Message createUOMRequestRevocationUpdateFile(long uid, UpdateFileType fileType) {
+		Message msg = new Message(UOMRequestRevocationUpdateFile);
 		msg.set(UID, uid);
+		msg.set(UPDATE_FILE_TYPE, fileType.name());
 		return msg;
 	}
 
@@ -1869,20 +1872,23 @@ public final class DMT {
 	public static final MessageType UOMRequestUpdateFile = new MessageType("UOMRequestUpdateFile", PRIORITY_LOW) {
 		{
 			this.addField(UID, Long.class);
+			this.addField(UPDATE_FILE_TYPE, String.class);
 		}
 	};
 
-	public static Message createUOMRequestUpdateFile(long uid) {
+	public static Message createUOMRequestUpdateFile(long uid, UpdateFileType fileType) {
 		Message msg = new Message(UOMRequestUpdateFile);
 		msg.set(UID, uid);
+		msg.set(UPDATE_FILE_TYPE, fileType.name());
 		return msg;
 	}
 
 	// Was UOMSendingRevocation in Freenet.
-	public static final MessageType UOMSendingRevocationManifest = new MessageType("UOMSendingRevocationManifest",
+	public static final MessageType UOMSendingRevocationUpdateFile = new MessageType("UOMSendingRevocationUpdateFile",
 			PRIORITY_HIGH) {
 		{
 			this.addField(UID, Long.class);
+			this.addField(UPDATE_FILE_TYPE, String.class);
 			// Probably excessive, but lengths are always long's, and wasting a few bytes
 			// here
 			// doesn't matter in the least, as it's very rarely called.
@@ -1891,9 +1897,11 @@ public final class DMT {
 		}
 	};
 
-	public static Message createUOMSendingRevocationManifest(long uid, long length, String key) {
-		Message msg = new Message(UOMSendingRevocationManifest);
+	public static Message createUOMSendingRevocationUpdateFile(long uid, UpdateFileType fileType, long length,
+			String key) {
+		Message msg = new Message(UOMSendingRevocationUpdateFile);
 		msg.set(UID, uid);
+		msg.set(UPDATE_FILE_TYPE, fileType.name());
 		msg.set(FILE_LENGTH, length);
 		msg.set(REVOCATION_KEY, key);
 		return msg;
@@ -1901,18 +1909,21 @@ public final class DMT {
 
 	// Was UOMSendingMainJar in Freenet.
 	// Used by new UOM. We need to distinguish them in NodeDispatcher.
-	public static final MessageType UOMSendingManifest = new MessageType("UOMSendingManifest", PRIORITY_LOW) {
+	public static final MessageType UOMSendingUpdateFile = new MessageType("UOMSendingUpdateFile", PRIORITY_LOW) {
 		{
 			this.addField(UID, Long.class);
+			this.addField(UPDATE_FILE_TYPE, String.class);
 			this.addField(FILE_LENGTH, Long.class);
 			this.addField(UPDATE_FILE_KEY, String.class);
 			this.addField(UPDATE_FILE_VERSION, Integer.class);
 		}
 	};
 
-	public static Message createUOMSendingManifest(long uid, long length, String key, int version) {
-		Message msg = new Message(UOMSendingManifest);
+	public static Message createUOMSendingUpdateFile(long uid, UpdateFileType fileType, long length, String key,
+			int version) {
+		Message msg = new Message(UOMSendingUpdateFile);
 		msg.set(UID, uid);
+		msg.set(UPDATE_FILE_TYPE, fileType.name());
 		msg.set(FILE_LENGTH, length);
 		msg.set(UPDATE_FILE_KEY, key);
 		msg.set(UPDATE_FILE_VERSION, version);
@@ -1926,21 +1937,22 @@ public final class DMT {
 	 * BulkTransmitter transfer.
 	 */
 	// Was UOMFetchDependency in Freenet.
-	public static final MessageType UOMFetchPackage = new MessageType("UOMFetchPackage", PRIORITY_LOW) {
-		{
-			this.addField(UID, Long.class); // This will be used for the transfer.
-			this.addField(EXPECTED_HASH, ShortBuffer.class); // Fetch by hash
-			this.addField(FILE_LENGTH, Long.class); // Length is known by both sides.
-		}
-	};
-
-	public static Message createUOMFetchPackage(long uid, byte[] hash, long length) {
-		Message msg = new Message(UOMFetchPackage);
-		msg.set(UID, uid);
-		msg.set(EXPECTED_HASH, new ShortBuffer(hash));
-		msg.set(FILE_LENGTH, length);
-		return msg;
-	}
+	// public static final MessageType UOMFetchPackage = new
+	// MessageType("UOMFetchPackage", PRIORITY_LOW) {
+	// {
+	// this.addField(UID, Long.class); // This will be used for the transfer.
+	// this.addField(EXPECTED_HASH, ShortBuffer.class); // Fetch by hash
+	// this.addField(FILE_LENGTH, Long.class); // Length is known by both sides.
+	// }
+	// };
+	//
+	// public static Message createUOMFetchPackage(long uid, byte[] hash, long length) {
+	// Message msg = new Message(UOMFetchPackage);
+	// msg.set(UID, uid);
+	// msg.set(EXPECTED_HASH, new ShortBuffer(hash));
+	// msg.set(FILE_LENGTH, length);
+	// return msg;
+	// }
 
 	// Secondary messages (debug messages attached to primary messages)
 

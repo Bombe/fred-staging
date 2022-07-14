@@ -249,17 +249,17 @@ public class NodeDispatcher implements Dispatcher, Runnable {
 		else if (spec == DMT.UOMAnnounceUpdateFile && source.isRealConnection()) {
 			return this.node.nodeUpdater.uom.handleAnnounceUpdateFile(m, source);
 		}
-		else if (spec == DMT.UOMRequestRevocationManifest && source.isRealConnection()) {
-			return this.node.nodeUpdater.uom.handleRequestRevocationManifest(m, source);
+		else if (spec == DMT.UOMRequestRevocationUpdateFile && source.isRealConnection()) {
+			return this.node.nodeUpdater.uom.handleRequestRevocationUpdateFile(m, source);
 		}
-		else if (spec == DMT.UOMSendingRevocationManifest && source.isRealConnection()) {
-			return this.node.nodeUpdater.uom.handleSendingRevocationManifest(m, source);
+		else if (spec == DMT.UOMSendingRevocationUpdateFile && source.isRealConnection()) {
+			return this.node.nodeUpdater.uom.handleSendingRevocationUpdateFile(m, source);
 		}
 		else if (spec == DMT.UOMRequestUpdateFile && this.node.nodeUpdater.isEnabled() && source.isRealConnection()) {
 			this.node.nodeUpdater.getManifestUpdater().handleRequestManifest(m, source);
 			return true;
 		}
-		else if (spec == DMT.UOMSendingManifest && this.node.nodeUpdater.isEnabled() && source.isRealConnection()) {
+		else if (spec == DMT.UOMSendingUpdateFile && this.node.nodeUpdater.isEnabled() && source.isRealConnection()) {
 			return this.node.nodeUpdater.uom.handleSendingManifest(m, source);
 		}
 		else if (spec == DMT.UOMFetchPackage && this.node.nodeUpdater.isEnabled() && source.isRealConnection()) {

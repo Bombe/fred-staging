@@ -20,25 +20,25 @@ package freenet.node.updater;
 import java.util.HashMap;
 import java.util.Map;
 
-public enum InstallPackageType {
+public enum UpdateFileType {
 
-	MSI_X86_64("msi_x86_64");
+	MANIFEST("manifest"), MSI_X86_64("msi_x86_64");
 
 	public final String label;
 
-	private static final Map<String, InstallPackageType> BY_LABEL = new HashMap<>();
+	private static final Map<String, UpdateFileType> BY_LABEL = new HashMap<>();
 
 	static {
-		for (InstallPackageType e : values()) {
+		for (UpdateFileType e : values()) {
 			BY_LABEL.put(e.label, e);
 		}
 	}
 
-	InstallPackageType(String label) {
+	UpdateFileType(String label) {
 		this.label = label;
 	}
 
-	public static InstallPackageType valueOfLabel(String label) {
+	public static UpdateFileType valueOfLabel(String label) {
 		return BY_LABEL.get(label);
 	}
 

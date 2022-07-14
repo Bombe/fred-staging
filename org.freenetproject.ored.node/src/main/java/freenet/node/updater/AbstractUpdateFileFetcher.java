@@ -81,7 +81,7 @@ public abstract class AbstractUpdateFileFetcher {
 	/** Current version we have. Usually it should be ored's build number. */
 	protected final int currentVersion;
 
-	protected final String fileType;
+	protected final UpdateFileType fileType;
 
 	/** Is there a new update file ready to deploy? */
 	protected volatile boolean hasNewFile;
@@ -130,7 +130,7 @@ public abstract class AbstractUpdateFileFetcher {
 	/** Whether user triggered the update. */
 	protected volatile boolean updateArmed;
 
-	protected AbstractUpdateFileFetcher(Node node, String fileType, int currentVersion, int minDeployVersion,
+	protected AbstractUpdateFileFetcher(Node node, UpdateFileType fileType, int currentVersion, int minDeployVersion,
 			int maxDeployVersion) {
 
 		this.node = node;
@@ -166,7 +166,7 @@ public abstract class AbstractUpdateFileFetcher {
 			return;
 		}
 
-		if (fetcher.fileName().equals(this.fileName()) && fetcher.getFetchedFileVersion() > this.fetchedVersion) {
+		if (fetcher.getFileName().equals(this.getFileName()) && fetcher.getFetchedFileVersion() > this.fetchedVersion) {
 			// Update fetchedFileVersion so that this fetcher will stop current work and
 			// wait for a newer version if this fetcher is fetching an older version
 			this.fetchedVersion = fetcher.getFetchedFileVersion();
@@ -248,7 +248,7 @@ public abstract class AbstractUpdateFileFetcher {
 	 */
 	public abstract void onChangeURI(FreenetURI uri);
 
-	public abstract String fileName();
+	public abstract String getFileName();
 
 	public void preKill() {
 		this.isRunning = false;
@@ -328,7 +328,7 @@ public abstract class AbstractUpdateFileFetcher {
 	}
 
 	public final File getBlobFile(int availableVersion) {
-		return new File(this.node.clientCore.getPersistentTempDir(), this.fileType + availableVersion + ".fblob");
+		return new File(this.node.clientCore.getPersistentTempDir(), this.fileType.label + availableVersion + ".fblob");
 	}
 
 	RandomAccessBucket getBlobBucket(int availableVersion) {

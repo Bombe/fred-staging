@@ -18,6 +18,9 @@
 
 package freenet.node.updater.uom;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
@@ -26,9 +29,14 @@ import freenet.bucket.Bucket;
 import freenet.io.comm.AsyncMessageCallback;
 import freenet.io.comm.ByteCounter;
 import freenet.io.comm.DMT;
+import freenet.io.comm.DisconnectedException;
 import freenet.io.comm.Message;
 import freenet.io.comm.NotConnectedException;
+import freenet.io.xfer.BulkReceiver;
+import freenet.io.xfer.BulkTransmitter;
+import freenet.io.xfer.PartiallyReceivedBulk;
 import freenet.keys.FreenetURI;
+import freenet.lockablebuffer.FileRandomAccessBuffer;
 import freenet.node.Node;
 import freenet.node.NodeStats;
 import freenet.node.PeerNode;
@@ -37,8 +45,11 @@ import freenet.node.event.DiffNoderefProcessedEvent;
 import freenet.node.event.EventBus;
 import freenet.node.updater.AbstractUpdateFileFetcher;
 import freenet.node.updater.RevocationChecker;
+import freenet.node.updater.UpdateFileType;
 import freenet.nodelogger.Logger;
+import freenet.support.SizeUtil;
 import freenet.support.TimeUtil;
+import freenet.support.api.RandomAccessBuffer;
 import org.greenrobot.eventbus.Subscribe;
 
 /**
@@ -58,10 +69,12 @@ public abstract class AbstractUOMUpdateFileExchanger extends AbstractUpdateFileF
 	public static final long GRACE_TIME = TimeUnit.HOURS.toMillis(3);
 
 	// 2 for reliability, no more as gets very slow/wasteful
-	static final int MAX_NODES_SENDING_UPDATE_FILE = 2;
+	static final int UOM_MAX_NODES_SENDING = 2;
 
 	/** Maximum time between asking for the update file and it starting to transfer */
-	static final long REQUEST_UPDATE_FILE_TIMEOUT = TimeUnit.SECONDS.toMillis(60);
+	static final long UOM_REQUEST_TIMEOUT = TimeUnit.SECONDS.toMillis(60);
+
+	public static final long MAX_REVOCATION_KEY_BLOB_LENGTH = 128 * 1024;
 
 	public void setPeersSayBlown(boolean peersSayBlown) {
 		this.peersSayBlown = peersSayBlown;
@@ -155,7 +168,7 @@ public abstract class AbstractUOMUpdateFileExchanger extends AbstractUpdateFileF
 
 	};
 
-	public AbstractUOMUpdateFileExchanger(Node node, String fileType, int currentVersion, int minDeployVersion,
+	public AbstractUOMUpdateFileExchanger(Node node, UpdateFileType fileType, int currentVersion, int minDeployVersion,
 			int maxDeployVersion, FreenetURI updateURI, FreenetURI revocationURI, RevocationChecker revocationChecker) {
 
 		super(node, fileType, currentVersion, minDeployVersion, maxDeployVersion);
@@ -188,14 +201,13 @@ public abstract class AbstractUOMUpdateFileExchanger extends AbstractUpdateFileF
 		// Send UOMAnnouncement only *after* we know what the other side's version.
 		var pn = event.getPn();
 		if (pn.isRealConnection()) {
-			this.maybeSendUOMAnnounceUpdateFile(pn);
+			this.maybeSendAnnounce(pn);
 		}
 	}
 
 	// region UOM message handlers
 	// ================================================================================
-	public boolean handleUOMAnnounceUpdateFile(Message message, final PeerNode source) {
-		String fileType = message.getString(DMT.UPDATE_FILE_TYPE);
+	public boolean handleAnnounce(Message message, final PeerNode source) {
 		String fileKey = message.getString(DMT.UPDATE_FILE_KEY);
 		String revocationKey = message.getString(DMT.REVOCATION_KEY);
 		boolean haveRevocationKey = message.getBoolean(DMT.HAVE_REVOCATION_KEY);
@@ -296,16 +308,316 @@ public abstract class AbstractUOMUpdateFileExchanger extends AbstractUpdateFileF
 
 		long now = System.currentTimeMillis();
 
-		this.handleUpdateFileOffer(now, fileLength, fileVersion, source, fileKey);
+		this.handleOffer(now, fileLength, fileVersion, source, fileKey);
 
 		return true;
 
 	}
+
+	/**
+	 * A peer node requests us to send the binary blob of the revocation key.
+	 * @param message The message requesting the transfer.
+	 * @param source The node requesting the transfer.
+	 * @return True if we handled the message (i.e. always).
+	 */
+	public boolean handleRequestRevocation(Message message, final PeerNode source) {
+		// Do we have the data?
+
+		final RandomAccessBuffer data = this.revocationChecker.getBlobBuffer();
+
+		if (data == null) {
+			Logger.normal(this,
+					"Peer " + source + " asked us for the blob file for the revocation key but we don't have it!");
+			// Probably a race condition on reconnect, hopefully we'll be asked again
+			return true;
+		}
+
+		final long uid = message.getLong(DMT.UID);
+
+		final PartiallyReceivedBulk prb;
+		long length;
+		length = data.size();
+		prb = new PartiallyReceivedBulk(this.node.getUSM(), length, Node.PACKET_SIZE, data, true);
+
+		final BulkTransmitter bt;
+		try {
+			bt = new BulkTransmitter(prb, source, uid, false, this.ctr, true);
+		}
+		catch (DisconnectedException ex) {
+			Logger.error(this,
+					"Peer " + source + " asked us for the blob file for the revocation key, then disconnected: " + ex,
+					ex);
+			data.close();
+			return true;
+		}
+
+		final Runnable r = new Runnable() {
+
+			@Override
+			public void run() {
+				try {
+					if (!bt.send()) {
+						Logger.error(this, "Failed to send revocation key blob to " + source.userToString() + " : "
+								+ bt.getCancelReason());
+					}
+					else {
+						Logger.normal(this, "Sent revocation key blob to " + source.userToString());
+					}
+				}
+				catch (DisconnectedException ignored) {
+					// Not much we can do here either.
+					Logger.warning(this, "Failed to send revocation key blob (disconnected) to " + source.userToString()
+							+ " : " + bt.getCancelReason());
+				}
+				finally {
+					data.close();
+				}
+			}
+		};
+
+		Message msg = DMT.createUOMSendingRevocationUpdateFile(uid, this.fileType, length,
+				this.revocationURI.toString());
+
+		try {
+			source.sendAsync(msg, new AsyncMessageCallback() {
+
+				@Override
+				public void acknowledged() {
+					if (logMINOR) {
+						Logger.minor(this, "Sending data...");
+					}
+					// Send the data
+					AbstractUOMUpdateFileExchanger.this.node.executor.execute(r,
+							"Revocation key send for " + uid + " to " + source.userToString());
+				}
+
+				@Override
+				public void disconnected() {
+					// Argh
+					Logger.error(this, "Peer " + source
+							+ " asked us for the blob file for the revocation key, then disconnected when we tried to send the UOMSendingRevocationUpdateFile");
+				}
+
+				@Override
+				public void fatalError() {
+					// Argh
+					Logger.error(this, "Peer " + source
+							+ " asked us for the blob file for the revocation key, then got a fatal error when we tried to send the UOMSendingRevocationUpdateFile");
+				}
+
+				@Override
+				public void sent() {
+					if (logMINOR) {
+						Logger.minor(this, "Message sent, data soon");
+					}
+				}
+
+				@Override
+				public String toString() {
+					return super.toString() + "(" + uid + ":" + source.getPeer() + ")";
+				}
+			}, this.ctr);
+		}
+		catch (NotConnectedException ex) {
+			Logger.error(this, "Peer " + source
+					+ " asked us for the blob file for the revocation key, then disconnected when we tried to send the UOMSendingRevocationUpdateFile: "
+					+ ex, ex);
+			return true;
+		}
+
+		return true;
+	}
+
+	public boolean handleSendingRevocation(Message message, final PeerNode source) {
+		final long uid = message.getLong(DMT.UID);
+		final long length = message.getLong(DMT.FILE_LENGTH);
+		String key = message.getString(DMT.REVOCATION_KEY);
+
+		FreenetURI revocationURI;
+		try {
+			revocationURI = new FreenetURI(key);
+		}
+		catch (MalformedURLException ex) {
+			Logger.error(this, "Failed receiving recovation because URI not parsable: " + ex + " for " + key, ex);
+			System.err.println("Failed receiving recovation because URI not parsable: " + ex + " for " + key);
+			ex.printStackTrace();
+			synchronized (this) {
+				// Wierd case of a failed transfer
+				// This is definitely not valid, don't add to
+				// nodesSayKeyRevokedFailedTransfer.
+				this.nodesSayKeyRevoked.remove(source);
+				this.nodesSayKeyRevokedTransferring.remove(source);
+			}
+			this.cancelSend(source, uid);
+			this.maybeNotRevoked();
+			return true;
+		}
+
+		if (!revocationURI.equals(this.revocationURI)) {
+			System.err.println(
+					"Node sending us a revocation certificate from the wrong URI:\n" + "Node: " + source.userToString()
+							+ "\n" + "Our   URI: " + this.revocationURI + "\n" + "Their URI: " + revocationURI);
+			synchronized (this) {
+				// Wierd case of a failed transfer
+				this.nodesSayKeyRevoked.remove(source);
+				// This is definitely not valid, don't add to
+				// nodesSayKeyRevokedFailedTransfer.
+				this.nodesSayKeyRevokedTransferring.remove(source);
+			}
+			this.cancelSend(source, uid);
+			this.maybeNotRevoked();
+			return true;
+		}
+
+		if (this.updateBlown) {
+			if (logMINOR) {
+				Logger.minor(this, "Already blown, so not receiving from " + source + "(" + uid + ")");
+			}
+			this.cancelSend(source, uid);
+			return true;
+		}
+
+		if (length > MAX_REVOCATION_KEY_BLOB_LENGTH) {
+			System.err.println("Node " + source.userToString() + " offered us a revocation certificate "
+					+ SizeUtil.formatSize(length)
+					+ " long. This is unacceptably long so we have refused the transfer. No real revocation cert would be this big.");
+			Logger.error(this, "Node " + source.userToString() + " offered us a revocation certificate "
+					+ SizeUtil.formatSize(length)
+					+ " long. This is unacceptably long so we have refused the transfer. No real revocation cert would be this big.");
+			synchronized (this) {
+				this.nodesSayKeyRevoked.remove(source);
+				this.nodesSayKeyRevokedTransferring.remove(source);
+			}
+			this.cancelSend(source, uid);
+			this.maybeNotRevoked();
+			return true;
+		}
+
+		if (length <= 0) {
+			System.err.println("Revocation key is zero bytes from " + source
+					+ " - ignoring as this is almost certainly a bug or an attack, it is definitely not valid.");
+			synchronized (this) {
+				this.nodesSayKeyRevoked.remove(source);
+				// This is almost certainly not valid, don't add to
+				// nodesSayKeyRevokedFailedTransfer.
+				this.nodesSayKeyRevokedTransferring.remove(source);
+			}
+			this.cancelSend(source, uid);
+			this.maybeNotRevoked();
+			return true;
+		}
+
+		System.err.println("Transferring auto-updater revocation certificate length " + length + " from " + source);
+
+		// Okay, we can receive it
+
+		final File temp;
+
+		try {
+			temp = File.createTempFile("revocation-", ".fblob.tmp", this.node.clientCore.getPersistentTempDir());
+			temp.deleteOnExit();
+		}
+		catch (IOException ex) {
+			System.err.println(
+					"Cannot save revocation certificate to disk and therefore cannot fetch it from our peer!: " + ex);
+			ex.printStackTrace();
+			this.nodeUpdateManager.blow(
+					"Cannot fetch the revocation certificate from our peer because we cannot write it to disk: " + ex,
+					true);
+			this.cancelSend(source, uid);
+			return true;
+		}
+
+		FileRandomAccessBuffer raf;
+		try {
+			raf = new FileRandomAccessBuffer(temp, length, false);
+		}
+		catch (FileNotFoundException ex) {
+			Logger.error(this, "Peer " + source
+					+ " asked us for the blob file for the revocation key, we have downloaded it but don't have the file even though we did have it when we checked!: "
+					+ ex, ex);
+			this.nodeUpdateManager.blow(
+					"Internal error after fetching the revocation certificate from our peer, maybe out of disk space, file disappeared "
+							+ temp + " : " + ex,
+					true);
+			return true;
+		}
+		catch (IOException ex) {
+			Logger.error(this, "Peer " + source
+					+ " asked us for the blob file for the revocation key, we have downloaded it but now can't read the file due to a disk I/O error: "
+					+ ex, ex);
+			this.nodeUpdateManager.blow(
+					"Internal error after fetching the revocation certificate from our peer, maybe out of disk space or other disk I/O error, file disappeared "
+							+ temp + " : " + ex,
+					true);
+			return true;
+		}
+
+		// It isn't starting, it's transferring.
+		synchronized (this) {
+			this.nodesSayKeyRevokedTransferring.add(source);
+			this.nodesSayKeyRevoked.remove(source);
+		}
+
+		PartiallyReceivedBulk prb = new PartiallyReceivedBulk(this.node.getUSM(), length, Node.PACKET_SIZE, raf, false);
+
+		final BulkReceiver br = new BulkReceiver(prb, source, uid, this.ctr);
+
+		this.node.executor.execute(new Runnable() {
+
+			@Override
+			public void run() {
+				try {
+					if (br.receive()) {
+						// Success!
+						AbstractUOMUpdateFileExchanger.this.revocationChecker.processRevocationBlob(temp, source);
+					}
+					else {
+						Logger.error(this, "Failed to transfer revocation certificate from " + source);
+						System.err.println("Failed to transfer revocation certificate from " + source);
+						source.failedRevocationTransfer();
+						int count = source.countFailedRevocationTransfers();
+						boolean retry = count < 3;
+						synchronized (AbstractUOMUpdateFileExchanger.this) {
+							AbstractUOMUpdateFileExchanger.this.nodesSayKeyRevokedFailedTransfer.add(source);
+							AbstractUOMUpdateFileExchanger.this.nodesSayKeyRevokedTransferring.remove(source);
+							if (retry) {
+								if (AbstractUOMUpdateFileExchanger.this.nodesSayKeyRevoked.contains(source)) {
+									retry = false;
+								}
+								else {
+									AbstractUOMUpdateFileExchanger.this.nodesSayKeyRevoked.add(source);
+								}
+							}
+						}
+						AbstractUOMUpdateFileExchanger.this.maybeNotRevoked();
+						if (retry) {
+							AbstractUOMUpdateFileExchanger.this.tryFetchRevocation(source);
+						}
+					}
+				}
+				catch (Throwable ex) {
+					Logger.error(this,
+							"Caught error while transferring revocation certificate from " + source + " : " + ex, ex);
+					System.err.println("Peer " + source
+							+ " said that the revocation key has been blown, but we got an internal error while transferring it:");
+					ex.printStackTrace();
+					AbstractUOMUpdateFileExchanger.this.nodeUpdateManager
+							.blow("Internal error while fetching the revocation certificate from our peer " + source
+									+ " : " + ex, true);
+					synchronized (AbstractUOMUpdateFileExchanger.this) {
+						AbstractUOMUpdateFileExchanger.this.nodesSayKeyRevokedTransferring.remove(source);
+					}
+				}
+			}
+		}, "Revocation key receive for " + uid + " from " + source.userToString());
+
+		return true;
+	}
 	// ================================================================================
 	// endregion
 
-	private void handleUpdateFileOffer(long now, long fileLength, long fileVersion, PeerNode source,
-			String manifestKey) {
+	private void handleOffer(long now, long fileLength, long fileVersion, PeerNode source, String fileKey) {
 
 		long started = this.startedFetchingNextFile;
 		long whenToTakeOverTheNormalUpdater;
@@ -319,10 +631,12 @@ public abstract class AbstractUOMUpdateFileExchanger extends AbstractUpdateFileF
 		// if the new build is self-mandatory or if the "normal" updater has been trying
 		// to update for more than one hour
 		Logger.normal(this,
-				"We received a valid UOMAnnounceManifest (main) : (isOutdated=" + isOutdated + " version=" + fileVersion
-						+ " whenToTakeOverTheNormalUpdater=" + TimeUtil.formatTime(whenToTakeOverTheNormalUpdater - now)
-						+ ") file length " + fileLength + " updateManager version " + this.fetchedVersion);
-		if (fileVersion > Version.buildNumber() && fileLength > 0 && fileVersion > this.fetchedVersion) {
+				"We received a valid UOMAnnounceUpdateFile (" + this.getFileType() + ") : (isOutdated=" + isOutdated
+						+ " version=" + fileVersion + " whenToTakeOverTheNormalUpdater="
+						+ TimeUtil.formatTime(whenToTakeOverTheNormalUpdater - now) + ") file length " + fileLength
+						+ " updateManager version " + this.fetchedVersion);
+		if (fileVersion > this.currentVersion && fileLength > 0 && fileVersion > this.fetchedVersion) {
+			// TODO: we should track the offered version here instead of PeerNode
 			source.setManifestOfferedVersion(fileVersion);
 			// Offer is valid.
 			if (logMINOR) {
@@ -331,9 +645,9 @@ public abstract class AbstractUOMUpdateFileExchanger extends AbstractUpdateFileF
 			if ((isOutdated) || whenToTakeOverTheNormalUpdater < now) {
 				// Take up the offer, subject to limits on number of simultaneous
 				// downloads.
-				// If we have fetches running already, then sendUOMRequestMainJar() will
-				// add the offer to nodesOfferedMainJar,
-				// so that if all our fetches fail, we can fetch from this node.
+				// If we have fetches running already, then sendUOMRequestUpdateFile()
+				// will add the offer to nodesOffered, so that if all our fetches
+				// fail, we can fetch from this node.
 				if (!isOutdated) {
 					String howLong = TimeUtil.formatTime(now - started);
 					Logger.error(this, "The update process seems to have been stuck for " + howLong
@@ -346,13 +660,13 @@ public abstract class AbstractUOMUpdateFileExchanger extends AbstractUpdateFileF
 				}
 				// Fetch it
 				try {
-					FreenetURI manifestURI = new FreenetURI(manifestKey).setSuggestedEdition(fileVersion);
+					FreenetURI manifestURI = new FreenetURI(fileKey).setSuggestedEdition(fileVersion);
 					if (manifestURI.equals(this.updateURI.setSuggestedEdition(fileVersion))) {
-						this.sendUOMRequestUpdateFile(source, true);
+						this.sendRequest(source, true);
 					}
 					else {
 						// FIXME don't log if it's the transitional version.
-						System.err.println("Node " + source.userToString() + " offered us a new main jar (version "
+						System.err.println("Node " + source.userToString() + " offered us a new update file (version "
 								+ fileVersion + ") but his key was different to ours:\n" + "our key: " + this.updateURI
 								+ "\nhis key:" + manifestURI);
 					}
@@ -360,11 +674,11 @@ public abstract class AbstractUOMUpdateFileExchanger extends AbstractUpdateFileF
 				catch (MalformedURLException ex) {
 					// Should maybe be a useralert?
 					Logger.error(this, "Node " + source
-							+ " sent us a UOMAnnouncement claiming to have a new ext jar, but it had an invalid URI: "
-							+ manifestKey + " : " + ex, ex);
+							+ " sent us a UOMAnnounceUpdateFile claiming to have a new update file, but it had an invalid URI: "
+							+ fileKey + " : " + ex, ex);
 					System.err.println("Node " + source.userToString()
-							+ " sent us a UOMAnnouncement claiming to have a new ext jar, but it had an invalid URI: "
-							+ manifestKey + " : " + ex);
+							+ " sent us a UOMAnnounceUpdateFile claiming to have a new update file, but it had an invalid URI: "
+							+ fileKey + " : " + ex);
 				}
 				synchronized (this) {
 					this.allNodesOffered.add(source);
@@ -396,7 +710,7 @@ public abstract class AbstractUOMUpdateFileExchanger extends AbstractUpdateFileF
 							System.out.println(
 									"The update process seems to have been stuck for too long; let's switch to UoM! SHOULD NOT HAPPEN! (2) (ext)");
 						}
-						AbstractUOMUpdateFileExchanger.this.maybeRequestManifest();
+						AbstractUOMUpdateFileExchanger.this.maybeRequest();
 					}
 				}, whenToTakeOverTheNormalUpdater - now);
 			}
@@ -412,11 +726,11 @@ public abstract class AbstractUOMUpdateFileExchanger extends AbstractUpdateFileF
 		// this.startSomeDependencyFetchers();
 	}
 
-	private void sendUOMRequestUpdateFile(final PeerNode source, boolean addOnFail) {
-		final String name = "Main";
-		String lname = "main";
+	private void sendRequest(final PeerNode source, boolean addOnFail) {
+		final String name = this.fileType.label;
+		String lname = this.getFileName();
 		if (logMINOR) {
-			Logger.minor(this, "sendUOMRequestUpdateFile" + name + "(" + source + "," + addOnFail + ")");
+			Logger.minor(this, "sendUOMRequest" + name + "(" + source + "," + addOnFail + ")");
 		}
 		if (!source.isConnected() || source.isSeed()) {
 			if (logMINOR) {
@@ -425,10 +739,11 @@ public abstract class AbstractUOMUpdateFileExchanger extends AbstractUpdateFileF
 			}
 			return;
 		}
-		final HashSet<PeerNode> sendingManifest = this.nodesSending;
-		final HashSet<PeerNode> askedSendManifest = this.nodesAskedSend;
+		final HashSet<PeerNode> nodesSending = this.nodesSending;
+		final HashSet<PeerNode> nodesAskedSend = this.nodesAskedSend;
 		boolean wasFetchingUOM;
 		synchronized (this) {
+			// TODO: we should track the offered version here instead of PeerNode
 			long offeredVersion = source.getManifestOfferedVersion();
 			long updateVersion = this.fetchedVersion;
 			if (offeredVersion < updateVersion) {
@@ -449,29 +764,29 @@ public abstract class AbstractUOMUpdateFileExchanger extends AbstractUpdateFileF
 				}
 				return;
 			}
-			if (askedSendManifest.contains(source)) {
+			if (nodesAskedSend.contains(source)) {
 				if (logMINOR) {
 					Logger.minor(this, "Recently asked node " + source + " (" + lname + ") so not re-asking yet.");
 				}
 				return;
 			}
-			if (addOnFail && askedSendManifest.size() + sendingManifest.size() >= MAX_NODES_SENDING_UPDATE_FILE) {
+			if (addOnFail && nodesAskedSend.size() + nodesSending.size() >= UOM_MAX_NODES_SENDING) {
 				if (this.nodesOffered.add(source)) {
-					System.err.println("Offered " + lname + " manifest by " + source.userToString()
-							+ " (already fetching from " + sendingManifest.size()
-							+ "), but will use this offer if our current fetches fail).");
+					System.err.println(
+							"Offered " + lname + " manifest by " + source.userToString() + " (already fetching from "
+									+ nodesSending.size() + "), but will use this offer if our current fetches fail).");
 				}
 				return;
 			}
 			else {
-				if (sendingManifest.contains(source)) {
+				if (nodesSending.contains(source)) {
 					if (logMINOR) {
-						Logger.minor(this, "Not fetching " + lname + " manifest from " + source.userToString()
+						Logger.minor(this, "Not fetching " + lname + " " + name + " from " + source.userToString()
 								+ " because already fetching from that node");
 					}
 					return;
 				}
-				sendingManifest.add(source);
+				nodesSending.add(source);
 			}
 			wasFetchingUOM = this.fetchingUOM;
 			this.fetchingUOM = true;
@@ -480,10 +795,10 @@ public abstract class AbstractUOMUpdateFileExchanger extends AbstractUpdateFileF
 			this.nodeUpdateManager.onStartFetchingUOM();
 		}
 
-		Message msg = DMT.createUOMRequestUpdateFile(this.node.random.nextLong());
+		Message msg = DMT.createUOMRequestUpdateFile(this.node.random.nextLong(), this.getFileType());
 
 		try {
-			System.err.println("Fetching " + lname + " manifest from " + source.userToString());
+			System.err.println("Fetching " + lname + " " + name + " from " + source.userToString());
 			source.sendAsync(msg, new AsyncMessageCallback() {
 
 				@Override
@@ -496,19 +811,19 @@ public abstract class AbstractUOMUpdateFileExchanger extends AbstractUpdateFileF
 					Logger.normal(this,
 							"Disconnected from " + source.userToString() + " after sending UOMRequestUpdateFile");
 					synchronized (AbstractUOMUpdateFileExchanger.this) {
-						sendingManifest.remove(source);
+						nodesSending.remove(source);
 					}
-					AbstractUOMUpdateFileExchanger.this.maybeRequestManifest();
+					AbstractUOMUpdateFileExchanger.this.maybeRequest();
 				}
 
 				@Override
 				public void fatalError() {
 					Logger.normal(this,
-							"Fatal error from " + source.userToString() + " after sending UOMRequestManifest");
+							"Fatal error from " + source.userToString() + " after sending UOMRequestUpdateFile");
 					synchronized (AbstractUOMUpdateFileExchanger.this) {
-						askedSendManifest.remove(source);
+						nodesAskedSend.remove(source);
 					}
-					AbstractUOMUpdateFileExchanger.this.maybeRequestManifest();
+					AbstractUOMUpdateFileExchanger.this.maybeRequest();
 				}
 
 				@Override
@@ -517,27 +832,27 @@ public abstract class AbstractUOMUpdateFileExchanger extends AbstractUpdateFileF
 					AbstractUOMUpdateFileExchanger.this.node.ticker.queueTimedJob(() -> {
 						synchronized (AbstractUOMUpdateFileExchanger.this) {
 							// free up a slot
-							if (!askedSendManifest.remove(source)) {
+							if (!nodesAskedSend.remove(source)) {
 								return;
 							}
 						}
-						AbstractUOMUpdateFileExchanger.this.maybeRequestManifest();
-					}, REQUEST_UPDATE_FILE_TIMEOUT);
+						AbstractUOMUpdateFileExchanger.this.maybeRequest();
+					}, UOM_REQUEST_TIMEOUT);
 				}
 			}, this.ctr);
 		}
 		catch (NotConnectedException ignored) {
 			synchronized (this) {
-				askedSendManifest.remove(source);
+				nodesAskedSend.remove(source);
 			}
-			this.maybeRequestManifest();
+			this.maybeRequest();
 		}
 	}
 
-	protected void maybeRequestManifest() {
+	protected void maybeRequest() {
 		PeerNode[] offers;
 		synchronized (this) {
-			if (this.nodesAskedSend.size() + this.nodesSending.size() >= MAX_NODES_SENDING_UPDATE_FILE) {
+			if (this.nodesAskedSend.size() + this.nodesSending.size() >= UOM_MAX_NODES_SENDING) {
 				return;
 			}
 			if (this.nodesOffered.isEmpty()) {
@@ -550,7 +865,7 @@ public abstract class AbstractUOMUpdateFileExchanger extends AbstractUpdateFileF
 				continue;
 			}
 			synchronized (this) {
-				if (this.nodesAskedSend.size() + this.nodesSending.size() >= MAX_NODES_SENDING_UPDATE_FILE) {
+				if (this.nodesAskedSend.size() + this.nodesSending.size() >= UOM_MAX_NODES_SENDING) {
 					return;
 				}
 				if (this.nodesSending.contains(offer)) {
@@ -560,14 +875,14 @@ public abstract class AbstractUOMUpdateFileExchanger extends AbstractUpdateFileF
 					continue;
 				}
 			}
-			this.sendUOMRequestUpdateFile(offer, false);
+			this.sendRequest(offer, false);
 		}
 	}
 
 	private void tryFetchRevocation(final PeerNode source) throws NotConnectedException {
 		// Try to transfer it.
 
-		Message msg = DMT.createUOMRequestRevocationManifest(this.node.random.nextLong());
+		Message msg = DMT.createUOMRequestRevocationUpdateFile(this.node.random.nextLong(), this.getFileType());
 		source.sendAsync(msg, new AsyncMessageCallback() {
 
 			@Override
@@ -666,7 +981,7 @@ public abstract class AbstractUOMUpdateFileExchanger extends AbstractUpdateFileF
 		return false;
 	}
 
-	protected void maybeSendUOMAnnounceUpdateFile(PeerNode peer) {
+	protected void maybeSendAnnounce(PeerNode peer) {
 		if (!this.broadcastUOMAnnounceUpdateFile) {
 			if (logMINOR) {
 				Logger.minor(this, "Not sending UOM (any) on connect: Nothing worth announcing yet");
@@ -763,6 +1078,8 @@ public abstract class AbstractUOMUpdateFileExchanger extends AbstractUpdateFileF
 
 	protected abstract Message getUOMAnnounceUpdateFile(long blobSize);
 
-	protected abstract String getFileType();
+	protected UpdateFileType getFileType() {
+		return this.fileType;
+	}
 
 }

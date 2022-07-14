@@ -36,6 +36,7 @@ import freenet.node.PeerNode;
 import freenet.node.Version;
 import freenet.node.event.update.UOMManifestRequestSuccessEvent;
 import freenet.node.updater.RevocationChecker;
+import freenet.node.updater.UpdateFileType;
 import freenet.node.updater.UpdateOverMandatoryManager;
 import freenet.node.updater.usk.ManifestUSKUpdateFileFetcher;
 import freenet.nodelogger.Logger;
@@ -52,8 +53,8 @@ public class ManifestUOMUpdateFileExchanger extends AbstractUOMUpdateFileExchang
 	public ManifestUOMUpdateFileExchanger(Node node, int currentVersion, int minDeployVersion, int maxDeployVersion,
 			FreenetURI updateURI, FreenetURI revocationURI, RevocationChecker revocationChecker) {
 
-		super(node, "manifest", currentVersion, minDeployVersion, maxDeployVersion, updateURI, revocationURI,
-				revocationChecker);
+		super(node, UpdateFileType.MANIFEST, currentVersion, minDeployVersion, maxDeployVersion, updateURI,
+				revocationURI, revocationChecker);
 	}
 
 	/**
@@ -89,8 +90,8 @@ public class ManifestUOMUpdateFileExchanger extends AbstractUOMUpdateFileExchang
 	}
 
 	@Override
-	protected String getFileType() {
-		return "manifest";
+	public String getFileName() {
+		return this.getFileType() + "_" + this.fetchedFileVersion;
 	}
 
 	public void onStartFetchingUOM() {
@@ -179,7 +180,7 @@ public class ManifestUOMUpdateFileExchanger extends AbstractUOMUpdateFileExchang
 				return;
 			}
 
-			msg = DMT.createUOMSendingManifest(uid, length, uri.toString(), version);
+			msg = DMT.createUOMSendingUpdateFile(uid, length, uri.toString(), version);
 
 		}
 		catch (RuntimeException | Error ex) {

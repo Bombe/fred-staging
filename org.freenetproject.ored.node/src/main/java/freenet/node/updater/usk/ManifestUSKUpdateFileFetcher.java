@@ -65,7 +65,7 @@ public class ManifestUSKUpdateFileFetcher extends AbstractUSKUpdateFileFetcher {
 	}
 
 	@Override
-	public String fileName() {
+	public String getFileName() {
 		return this.fileType;
 	}
 

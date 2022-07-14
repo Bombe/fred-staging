@@ -441,7 +441,7 @@ public class RevocationChecker implements ClientGetCallback, RequestClient {
 		}
 	}
 
-	void processRevocationBlob(final File temp, PeerNode source) {
+	public void processRevocationBlob(final File temp, PeerNode source) {
 		this.processRevocationBlob(new FileBucket(temp, true, false, false, true), source.userToString(), false);
 	}
 

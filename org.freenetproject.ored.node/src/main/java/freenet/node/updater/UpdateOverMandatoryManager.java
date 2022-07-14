@@ -27,10 +27,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.WeakHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -50,7 +49,6 @@ import freenet.client.async.PersistenceDisabledException;
 import freenet.client.async.SimpleBlockSet;
 import freenet.client.request.RequestClient;
 import freenet.clients.fcp.FCPUserAlert;
-import freenet.io.comm.AsyncMessageCallback;
 import freenet.io.comm.DMT;
 import freenet.io.comm.DisconnectedException;
 import freenet.io.comm.Message;
@@ -77,7 +75,6 @@ import freenet.support.HexUtil;
 import freenet.support.ShortBuffer;
 import freenet.support.SizeUtil;
 import freenet.support.WeakHashSet;
-import freenet.support.api.RandomAccessBuffer;
 import freenet.support.io.Closer;
 import freenet.support.io.FileUtil;
 
@@ -119,17 +116,33 @@ public class UpdateOverMandatoryManager implements RequestClient {
 	private static final Pattern revocationTempBuildNumberPattern = Pattern
 			.compile("^revocation(?:-jar)?-(\\d+-)?(\\d+)\\.fblob\\.tmp*$");
 
-	private final HashMap<ShortBuffer, File> dependencies;
-
-	private final WeakHashMap<PeerNode, Integer> peersFetchingDependencies;
-
-	private final HashMap<ShortBuffer, UOMDependencyFetcher> dependencyFetchers;
+	private final EnumMap<UpdateFileType, AbstractUOMUpdateFileExchanger> exchangers;
 
 	public UpdateOverMandatoryManager(NodeUpdateManager manager) {
 		this.nodeUpdateManager = manager;
-		this.dependencies = new HashMap<>();
-		this.peersFetchingDependencies = new WeakHashMap<>();
-		this.dependencyFetchers = new HashMap<>();
+		this.exchangers = new EnumMap<>(UpdateFileType.class);
+	}
+
+	private AbstractUOMUpdateFileExchanger getOrNewExchanger(UpdateFileType fileType) {
+		AbstractUOMUpdateFileExchanger exchanger = this.exchangers.get(fileType);
+
+		if (exchanger != null) {
+			return exchanger;
+		}
+
+		if (fileType == UpdateFileType.MANIFEST) {
+			exchanger = new ManifestUOMUpdateFileExchanger(this.nodeUpdateManager.node, Version.buildNumber(), -1,
+					Integer.MAX_VALUE, this.nodeUpdateManager.getUpdateURI(), this.nodeUpdateManager.getRevocationURI(),
+					this.nodeUpdateManager.revocationChecker);
+		}
+		else {
+			// TODO: Install Package Exchanger
+			throw new IllegalStateException("Unexpected value: " + fileType);
+		}
+
+		this.exchangers.put(fileType, exchanger);
+
+		return exchanger;
 	}
 
 	/**
@@ -140,8 +153,16 @@ public class UpdateOverMandatoryManager implements RequestClient {
 	 * @return true unless we don't want the message (in this case, always true).
 	 */
 	public boolean handleAnnounceUpdateFile(Message message, final PeerNode source) {
+		String fileTypeString = message.getString(DMT.UPDATE_FILE_TYPE);
+		UpdateFileType fileType;
+		try {
+			fileType = UpdateFileType.valueOf(fileTypeString);
+		}
+		catch (IllegalArgumentException ex) {
+			Logger.error(this, "Unknown file type (" + fileTypeString + ") in UOMAnnounceUpdateFile message.");
+			return true;
+		}
 
-		String fileType = message.getString(DMT.UPDATE_FILE_TYPE);
 		String fileKey = message.getString(DMT.UPDATE_FILE_KEY);
 		String revocationKey = message.getString(DMT.REVOCATION_KEY);
 		boolean haveRevocationKey = message.getBoolean(DMT.HAVE_REVOCATION_KEY);
@@ -169,30 +190,53 @@ public class UpdateOverMandatoryManager implements RequestClient {
 
 		// Dispatch the message to UOM Update File Exchangers
 
-		AbstractUOMUpdateFileExchanger exchanger = switch (fileType) {
-			case "manifest" -> new ManifestUOMUpdateFileExchanger(this.nodeUpdateManager.node, Version.buildNumber(),
-					-1, Integer.MAX_VALUE, this.nodeUpdateManager.getUpdateURI(),
-					this.nodeUpdateManager.getRevocationURI(), this.nodeUpdateManager.revocationChecker);
-		};
+		AbstractUOMUpdateFileExchanger exchanger = this.getOrNewExchanger(fileType);
 
-		// Now the core logic
+		return exchanger.handleAnnounce(message, source);
+	}
 
-		// TODO
-		// this.tellFetchers(source);
-
-		if (this.nodeUpdateManager.isBlown()) {
-			return true; // We already know
+	/**
+	 * A peer node requests us to send the binary blob of the revocation key.
+	 * @param message The message requesting the transfer.
+	 * @param source The node requesting the transfer.
+	 * @return True if we handled the message (i.e. always).
+	 */
+	public boolean handleRequestRevocationUpdateFile(Message message, final PeerNode source) {
+		String fileTypeString = message.getString(DMT.UPDATE_FILE_TYPE);
+		UpdateFileType fileType;
+		try {
+			fileType = UpdateFileType.valueOf(fileTypeString);
+		}
+		catch (IllegalArgumentException ex) {
+			Logger.error(this, "Unknown file type (" + fileTypeString + ") in UOMRequestRevocationUpdateFile message.");
+			return true;
 		}
 
-		if (!this.nodeUpdateManager.isEnabled()) {
-			return true; // Don't care if not enabled, except for the revocation URI
+		// Dispatch the message to UOM Update File Exchangers
+
+		AbstractUOMUpdateFileExchanger exchanger = this.getOrNewExchanger(fileType);
+
+		return exchanger.handleRequestRevocation(message, source);
+
+	}
+
+	public boolean handleSendingRevocationUpdateFile(Message message, final PeerNode source) {
+		String fileTypeString = message.getString(DMT.UPDATE_FILE_TYPE);
+		UpdateFileType fileType;
+		try {
+			fileType = UpdateFileType.valueOf(fileTypeString);
+		}
+		catch (IllegalArgumentException ex) {
+			Logger.error(this, "Unknown file type (" + fileTypeString + ") in UOMSendingRevocationUpdateFile message.");
+			return true;
 		}
 
-		long now = System.currentTimeMillis();
+		// Dispatch the message to UOM Update File Exchangers
 
-		this.handleManifestOffer(now, fileLength, fileVersion, source, fileKey);
+		AbstractUOMUpdateFileExchanger exchanger = this.getOrNewExchanger(fileType);
 
-		return true;
+		return exchanger.handleSendingRevocation(message, source);
+
 	}
 
 	private void tellFetchers(PeerNode source) {
@@ -243,310 +287,6 @@ public class UpdateOverMandatoryManager implements RequestClient {
 		}
 		return new PeerNode[][] { nodesConnectedSayRevoked.toArray(new PeerNode[0]),
 				nodesDisconnectedSayRevoked.toArray(new PeerNode[0]), nodesFailedSayRevoked.toArray(new PeerNode[0]), };
-	}
-
-	/**
-	 * A peer node requests us to send the binary blob of the revocation key.
-	 * @param m The message requesting the transfer.
-	 * @param source The node requesting the transfer.
-	 * @return True if we handled the message (i.e. always).
-	 */
-	public boolean handleRequestRevocationManifest(Message m, final PeerNode source) {
-		// Do we have the data?
-
-		final RandomAccessBuffer data = this.nodeUpdateManager.revocationChecker.getBlobBuffer();
-
-		if (data == null) {
-			Logger.normal(this,
-					"Peer " + source + " asked us for the blob file for the revocation key but we don't have it!");
-			// Probably a race condition on reconnect, hopefully we'll be asked again
-			return true;
-		}
-
-		final long uid = m.getLong(DMT.UID);
-
-		final PartiallyReceivedBulk prb;
-		long length;
-		length = data.size();
-		prb = new PartiallyReceivedBulk(this.nodeUpdateManager.node.getUSM(), length, Node.PACKET_SIZE, data, true);
-
-		final BulkTransmitter bt;
-		try {
-			bt = new BulkTransmitter(prb, source, uid, false, this.nodeUpdateManager.ctr, true);
-		}
-		catch (DisconnectedException ex) {
-			Logger.error(this,
-					"Peer " + source + " asked us for the blob file for the revocation key, then disconnected: " + ex,
-					ex);
-			data.close();
-			return true;
-		}
-
-		final Runnable r = new Runnable() {
-
-			@Override
-			public void run() {
-				try {
-					if (!bt.send()) {
-						Logger.error(this, "Failed to send revocation key blob to " + source.userToString() + " : "
-								+ bt.getCancelReason());
-					}
-					else {
-						Logger.normal(this, "Sent revocation key blob to " + source.userToString());
-					}
-				}
-				catch (DisconnectedException ignored) {
-					// Not much we can do here either.
-					Logger.warning(this, "Failed to send revocation key blob (disconnected) to " + source.userToString()
-							+ " : " + bt.getCancelReason());
-				}
-				finally {
-					data.close();
-				}
-			}
-		};
-
-		Message msg = DMT.createUOMSendingRevocationManifest(uid, length,
-				this.nodeUpdateManager.getRevocationURI().toString());
-
-		try {
-			source.sendAsync(msg, new AsyncMessageCallback() {
-
-				@Override
-				public void acknowledged() {
-					if (logMINOR) {
-						Logger.minor(this, "Sending data...");
-					}
-					// Send the data
-					UpdateOverMandatoryManager.this.nodeUpdateManager.node.executor.execute(r,
-							"Revocation key send for " + uid + " to " + source.userToString());
-				}
-
-				@Override
-				public void disconnected() {
-					// Argh
-					Logger.error(this, "Peer " + source
-							+ " asked us for the blob file for the revocation key, then disconnected when we tried to send the UOMSendingRevocation");
-				}
-
-				@Override
-				public void fatalError() {
-					// Argh
-					Logger.error(this, "Peer " + source
-							+ " asked us for the blob file for the revocation key, then got a fatal error when we tried to send the UOMSendingRevocation");
-				}
-
-				@Override
-				public void sent() {
-					if (logMINOR) {
-						Logger.minor(this, "Message sent, data soon");
-					}
-				}
-
-				@Override
-				public String toString() {
-					return super.toString() + "(" + uid + ":" + source.getPeer() + ")";
-				}
-			}, this.nodeUpdateManager.ctr);
-		}
-		catch (NotConnectedException ex) {
-			Logger.error(this, "Peer " + source
-					+ " asked us for the blob file for the revocation key, then disconnected when we tried to send the UOMSendingRevocation: "
-					+ ex, ex);
-			return true;
-		}
-
-		return true;
-	}
-
-	public boolean handleSendingRevocationManifest(Message m, final PeerNode source) {
-		final long uid = m.getLong(DMT.UID);
-		final long length = m.getLong(DMT.FILE_LENGTH);
-		String key = m.getString(DMT.REVOCATION_KEY);
-
-		FreenetURI revocationURI;
-		try {
-			revocationURI = new FreenetURI(key);
-		}
-		catch (MalformedURLException ex) {
-			Logger.error(this, "Failed receiving recovation because URI not parsable: " + ex + " for " + key, ex);
-			System.err.println("Failed receiving recovation because URI not parsable: " + ex + " for " + key);
-			ex.printStackTrace();
-			synchronized (this) {
-				// Wierd case of a failed transfer
-				// This is definitely not valid, don't add to
-				// nodesSayKeyRevokedFailedTransfer.
-				this.nodesSayKeyRevoked.remove(source);
-				this.nodesSayKeyRevokedTransferring.remove(source);
-			}
-			this.cancelSend(source, uid);
-			this.maybeNotRevoked();
-			return true;
-		}
-
-		if (!revocationURI.equals(this.nodeUpdateManager.getRevocationURI())) {
-			System.err.println("Node sending us a revocation certificate from the wrong URI:\n" + "Node: "
-					+ source.userToString() + "\n" + "Our   URI: " + this.nodeUpdateManager.getRevocationURI() + "\n"
-					+ "Their URI: " + revocationURI);
-			synchronized (this) {
-				// Wierd case of a failed transfer
-				this.nodesSayKeyRevoked.remove(source);
-				// This is definitely not valid, don't add to
-				// nodesSayKeyRevokedFailedTransfer.
-				this.nodesSayKeyRevokedTransferring.remove(source);
-			}
-			this.cancelSend(source, uid);
-			this.maybeNotRevoked();
-			return true;
-		}
-
-		if (this.nodeUpdateManager.isBlown()) {
-			if (logMINOR) {
-				Logger.minor(this, "Already blown, so not receiving from " + source + "(" + uid + ")");
-			}
-			this.cancelSend(source, uid);
-			return true;
-		}
-
-		if (length > NodeUpdateManager.MAX_REVOCATION_KEY_BLOB_LENGTH) {
-			System.err.println("Node " + source.userToString() + " offered us a revocation certificate "
-					+ SizeUtil.formatSize(length)
-					+ " long. This is unacceptably long so we have refused the transfer. No real revocation cert would be this big.");
-			Logger.error(this, "Node " + source.userToString() + " offered us a revocation certificate "
-					+ SizeUtil.formatSize(length)
-					+ " long. This is unacceptably long so we have refused the transfer. No real revocation cert would be this big.");
-			synchronized (UpdateOverMandatoryManager.this) {
-				this.nodesSayKeyRevoked.remove(source);
-				this.nodesSayKeyRevokedTransferring.remove(source);
-			}
-			this.cancelSend(source, uid);
-			this.maybeNotRevoked();
-			return true;
-		}
-
-		if (length <= 0) {
-			System.err.println("Revocation key is zero bytes from " + source
-					+ " - ignoring as this is almost certainly a bug or an attack, it is definitely not valid.");
-			synchronized (UpdateOverMandatoryManager.this) {
-				this.nodesSayKeyRevoked.remove(source);
-				// This is almost certainly not valid, don't add to
-				// nodesSayKeyRevokedFailedTransfer.
-				this.nodesSayKeyRevokedTransferring.remove(source);
-			}
-			this.cancelSend(source, uid);
-			this.maybeNotRevoked();
-			return true;
-		}
-
-		System.err.println("Transferring auto-updater revocation certificate length " + length + " from " + source);
-
-		// Okay, we can receive it
-
-		final File temp;
-
-		try {
-			temp = File.createTempFile("revocation-", ".fblob.tmp",
-					this.nodeUpdateManager.node.clientCore.getPersistentTempDir());
-			temp.deleteOnExit();
-		}
-		catch (IOException ex) {
-			System.err.println(
-					"Cannot save revocation certificate to disk and therefore cannot fetch it from our peer!: " + ex);
-			ex.printStackTrace();
-			this.nodeUpdateManager.blow(
-					"Cannot fetch the revocation certificate from our peer because we cannot write it to disk: " + ex,
-					true);
-			this.cancelSend(source, uid);
-			return true;
-		}
-
-		FileRandomAccessBuffer raf;
-		try {
-			raf = new FileRandomAccessBuffer(temp, length, false);
-		}
-		catch (FileNotFoundException ex) {
-			Logger.error(this, "Peer " + source
-					+ " asked us for the blob file for the revocation key, we have downloaded it but don't have the file even though we did have it when we checked!: "
-					+ ex, ex);
-			this.nodeUpdateManager.blow(
-					"Internal error after fetching the revocation certificate from our peer, maybe out of disk space, file disappeared "
-							+ temp + " : " + ex,
-					true);
-			return true;
-		}
-		catch (IOException ex) {
-			Logger.error(this, "Peer " + source
-					+ " asked us for the blob file for the revocation key, we have downloaded it but now can't read the file due to a disk I/O error: "
-					+ ex, ex);
-			this.nodeUpdateManager.blow(
-					"Internal error after fetching the revocation certificate from our peer, maybe out of disk space or other disk I/O error, file disappeared "
-							+ temp + " : " + ex,
-					true);
-			return true;
-		}
-
-		// It isn't starting, it's transferring.
-		synchronized (this) {
-			this.nodesSayKeyRevokedTransferring.add(source);
-			this.nodesSayKeyRevoked.remove(source);
-		}
-
-		PartiallyReceivedBulk prb = new PartiallyReceivedBulk(this.nodeUpdateManager.node.getUSM(), length,
-				Node.PACKET_SIZE, raf, false);
-
-		final BulkReceiver br = new BulkReceiver(prb, source, uid, this.nodeUpdateManager.ctr);
-
-		this.nodeUpdateManager.node.executor.execute(new Runnable() {
-
-			@Override
-			public void run() {
-				try {
-					if (br.receive()) {
-						// Success!
-						UpdateOverMandatoryManager.this.nodeUpdateManager.revocationChecker.processRevocationBlob(temp,
-								source);
-					}
-					else {
-						Logger.error(this, "Failed to transfer revocation certificate from " + source);
-						System.err.println("Failed to transfer revocation certificate from " + source);
-						source.failedRevocationTransfer();
-						int count = source.countFailedRevocationTransfers();
-						boolean retry = count < 3;
-						synchronized (UpdateOverMandatoryManager.this) {
-							UpdateOverMandatoryManager.this.nodesSayKeyRevokedFailedTransfer.add(source);
-							UpdateOverMandatoryManager.this.nodesSayKeyRevokedTransferring.remove(source);
-							if (retry) {
-								if (UpdateOverMandatoryManager.this.nodesSayKeyRevoked.contains(source)) {
-									retry = false;
-								}
-								else {
-									UpdateOverMandatoryManager.this.nodesSayKeyRevoked.add(source);
-								}
-							}
-						}
-						UpdateOverMandatoryManager.this.maybeNotRevoked();
-						if (retry) {
-							UpdateOverMandatoryManager.this.tryFetchRevocation(source);
-						}
-					}
-				}
-				catch (Throwable ex) {
-					Logger.error(this,
-							"Caught error while transferring revocation certificate from " + source + " : " + ex, ex);
-					System.err.println("Peer " + source
-							+ " said that the revocation key has been blown, but we got an internal error while transferring it:");
-					ex.printStackTrace();
-					UpdateOverMandatoryManager.this.nodeUpdateManager
-							.blow("Internal error while fetching the revocation certificate from our peer " + source
-									+ " : " + ex, true);
-					synchronized (UpdateOverMandatoryManager.this) {
-						UpdateOverMandatoryManager.this.nodesSayKeyRevokedTransferring.remove(source);
-					}
-				}
-			}
-		}, "Revocation key receive for " + uid + " from " + source.userToString());
-
-		return true;
 	}
 
 	private void cancelSend(PeerNode source, long uid) {

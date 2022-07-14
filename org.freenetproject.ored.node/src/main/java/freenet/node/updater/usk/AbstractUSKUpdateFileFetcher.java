@@ -120,7 +120,7 @@ public abstract class AbstractUSKUpdateFileFetcher extends AbstractUpdateFileFet
 			return;
 		}
 		this.onStartFetching();
-		Logger.minor(this, "Fetching " + this.fileName() + " update edition " + found);
+		Logger.minor(this, "Fetching " + this.getFileName() + " update edition " + found);
 	}
 
 	public void maybeFetch() {
@@ -173,7 +173,7 @@ public abstract class AbstractUSKUpdateFileFetcher extends AbstractUpdateFileFet
 								"Scheduling request for " + this.updateURI.setSuggestedEdition(this.availableVersion));
 					}
 					if (this.availableVersion > this.currentVersion) {
-						System.err.println("Starting " + this.fileName() + " fetch for " + this.availableVersion);
+						System.err.println("Starting " + this.getFileName() + " fetch for " + this.availableVersion);
 					}
 					this.tempBlobFile = File.createTempFile(this.fileType + this.availableVersion + "-", ".fblob.tmp",
 							this.node.clientCore.getPersistentTempDir());
@@ -185,7 +185,7 @@ public abstract class AbstractUSKUpdateFileFetcher extends AbstractUpdateFileFet
 					toStart = this.cg;
 				}
 				else {
-					System.err.println("Already fetching " + this.fileName() + " fetch for " + this.fetchingVersion
+					System.err.println("Already fetching " + this.getFileName() + " fetch for " + this.fetchingVersion
 							+ " want " + this.availableVersion);
 				}
 				this.isFetching = true;
@@ -265,7 +265,7 @@ public abstract class AbstractUSKUpdateFileFetcher extends AbstractUpdateFileFet
 				}
 			}
 			this.fetchedVersion = fetchedVersion;
-			System.out.println("Found " + this.fileName() + " version " + fetchedVersion);
+			System.out.println("Found " + this.getFileName() + " version " + fetchedVersion);
 			if (fetchedVersion > this.currentVersion) {
 				Logger.normal(this,
 						"Found version " + fetchedVersion + ", setting up a new UpdatedVersionAvailableUserAlert");
@@ -385,7 +385,7 @@ public abstract class AbstractUSKUpdateFileFetcher extends AbstractUpdateFileFet
 
 			this.realAvailableVersion = found;
 			if (found > this.maxDeployVersion) {
-				System.err.println("Ignoring " + this.fileName() + " update edition " + l + ": version too new (min "
+				System.err.println("Ignoring " + this.getFileName() + " update edition " + l + ": version too new (min "
 						+ this.minDeployVersion + " max " + this.maxDeployVersion + ")");
 				found = this.maxDeployVersion;
 			}
@@ -393,7 +393,7 @@ public abstract class AbstractUSKUpdateFileFetcher extends AbstractUpdateFileFet
 			if (found <= this.availableVersion) {
 				return;
 			}
-			System.err.println("Found " + this.fileName() + " update edition " + found);
+			System.err.println("Found " + this.getFileName() + " update edition " + found);
 			Logger.minor(this, "Updating availableVersion from " + this.availableVersion + " to " + found
 					+ " and queueing an update");
 			this.availableVersion = found;

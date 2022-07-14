@@ -83,7 +83,7 @@ public class MainJarUpdateFileFetcher extends AbstractJarUpdateFileFetcher
 	private final MainJarDependenciesChecker dependencies;
 
 	@Override
-	public String fileName() {
+	public String getFileName() {
 		return "freenet.jar";
 	}
 

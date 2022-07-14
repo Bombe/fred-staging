@@ -91,8 +91,6 @@ public class NodeUpdateManager {
 
 	public static final long MAX_REVOCATION_KEY_TEMP_LENGTH = 64 * 1024;
 
-	public static final long MAX_REVOCATION_KEY_BLOB_LENGTH = 128 * 1024;
-
 	public static final long MAX_JAVA_INSTALLER_LENGTH = 300 * 1024 * 1024;
 
 	public static final long MAX_WINDOWS_INSTALLER_LENGTH = 300 * 1024 * 1024;
