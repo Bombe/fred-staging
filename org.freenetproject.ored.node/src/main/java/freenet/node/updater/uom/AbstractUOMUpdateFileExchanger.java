@@ -46,6 +46,7 @@ import freenet.node.event.EventBus;
 import freenet.node.updater.AbstractUpdateFileFetcher;
 import freenet.node.updater.RevocationChecker;
 import freenet.node.updater.UpdateFileType;
+import freenet.node.updater.UpdateOverMandatoryManager;
 import freenet.nodelogger.Logger;
 import freenet.support.SizeUtil;
 import freenet.support.TimeUtil;
@@ -76,13 +77,7 @@ public abstract class AbstractUOMUpdateFileExchanger extends AbstractUpdateFileF
 
 	public static final long MAX_REVOCATION_KEY_BLOB_LENGTH = 128 * 1024;
 
-	public void setPeersSayBlown(boolean peersSayBlown) {
-		this.peersSayBlown = peersSayBlown;
-	}
-
-	public void setHasBeenBlown(boolean hasBeenBlown) {
-		this.hasBeenBlown = hasBeenBlown;
-	}
+	protected UpdateOverMandatoryManager uomManager;
 
 	protected volatile boolean peersSayBlown;
 
@@ -168,10 +163,13 @@ public abstract class AbstractUOMUpdateFileExchanger extends AbstractUpdateFileF
 
 	};
 
-	public AbstractUOMUpdateFileExchanger(Node node, UpdateFileType fileType, int currentVersion, int minDeployVersion,
-			int maxDeployVersion, FreenetURI updateURI, FreenetURI revocationURI, RevocationChecker revocationChecker) {
+	public AbstractUOMUpdateFileExchanger(UpdateOverMandatoryManager uomManager, UpdateFileType fileType,
+			int currentVersion, int minDeployVersion, int maxDeployVersion, FreenetURI updateURI,
+			FreenetURI revocationURI, RevocationChecker revocationChecker) {
 
-		super(node, fileType, currentVersion, minDeployVersion, maxDeployVersion);
+		super(uomManager.getNode(), fileType, currentVersion, minDeployVersion, maxDeployVersion);
+
+		this.uomManager = uomManager;
 
 		this.updateURI = updateURI;
 
@@ -190,6 +188,8 @@ public abstract class AbstractUOMUpdateFileExchanger extends AbstractUpdateFileF
 
 		EventBus.get().register(this);
 	}
+
+	protected abstract Message getUOMAnnounceUpdateFile(long blobSize);
 
 	/**
 	 * An event is received when out node has processed a peer node's noderef after
@@ -521,8 +521,7 @@ public abstract class AbstractUOMUpdateFileExchanger extends AbstractUpdateFileF
 			System.err.println(
 					"Cannot save revocation certificate to disk and therefore cannot fetch it from our peer!: " + ex);
 			ex.printStackTrace();
-			this.nodeUpdateManager.blow(
-					"Cannot fetch the revocation certificate from our peer because we cannot write it to disk: " + ex,
+			this.blow("Cannot fetch the revocation certificate from our peer because we cannot write it to disk: " + ex,
 					true);
 			this.cancelSend(source, uid);
 			return true;
@@ -536,7 +535,7 @@ public abstract class AbstractUOMUpdateFileExchanger extends AbstractUpdateFileF
 			Logger.error(this, "Peer " + source
 					+ " asked us for the blob file for the revocation key, we have downloaded it but don't have the file even though we did have it when we checked!: "
 					+ ex, ex);
-			this.nodeUpdateManager.blow(
+			this.blow(
 					"Internal error after fetching the revocation certificate from our peer, maybe out of disk space, file disappeared "
 							+ temp + " : " + ex,
 					true);
@@ -546,7 +545,7 @@ public abstract class AbstractUOMUpdateFileExchanger extends AbstractUpdateFileF
 			Logger.error(this, "Peer " + source
 					+ " asked us for the blob file for the revocation key, we have downloaded it but now can't read the file due to a disk I/O error: "
 					+ ex, ex);
-			this.nodeUpdateManager.blow(
+			this.blow(
 					"Internal error after fetching the revocation certificate from our peer, maybe out of disk space or other disk I/O error, file disappeared "
 							+ temp + " : " + ex,
 					true);
@@ -602,7 +601,7 @@ public abstract class AbstractUOMUpdateFileExchanger extends AbstractUpdateFileF
 					System.err.println("Peer " + source
 							+ " said that the revocation key has been blown, but we got an internal error while transferring it:");
 					ex.printStackTrace();
-					AbstractUOMUpdateFileExchanger.this.nodeUpdateManager
+					AbstractUOMUpdateFileExchanger.this
 							.blow("Internal error while fetching the revocation certificate from our peer " + source
 									+ " : " + ex, true);
 					synchronized (AbstractUOMUpdateFileExchanger.this) {
@@ -1076,10 +1075,40 @@ public abstract class AbstractUOMUpdateFileExchanger extends AbstractUpdateFileF
 		return data.size();
 	}
 
-	protected abstract Message getUOMAnnounceUpdateFile(long blobSize);
+	private void cancelSend(PeerNode source, long uid) {
+		Message msg = DMT.createFNPBulkReceiveAborted(uid);
+		try {
+			source.sendAsync(msg, null, this.ctr);
+		}
+		catch (NotConnectedException e1) {
+			// Ignore
+		}
+	}
+
+	public void disconnected(PeerNode pn) {
+		synchronized (this) {
+			this.nodesSayKeyRevoked.remove(pn);
+			this.nodesSayKeyRevokedFailedTransfer.remove(pn);
+			this.nodesSayKeyRevokedTransferring.remove(pn);
+			this.nodesOffered.remove(pn);
+			this.allNodesOffered.remove(pn);
+			this.nodesSent.remove(pn);
+			this.nodesAskedSend.remove(pn);
+			this.nodesSending.remove(pn);
+		}
+		this.maybeNotRevoked();
+	}
 
 	protected UpdateFileType getFileType() {
 		return this.fileType;
+	}
+
+	public void setPeersSayBlown(boolean peersSayBlown) {
+		this.peersSayBlown = peersSayBlown;
+	}
+
+	public void setHasBeenBlown(boolean hasBeenBlown) {
+		this.hasBeenBlown = hasBeenBlown;
 	}
 
 }

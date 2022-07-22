@@ -104,7 +104,7 @@ public class UpdateOverMandatoryManager implements RequestClient {
 		Logger.registerClass(UpdateOverMandatoryManager.class);
 	}
 
-	final NodeUpdateManager nodeUpdateManager;
+	private final NodeUpdateManager nodeUpdateManager;
 
 	private FCPUserAlert alert;
 
@@ -121,6 +121,10 @@ public class UpdateOverMandatoryManager implements RequestClient {
 	public UpdateOverMandatoryManager(NodeUpdateManager manager) {
 		this.nodeUpdateManager = manager;
 		this.exchangers = new EnumMap<>(UpdateFileType.class);
+	}
+
+	public Node getNode() {
+		return this.nodeUpdateManager.node;
 	}
 
 	private AbstractUOMUpdateFileExchanger getOrNewExchanger(UpdateFileType fileType) {
@@ -287,16 +291,6 @@ public class UpdateOverMandatoryManager implements RequestClient {
 		}
 		return new PeerNode[][] { nodesConnectedSayRevoked.toArray(new PeerNode[0]),
 				nodesDisconnectedSayRevoked.toArray(new PeerNode[0]), nodesFailedSayRevoked.toArray(new PeerNode[0]), };
-	}
-
-	private void cancelSend(PeerNode source, long uid) {
-		Message msg = DMT.createFNPBulkReceiveAborted(uid);
-		try {
-			source.sendAsync(msg, null, this.nodeUpdateManager.ctr);
-		}
-		catch (NotConnectedException e1) {
-			// Ignore
-		}
 	}
 
 	public void killAlert() {
@@ -680,20 +674,6 @@ public class UpdateOverMandatoryManager implements RequestClient {
 	@Override
 	public boolean persistent() {
 		return false;
-	}
-
-	public void disconnected(PeerNode pn) {
-		synchronized (this) {
-			this.nodesSayKeyRevoked.remove(pn);
-			this.nodesSayKeyRevokedFailedTransfer.remove(pn);
-			this.nodesSayKeyRevokedTransferring.remove(pn);
-			this.nodesOfferedManifest.remove(pn);
-			this.allNodesOfferedManifest.remove(pn);
-			this.nodesSentManifest.remove(pn);
-			this.nodesAskedSendManifest.remove(pn);
-			this.nodesSendingManifest.remove(pn);
-		}
-		this.maybeNotRevoked();
 	}
 
 	public boolean fetchingFromTwo() {
