@@ -190,12 +190,16 @@ public class OpennetManager {
 	/** Enable scaling of peers with bandwidth? */
 	public static final boolean ENABLE_PEERS_PER_KB_OUTPUT = true;
 	/** Constant for scaling peers: we multiply bandwidth in kB/sec by this
-	 * and then take the square root. scaling at 4 gives 4 peers at 5K,
-	 * 5 at 7K, 6 at 10K, 9 at 20K, 11 at
-	 * 30K, 15 at 60K, 20 at 100K, 24 at 140K, 100 at 2500K.
-	 * 122 at 30mbit/s (the mean upload in Japan in 2014) and
-	 * 210 at 88mbit/s (the mean upload in Hong Kong in 2014).*/
-	public static final double SCALING_CONSTANT = 4.0;
+	 * and then take the square root. Minimum is MIN_PEERs_FOR_SCALING.
+     * 
+     * (define (peers kbps) (sqrt (* kbps scaling)))
+     * 
+     * Scaling at 3 gives 4 peers at 5K (min peers),
+	 * 5 at 7K, 5 at 10K, 8 at 20K, 9 at 30K, 13 at 60K, 
+     * 17 at 100K, 20 at 140K, 87 at 2500K.
+	 * 106 at 30mbit/s (the mean upload in Japan in 2014) and
+	 * 180 at 88mbit/s (the mean upload in Hong Kong in 2014).*/
+	public static final double SCALING_CONSTANT = 3;
 	/**
 	 * Minimum number of peers. As a rough estimate, because the vast majority
 	 * of requests complete in 5 hops, 10 peers give just one binary decision
