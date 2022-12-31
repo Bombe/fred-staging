@@ -3,17 +3,16 @@ package freenet.client.async;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
 
 import freenet.client.InsertException;
 import freenet.client.InsertException.InsertExceptionMode;
-import freenet.client.async.InsertCompressor.CompressionMetrics.MetricRecorder;
 import freenet.config.Config;
 import freenet.crypt.HashResult;
 import freenet.crypt.MultiHashInputStream;
 import freenet.keys.CHKBlock;
 import freenet.node.PrioRunnable;
+import freenet.node.stats.CompressionStats;
+import freenet.node.stats.CompressionStats.CompressionRunRecorder;
 import freenet.support.LogThresholdCallback;
 import freenet.support.Logger;
 import freenet.support.Logger.LogLevel;
@@ -27,9 +26,6 @@ import freenet.support.compress.Compressor.COMPRESSOR_TYPE;
 import freenet.support.compress.InvalidCompressionCodecException;
 import freenet.support.io.Closer;
 import freenet.support.io.NativeThread;
-
-import static java.lang.String.format;
-import static java.lang.System.currentTimeMillis;
 
 /**
  * Compress a file in order to insert it. This class acts as a tag in the database to ensure that inserts
@@ -55,7 +51,7 @@ public class InsertCompressor implements CompressJob {
 	private final long generateHashes;
 	private final boolean pre1254;
 	private final Config config;
-	private final CompressionMetrics compressionMetrics;
+	private final CompressionStats compressionStats;
 
 	static {
 		Logger.registerLogThresholdCallback(new LogThresholdCallback() {
@@ -69,11 +65,11 @@ public class InsertCompressor implements CompressJob {
 
 	public InsertCompressor(SingleFileInserter inserter, RandomAccessBucket origData, int minSize, BucketFactory bf,
 							boolean persistent, long generateHashes, boolean pre1254, Config config) {
-		this(inserter, origData, minSize, bf, persistent, generateHashes, pre1254, config, new CompressionMetrics());
+		this(inserter, origData, minSize, bf, persistent, generateHashes, pre1254, config, new CompressionStats());
 	}
 
 	public InsertCompressor(SingleFileInserter inserter, RandomAccessBucket origData, int minSize, BucketFactory bf,
-							boolean persistent, long generateHashes, boolean pre1254, Config config, CompressionMetrics compressionMetrics) {
+							boolean persistent, long generateHashes, boolean pre1254, Config config, CompressionStats compressionStats) {
 		this.inserter = inserter;
 		this.origData = origData;
 		this.minSize = minSize;
@@ -83,7 +79,7 @@ public class InsertCompressor implements CompressJob {
 		this.generateHashes = generateHashes;
 		this.pre1254 = pre1254;
 		this.config = config;
-		this.compressionMetrics = compressionMetrics;
+		this.compressionStats = compressionStats;
 	}
 
 	public void init(final ClientContext ctx) {
@@ -125,7 +121,7 @@ public class InsertCompressor implements CompressJob {
 				long compressionStartTime = System.currentTimeMillis();
 				boolean shouldFreeOnFinally = true;
 				RandomAccessBucket result = null;
-				MetricRecorder metricRecorder = compressionMetrics.startRun(comp.name, origSize);
+				CompressionRunRecorder metricRecorder = compressionStats.startCompressionRun(comp.name, origSize);
 				try {
 					if(logMINOR)
 						Logger.minor(this, "Attempt to compress using " + comp);
@@ -163,7 +159,7 @@ public class InsertCompressor implements CompressJob {
 							comp.compress(is, os, origSize, bestCompressedDataSize,
 									amountOfDataToCheckCompressionRatio, minimumCompressionPercentage);
 						} catch (CompressionOutputSizeException | CompressionRatioException e) {
-							metricRecorder.failed();
+							metricRecorder.failTooBig();
 							if(hasher != null) {
 								is.skip(Long.MAX_VALUE);
 								hashes = hasher.getResults();
@@ -171,6 +167,7 @@ public class InsertCompressor implements CompressJob {
 							}
 							continue; // try next compressor type
 						} catch (RuntimeException e) {
+							metricRecorder.fail();
 							// ArithmeticException has been seen in bzip2 codec.
 							Logger.error(this, "Compression failed with codec "+comp+" : "+e, e);
 							// Try the next one
@@ -336,79 +333,6 @@ public class InsertCompressor implements CompressJob {
 		} else {
 			inserter.cb.onFailure(e, inserter, context);
 		}
-
-	}
-
-	/**
-	 * Super-simple compression metrics.
-	 */
-	public static class CompressionMetrics {
-
-		/**
-		 * Records metrics for a single compression run.
-		 *
-		 * @see CompressionMetrics#startRun(String, long)
-		 */
-		public interface MetricRecorder {
-			void finish(long sizeAfterCompression);
-			void failed();
-		}
-
-		/**
-		 * Metrics of a single run.
-		 */
-		public static class Run {
-
-			public final String algorithm;
-			public final long duration;
-			public final long sizeBeforeCompression;
-			public final long sizeAfterCompression;
-
-			public Run(String algorithm, long duration, long sizeBeforeCompression, long sizeAfterCompression) {
-				this.algorithm = algorithm;
-				this.duration = duration;
-				this.sizeBeforeCompression = sizeBeforeCompression;
-				this.sizeAfterCompression = sizeAfterCompression;
-			}
-
-			@Override
-			public String toString() {
-				return format("Run[algorithm=%s,duration=%d,sizeBeforeCompression=%d,sizeAfterCompression=%d]", algorithm, duration, sizeBeforeCompression, sizeAfterCompression);
-			}
-
-			public static Run failed(String algorithm, long duration, long sizeBeforeCompression) {
-				return new Run(algorithm, duration, sizeBeforeCompression, -1);
-			}
-
-		}
-
-		/**
-		 * Starts a run, returning a {@link MetricRecorder} that needs to have one of its methods called when the run is finished.
-		 *
-		 * @param algorithm             The algorithm used for this run
-		 * @param sizeBeforeCompression The size of the data before compression
-		 * @return A {@link MetricRecorder} that records the results of the run when one of its methods is called
-		 */
-		public MetricRecorder startRun(String algorithm, long sizeBeforeCompression) {
-			long startTime = currentTimeMillis();
-			return new MetricRecorder() {
-				@Override
-				public void finish(long sizeAfterCompression) {
-					runs.add(new Run(algorithm, currentTimeMillis() - startTime, sizeBeforeCompression, sizeAfterCompression));
-				}
-
-				@Override
-				public void failed() {
-					runs.add(Run.failed(algorithm, currentTimeMillis() - startTime, sizeBeforeCompression));
-				}
-			};
-		}
-
-		public List<Run> getRuns() {
-			return runs;
-		}
-
-		private final List<Run> runs = new ArrayList<>();
 
 	}
 
