@@ -17,7 +17,7 @@ import org.junit.Test;
 
 import static freenet.client.InsertContext.CompatibilityMode.COMPAT_DEFAULT;
 import static freenet.support.io.BucketTools.toRandomAccessBucket;
-import static freenet.test.matcher.CompressionRunMatcher.matchesCompressionRun;
+import static freenet.test.matcher.OperationRunMatcher.matchesOperationRun;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 
@@ -37,9 +37,9 @@ public class InsertCompressorTest {
 		insertCompressor.tryCompress(clientContext);
 		/* this needs to be adjusted every time we change compression algorithms. */
 		assertThat(compressionStats.getCompressionRuns(), containsInAnyOrder(
-				matchesCompressionRun("GZIP", 1024, 29),
-				matchesCompressionRun("BZIP2", 1024, 40),
-				matchesCompressionRun("LZMA_NEW", 1024, 23)
+				matchesOperationRun("GZIP", 1024, 29),
+				matchesOperationRun("BZIP2", 1024, 40),
+				matchesOperationRun("LZMA_NEW", 1024, 23)
 		));
 	}
 
@@ -49,9 +49,9 @@ public class InsertCompressorTest {
 		insertCompressor.tryCompress(clientContext);
 		/* this needs to be adjusted every time we change compression algorithms. */
 		assertThat(compressionStats.getCompressionRuns(), containsInAnyOrder(
-				matchesCompressionRun("GZIP", 1024, -2),
-				matchesCompressionRun("BZIP2", 1024, -2),
-				matchesCompressionRun("LZMA_NEW", 1024, -2)
+				matchesOperationRun("GZIP", 1024, -2),
+				matchesOperationRun("BZIP2", 1024, -2),
+				matchesOperationRun("LZMA_NEW", 1024, -2)
 		));
 	}
 

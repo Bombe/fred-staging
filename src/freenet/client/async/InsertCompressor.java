@@ -12,7 +12,7 @@ import freenet.crypt.MultiHashInputStream;
 import freenet.keys.CHKBlock;
 import freenet.node.PrioRunnable;
 import freenet.node.stats.CompressionStats;
-import freenet.node.stats.CompressionStats.CompressionRunRecorder;
+import freenet.node.stats.CompressionStats.OperationRunRecorder;
 import freenet.support.LogThresholdCallback;
 import freenet.support.Logger;
 import freenet.support.Logger.LogLevel;
@@ -121,7 +121,7 @@ public class InsertCompressor implements CompressJob {
 				long compressionStartTime = System.currentTimeMillis();
 				boolean shouldFreeOnFinally = true;
 				RandomAccessBucket result = null;
-				CompressionRunRecorder metricRecorder = compressionStats.startCompressionRun(comp.name, origSize);
+				OperationRunRecorder metricRecorder = compressionStats.startCompressionRun(comp.name, origSize);
 				try {
 					if(logMINOR)
 						Logger.minor(this, "Attempt to compress using " + comp);

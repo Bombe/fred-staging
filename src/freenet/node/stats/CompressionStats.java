@@ -5,8 +5,8 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
-import static freenet.node.stats.CompressionStats.CompressionRun.failed;
-import static freenet.node.stats.CompressionStats.CompressionRun.failedTooBig;
+import static freenet.node.stats.CompressionStats.OperationRun.failed;
+import static freenet.node.stats.CompressionStats.OperationRun.failedTooBig;
 import static java.lang.String.format;
 import static java.time.Clock.systemUTC;
 import static java.time.Duration.between;
@@ -24,59 +24,59 @@ import static java.time.Duration.between;
  */
 public class CompressionStats {
 
-	public interface CompressionRunRecorder {
-		void finish(long sizeAfterCompression);
+	public interface OperationRunRecorder {
+		void finish(long sizeAfterOperation);
 		void fail();
 		void failTooBig();
 	}
 
-	public static class CompressionRun {
+	public static class OperationRun {
 		public final String algorithm;
 		public final long duration;
-		public final long sizeBeforeCompression;
-		public final long sizeAfterCompression;
+		public final long sizeBeforeOperation;
+		public final long sizeAfterOperation;
 
-		public CompressionRun(String algorithm, long duration, long sizeBeforeCompression, long sizeAfterCompression) {
+		public OperationRun(String algorithm, long duration, long sizeBeforeOperation, long sizeAfterOperation) {
 			this.algorithm = algorithm;
 			this.duration = duration;
-			this.sizeBeforeCompression = sizeBeforeCompression;
-			this.sizeAfterCompression = sizeAfterCompression;
+			this.sizeBeforeOperation = sizeBeforeOperation;
+			this.sizeAfterOperation = sizeAfterOperation;
 		}
 
-		public static CompressionRun failed(String algorithm, long duration, long sizeBeforeCompression) {
-			return new CompressionRun(algorithm, duration, sizeBeforeCompression, -1);
+		public static OperationRun failed(String algorithm, long duration, long sizeBeforeOperation) {
+			return new OperationRun(algorithm, duration, sizeBeforeOperation, -1);
 		}
 
-		public static CompressionRun failedTooBig(String algorithm, long duration, long sizeBeforeCompression) {
-			return new CompressionRun(algorithm, duration, sizeBeforeCompression, -2);
+		public static OperationRun failedTooBig(String algorithm, long duration, long sizeBeforeOperation) {
+			return new OperationRun(algorithm, duration, sizeBeforeOperation, -2);
 		}
 
 		@Override
 		public String toString() {
-			return format("CompressionRun[algorithm=%s,duration=%d,sizeBeforeCompression=%d,sizeAfterCompression=%d]", algorithm, duration, sizeBeforeCompression, sizeAfterCompression);
+			return format("CompressionRun[algorithm=%s,duration=%d,sizeBeforeOperation=%d,sizeAfterOperation=%d]", algorithm, duration, sizeBeforeOperation, sizeAfterOperation);
 		}
 
 	}
 
-	public CompressionRunRecorder startCompressionRun(String algorithm, long sizeBeforeCompression) {
+	public OperationRunRecorder startCompressionRun(String algorithm, long sizeBeforeOperation) {
 		Instant startTime = clock.instant();
-		return new CompressionRunRecorder() {
+		return new OperationRunRecorder() {
 			@Override
-			public void finish(long sizeAfterCompression) {
+			public void finish(long sizeAfterOperation) {
 				Instant endTime = clock.instant();
-				compressionRuns.add(new CompressionRun(algorithm, between(startTime, endTime).toMillis(), sizeBeforeCompression, sizeAfterCompression));
+				compressionRuns.add(new OperationRun(algorithm, between(startTime, endTime).toMillis(), sizeBeforeOperation, sizeAfterOperation));
 			}
 
 			@Override
 			public void fail() {
 				Instant endTime = clock.instant();
-				compressionRuns.add(failed(algorithm, between(startTime, endTime).toMillis(), sizeBeforeCompression));
+				compressionRuns.add(failed(algorithm, between(startTime, endTime).toMillis(), sizeBeforeOperation));
 			}
 
 			@Override
 			public void failTooBig() {
 				Instant endTime = clock.instant();
-				compressionRuns.add(failedTooBig(algorithm, between(startTime, endTime).toMillis(), sizeBeforeCompression));
+				compressionRuns.add(failedTooBig(algorithm, between(startTime, endTime).toMillis(), sizeBeforeOperation));
 			}
 		};
 	}
@@ -89,11 +89,11 @@ public class CompressionStats {
 		this.clock = clock;
 	}
 
-	public List<CompressionRun> getCompressionRuns() {
+	public List<OperationRun> getCompressionRuns() {
 		return compressionRuns;
 	}
 
 	private final Clock clock;
-	private final List<CompressionRun> compressionRuns = new ArrayList<>();
+	private final List<OperationRun> compressionRuns = new ArrayList<>();
 
 }

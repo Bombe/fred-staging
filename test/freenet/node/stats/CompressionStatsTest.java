@@ -2,11 +2,11 @@ package freenet.node.stats;
 
 import java.time.Instant;
 
-import freenet.node.stats.CompressionStats.CompressionRunRecorder;
+import freenet.node.stats.CompressionStats.OperationRunRecorder;
 import freenet.test.time.SettableClock;
 import org.junit.Test;
 
-import static freenet.test.matcher.CompressionRunMatcher.matchesCompressionRun;
+import static freenet.test.matcher.OperationRunMatcher.matchesOperationRun;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
@@ -21,7 +21,7 @@ public class CompressionStatsTest {
 		CompressionStats compressionStats = new CompressionStats();
 		compressionStats.startCompressionRun("GZIP", 1024).finish(29);
 		assertThat(compressionStats.getCompressionRuns(), contains(
-				matchesCompressionRun("GZIP", 1024, 29)
+				matchesOperationRun("GZIP", 1024, 29)
 		));
 	}
 
@@ -30,7 +30,7 @@ public class CompressionStatsTest {
 		testClock.setInstant(now.plusMillis(23));
 		compressionRunRecorder.finish(29);
 		assertThat(compressionStats.getCompressionRuns(), contains(
-				matchesCompressionRun("GZIP", equalTo(23L), 1024, 29)
+				matchesOperationRun("GZIP", equalTo(23L), 1024, 29)
 		));
 	}
 
@@ -38,7 +38,7 @@ public class CompressionStatsTest {
 	public void compresionRunWithExceptionIsRecordedCorrectly() {
 		compressionRunRecorder.fail();
 		assertThat(compressionStats.getCompressionRuns(), contains(
-				matchesCompressionRun("GZIP", equalTo(0L), 1024, -1)
+				matchesOperationRun("GZIP", equalTo(0L), 1024, -1)
 		));
 	}
 
@@ -46,13 +46,13 @@ public class CompressionStatsTest {
 	public void compresionRunResultingInTooMuchDataIsRecordedCorrectly() {
 		compressionRunRecorder.failTooBig();
 		assertThat(compressionStats.getCompressionRuns(), contains(
-				matchesCompressionRun("GZIP", equalTo(0L), 1024, -2)
+				matchesOperationRun("GZIP", equalTo(0L), 1024, -2)
 		));
 	}
 
 	private final Instant now = Instant.now();
 	private final SettableClock testClock = new SettableClock(now);
 	private final CompressionStats compressionStats = new CompressionStats(testClock);
-	private final CompressionRunRecorder compressionRunRecorder = compressionStats.startCompressionRun("GZIP", 1024);
+	private final OperationRunRecorder compressionRunRecorder = compressionStats.startCompressionRun("GZIP", 1024);
 
 }
