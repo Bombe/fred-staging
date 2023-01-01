@@ -59,24 +59,32 @@ public class CompressionStats {
 	}
 
 	public OperationRunRecorder startCompressionRun(String algorithm, long sizeBeforeOperation) {
+		return recordOperation(algorithm, sizeBeforeOperation, compressionRuns);
+	}
+
+	public OperationRunRecorder startDecompressionRun(String algorithm, long sizeBeforeOperation) {
+		return recordOperation(algorithm, sizeBeforeOperation, decompressionRuns);
+	}
+
+	private OperationRunRecorder recordOperation(String algorithm, long sizeBeforeOperation, List<OperationRun> recordingTarget) {
 		Instant startTime = clock.instant();
 		return new OperationRunRecorder() {
 			@Override
 			public void finish(long sizeAfterOperation) {
 				Instant endTime = clock.instant();
-				compressionRuns.add(new OperationRun(algorithm, between(startTime, endTime).toMillis(), sizeBeforeOperation, sizeAfterOperation));
+				recordingTarget.add(new OperationRun(algorithm, between(startTime, endTime).toMillis(), sizeBeforeOperation, sizeAfterOperation));
 			}
 
 			@Override
 			public void fail() {
 				Instant endTime = clock.instant();
-				compressionRuns.add(failed(algorithm, between(startTime, endTime).toMillis(), sizeBeforeOperation));
+				recordingTarget.add(failed(algorithm, between(startTime, endTime).toMillis(), sizeBeforeOperation));
 			}
 
 			@Override
 			public void failTooBig() {
 				Instant endTime = clock.instant();
-				compressionRuns.add(failedTooBig(algorithm, between(startTime, endTime).toMillis(), sizeBeforeOperation));
+				recordingTarget.add(failedTooBig(algorithm, between(startTime, endTime).toMillis(), sizeBeforeOperation));
 			}
 		};
 	}
@@ -93,7 +101,12 @@ public class CompressionStats {
 		return compressionRuns;
 	}
 
+	public List<OperationRun> getDecompressionRuns() {
+		return decompressionRuns;
+	}
+
 	private final Clock clock;
 	private final List<OperationRun> compressionRuns = new ArrayList<>();
+	private final List<OperationRun> decompressionRuns = new ArrayList<>();
 
 }
