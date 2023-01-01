@@ -5,6 +5,8 @@ package freenet.support.compress;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 
+import freenet.node.stats.CompressionStats;
+import freenet.node.stats.CompressionStats.OperationRunRecorder;
 import freenet.support.LogThresholdCallback;
 import freenet.support.TimeUtil;
 
@@ -151,7 +153,7 @@ public class DecompressorThreadManager {
 	 * <code>DecompressorThreadManager</code>
 	 * @author sajack
 	 */
-	class DecompressorThread implements Runnable {
+	static class DecompressorThread implements Runnable {
 
 		/**The compressor whose decompress method will be invoked*/
 		final Compressor compressor;
@@ -163,24 +165,33 @@ public class DecompressorThreadManager {
 		final long maxLen;
 		/**The manager which created the thread*/
 		final DecompressorThreadManager manager;
+		/** Compression statistics collector. */
+		private final CompressionStats compressionStats;
 		/**Whether or not this thread should signal the manager that decompression has finished*/
 		boolean isLast = false;
 
-		public DecompressorThread(Compressor compressor, DecompressorThreadManager manager, InputStream input, PipedOutputStream output, long maxLen) {
+		public DecompressorThread(Compressor compressor, DecompressorThreadManager manager, InputStream input, OutputStream output, long maxLen) {
+			this(compressor, manager, input, output, maxLen, new CompressionStats());
+		}
+
+		public DecompressorThread(Compressor compressor, DecompressorThreadManager manager, InputStream input, OutputStream output, long maxLen, CompressionStats compressionStats) {
 			this.compressor = compressor;
 			this.input = new BufferedInputStream(input);
 			this.output = new BufferedOutputStream(output);
 			this.maxLen = maxLen;
 			this.manager = manager;
+			this.compressionStats = compressionStats;
 		}
 
 		/**Begins the decompression */
 		@Override
 		public void run() {
 			if(logMINOR) Logger.minor(this, "Decompressing...");
+			OperationRunRecorder recorder = compressionStats.startDecompressionRun(((Compressor.COMPRESSOR_TYPE) compressor).name, maxLen);
 			try {
 				if(manager.getError() == null) {
-					compressor.decompress(input, output, maxLen, maxLen * 4);
+					long decompressedSize = compressor.decompress(input, output, maxLen, maxLen * 4);
+					recorder.finish(decompressedSize);
 					input.close();
 					output.close();
 					// Avoid relatively expensive repeated close on normal completion
@@ -190,6 +201,7 @@ public class DecompressorThreadManager {
 				}
 				if(logMINOR) Logger.minor(this, "Finished decompressing...");
 			} catch (Exception e) {
+				recorder.fail();
 				manager.onFailure(e);
 			} finally {
 				Closer.close(input);
