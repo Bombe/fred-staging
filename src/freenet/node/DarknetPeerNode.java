@@ -82,7 +82,7 @@ public class DarknetPeerNode extends PeerNode {
 	private boolean allowLocalAddresses;
 
 	/** Extra peer data file numbers */
-	private LinkedHashSet<Integer> extraPeerDataFileNumbers;
+	private final LinkedHashSet<Integer> extraPeerDataFileNumbers;
 
 	/** Private comment on the peer for /friends/ page */
 	private String privateDarknetComment;
