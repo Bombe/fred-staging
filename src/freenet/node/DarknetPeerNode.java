@@ -473,7 +473,7 @@ public class DarknetPeerNode extends PeerNode {
 		}
 	}
 
-	public void rereadExtraPeerDataFile(int fileNumber) {
+	private void rereadExtraPeerDataFile(int fileNumber) {
 		if(logMINOR)
 			Logger.minor(this, "Rereading peer data file "+fileNumber+" for "+shortToString());
 		String extraPeerDataDirPath = node.getExtraPeerDataDir();
@@ -494,7 +494,7 @@ public class DarknetPeerNode extends PeerNode {
 		readExtraPeerDataFile(extraPeerDataFile, fileNumber);
 	}
 
-	public void readExtraPeerDataFile(File extraPeerDataFile, int fileNumber) {
+	private void readExtraPeerDataFile(File extraPeerDataFile, int fileNumber) {
 		if(logMINOR) Logger.minor(this, "Reading "+extraPeerDataFile+" : "+fileNumber+" for "+shortToString());
 		if(!extraPeerDataFile.exists()) {
 			if(logMINOR)
@@ -738,7 +738,7 @@ public class DarknetPeerNode extends PeerNode {
 		extraPeerDataPeerDir.delete();
 	}
 
-	public void rewriteExtraPeerDataFile(SimpleFieldSet fs, int extraPeerDataType, int fileNumber) {
+	private void rewriteExtraPeerDataFile(SimpleFieldSet fs, int extraPeerDataType, int fileNumber) {
 		String extraPeerDataDirPath = node.getExtraPeerDataDir();
 		if(extraPeerDataType > 0)
 			fs.putOverwrite("extraPeerDataType", Integer.toString(extraPeerDataType));
