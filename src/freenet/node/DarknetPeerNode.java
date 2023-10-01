@@ -738,23 +738,23 @@ public class DarknetPeerNode extends PeerNode {
 		extraPeerDataPeerDir.delete();
 	}
 
-	public boolean rewriteExtraPeerDataFile(SimpleFieldSet fs, int extraPeerDataType, int fileNumber) {
+	public void rewriteExtraPeerDataFile(SimpleFieldSet fs, int extraPeerDataType, int fileNumber) {
 		String extraPeerDataDirPath = node.getExtraPeerDataDir();
 		if(extraPeerDataType > 0)
 			fs.putOverwrite("extraPeerDataType", Integer.toString(extraPeerDataType));
 		File extraPeerDataPeerDir = new File(extraPeerDataDirPath+File.separator+getIdentityString());
 		if(!extraPeerDataPeerDir.exists()) {
 			Logger.error(this, "Extra peer data directory for peer does not exist: "+extraPeerDataPeerDir.getPath());
-			return false;
+			return;
 		}
 		if(!extraPeerDataPeerDir.isDirectory()) {
 			Logger.error(this, "Extra peer data directory for peer not a directory: "+extraPeerDataPeerDir.getPath());
-			return false;
+			return;
 		}
 		File extraPeerDataFile = new File(extraPeerDataDirPath+File.separator+getIdentityString()+File.separator+fileNumber);
 		if(!extraPeerDataFile.exists()) {
 			Logger.error(this, "Extra peer data file for peer does not exist: "+extraPeerDataFile.getPath());
-			return false;
+			return;
 		}
 		String f = extraPeerDataFile.getPath();
 		FileOutputStream fos;
@@ -763,7 +763,7 @@ public class DarknetPeerNode extends PeerNode {
 		} catch (FileNotFoundException e2) {
 			Logger.error(this, "Cannot write extra peer data file to disk: Cannot open "
 					+ f + " - " + e2, e2);
-			return false;
+			return;
 		}
 		OutputStreamWriter w;
 		try {
@@ -782,9 +782,7 @@ public class DarknetPeerNode extends PeerNode {
 				Logger.error(this, "Cannot close extra peer data file: "+e, e);
 			}
 			Logger.error(this, "Cannot write file: " + e, e);
-			return false;
 		}
-		return true;
 	}
 
 	public synchronized String getPrivateDarknetCommentNote() {
