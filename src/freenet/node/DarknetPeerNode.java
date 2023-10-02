@@ -537,19 +537,19 @@ public class DarknetPeerNode extends PeerNode {
 			return;
 		}
 		try {
-			parseExtraPeerData(fs, extraPeerDataFile, fileNumber);
+			parseExtraPeerData(fs, extraPeerDataFile.getPath(), fileNumber);
 		} catch (FSParseException e2) {
 			Logger.error(this, "Could not parse extra peer data: "+e2+ '\n' +fs.toString(),e2);
 		}
 	}
 
-	private void parseExtraPeerData(SimpleFieldSet fs, File extraPeerDataFile, int fileNumber) throws FSParseException {
+	private void parseExtraPeerData(SimpleFieldSet fs, String extraPeerDataFilePath, int fileNumber) throws FSParseException {
 		String extraPeerDataTypeString = fs.get("extraPeerDataType");
 		int extraPeerDataType = -1;
 		try {
 			extraPeerDataType = Integer.parseInt(extraPeerDataTypeString);
 		} catch (NumberFormatException e) {
-			Logger.error(this, "NumberFormatException parsing extraPeerDataType ("+extraPeerDataTypeString+") in file "+extraPeerDataFile.getPath());
+			Logger.error(this, "NumberFormatException parsing extraPeerDataType ("+extraPeerDataTypeString+") in file "+ extraPeerDataFilePath);
 			return;
 		}
 		if(extraPeerDataType == Node.EXTRA_PEER_DATA_TYPE_N2NTM) {
@@ -561,7 +561,7 @@ public class DarknetPeerNode extends PeerNode {
 			try {
 				peerNoteType = Integer.parseInt(peerNoteTypeString);
 			} catch (NumberFormatException e) {
-				Logger.error(this, "NumberFormatException parsing peerNoteType ("+peerNoteTypeString+") in file "+extraPeerDataFile.getPath());
+				Logger.error(this, "NumberFormatException parsing peerNoteType ("+peerNoteTypeString+") in file "+ extraPeerDataFilePath);
 				return;
 			}
 			if(peerNoteType == Node.PEER_NOTE_TYPE_PRIVATE_DARKNET_COMMENT) {
@@ -576,7 +576,7 @@ public class DarknetPeerNode extends PeerNode {
 				}
 				return;
 			}
-			Logger.error(this, "Read unknown peer note type '"+peerNoteType+"' from file "+extraPeerDataFile.getPath());
+			Logger.error(this, "Read unknown peer note type '"+peerNoteType+"' from file "+ extraPeerDataFilePath);
 			return;
 		} else if(extraPeerDataType == Node.EXTRA_PEER_DATA_TYPE_QUEUED_TO_SEND_N2NM) {
 			int type = fs.getInt("n2nType");
@@ -597,7 +597,7 @@ public class DarknetPeerNode extends PeerNode {
 				try {
 					n2nm = DMT.createNodeToNodeMessage(type, fs.toString().getBytes("UTF-8"));
 				} catch (UnsupportedEncodingException e) {
-					Logger.error(this, "UnsupportedEncodingException processing extraPeerDataType ("+extraPeerDataTypeString+") in file "+extraPeerDataFile.getPath(), e);
+					Logger.error(this, "UnsupportedEncodingException processing extraPeerDataType ("+extraPeerDataTypeString+") in file "+ extraPeerDataFilePath, e);
 					throw new Error("Impossible: JVM doesn't support UTF-8: " + e, e);
 				}
 				// the callback ensures that n2ns are only unqueued after being acknowledged
@@ -621,7 +621,7 @@ public class DarknetPeerNode extends PeerNode {
 			handleFproxyDownloadFeed(fs, fileNumber);
 			return;
 		}
-		Logger.error(this, "Read unknown extra peer data type '"+extraPeerDataType+"' from file "+extraPeerDataFile.getPath());
+		Logger.error(this, "Read unknown extra peer data type '"+extraPeerDataType+"' from file "+ extraPeerDataFilePath);
 	}
 
 	public int writeNewExtraPeerDataFile(SimpleFieldSet fs, int extraPeerDataType) {
