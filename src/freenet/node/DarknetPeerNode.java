@@ -18,6 +18,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -82,7 +83,7 @@ public class DarknetPeerNode extends PeerNode {
 	private boolean allowLocalAddresses;
 
 	/** Extra peer data file numbers */
-	private final LinkedHashSet<Integer> extraPeerDataFileNumbers;
+	private final ExtraPeerDataFileNumberManager fileNumberManager = new ExtraPeerDataFileNumberManager();
 
 	/** Private comment on the peer for /friends/ page */
 	private String privateDarknetComment;
@@ -208,9 +209,6 @@ public class DarknetPeerNode extends PeerNode {
 		// Setup the private darknet comment note
 		privateDarknetComment = "";
 		privateDarknetCommentFileNumber = -1;
-
-		// Setup the extraPeerDataFileNumbers
-		extraPeerDataFileNumbers = new LinkedHashSet<Integer>();
 
 		// Setup the queuedToSendN2NMExtraPeerDataFileNumbers
 		queuedToSendN2NMExtraPeerDataFileNumbers = new LinkedHashSet<Integer>();
@@ -466,9 +464,7 @@ public class DarknetPeerNode extends PeerNode {
 			} catch (NumberFormatException e) {
 				continue;
 			}
-			synchronized(extraPeerDataFileNumbers) {
-				extraPeerDataFileNumbers.add(fileNumber);
-			}
+			fileNumberManager.addFileNumber(fileNumber);
 			readExtraPeerDataFile(extraPeerDataFile, fileNumber);
 		}
 	}
@@ -640,19 +636,7 @@ public class DarknetPeerNode extends PeerNode {
 			return -1;
 		}
 		Integer[] localFileNumbers;
-		int nextFileNumber = 0;
-		synchronized(extraPeerDataFileNumbers) {
-			// Find the first free slot
-			localFileNumbers = extraPeerDataFileNumbers.toArray(new Integer[extraPeerDataFileNumbers.size()]);
-			Arrays.sort(localFileNumbers);
-			for (int localFileNumber : localFileNumbers) {
-				if(localFileNumber > nextFileNumber) {
-					break;
-				}
-				nextFileNumber = localFileNumber + 1;
-			}
-			extraPeerDataFileNumbers.add(nextFileNumber);
-		}
+		int nextFileNumber = fileNumberManager.allocateNextFileNumber();
 		FileOutputStream fos;
 		File extraPeerDataFile = new File(extraPeerDataPeerDir.getPath()+File.separator+nextFileNumber);
 		if(extraPeerDataFile.exists()) {
@@ -705,9 +689,7 @@ public class DarknetPeerNode extends PeerNode {
 			Logger.error(this, "Extra peer data file for peer does not exist: "+extraPeerDataFile.getPath());
 			return;
 		}
-		synchronized(extraPeerDataFileNumbers) {
-			extraPeerDataFileNumbers.remove(fileNumber);
-		}
+		fileNumberManager.removeFileNumber(fileNumber);
 		if(!extraPeerDataFile.delete()) {
 			if(extraPeerDataFile.exists()) {
 				Logger.error(this, "Cannot delete file "+extraPeerDataFile+" after sending message to "+getPeer()+" - it may be resent on resting the node");
@@ -728,10 +710,7 @@ public class DarknetPeerNode extends PeerNode {
 			Logger.error(this, "Extra peer data directory for peer not a directory: "+extraPeerDataPeerDir.getPath());
 			return;
 		}
-		Integer[] localFileNumbers;
-		synchronized(extraPeerDataFileNumbers) {
-			localFileNumbers = extraPeerDataFileNumbers.toArray(new Integer[extraPeerDataFileNumbers.size()]);
-		}
+		Collection<Integer> localFileNumbers = fileNumberManager.getFileNumbers();
 		for (Integer localFileNumber : localFileNumbers) {
 			deleteExtraPeerDataFile(localFileNumber.intValue());
 		}
