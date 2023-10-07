@@ -18,10 +18,18 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.internal.util.reflection.Whitebox;
 
 import static freenet.node.DarknetPeerNode.FRIEND_TRUST.NORMAL;
+import static freenet.test.SimpleFieldSetMatcher.matches;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.nio.file.Files.newOutputStream;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.startsWith;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -41,6 +49,27 @@ public class DarknetPeerNodeTest {
 
 		darknetPeerNode.readExtraPeerData();
 		assertThat(captureLogger.getLoggedMessages(), hasItem(startsWith("ERROR: Extra peer data directory for peer not a directory")));
+	}
+
+	@Test
+	public void readExtraPeerDataHandsMessageToNode() throws Exception {
+		File extraPeerDataDirectory = temporaryFolder.newFolder(darknetPeerNode.getIdentityString());
+		when(node.getExtraPeerDataDir()).thenReturn(extraPeerDataDirectory.getParent());
+		SimpleFieldSet node2NodeTextMessage = new SimpleFieldSet(true);
+		node2NodeTextMessage.putSingle("extraPeerDataType", "1");
+		node2NodeTextMessage.writeTo(newOutputStream(extraPeerDataDirectory.toPath().resolve("0")));
+
+		List<SimpleFieldSet> capturedFieldSets = new ArrayList<>();
+		List<Integer> capturedFileNumbers = new ArrayList<>();
+		doAnswer(invocation -> {
+			capturedFieldSets.add(((SimpleFieldSet) invocation.getArguments()[0]));
+			capturedFileNumbers.add((int) invocation.getArguments()[2]);
+			return null;
+		}).when(node).handleNodeToNodeTextMessageSimpleFieldSet(anyObject(), anyObject(), anyInt());
+
+		darknetPeerNode.readExtraPeerData();
+		assertThat(capturedFieldSets, containsInAnyOrder(matches(node2NodeTextMessage)));
+		assertThat(capturedFileNumbers, contains(equalTo(0)));
 	}
 
 	private void addSignatureToFieldSet() {
