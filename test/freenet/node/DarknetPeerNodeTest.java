@@ -10,18 +10,14 @@ import freenet.crypt.ECDSA;
 import freenet.io.comm.PeerParseException;
 import freenet.io.comm.ReferenceSignatureVerificationException;
 import freenet.support.Base64;
-import freenet.support.Logger;
-import freenet.support.LoggerHook;
 import freenet.support.SimpleFieldSet;
-import org.junit.After;
-import org.junit.Before;
+import freenet.test.CaptureLogger;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.internal.util.reflection.Whitebox;
 
 import static freenet.node.DarknetPeerNode.FRIEND_TRUST.NORMAL;
-import static freenet.support.Logger.LogLevel.MINIMAL;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
@@ -44,17 +40,7 @@ public class DarknetPeerNodeTest {
 		when(node.getExtraPeerDataDir()).thenReturn(extraPeerDataDirectory.getAbsolutePath());
 
 		darknetPeerNode.readExtraPeerData();
-		assertThat(loggedMessages, hasItem(startsWith("ERROR: Extra peer data directory for peer not a directory")));
-	}
-
-	@Before
-	public void addLoggerHook() {
-		Logger.globalAddHook(loggerHook);
-	}
-
-	@After
-	public void removeLoggerHook() {
-		Logger.globalRemoveHook(loggerHook);
+		assertThat(captureLogger.getLoggedMessages(), hasItem(startsWith("ERROR: Extra peer data directory for peer not a directory")));
 	}
 
 	private void addSignatureToFieldSet() {
@@ -97,13 +83,8 @@ public class DarknetPeerNodeTest {
 
 	private final DarknetPeerNode darknetPeerNode = new DarknetPeerNode(fieldSet, node, nodeCrypto, false, NORMAL, null);
 
-	private final List<String> loggedMessages = new ArrayList<>();
-	private final LoggerHook loggerHook = new LoggerHook(MINIMAL) {
-		@Override
-		public void log(Object o, Class<?> source, String message, Throwable e, LogLevel priority) {
-			loggedMessages.add(priority.name() + ": " + message);
-		}
-	};
+	@Rule
+	public final CaptureLogger captureLogger = new CaptureLogger();
 
 	@Rule
 	public final TemporaryFolder temporaryFolder = TemporaryFolder.builder().build();
