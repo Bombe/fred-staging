@@ -1,6 +1,8 @@
 package freenet.node;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -18,7 +20,7 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.internal.util.reflection.Whitebox;
 
 import static freenet.node.DarknetPeerNode.FRIEND_TRUST.NORMAL;
-import static freenet.test.SimpleFieldSetMatchers.matches;
+import static freenet.test.SimpleFieldSetMatchers.hasKeyValue;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.newOutputStream;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -53,11 +55,7 @@ public class DarknetPeerNodeTest {
 
 	@Test
 	public void readExtraPeerDataHandsMessageToNode() throws Exception {
-		File extraPeerDataDirectory = temporaryFolder.newFolder(darknetPeerNode.getIdentityString());
-		when(node.getExtraPeerDataDir()).thenReturn(extraPeerDataDirectory.getParent());
-		SimpleFieldSet node2NodeTextMessage = new SimpleFieldSet(true);
-		node2NodeTextMessage.putSingle("extraPeerDataType", "1");
-		node2NodeTextMessage.writeTo(newOutputStream(extraPeerDataDirectory.toPath().resolve("0")));
+		writePeerNote("extraPeerDataType", "1");
 
 		List<SimpleFieldSet> capturedFieldSets = new ArrayList<>();
 		List<Integer> capturedFileNumbers = new ArrayList<>();
@@ -68,8 +66,71 @@ public class DarknetPeerNodeTest {
 		}).when(node).handleNodeToNodeTextMessageSimpleFieldSet(anyObject(), anyObject(), anyInt());
 
 		darknetPeerNode.readExtraPeerData();
-		assertThat(capturedFieldSets, containsInAnyOrder(matches(node2NodeTextMessage)));
+		assertThat(capturedFieldSets, containsInAnyOrder(hasKeyValue("extraPeerDataType", "1")));
 		assertThat(capturedFileNumbers, contains(equalTo(0)));
+	}
+
+	@Test
+	public void readExtraPeerDataHandlesBookmarkMessage() throws Exception {
+		writePeerNote("extraPeerDataType", "4");
+
+		List<SimpleFieldSet> capturedFieldSets = new ArrayList<>();
+		List<Integer> capturedFileNumbers = new ArrayList<>();
+		DarknetPeerNode darknetPeerNode = new DarknetPeerNode(fieldSet, node, nodeCrypto, false, NORMAL, null) {
+			@Override
+			public void handleFproxyBookmarkFeed(SimpleFieldSet fieldSet, int fileNumber) {
+				capturedFieldSets.add(fieldSet);
+				capturedFileNumbers.add(fileNumber);
+			}
+		};
+		darknetPeerNode.readExtraPeerData();
+		assertThat(capturedFieldSets, containsInAnyOrder(hasKeyValue("extraPeerDataType", "4")));
+		assertThat(capturedFileNumbers, contains(equalTo(0)));
+	}
+
+	@Test
+	public void readExtraPeerDataHandlesDownloadMessage() throws Exception {
+		writePeerNote("extraPeerDataType", "5");
+
+		List<SimpleFieldSet> capturedFieldSets = new ArrayList<>();
+		List<Integer> capturedFileNumbers = new ArrayList<>();
+		DarknetPeerNode darknetPeerNode = new DarknetPeerNode(fieldSet, node, nodeCrypto, false, NORMAL, null) {
+			@Override
+			public void handleFproxyDownloadFeed(SimpleFieldSet fieldSet, int fileNumber) {
+				capturedFieldSets.add(fieldSet);
+				capturedFileNumbers.add(fileNumber);
+			}
+		};
+		darknetPeerNode.readExtraPeerData();
+		assertThat(capturedFieldSets, containsInAnyOrder(hasKeyValue("extraPeerDataType", "5")));
+		assertThat(capturedFileNumbers, contains(equalTo(0)));
+	}
+
+	private void writePeerNote(String... keysAndValues) throws IOException {
+		setUpPeerNoteDirectory();
+		SimpleFieldSet simpleFieldSet = new SimpleFieldSet(true);
+		for (int keyValueIndex = 0; keyValueIndex < keysAndValues.length; keyValueIndex += 2) {
+			simpleFieldSet.putSingle(keysAndValues[keyValueIndex], keysAndValues[keyValueIndex + 1]);
+		}
+		try (OutputStream noteOutputStream = newOutputStream(peerNoteDirectory.toPath().resolve(String.valueOf(nextPeerNoteFileNumber)))) {
+			simpleFieldSet.writeTo(noteOutputStream);
+		}
+		nextPeerNoteFileNumber++;
+	}
+
+	private void setUpPeerNoteDirectory() throws IOException {
+		setUpNodeExtraPeerDataDirectory();
+		if (peerNoteDirectory == null) {
+			peerNoteDirectory = new File(nodeExtraPeerDataDirectory, darknetPeerNode.getIdentityString());
+			peerNoteDirectory.mkdir();
+		}
+	}
+
+	private void setUpNodeExtraPeerDataDirectory() throws IOException {
+		if (nodeExtraPeerDataDirectory == null) {
+			nodeExtraPeerDataDirectory = temporaryFolder.newFolder();
+			when(node.getExtraPeerDataDir()).thenReturn(nodeExtraPeerDataDirectory.getPath());
+		}
 	}
 
 	private void addSignatureToFieldSet() {
@@ -109,6 +170,10 @@ public class DarknetPeerNodeTest {
 		fieldSet.putSingle("myName", "TestNode");
 		addSignatureToFieldSet();
 	}
+
+	private File nodeExtraPeerDataDirectory;
+	private File peerNoteDirectory;
+	private int nextPeerNoteFileNumber = 0;
 
 	private final DarknetPeerNode darknetPeerNode = new DarknetPeerNode(fieldSet, node, nodeCrypto, false, NORMAL, null);
 
