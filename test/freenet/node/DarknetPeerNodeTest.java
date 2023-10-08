@@ -38,7 +38,7 @@ import static org.mockito.Mockito.when;
 public class DarknetPeerNodeTest {
 
 	@Test
-	public void readExtraPeerDataDoesNotThrowExceptionIfPeerDataDirectoryDoesNotExist() throws Exception {
+	public void readExtraPeerDataDoesNotThrowExceptionIfPeerDataDirectoryDoesNotExist() {
 		when(node.getExtraPeerDataDir()).thenReturn("/not/existing/directory");
 		darknetPeerNode.readExtraPeerData();
 	}
