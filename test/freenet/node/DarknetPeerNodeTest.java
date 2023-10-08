@@ -18,7 +18,7 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.internal.util.reflection.Whitebox;
 
 import static freenet.node.DarknetPeerNode.FRIEND_TRUST.NORMAL;
-import static freenet.test.SimpleFieldSetMatcher.matches;
+import static freenet.test.SimpleFieldSetMatchers.matches;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.newOutputStream;
 import static org.hamcrest.MatcherAssert.assertThat;

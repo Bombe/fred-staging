@@ -1,10 +1,9 @@
 package freenet.test;
 
 import freenet.support.SimpleFieldSet;
-import org.hamcrest.Matcher;
 import org.junit.Test;
 
-import static freenet.test.SimpleFieldSetMatcher.matches;
+import static freenet.test.SimpleFieldSetMatchers.matches;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
 
