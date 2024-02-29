@@ -5572,10 +5572,7 @@ public abstract class PeerNode implements USKRetrieverCallback, BasePeerNode, Pe
 		if(node == null)
 			return NodeStats.DEFAULT_MAX_PING_TIME * 2;
 		NodeStats stats = node.nodeStats;
-		if(node.nodeStats == null)
-			return NodeStats.DEFAULT_MAX_PING_TIME * 2;
-		else
-			return stats.maxPeerPingTime();
+		return stats.maxPeerPingTime();
 	}
 	
 	/** Whether we are sending the main jar to this peer */
